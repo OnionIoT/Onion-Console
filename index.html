@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Onion Console</title>
+		<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+		<!-- Webcomponents -->
+		<script src="/lib/webcomponentsjs/webcomponents-lite.js"></script>
+		<link rel="import" href="/fonts/Open-Sans.html">
+		<link rel="import" href="/system/onion-console.html">
+
+		<style>
+            * {
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+            
+			html, body {
+				font-family: 'Open-Sans', sans-serif;
+				font-weight: 400;
+				overflow: hidden;
+			}
+
+            body {
+                background-image: url('../images/bg/a.jpg');
+                background-attachment: fixed;
+                background-size: cover;
+            }
+
+            #loading {
+                position: absolute;
+                width: 150px;
+                text-align: center;
+                height: 32px;
+                line-height: 32px;
+                left: 50%;
+                top: 50%;
+                margin-left: -75px;
+                margin-top: -16px;
+                color: #fff;
+                font-weight: inherit;
+            }
+		</style>
+	</head>
+	<body class="fullbleed">
+		<onion-console></onion-console>
+	</body>
+</html>

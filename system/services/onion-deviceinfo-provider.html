@@ -1,0 +1,23 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-model id="onion-deviceinfo-provider">
+	<script>
+        'use strict';
+
+        var deviceInfo = {
+            name: "Onion Omega 0506D6",
+            id: "0506D6",
+
+        };
+
+        var getInfo = function () {
+            return deviceInfo;
+        };
+
+		Polymer({
+            is: "onion-deviceinfo-provider",
+            getInfo: getInfo
+        });
+
+	</script>
+</dom-model>

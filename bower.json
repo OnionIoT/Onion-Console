@@ -1,0 +1,22 @@
+{
+  "name": "Onion-Console",
+  "version": "0.0.0",
+  "homepage": "https://github.com/OnionIoT/Onion-Console",
+  "authors": [
+    "Zheng Han <zh@onion.io>"
+  ],
+  "description": "Web application for accessing onion devices",
+  "license": "Proprietary",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#~1.0.3",
+    "iron-pages": "PolymerElements/iron-pages#^1.0.0"
+  }
+}
