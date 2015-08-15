@@ -1,12 +1,6 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 
-<!-- <link rel="import" href="/lib/core-toolbar/core-toolbar.html">
-<link rel="import" href="/lib/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="/lib/core-icons/core-icons.html">
-<link rel="import" href="/elements/onion-userbox.html">
-<link rel="import" href="/elements/onion-app-icon.html"> -->
-
 <dom-module id="onion-app-frame">
 	<style>
 		:host {
@@ -39,7 +33,7 @@
 			<div class="home-buttom" on-tap="onHome"></div>
 
 			<!-- Left control elements -->
-			<content select="app-tools-left"></content>
+			<content select="app-tools-left" select="app-tools-left"></content>
 
 			<!-- App Title -->
 			<div class="app-title flex layout horizontal center-justified">
