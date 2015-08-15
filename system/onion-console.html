@@ -3,6 +3,7 @@
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 
 <link rel="import" href="./onion-launcher.html">
+<link rel="import" href="/apps/onion-app-template/onion-app-template.html">
 <link rel="import" href="./services/onion-apps-provider.html">
 
 <dom-module id="onion-console">
@@ -22,6 +23,7 @@
 
 	<template>
 		<iron-pages selected="0">
+			<onion-app-template></onion-app-template>
 			<onion-launcher id="launcher" apps="{{apps}}"></onion-launcher>
 		</iron-pages>
 	</template>
@@ -58,6 +60,8 @@
 
 		// 	this.launchApp({appId: 'onion-launcher'});
 		};
+
+
 		var testListener = function(e){
 			// this.launchApp(e.detail);
 			console.log(e.detail);
