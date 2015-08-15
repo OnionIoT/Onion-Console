@@ -1,72 +1,79 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<
+<link rel="import" href="/system/onion-app-frame.html">
 
-<polymer-element name="onion-launcher" attributes="deviceId deviceName">
-	<template>
-		<style>
-			:host {
-				display: block;
-				height: 100%;
-				width: 100%;
-				background-image: url('/images/bg/a.jpg');
-				background-attachment: fixed;
-				background-size: cover;
-			}
 
-			core-toolbar {
-				background-color: transparent;
-				color: #fff;
+<dom-module id="onion-launcher">
+	<style>
+		:host {
+			display: block;
+			height: 100%;
+			width: 100%;
+			background-image: url('/images/bg/a.jpg');
+			background-attachment: fixed;
+			background-size: cover;
+		}
+
+		core-toolbar {
+			background-color: transparent;
+			color: #fff;
+			height: 50px;
+		}
+			core-toolbar .toolbar-tools {
 				height: 50px;
 			}
-				core-toolbar .toolbar-tools {
-					height: 50px;
-				}
 
-			#launcher {
-				padding: 25px;
-			}
-		</style>
+		#launcher {
+			padding: 25px;
+		}
+	</style>
 
-		<onion-apps-provider id="apps"></onion-apps-provider>
+	<template>
 
-		<core-header-panel>
-			<core-toolbar>
-				<core-icon-button icon="device:devices" on-tap="{{onDeviceIcon}}"></core-icon-button>
-				<div flex>{{deviceName}}</div>
-				<onion-userbox></onion-userbox>
-			</core-toolbar>
+		<onion-app-frame title="Launch Pad">
 
-			<div id="launcher" horizontal layout wrap>
-				<template repeat="{{app in apps}}">
-					<template bind if="{{app.installed}}">
-						<onion-app-icon name="{{app.name}}" appId="{{app.id}}" appName="{{app.name}}" appIcon="{{app.icon}}" on-tap="{{onAppIcon}}"></o-app-icon>
+			<app-tools-left></app-tools-left>
+			<app-tools-right>
+				<input placeholder="Search ..."/>
+			</app-tools-right>
+
+			<app-body>
+				<div id="launcher" class="horizontal layout wrap">
+					<template is="dom-repeat" items="{{apps}}">
+						<div>{{item.id}}</div>
 					</template>
-				</template>
-			</div>
-		</core-header-panel>
+				</div>
+
+				<!-- <div>{{apps}}</div> -->
+
+			</app-body>
+
+		</onion-app-frame>
+
 	</template>
 
 	<script>
 		'use strict';
 
 		var ready = function () {
-			this.apps = this.$.apps.getApps();
-			this.onionConsole = document.querySelector('onion-console');
+
 		};
 
 		var onAppIcon = function (e) {
 			this.onionConsole.launchApp(e.target);
 		};
 
-		var onDeviceIcon = function () {
-
-		};
-
 		Polymer({
+			is: "onion-launcher",
 			ready: ready,
-			onAppIcon: onAppIcon,
-			onDeviceIcon: onDeviceIcon
+			// onAppIcon: onAppIcon,
+			// onDeviceIcon: onDeviceIcon
+			properties: {
+				apps: {
+					type: Array,
+					value: []
+				}
+			}
 		});
 	</script>
 
-</polymer-element>
+</dom-module>

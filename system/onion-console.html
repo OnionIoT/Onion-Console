@@ -1,26 +1,29 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<!-- <link rel="import" href="/lib/iron-pages/iron-pages.html"> -->
-<link rel="import" href="./onion-taskbar.html">
+<link rel="import" href="/lib/iron-pages/iron-pages.html">
+
+<link rel="import" href="./onion-launcher.html">
 <link rel="import" href="./services/onion-apps-provider.html">
-<link rel="import" href="./services/onion-deviceinfo-provider.html">
+
 <dom-module id="onion-console">
 	<style>
-	:host {
-      display: block;
-      border: 1px solid red;
-    }
+		:host {
+		}
+
+		#appContainer {
+			background-color: rgba(255,255,255,0.8);
+		}
+
+		.console {
+			height: 100%;
+		}
 
 	</style>
 
 	<template>
-
-		<onion-taskbar class="fullbleed"></onion-taskbar>
-
-
-		<!-- <iron-pages id="appContainer" valueattr="id" selected="{{currentApp}}"> -->
-			<!-- <onion-launcher id="launcher" deviceId="{{deviceId}}" deviceName="{{deviceName}}" apps="{{apps}}"></onion-launcher> -->
-		<!-- </iron-pages> -->
+		<iron-pages selected="0">
+			<onion-launcher id="launcher" apps="{{apps}}"></onion-launcher>
+		</iron-pages>
 	</template>
 
 	<script>
@@ -28,11 +31,21 @@
 
 
 		var ready = function () {
-			this.deviceInfo = document.createElement('onion-deviceinfo-provider');
-			this.apps = document.createElement('onion-apps-provider');
+			this.runningApps = {};
+			this.currentApp = {};
 
-			console.log(this.deviceInfo.getInfo());
-			console.log(this.apps.getApps());
+			this.apps = document.createElement('onion-apps-provider').getApps();
+
+
+
+			// this.$.launcher.apps = this.apps;
+
+			
+
+
+
+
+
 			// this.deviceInfo = this.$.deviceinfo.getInfo();
 		// 	this.appContainer = this.$.appContainer;
 		// 	this.deviceId = '0506D6';
@@ -45,31 +58,41 @@
 
 		// 	this.launchApp({appId: 'onion-launcher'});
 		};
+		var testListener = function(e){
+			// this.launchApp(e.detail);
+			console.log(e.detail);
+		};
 
-		// var launchApp = function (app) {
-		// 	var	appId = app.appId;
+		var launchApp = function (app) {
+			var	appId = app.appId;
 
-		// 	if (this.appContainer.querySelector(appId)) {
-		// 		this.currentApp = appId;
-		// 	} else {
-		// 		var self = this;
+			if (this.appContainer.querySelector(appId)) {
+				this.currentApp = appId;
+			} else {
+				var self = this;
 
-		// 		Polymer.import(['/elements/apps/' + appId + '/' + appId + '.html'], function () {
-		// 			var appElement = document.createElement(appId);
-		// 			appElement.setAttribute('id', appId);
-		// 			appElement.setAttribute('deviceId', self.deviceId);
-		// 			appElement.setAttribute('deviceName', self.deviceName);
-		// 			self.appContainer.appendChild(appElement);
+				Polymer.import(['/elements/apps/' + appId + '/' + appId + '.html'], function () {
+					var appElement = document.createElement(appId);
+					appElement.setAttribute('id', appId);
+					appElement.setAttribute('deviceId', self.deviceId);
+					appElement.setAttribute('deviceName', self.deviceName);
+					self.appContainer.appendChild(appElement);
 
-		// 			self.currentApp = appId;
-		// 		});
-		// 	}
-		// };
+					self.currentApp = appId;
+				});
+			}
+		};
 
 		Polymer({
 			is: "onion-console",
 			ready: ready,
 			// launchApp: launchApp,
+
+			testListener: testListener,
+
+			listeners:{
+				'launchApp': 'testListener'
+			}
 		});
 
 	</script>

@@ -1,53 +1,56 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/core-toolbar/core-toolbar.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+
+<!-- <link rel="import" href="/lib/core-toolbar/core-toolbar.html">
 <link rel="import" href="/lib/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="/lib/core-icons/core-icons.html">
 <link rel="import" href="/elements/onion-userbox.html">
-<link rel="import" href="/elements/onion-app-icon.html">
+<link rel="import" href="/elements/onion-app-icon.html"> -->
 
-<polymer-element name="onion-app-frame" attributes="appColor">
+<dom-module id="onion-app-frame">
+	<style>
+		:host {
+			display: block;
+			height: 100%;
+			width: 100%;
+		}
+
+		.header-panel {
+	      display: block;
+	      height: 48px;
+	      background-color: rgba(255,255,255,0.5);
+	    }
+
+	    .home-buttom {
+	    	height: 48px;
+	    	width: 48px;
+	    	margin-left: 10px;
+	    	background-color: red;
+	    }
+
+	    .app-tools-right {
+	    	margin-right: 10px;
+	    }
+	</style>
+
 	<template>
-		<style>
-			:host {
-				display: block;
-				height: 100%;
-				width: 100%;
-			}
-            core-toolbar {
-				background-color: {{appColor}};
-				color: #fff;
-				/*height: 50px;*/
-			}
-			.app-title{
-				margin-right: 20px;
-			}
+		<div class="header-panel layout horizontal center">
 
-			app-tools{
-				/*width: 100%;*/
-				margin-left: 40px;
-			}
+			<div class="home-buttom" on-tap="onHome"></div>
 
-		</style>
+			<!-- Left control elements -->
+			<content select="app-tools-left"></content>
 
-		<core-header-panel layout>
-			<core-toolbar>
+			<!-- App Title -->
+			<div class="app-title flex layout horizontal center-justified">
+				<div>{{title}}</div>
+			</div>
 
-				<paper-icon-button icon="apps" on-tap="{{onHome}}"></paper-icon-button>
+			<!-- Right control elements -->
+			<content class="app-tools-right" select="app-tools-right"></content>
+		</div>
 
-				<div flex layout horizontal center>
-					<div class="app-title">
-						{{title}}
-					</div>
-					<content select="app-tools" flex></select>
-				</div>
-
-				<onion-userbox></onion-userbox>
-
-			</core-toolbar>
-
-			<content select="app-body"></content>
-
-		</core-header-panel>
+		<content select="app-body"></content>
 	</template>
 
 	<script>
@@ -55,6 +58,7 @@
 
 		var ready = function () {
 			this.appColor = this.appColor || 'rgba(255, 255, 255, 0.25)';
+
 		};
 
 		var onHome = function (e) {
@@ -64,8 +68,14 @@
 
 		Polymer({
 			ready: ready,
-            onHome: onHome
+            onHome: onHome,
+            properties: {
+            	title: {
+            		type: String,
+            		value: ""
+            	}
+            }
 		});
 	</script>
 
-</polymer-element>
+</dom-module>
