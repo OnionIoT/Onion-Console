@@ -1,0 +1,69 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/system/onion-app-frame.html">
+
+
+<dom-module id="omega-settings">
+	<style>
+	</style>
+
+	<template>
+
+		<onion-app-frame title="Omega Settings">
+
+			<app-tools-left>
+				<button on-click="onLeftButton">Left Tool</button>
+			</app-tools-left>
+
+			<app-tools-right>
+				<button on-click="onRightButton">Right Tool</button>
+			</app-tools-right>
+
+			<app-body>
+				<div>
+					<h1>
+						Body of the App goes here
+					</h1>
+				</div>
+
+			</app-body>
+
+		</onion-app-frame>
+
+	</template>
+
+	<script>
+		'use strict';
+
+		var ready = function () {
+
+		};
+
+		var onAppIcon = function (e) {
+			this.onionConsole.launchApp(e.target);
+		};
+
+		var onLeftButton = function(){
+			alert('left button pressed');
+		}
+
+		var onRightButton = function(){
+			alert('right button pressed');
+		}
+
+		Polymer({
+			is: "omega-settings",
+			ready: ready,
+			onLeftButton: onLeftButton,
+			onRightButton: onRightButton,
+			// onAppIcon: onAppIcon,
+			// onDeviceIcon: onDeviceIcon
+			properties: {
+				apps: {
+					type: Array,
+					value: []
+				}
+			}
+		});
+	</script>
+
+</dom-module>
