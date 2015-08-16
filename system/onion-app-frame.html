@@ -9,6 +9,15 @@
 			width: 100%;
 		}
 
+		.app-frame {
+			display: block;
+			height: 100%;
+			width: 100%;
+			background-image: url('/images/bg/a.jpg');
+			background-attachment: fixed;
+			background-size: cover;
+		}
+
 		.header-panel {
 	      display: block;
 	      height: 48px;
@@ -28,23 +37,29 @@
 	</style>
 
 	<template>
-		<div class="header-panel layout horizontal center">
 
-			<div class="home-buttom" on-tap="onHome"></div>
+		<div class="app-frame">
+			
+			
+			<div class="header-panel layout horizontal center">
 
-			<!-- Left control elements -->
-			<content select="app-tools-left" select="app-tools-left"></content>
+				<div class="home-buttom" on-tap="onHome"></div>
 
-			<!-- App Title -->
-			<div class="app-title flex layout horizontal center-justified">
-				<div>{{title}}</div>
+				<!-- Left control elements -->
+				<content select="app-tools-left" select="app-tools-left"></content>
+
+				<!-- App Title -->
+				<div class="app-title flex layout horizontal center-justified">
+					<div>{{title}}</div>
+				</div>
+
+				<!-- Right control elements -->
+				<content class="app-tools-right" select="app-tools-right"></content>
 			</div>
 
-			<!-- Right control elements -->
-			<content class="app-tools-right" select="app-tools-right"></content>
-		</div>
+			<content select="app-body"></content>
 
-		<content select="app-body"></content>
+		</div>
 	</template>
 
 	<script>

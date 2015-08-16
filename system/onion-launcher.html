@@ -4,34 +4,15 @@
 
 <dom-module id="onion-launcher">
 	<style>
-		:host {
-			display: block;
-			height: 100%;
-			width: 100%;
-			background-image: url('/images/bg/a.jpg');
-			background-attachment: fixed;
-			background-size: cover;
-		}
-
-		core-toolbar {
-			background-color: transparent;
-			color: #fff;
-			height: 50px;
-		}
-			core-toolbar .toolbar-tools {
-				height: 50px;
-			}
-
-		#launcher {
-			padding: 25px;
-		}
 	</style>
 
 	<template>
 
 		<onion-app-frame title="Launch Pad">
-
-			<app-tools-left> </app-tools-left>
+			<app-tools-left> 
+				<button on-click="launchApp" appid="onion-app-template">TEST</button>
+				<button on-click="launchApp" appid="onion-system-setting">TEST2</button>
+			</app-tools-left>
 
 			<app-tools-right>
 				<input placeholder="Search ..."/>
@@ -59,15 +40,19 @@
 
 		};
 
-		var onAppIcon = function (e) {
-			this.onionConsole.launchApp(e.target);
-		};
+		var launchApp = function(e){
+			var appId = e.target.getAttribute('appid');
+			console.log(appId);
+			this.fire("launchApp", {"appId": appId});
+			
+		}
+
+
 
 		Polymer({
 			is: "onion-launcher",
 			ready: ready,
-			// onAppIcon: onAppIcon,
-			// onDeviceIcon: onDeviceIcon
+			launchApp: launchApp,
 			properties: {
 				apps: {
 					type: Array,

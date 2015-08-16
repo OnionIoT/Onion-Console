@@ -3,7 +3,6 @@
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 
 <link rel="import" href="./onion-launcher.html">
-<link rel="import" href="/apps/onion-app-template/onion-app-template.html">
 <link rel="import" href="./services/onion-apps-provider.html">
 
 <dom-module id="onion-console">
@@ -11,54 +10,21 @@
 		:host {
 		}
 
-		#appContainer {
-			background-color: rgba(255,255,255,0.8);
-		}
-
-		.console {
-			height: 100%;
-		}
-
 	</style>
 
 	<template>
-		<iron-pages selected="0">
-			<onion-app-template></onion-app-template>
-			<onion-launcher id="launcher" apps="{{apps}}"></onion-launcher>
+		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}">
+			<onion-launcher id="onion-launcher" apps="{{apps}}"></onion-launcher>
 		</iron-pages>
 	</template>
 
 	<script>
 		'use strict';
 
-
 		var ready = function () {
-			this.runningApps = {};
-			this.currentApp = {};
+			this.currentApp = "onion-launcher";
 
 			this.apps = document.createElement('onion-apps-provider').getApps();
-
-
-
-			// this.$.launcher.apps = this.apps;
-
-			
-
-
-
-
-
-			// this.deviceInfo = this.$.deviceinfo.getInfo();
-		// 	this.appContainer = this.$.appContainer;
-		// 	this.deviceId = '0506D6';
-		// 	this.deviceName = 'Onion Omega ' + this.deviceId;
-
-		// 	// Set up event listener to child apps
-		// 	this.addEventListener('launchApp', function(e){
-		// 		this.launchApp(e.detail);
-		// 	});
-
-		// 	this.launchApp({appId: 'onion-launcher'});
 		};
 
 
@@ -67,22 +33,20 @@
 			console.log(e.detail);
 		};
 
-		var launchApp = function (app) {
-			var	appId = app.appId;
+		var launchApp = function (e) {
+			var	appId = e.detail.appId;
 
-			if (this.appContainer.querySelector(appId)) {
+			if (this.$.appContainer.querySelector(appId)) {
 				this.currentApp = appId;
 			} else {
-				var self = this;
+				// var self = this;
 
-				Polymer.import(['/elements/apps/' + appId + '/' + appId + '.html'], function () {
+				this.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
 					var appElement = document.createElement(appId);
 					appElement.setAttribute('id', appId);
-					appElement.setAttribute('deviceId', self.deviceId);
-					appElement.setAttribute('deviceName', self.deviceName);
-					self.appContainer.appendChild(appElement);
+					Polymer.dom(this.$.appContainer).appendChild(appElement); 
 
-					self.currentApp = appId;
+					this.currentApp = appId;
 				});
 			}
 		};
@@ -90,12 +54,9 @@
 		Polymer({
 			is: "onion-console",
 			ready: ready,
-			// launchApp: launchApp,
-
-			testListener: testListener,
-
+			launchApp: launchApp,
 			listeners:{
-				'launchApp': 'testListener'
+				'launchApp': 'launchApp'
 			}
 		});
 
