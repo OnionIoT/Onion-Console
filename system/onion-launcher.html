@@ -1,5 +1,6 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/system/onion-app-frame.html">
+<link rel="import" href="/system/onion-app-icon.html">
 
 
 <dom-module id="onion-launcher">
@@ -10,8 +11,6 @@
 
 		<onion-app-frame title="Launch Pad">
 			<app-tools-left> 
-				<button on-click="launchApp" appid="onion-app-template">TEST</button>
-				<button on-click="launchApp" appid="onion-system-setting">TEST2</button>
 			</app-tools-left>
 
 			<app-tools-right>
@@ -19,13 +18,11 @@
 			</app-tools-right>
 
 			<app-body>
-				<div id="launcher" class="vertical layout wrap">
+				<div id="launcher" class="horizontal layout wrap">
 					<template is="dom-repeat" items="{{apps}}">
-						<div>{{item.id}}</div>
+						<onion-app-icon appid="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-app-icon>
 					</template>
 				</div>
-
-				<!-- <div>{{apps}}</div> -->
 
 			</app-body>
 
@@ -40,19 +37,9 @@
 
 		};
 
-		var launchApp = function(e){
-			var appId = e.target.getAttribute('appid');
-			console.log(appId);
-			this.fire("launchApp", {"appId": appId});
-			
-		}
-
-
-
 		Polymer({
 			is: "onion-launcher",
 			ready: ready,
-			launchApp: launchApp,
 			properties: {
 				apps: {
 					type: Array,

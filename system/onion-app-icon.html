@@ -1,39 +1,61 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/core-image/core-image.html">
 
-<polymer-element name="onion-app-icon" attributes="appId appName appIcon">
+<dom-module id="onion-app-icon">
+	<style>
+		:host {
+			display: block;
+			padding: 50px;
+		}
+
+		.icon-image {
+			height: 128px;
+			width: 128px;
+			border-radius: 64px;
+			box-shadow: 0 0 50px rgba(0, 0, 0, 0.25);
+			cursor: pointer;
+		}
+  
+		#app-name {
+			font-size: 18px;
+			margin-top: 15px;
+			color: white;
+			text-shadow: 0 0 50px rgba(0, 0, 0, 0.25);
+			cursor: pointer;
+            font-weight: 400;
+		}
+	</style>
+
 	<template>
-		<style>
-			:host {
-				display: block;
-				padding: 50px;
-			}
-
-			core-image {
-				height: 128px;
-				width: 128px;
-				border-radius: 64px;
-				box-shadow: 0 0 50px rgba(0, 0, 0, 0.25);
-				cursor: pointer;
-			}
-	  
-			#app-name {
-				font-size: 18px;
-				margin-top: 15px;
-				color: white;
-				text-shadow: 0 0 50px rgba(0, 0, 0, 0.25);
-				cursor: pointer;
-                font-weight: 400;
-			}
-		</style>
-
-		<div id="container" layout vertical center center-justified>
-			<core-image src="{{appIcon}}" sizing="contain" preload></core-image>
-			<div id="app-name">{{appName}}</div>
+		<div id="container" class="layout vertical center" on-click="launchApp">
+			<img class="icon-image" src="{{icon}}">
+			<div id="app-name">{{title}}</div>
 		</div>
+
 	</template>
 
 	<script>
-		Polymer('onion-app-icon', {});
+		var launchApp = function(){
+			this.fire("launchApp", {appId: this.appid});
+		}
+
+		Polymer({
+			is: "onion-app-icon",
+			launchApp: launchApp,
+			properties: {
+				icon: {
+					type: String,
+					valute: "",
+				},
+				title: {
+					type: String,
+					valute: "Untitled",
+				},
+				appid: {
+					type: String,
+					value: ""
+				}
+
+			}
+		});
 	</script>
-</polymer-element>
+</dom-module>
