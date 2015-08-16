@@ -9,7 +9,7 @@
 
 	<template>
 
-		<onion-app-frame title="Launch Pad">
+		<onion-app-frame title="Launch Pad" hide-launcher app-color="">
 			<app-tools-left> 
 			</app-tools-left>
 
@@ -34,17 +34,13 @@
 		'use strict';
 
 		var ready = function () {
-
 		};
 
 		Polymer({
 			is: "onion-launcher",
 			ready: ready,
 			properties: {
-				apps: {
-					type: Array,
-					value: []
-				}
+				apps: Array
 			}
 		});
 	</script>

@@ -21,10 +21,10 @@
 		.header-panel {
 	      display: block;
 	      height: 48px;
-	      background-color: rgba(255,255,255,0.5);
+	      /*background-color: {{appColor}};*/
 	    }
 
-	    .home-buttom {
+	    .launcher-buttom {
 	    	height: 48px;
 	    	width: 48px;
 	    	margin-left: 10px;
@@ -41,9 +41,12 @@
 		<div class="app-frame">
 			
 			
-			<div class="header-panel layout horizontal center">
+			<div id="header" class="header-panel layout horizontal center">
 
-				<div class="home-buttom" on-tap="onHome"></div>
+				<div hidden="{{hideLauncher}}">
+					<div class="launcher-buttom" on-tap="onLauncher" >{{showLauncher}}</div>
+				</div>
+				
 
 				<!-- Left control elements -->
 				<content select="app-tools-left" select="app-tools-left"></content>
@@ -66,22 +69,25 @@
 		'use strict';
 
 		var ready = function () {
-			this.appColor = this.appColor || 'rgba(255, 255, 255, 0.25)';
+			// this.appColor = this.appColor || 'rgba(255, 255, 255, 0.25)';
+			this.$.header.style.backgroundColor = this.appColor;
 
 		};
 
-		var onHome = function (e) {
+		var onLauncher = function (e) {
 			this.fire('launchApp', { appId: 'onion-launcher' });
 		};
 
 
 		Polymer({
 			ready: ready,
-            onHome: onHome,
+            onLauncher: onLauncher,
             properties: {
-            	title: {
+            	title: String,
+            	hideLauncher: Boolean,
+            	appColor: {
             		type: String,
-            		value: ""
+            		value: "rgba(255, 255, 255, 0.25)"
             	}
             }
 		});
