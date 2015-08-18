@@ -1,0 +1,93 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+
+<dom-module id="onion-app-frame">
+	<style>
+		:host {
+			display: block;
+			height: 100%;
+			width: 100%;
+		}
+
+		.app-frame {
+			display: block;
+			height: 100%;
+			width: 100%;
+			background-image: url('/images/bg/a.jpg');
+			background-attachment: fixed;
+			background-size: cover;
+		}
+
+		.header-panel {
+	      display: block;
+	      height: 48px;
+	      /*background-color: {{appColor}};*/
+	    }
+
+	    .launcher-buttom {
+	    	height: 48px;
+	    	width: 48px;
+	    	margin-left: 10px;
+	    	background-color: red;
+	    }
+
+	    .app-tools-right {
+	    	margin-right: 10px;
+	    }
+	</style>
+
+	<template>
+		<div class="app-frame">
+			<div id="header" class="header-panel layout horizontal center">
+
+				<div hidden="{{hideLauncher}}">
+					<div class="launcher-buttom" on-tap="onLauncher" >{{showLauncher}}</div>
+				</div>
+				
+
+				<!-- Left control elements -->
+				<content select="app-tools-left" select="app-tools-left"></content>
+
+				<!-- App Title -->
+				<div class="app-title flex layout horizontal center-justified">
+					<div>{{title}}</div>
+				</div>
+
+				<!-- Right control elements -->
+				<content class="app-tools-right" select="app-tools-right"></content>
+			</div>
+
+			<content select="app-body"></content>
+
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		var ready = function () {
+			// this.appColor = this.appColor || 'rgba(255, 255, 255, 0.25)';
+			this.$.header.style.backgroundColor = this.appColor;
+
+		};
+
+		var onLauncher = function (e) {
+			this.fire('launchApp', { appId: 'onion-launcher' });
+		};
+
+
+		Polymer({
+			ready: ready,
+            onLauncher: onLauncher,
+            properties: {
+            	title: String,
+            	hideLauncher: Boolean,
+            	appColor: {
+            		type: String,
+            		value: "rgba(255, 255, 255, 0.25)"
+            	}
+            }
+		});
+	</script>
+
+</dom-module>

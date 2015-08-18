@@ -2,6 +2,7 @@
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 
+<link rel="import" href="./onion-login.html">
 <link rel="import" href="./onion-launcher.html">
 <link rel="import" href="../services/onion-apps-provider.html">
 
@@ -13,6 +14,9 @@
 	</style>
 
 	<template>
+	    <!--Testing-Begin-->
+	    <onion-login id="onin-login"></onion-login>
+		<!--Testing-End-->
 		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}">
 			<onion-launcher id="onion-launcher" apps="{{apps}}"></onion-launcher>
 		</iron-pages>
