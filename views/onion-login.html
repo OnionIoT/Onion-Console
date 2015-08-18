@@ -1,6 +1,8 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-signals/iron-signals.html">
+
 <link rel="import" href="./onion-framework.html">
+
 <link rel="import" href="../services/onion-ajax-service.html">
 <link rel="import" href="../services/onion-ubuspackages-provider.html">
 
@@ -8,9 +10,7 @@
 	<style>
 		:host {
 			display: block;
-			height: 100%;
-			width: 100%;
-			background-image: url('/images/bg/a.jpg');
+			width: 320px;
 			background-attachment: fixed;
 			background-size: cover;
 		}
@@ -29,92 +29,96 @@
 			padding: 25px;
 		}
 	</style>
+
 	<template>
-		<onion-app-frame title="Login">
-			<app-body>
-			    <div>Username: <input id='username' label='Username'></input></div>
-                <br>
-				<div>Password: <input id='password' label='Password' type='password'></input></div>
-				<br><br>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Login</h3>
+			</div>
+			<div class="panel-body">
+				<div>Username: <input id="username" label="Username"></input></div>
+				<div>Password: <input id="password" label="Password" type="password"></input></div>
 				<button onclick="login()">Login</button>
 				<br><br>
 				<button onclick="logout()">Logout</button>
 				<br><br>
 				<div id="msg"></div> 
-			</app-body>
-		</onion-app-frame>
-		<onion-ubuspackages-provider id='onion-ubuspackages-provider'></onion-ubuspackages-provider>
-		<onion-ajax-service id='onion-ajax-service'></onion-ajax-service>
-        <iron-signals on-iron-signal-omega-login='setToken'></iron-signals>
-		<iron-signals on-iron-signal-omega-heartbeat='setAlive'></iron-signals>
+			</div>
+		</div>
+
+		<onion-ubuspackages-provider id="onion-ubuspackages-provider"></onion-ubuspackages-provider>
+		<onion-ajax-service id="onion-ajax-service"></onion-ajax-service>
+        <iron-signals on-iron-signal-omega-login="setToken"></iron-signals>
+		<iron-signals on-iron-signal-omega-heartbeat="setAlive"></iron-signals>
 	</template>
+
 	<script>
 		var login = function () {
-		    console.log("login");
+		    console.log('login');
 		    //Remove previous session token
-			if(typeof(Storage) != 'undefined') {
+			if(typeof(Storage) !== 'undefined') {
 				localStorage.removeItem('token');
 				localStorage.removeItem('alive');
 			}
-			var username=document.querySelector('#username').value;
+			var username = document.querySelector('#username').value;
 			//console.log(username);
-			var password=document.querySelector('#password').value;
+			var password = document.querySelector('#password').value;
             //console.log(password);
-			document.querySelector('#onion-ajax-service').query('omega-login',{username:username,password:password});
+			document.querySelector('#onion-ajax-service').query('omega-login', {
+				username:username,
+				password:password
+			});
 		};
-		
-		var setToken = function(e, detail, sender)
-		{
-			if(detail.result[0]==0)
-			{ 
-			    console.log('ajaxResponse['+detail.result[1]+']');
-                console.log('setToken['+detail.result[1].ubus_rpc_session+']');
-				if(typeof(Storage) != 'undefined') {
+
+		var setToken = function (e, detail, sender) {
+			if (detail.result[0] === 0) { 
+			    console.log('ajaxResponse[' + detail.result[1] + ']');
+                console.log('setToken[' + detail.result[1].ubus_rpc_session + ']');
+				if (typeof(Storage) !== 'undefined') {
 					localStorage.setItem('token', detail.result[1].ubus_rpc_session);
 					localStorage.setItem('alive', true);
 				    startHeartbeat(10000);
 				}
-			}
-			else
-			{
-			    document.querySelector('#msg').innerHTML="Login failed!";
+			} else {
+			    document.querySelector('#msg').innerHTML = 'Login failed!';
 			    console.log('Login failed!');
 			}
 		};
 	
-		var heartbeat = function() {
-		    if(isAlive)  
-			{
-		        document.querySelector('#onion-ajax-service').query('omega-heartbeat',{});
+		var heartbeat = function () {
+		    if (isAlive) {
+		        document.querySelector('#onion-ajax-service').query('omega-heartbeat', {});
 			}
 		}; 
 			 
-		var startHeartbeat = function(interval) {
-		    this.heartbeatInterval=setInterval(function() {heartbeat()}, interval);			 
+		var startHeartbeat = function (interval) {
+		    this.heartbeatInterval = setInterval(function () {
+		    	heartbeat()
+		    }, interval);
 		};
 		
-		var stopHeartbeat = function() {
+		var stopHeartbeat = function () {
 		    clearInterval(this.heartbeatInterval);
 			delete this.heartbeatInterval;
-		}; 
+		};
 
-		var setAlive = function(e, detail, sender) {
-		    var alive=false;	
-			if(detail!=null&&detail.result!=null&&detail.result[0]==0)
-			{
-			    alive=true;    
+		var setAlive = function (e, detail, sender) {
+		    var alive = false;	
+			if (detail !== null && detail.result !== null && detail.result[0] === 0) {
+			    alive = true;    
 			}
-			if(typeof(Storage) != 'undefined') {
+			
+			if (typeof(Storage) !== 'undefined') {
 				localStorage.setItem('alive', alive);
 			}
-			if(alive==false)
-			{
+
+			if (alive === false) {
 			    logout();
 				//launch onion-login
 			}
 	    };
 		
-		var isAlive = function() {
+		var isAlive = function () {
 		    return 	localStorage.getItem('allive');
 		};
 		
@@ -131,7 +135,7 @@
 		};
 		
 		Polymer({
-			is: "onion-login",
+			is: 'onion-login',
             login: login,
 			setToken: setToken,
 			heartbeat: heartbeat,

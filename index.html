@@ -2,53 +2,16 @@
 <html>
 	<head>
 		<title>Onion Console</title>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="Home page for Onion Corporation" />
+        <meta name="author" content="Onion Corporation" />
 		<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
-		<!-- Webcomponents -->
 		<script src="/lib/webcomponentsjs/webcomponents-lite.js"></script>
 		<link rel="import" href="/fonts/Open-Sans.html">
 		<link rel="import" href="/views/onion-console.html">
-
-		<style>
-            * {
-                -webkit-box-sizing: border-box;
-                -moz-box-sizing: border-box;
-                box-sizing: border-box;
-            }
-
-            input:focus,
-            select:focus,
-            textarea:focus,
-            button:focus {
-                outline: none;
-            }
-            
-			html, body {
-				font-family: 'Open-Sans', sans-serif;
-				font-weight: 400;
-				overflow: hidden;
-			}
-
-            body {
-                background-image: url('../images/bg/a.jpg');
-                background-attachment: fixed;
-                background-size: cover;
-            }
-
-            #loading {
-                position: absolute;
-                width: 150px;
-                text-align: center;
-                height: 32px;
-                line-height: 32px;
-                left: 50%;
-                top: 50%;
-                margin-left: -75px;
-                margin-top: -16px;
-                color: #fff;
-                font-weight: inherit;
-            }
-		</style>
+        <link rel="stylesheet" href="/css/styles.css" />
 	</head>
 	<body class="fullbleed">
 		<onion-console></onion-console>
