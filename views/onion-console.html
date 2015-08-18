@@ -9,15 +9,17 @@
 <dom-module id="onion-console">
 	<style>
 		:host {
+			display: block;
+			height: 100%;
+			width: 100%;
+			overflow: hidden;
 		}
 
 	</style>
 
 	<template>
-	    <!--Testing-Begin-->
-	    <onion-login id="onin-login"></onion-login>
-		<!--Testing-End-->
-		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}">
+		<iron-pages id="consoleContainer" attr-for-selected="id" selected="{{currentApp}}">
+			<onion-login id="onin-login"></onion-login>
 			<onion-launcher id="onion-launcher" apps="{{apps}}"></onion-launcher>
 		</iron-pages>
 	</template>
@@ -26,12 +28,11 @@
 		'use strict';
 
 		var ready = function () {
-			this.currentApp = "onion-launcher";
+			this.currentApp = 'onion-launcher';
 			this.apps = document.createElement('onion-apps-provider').getApps();
 		};
 
-
-		var testListener = function(e){
+		var testListener = function (e) {
 			// this.launchApp(e.detail);
 			console.log(e.detail);
 		};
@@ -55,7 +56,7 @@
 		};
 
 		Polymer({
-			is: "onion-console",
+			is: 'onion-console',
 			ready: ready,
 			launchApp: launchApp,
 			listeners:{
