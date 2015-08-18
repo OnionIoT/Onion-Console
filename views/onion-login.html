@@ -36,6 +36,9 @@
 				<div>Username: <input id="username" label="Username"></input></div>
 				<div>Password: <input id="password" label="Password" type="password"></input></div>
 				<button onclick="login()">Login</button>
+				<br><br>
+				<button onclick="logout()">Logout</button>
+				<br><br>
 				<div id="msg"></div> 
 			</div>
 		</div>
@@ -48,22 +51,24 @@
 
 	<script>
 		var login = function () {
+		    console.log('login');
+		    //Remove previous session token
+			if(typeof(Storage) !== 'undefined') {
+				localStorage.removeItem('token');
+				localStorage.removeItem('alive');
+			}
 			var username = document.querySelector('#username').value;
-			console.log(username);
+			//console.log(username);
 			var password = document.querySelector('#password').value;
-            console.log(password);
+            //console.log(password);
 			document.querySelector('#onion-ajax-service').query('omega-login', {
-				username: username,
-				password: password
+				username:username,
+				password:password
 			});
 		};
-		
-		var status = function () {
-		    document.querySelector('#onion-ajax-service').query('omega-status', {});
-		};
-		
+
 		var setToken = function (e, detail, sender) {
-			if (detail.result[0]==0) { 
+			if (detail.result[0] === 0) { 
 			    console.log('ajaxResponse[' + detail.result[1] + ']');
                 console.log('setToken[' + detail.result[1].ubus_rpc_session + ']');
 				if (typeof(Storage) !== 'undefined') {
@@ -78,15 +83,20 @@
 		};
 	
 		var heartbeat = function () {
-		    this.hb = document.querySelector('#onion-ajax-service').query('omega-heartbeat', {});
+		    if (isAlive) {
+		        document.querySelector('#onion-ajax-service').query('omega-heartbeat', {});
+			}
 		}; 
 			 
 		var startHeartbeat = function (interval) {
-		    setInterval(function() {heartbeat()}, interval);			 
+		    this.heartbeatInterval = setInterval(function () {
+		    	heartbeat()
+		    }, interval);
 		};
 		
 		var stopHeartbeat = function () {
-		    clearInterval(this.hb);
+		    clearInterval(this.heartbeatInterval);
+			delete this.heartbeatInterval;
 		};
 
 		var setAlive = function (e, detail, sender) {
@@ -100,8 +110,8 @@
 			}
 
 			if (alive === false) {
-			    stopHeartbeat();
-				//launch login screen
+			    logout();
+				//launch onion-login
 			}
 	    };
 		
@@ -109,16 +119,28 @@
 		    return 	localStorage.getItem('allive');
 		};
 		
+		var logout = function() {
+			if(this.heartbeatInterval!=null) {
+			    console.log("logout");
+				stopHeartbeat();			
+				if(typeof(Storage) != 'undefined') {
+					localStorage.removeItem('token');
+					localStorage.removeItem('alive');
+					//launch onion-login
+				}
+		    }
+		};
+		
 		Polymer({
 			is: 'onion-login',
             login: login,
 			setToken: setToken,
-			status: status,
 			heartbeat: heartbeat,
 			startHeartbeat: startHeartbeat,
 			stopHeartbeat: stopHeartbeat,
 			setAlive: setAlive,
 			isAlive: isAlive,
+			logout: logout,
 		});
 	</script>
 </dom-module>
