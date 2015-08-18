@@ -1,0 +1,46 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="onion-ubuspackages-provider">
+    <template>
+    </template>
+    <script> 
+	var ubuspackages = [
+	    {
+            id: 'omega-login',
+            url: '../ubus',
+            body: '{"jsonrpc":"2.0","id":1,"method":"call","params":["00000000000000000000000000000000","session","login",{"username":"{{username}}","password":"{{password}}"}]}'
+        },
+        {
+            id: 'omega-status',
+            url: '../ubus/system.board',
+            body: '{"jsonrpc":"2.0","id":3,"method":"call","params":["{{token}}","system","board",{}]}'
+        },
+		{
+		    id: 'omega-heartbeat',
+			url: '../ubus/system.access',
+			body: '{"jsonrpc":"2.0","id":5,"method":"call","params":["{{token}}","session","access",{}]}'
+		},
+		];
+		
+    Polymer({ 
+		is: 'onion-ubuspackages-provider', 
+		properties: {
+            ubuspackages:ubuspackages,
+        },
+		getUbuspackage: function(id)
+		{
+		    var ubuspackage=null;
+		    console.log('getUbuspackage: id['+id+']');
+		    for(var i=0;i<ubuspackages.length;i++)
+			{
+			    if(ubuspackages[i].id==id)
+				{
+				    ubuspackage=ubuspackages[i];
+					break;
+				}
+			}
+            return ubuspackage;
+		}
+    });
+    </script>
+</dom-module>
