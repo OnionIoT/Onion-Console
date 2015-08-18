@@ -1,32 +1,76 @@
-<link rel="import" href="../lib/polymer/polymer.html">
-<link rel="import" href="./onion-app-frame.html">
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/lib/iron-image/iron-image.html">
 <link rel="import" href="./onion-app-icon.html">
-
+<link rel="import" href="./onion-userbox.html">
+<link rel="import" href="/fonts/glyphicons.html">
+<link rel="import" href="/fonts/onion.html">
 
 <dom-module id="onion-launcher">
 	<style>
-	</style>
+		#header {
+			height: 50px;
+			color: #fff;
+			padding: 0 20px;
+		}
+
+		#device-id {
+			font-size: 18px;
+		}
+
+		#search-bar {
+			border: 1px rgba(255, 255, 255, 0.25) solid;
+			background-color: rgba(255, 255, 255, 0.1);
+			border-radius: 5px;
+			font-size: 15px;
+			padding: 5px 10px;
+			color: #fff;
+			-webkit-transition: background-color 0.5s, border 0.5s;
+    		transition: background-color 0.5s, border 0.5s;
+		}
+			#search-bar:focus {
+				border: 1px rgba(255, 255, 255, 0.75) solid;
+				background-color: rgba(255, 255, 255, 0.25);
+			}
+			::-webkit-input-placeholder {
+				color: rgba(255, 255, 255, 0.5);
+			}
+			:-moz-placeholder {
+			   color: rgba(255, 255, 255, 0.5);
+			}
+			::-moz-placeholder {
+			   color: rgba(255, 255, 255, 0.5);
+			}
+			:-ms-input-placeholder {  
+			   color: rgba(255, 255, 255, 0.5);
+			}
+
+		#omega-icon {
+			font-size: 24px;
+			margin-right: 10px;
+		}
+ 	</style>
 
 	<template>
+		<div id="header" class="layout horizontal center">
+			<div id="device-id" class="flex layout horizontal start-justified end">
+				<div class="icon-onion" id="omega-icon"></div>Onion Omega 0506D6
+			</div>
 
-		<onion-app-frame title="Launch Pad" hide-launcher app-color="">
-			<app-tools-left> 
-			</app-tools-left>
+			<div id="search" class="flex layout horizontal center-justified">
+				<input id="search-bar" placeholder="Search" />
+			</div>
 
-			<app-tools-right>
-				<input placeholder="Search ..."/>
-			</app-tools-right>
+			<div id="user-box" class="flex layout horizontal end-justified">
+				<onion-userbox></onion-userbox>
+			</div>
+		</div>
 
-			<app-body>
-				<div id="launcher" class="horizontal layout wrap">
-					<template is="dom-repeat" items="{{apps}}">
-						<onion-app-icon appid="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-app-icon>
-					</template>
-				</div>
-
-			</app-body>
-
-		</onion-app-frame>
+		<div id="launcher" class="horizontal layout wrap">
+			<template is="dom-repeat" items="{{apps}}">
+				<onion-app-icon appid="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-app-icon>
+			</template>
+		</div>
 
 	</template>
 
@@ -37,7 +81,7 @@
 		};
 
 		Polymer({
-			is: "onion-launcher",
+			is: 'onion-launcher',
 			ready: ready,
 			properties: {
 				apps: Array

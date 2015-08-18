@@ -1,88 +1,102 @@
-<link rel="import" href="../lib/polymer/polymer.html">
-<link rel="import" href="../lib/core-image/core-image.html">
-<link rel="import" href="../lib/core-icons/core-icons.html">
-<link rel="import" href="../lib/core-dropdown/core-dropdown.html">
-<link rel="import" href="../lib/core-menu/core-menu.html">
-<link rel="import" href="../lib/core-item/core-item.html">
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-image/iron-image.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/lib/neon-animation/neon-animations.html">
+<link rel="import" href="/lib/iron-dropdown/iron-dropdown.html">
 
-<polymer-element name="onion-userbox" relative>
+<dom-module id="onion-userbox">
+	<style>
+		:host {
+			display: block;
+		}
+
+		button {
+			background-color: transparent;
+			color: inherit;
+			font-size: inherit;
+			border: none;
+			cursor: pointer;
+			font-weight: 300;
+		}
+
+		#gravatar {
+			height: 24px;
+			width: 24px;
+			border-radius: 12px;
+			margin-right: 10px;
+		}
+
+		#name {
+			font-size: 18px;
+		}
+
+		#user-menu {
+			color: #333;
+			font-size: 16px;
+			border-radius: 5px;
+			list-style-type: none;
+			padding-left: 0;
+			padding: 5px;
+			background-color: rgba(255, 255, 255, 0.85);
+			box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+		}
+			#user-menu > core-menu {
+				margin: 0;
+			}
+	</style>
+
 	<template>
-		<style>
-			:host {
-				display: block;
-			}
-
-			button {
-				background-color: transparent;
-				color: inherit;
-				border: none;
-				cursor: pointer;
-				font-weight: 300;
-			}
-
-			#gravatar {
-				height: 24px;
-				width: 24px;
-				border-radius: 12px;
-				margin-right: 10px;
-			}
-
-			#name {
-				font-size: 18px;
-			}
-
-			#user-menu {
-				position: absolute;
-				top: 38px;
-				right: 0;
-				color: #333;
-				font-size: 16px;
-				border-radius: 5px;
-				width: 100%!important;
-				background-color: rgba(255, 255, 255, 0.85);
-				box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
-			}
-				#user-menu > core-menu {
-					margin: 0;
-				}
-
-			core-item {
-				padding: 0 10px;
-				cursor: pointer;
-			}
-
-				core-item.core-selected {
-				  	font-weight: 300;
-				}
-
-				core-item:hover {
-					background-color: rgba(0, 0, 0, 0.10);
-				}
-
-				core-item::shadow core-icon {
-					height: 18px;
-					width: 18px;
-				}
-		</style>
-
-		<button horizontal layout center id="trigger" on-tap="{{toggle}}">
-			<core-image id="gravatar" preload sizing="contain" src="//www.gravatar.com/avatar/c27f67acc7d4423d41e1a18bc6c1c02a?d=mm&s=96"></core-image>
-			<span self-center id="name">Boken Lin</span>
-			<core-icon self-center icon="expand-more"></core-icon>
-		</button>
-		<core-dropdown id="user-menu">
-			<core-menu>
-				<core-item icon="perm-identity" label="Profile"></core-item>
-				<core-item icon="exit-to-app" label="Sign Out"></core-item>
-			</core-menu>
-		</core-dropdown>
+		<div on-tap="open">
+            <button class="dropdown-trigger layout horizontal center">
+            	<iron-image id="gravatar" preload sizing="contain" src="//www.gravatar.com/avatar/c27f67acc7d4423d41e1a18bc6c1c02a?d=mm&s=96"></iron-image>
+            	<div class="layout horizontal center">Boken Lin</div>
+            </button>
+        </div>
+        <iron-dropdown id="dropdown" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]">
+	        <ul class="dropdown-content" id="user-menu">
+				<li><a href="javascript:void(0)">One</a></li>
+				<li><a href="javascript:void(0)">Two</a></li>
+				<li><a href="javascript:void(0)">Three</a></li>
+	        </ul>
+        </iron-dropdown>
 	</template>
 
 	<script>
+		'use strict';
+
+		var ready = function () {
+
+		};
+
+		var open = function () {
+			this.$.dropdown.open();
+		};
+
 		Polymer({
-			toggle: function () {
-				this.$['user-menu'] && this.$['user-menu'].toggle();
+			is: 'onion-userbox',
+			ready: ready,
+			open: open,
+			properties: {
+				openAnimationConfig: {
+                    type: Array,
+                    value: [{
+                        name: 'fade-in-animation',
+                        timing: {
+                            delay: 150,
+                            duration: 50
+                        }
+                    }]
+                },
+                closeAnimationConfig: {
+                    type: Array,
+                    value: [{
+                        name: 'fade-out-animation',
+                        timing: {
+                            duration: 200
+                        }
+                    }]
+                }
 			}
 		});
 	</script>
-</polymer-element>
+</dom-module>
