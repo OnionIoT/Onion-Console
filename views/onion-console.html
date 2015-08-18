@@ -26,12 +26,6 @@
 			this.apps = document.createElement('onion-apps-provider').getApps();
 		};
 
-
-		var testListener = function(e){
-			// this.launchApp(e.detail);
-			console.log(e.detail);
-		};
-
 		var launchApp = function (e) {
 			var	appId = e.detail.appId;
 

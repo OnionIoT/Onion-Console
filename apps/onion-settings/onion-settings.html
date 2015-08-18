@@ -1,8 +1,12 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/views/onion-app-frame.html">
+<link rel="import" href="/lib/iron-pages/iron-pages.html">
+
+<link rel="import" href="./onion-setting-home.html">
+<link rel="import" href="./onion-setting-update.html">
 
 
-<dom-module id="omega-settings">
+<dom-module id="onion-settings">
 	<style>
 	</style>
 
@@ -11,7 +15,7 @@
 		<onion-app-frame title="Omega Settings">
 
 			<app-tools-left>
-				<button on-click="onLeftButton">Show All</button>
+				<button on-click="onShowAll">Show All</button>
 			</app-tools-left>
 
 			<app-tools-right>
@@ -19,11 +23,13 @@
 			</app-tools-right>
 
 			<app-body>
-				<div>
-					<h1>
-						Body of the App goes here
-					</h1>
-				</div>
+
+				<iron-pages id="settingContainer" attr-for-selected="id" selected="{{currentSetting}}">
+					<onion-setting-home id='onion-setting-home'></onion-setting-home>
+
+					<onion-setting-update id="onion-setting-update"></onion-setting-update>
+
+				</iron-pages>
 
 			</app-body>
 
@@ -35,34 +41,30 @@
 		'use strict';
 
 		var ready = function () {
+			this.currentSetting = "onion-setting-home"
 
 		};
 
-		var onAppIcon = function (e) {
-			this.onionConsole.launchApp(e.target);
-		};
-
-		var onLeftButton = function(){
-			alert('left button pressed');
+		var onShowAll = function(){
+			this.fire("switchSetting", {settingId: "onion-setting-home"});
 		}
 
-		var onRightButton = function(){
-			alert('right button pressed');
+		var switchSetting = function(e){
+			console.log(e);
+			var settingId = e.detail.settingId;
+			this.currentSetting = settingId;
 		}
+
 
 		Polymer({
-			is: "omega-settings",
+			is: "onion-settings",
 			ready: ready,
-			onLeftButton: onLeftButton,
-			onRightButton: onRightButton,
-			// onAppIcon: onAppIcon,
-			// onDeviceIcon: onDeviceIcon
-			properties: {
-				apps: {
-					type: Array,
-					value: []
-				}
+			switchSetting: switchSetting,
+			onShowAll: onShowAll,
+			listeners: {
+				switchSetting: "switchSetting"
 			}
+
 		});
 	</script>
 
