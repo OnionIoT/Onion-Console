@@ -1,5 +1,5 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/views/onion-app-frame.html">
+<link rel="import" href="/views/onion-framework.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 
 <link rel="import" href="./onion-setting-home.html">
@@ -12,7 +12,7 @@
 
 	<template>
 
-		<onion-app-frame title="Omega Settings">
+		<onion-app-frame title="{{title}}">
 
 			<app-tools-left>
 				<button on-click="onShowAll">Show All</button>
@@ -41,7 +41,8 @@
 		'use strict';
 
 		var ready = function () {
-			this.currentSetting = "onion-setting-home"
+			this.title = "Omega Settings";
+			this.currentSetting = "onion-setting-home";
 
 		};
 
@@ -50,9 +51,10 @@
 		}
 
 		var switchSetting = function(e){
-			console.log(e);
+
 			var settingId = e.detail.settingId;
 			this.currentSetting = settingId;
+
 		}
 
 

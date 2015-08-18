@@ -19,7 +19,7 @@
 
 	<template>
 		<iron-pages id="consoleContainer" attr-for-selected="id" selected="{{currentApp}}">
-			<onion-login id="onin-login"></onion-login>
+			<onion-login id="onion-login"></onion-login>
 			<onion-launcher id="onion-launcher" apps="{{apps}}"></onion-launcher>
 		</iron-pages>
 	</template>
@@ -28,14 +28,15 @@
 		'use strict';
 
 		var ready = function () {
-			this.currentApp = 'onion-launcher';
+			this.currentApp = 'onion-login';
+			// this.currentApp = 'onion-launcher';
 			this.apps = document.createElement('onion-apps-provider').getApps();
 		};
 
 		var launchApp = function (e) {
 			var	appId = e.detail.appId;
 
-			if (this.$.appContainer.querySelector(appId)) {
+			if (this.$.consoleContainer.querySelector(appId)) {
 				this.currentApp = appId;
 			} else {
 				// var self = this;
@@ -43,7 +44,7 @@
 				this.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
 					var appElement = document.createElement(appId);
 					appElement.setAttribute('id', appId);
-					Polymer.dom(this.$.appContainer).appendChild(appElement); 
+					Polymer.dom(this.$.consoleContainer).appendChild(appElement); 
 
 					this.currentApp = appId;
 				});

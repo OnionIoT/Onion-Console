@@ -79,6 +79,7 @@
 					localStorage.setItem('alive', true);
 				    startHeartbeat(10000);
 				}
+				this.fire("launchApp", {appId: "onion-launcher"})
 			} else {
 			    document.querySelector('#msg').innerHTML = 'Login failed!';
 			    console.log('Login failed!');
