@@ -1,70 +1,43 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-signals/iron-signals.html">
-<link rel="import" href="../services/onion-ajax-service.html">
-<link rel="import" href="../services/onion-ubuspackages-provider.html">
+<link rel="import" href="/lib/iron-ajax/iron-ajax.html">
 
-<dom-module id="onion-login">
-	<style>
-		:host {
-			display: block;
-			width: 320px;
-			background-attachment: fixed;
-			background-size: cover;
-		}
-
-		core-toolbar {
-			background-color: transparent;
-			color: #fff;
-			height: 50px;
-		}
-		
-		core-toolbar .toolbar-tools {
-			height: 50px;
-		}
-
-		#launcher {
-			padding: 25px;
-		}
-	</style>
-
+<dom-module id="onion-login-provider">
 	<template>
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h3 class="panel-title">Login</h3>
-			</div>
-			<div class="panel-body">
-				<div>Username: <input id="username" label="Username"></input></div>
-				<div>Password: <input id="password" label="Password" type="password"></input></div>
-				<button onclick="login()">Login</button>
-				<br><br>
-				<button onclick="logout()">Logout</button>
-				<br><br>
-				<div id="msg"></div> 
-			</div>
-		</div>
-
-		<onion-ubuspackages-provider id="onion-ubuspackages-provider"></onion-ubuspackages-provider>
-		<onion-ajax-service id="onion-ajax-service"></onion-ajax-service>
-        <iron-signals on-iron-signal-omega-login="setToken"></iron-signals>
-		<iron-signals on-iron-signal-omega-heartbeat="setAlive"></iron-signals>
+		<iron-ajax id="ajax" url="/ubus" method="POST" content-type="application/json" on-response="ajaxResponse" handle-as="json"></iron-ajax> 
 	</template>
 
 	<script>
-		var login = function () {
+		var ajaxResponse = function (res) {
+			console.log(res);
+		};
+
+		var login = function (username, password) {
 		    console.log('login');
+
 		    //Remove previous session token
-			if(typeof(Storage) !== 'undefined') {
+			if (typeof(Storage) !== 'undefined') {
 				localStorage.removeItem('token');
 				localStorage.removeItem('alive');
 			}
-			var username = document.querySelector('#username').value;
-			//console.log(username);
-			var password = document.querySelector('#password').value;
-            //console.log(password);
-			document.querySelector('#onion-ajax-service').query('omega-login', {
-				username:username,
-				password:password
-			});
+			
+			var body = {
+				jsonrpc: '2.0',
+				id: 1,
+				method: 'call',
+				params: [
+					'00000000000000000000000000000000',
+					'session',
+					'login',
+					{
+						username: username,
+						password: password
+					}
+				]
+			};
+			
+			this.$.ajax.body = JSON.stringify(body);
+			this.$.ajax.generateRequest();
 		};
 
 		var setToken = function (e, detail, sender) {
@@ -120,10 +93,10 @@
 		};
 		
 		var logout = function() {
-			if(this.heartbeatInterval!=null) {
-			    console.log("logout");
+			if(this.heartbeatInterval !== null) {
+			    console.log('logout');
 				stopHeartbeat();			
-				if(typeof(Storage) != 'undefined') {
+				if(typeof(Storage) !== 'undefined') {
 					localStorage.removeItem('token');
 					localStorage.removeItem('alive');
 					//launch onion-login
@@ -132,15 +105,11 @@
 		};
 		
 		Polymer({
-			is: 'onion-login',
+			is: 'onion-login-provider',
             login: login,
-			setToken: setToken,
-			heartbeat: heartbeat,
-			startHeartbeat: startHeartbeat,
-			stopHeartbeat: stopHeartbeat,
-			setAlive: setAlive,
-			isAlive: isAlive,
 			logout: logout,
+			setToken: setToken,
+			setAlive: setAlive
 		});
 	</script>
 </dom-module>

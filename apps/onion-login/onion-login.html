@@ -1,0 +1,58 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-signals/iron-signals.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/services/onion-ubuspackages-provider.html">
+
+<dom-module id="onion-login">
+	<style>
+		:host {
+			height: 100%;
+			width: 100%;
+		}
+
+		#login-box {
+			width: 320px;
+		}
+
+		#login-container {
+			height: 100%;
+			width: 100%;
+		}
+	</style>
+
+	<template>
+		<div id="login-container" class="layout horizontal center-justified center">
+			<div id="login-box" class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Login</h3>
+				</div>
+				<div class="panel-body">
+					<div>Username: <input type="text" id="username" label="Username"></input></div>
+					<div>Password: <input id="password" label="Password" type="password"></input></div>
+					<div id="msg"></div> 
+					<button onclick="login()">Login</button>
+					<button onclick="logout()">Logout</button>
+				</div>
+			</div>
+		</div>
+	</template>
+
+	<script>
+		var created = function () {
+			onionConsole.launchService('onion-login-provider');
+		};
+
+		var login = function () {
+			var username = document.querySelector('#username').value;
+			var password = document.querySelector('#password').value;
+            
+            onionConsole.services['onion-login-provider'].login(username, password);
+		};
+		
+		Polymer({
+			is: 'onion-login',
+			created: created,
+            login: login
+		});
+	</script>
+</dom-module>

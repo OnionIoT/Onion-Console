@@ -21,7 +21,7 @@
     "iron-dropdown": "PolymerElements/iron-dropdown#~1.0.4",
     "iron-image": "PolymerElements/iron-image#~1.0.2",
     "iron-icons": "PolymerElements/iron-icons#~1.0.3",
-	"iron-ajax": "PolymerElements/iron-ajax#^1.0.0",
-	"iron-signals": "PolymerElements/iron-signals#^1.0.2"
+    "iron-signals": "PolymerElements/iron-signals#^1.0.2",
+    "iron-ajax": "PolymerElements/iron-ajax#~1.0.4"
   }
 }

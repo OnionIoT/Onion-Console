@@ -2,10 +2,6 @@
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 
-<link rel="import" href="./onion-login.html">
-<link rel="import" href="./onion-launcher.html">
-<link rel="import" href="../services/onion-apps-provider.html">
-
 <dom-module id="onion-console">
 	<style>
 		:host {
@@ -15,36 +11,41 @@
 			overflow: hidden;
 		}
 
+		#appContainer {
+			width: 100%;
+			height: 100%;
+		}
 	</style>
 
 	<template>
-		<iron-pages id="consoleContainer" attr-for-selected="id" selected="{{currentApp}}">
-			<onion-login id="onin-login"></onion-login>
-			<onion-launcher id="onion-launcher" apps="{{apps}}"></onion-launcher>
-		</iron-pages>
+		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
+		<div id="serviceContainer" class="hidden"></div>
 	</template>
 
 	<script>
 		'use strict';
 
-		var ready = function () {
-			this.currentApp = 'onion-launcher';
-			this.apps = document.createElement('onion-apps-provider').getApps();
+		var services = {};
+
+		var launchService = function (serviceId, callback) {
+			callback = callback || this.noop;
+
+			if (!services[serviceId]) {
+				this.importHref(['/services/' + serviceId + '.html'], function () {
+					var serviceElement = document.createElement(serviceId);
+					Polymer.dom(this.$.serviceContainer).appendChild(serviceElement);
+
+					services[serviceId] = serviceElement;
+
+					callback.call(this);
+				});
+			}
 		};
 
-		var testListener = function (e) {
-			// this.launchApp(e.detail);
-			console.log(e.detail);
-		};
-
-		var launchApp = function (e) {
-			var	appId = e.detail.appId;
-
+		var launchApp = function (appId) {
 			if (this.$.appContainer.querySelector(appId)) {
 				this.currentApp = appId;
 			} else {
-				// var self = this;
-
 				this.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
 					var appElement = document.createElement(appId);
 					appElement.setAttribute('id', appId);
@@ -55,15 +56,30 @@
 			}
 		};
 
+		var ready = function () {
+			window.onionConsole = this;
+
+			this.launchService('onion-login-provider');
+
+			this.launchService('onion-apps-provider', function () {
+				this.apps = this.services['onion-apps-provider'].getApps();
+			});
+
+			this.launchApp('onion-login');
+		};
+
+		var testListener = function (e) {
+			// this.launchApp(e.detail);
+			console.log(e.detail);
+		};
+
 		Polymer({
 			is: 'onion-console',
+			noop: function () {},
 			ready: ready,
 			launchApp: launchApp,
-			listeners:{
-				'launchApp': 'launchApp'
-			}
+			launchService: launchService,
+			services: services
 		});
-
 	</script>
-
 </dom-module>
