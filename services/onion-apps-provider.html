@@ -1,4 +1,5 @@
 <link rel="import" href="../lib/polymer/polymer.html">
+import shared service
 
 <dom-model id="onion-apps-provider">
 	<script>
@@ -13,7 +14,7 @@
                 installed: true
             },
             {       
-                id: 'omega-settings',
+                id: 'onion-settings',
                 name: 'Settings',
                 category: 'General',
                 icon: '../images/icons/settings.png',
@@ -173,6 +174,14 @@
         var getApps = function () {
             return apps;
         };
+
+        var setData = function(val){
+            document.mydata = val;
+        }
+
+        var getData = function(){
+            return document.mydata;
+        }
 
 		Polymer({
             is: "onion-apps-provider",

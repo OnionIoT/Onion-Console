@@ -1,0 +1,73 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/views/onion-framework.html">
+<link rel="import" href="/lib/iron-pages/iron-pages.html">
+
+<link rel="import" href="./onion-setting-home.html">
+<link rel="import" href="./onion-setting-update.html">
+
+
+<dom-module id="onion-settings">
+	<style>
+	</style>
+
+	<template>
+
+		<onion-app-frame title="{{title}}">
+
+			<app-tools-left>
+				<button on-click="onShowAll">Show All</button>
+			</app-tools-left>
+
+			<app-tools-right>
+				<input	placeholder="Search">
+			</app-tools-right>
+
+			<app-body>
+
+				<iron-pages id="settingContainer" attr-for-selected="id" selected="{{currentSetting}}">
+					<onion-setting-home id='onion-setting-home'></onion-setting-home>
+
+					<onion-setting-update id="onion-setting-update"></onion-setting-update>
+
+				</iron-pages>
+
+			</app-body>
+
+		</onion-app-frame>
+
+	</template>
+
+	<script>
+		'use strict';
+
+		var ready = function () {
+			this.title = "Omega Settings";
+			this.currentSetting = "onion-setting-home";
+
+		};
+
+		var onShowAll = function(){
+			this.fire("switchSetting", {settingId: "onion-setting-home"});
+		}
+
+		var switchSetting = function(e){
+
+			var settingId = e.detail.settingId;
+			this.currentSetting = settingId;
+
+		}
+
+
+		Polymer({
+			is: "onion-settings",
+			ready: ready,
+			switchSetting: switchSetting,
+			onShowAll: onShowAll,
+			listeners: {
+				switchSetting: "switchSetting"
+			}
+
+		});
+	</script>
+
+</dom-module>

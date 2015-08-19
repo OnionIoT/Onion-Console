@@ -1,0 +1,65 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+
+<dom-module id="onion-setting-update">
+	<style>
+		.content {
+			color: white;
+		}
+	</style>
+
+	<template>
+
+		<div class="content layout vertical center">
+
+
+
+			<div class="layout horizontal center">
+				<div>Model:</div> <div>{{model}}</div>
+			</div>
+
+			<div class="layout horizontal center">
+				<div>Current FW version:</div> <div>{{currentVersion}}</div>
+			</div>
+
+			<div class="layout horizontal center">
+				<div>New firmware availabe !</div>
+				<button>Upgrade</button>
+			</div>
+
+			<br>
+			<br>
+
+			<button>Factory Reset</button>
+
+
+
+
+	
+
+
+		</div>
+
+
+	</template>
+
+	<script>
+		'use strict';
+
+		var ready = function () {
+			this.model = "Onion Omega R1";
+			this.currentVersion = "v0.1.1";
+
+
+		};
+
+		Polymer({
+			is: "onion-setting-update",
+			ready: ready,
+			properties: {
+				settings: Array
+			}
+		});
+	</script>
+
+</dom-module>

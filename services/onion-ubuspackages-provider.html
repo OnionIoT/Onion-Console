@@ -4,20 +4,22 @@
     <template>
     </template>
     <script> 
+    // var host = "..";
+    var host = "http://192.168.2.147"// for debugging
 	var ubuspackages = [
 	    {
             id: 'omega-login',
-            url: '../ubus',
+            url: host+'/ubus',
             body: '{"jsonrpc":"2.0","id":1,"method":"call","params":["00000000000000000000000000000000","session","login",{"username":"{{username}}","password":"{{password}}"}]}'
         },
         {
             id: 'omega-status',
-            url: '../ubus/system.board',
+            url: host+'/ubus/system.board',
             body: '{"jsonrpc":"2.0","id":3,"method":"call","params":["{{token}}","system","board",{}]}'
         },
 		{
 		    id: 'omega-heartbeat',
-			url: '../ubus/system.access',
+			url: host+'/ubus/system.access',
 			body: '{"jsonrpc":"2.0","id":5,"method":"call","params":["{{token}}","session","access",{}]}'
 		},
 	];
