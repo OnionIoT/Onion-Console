@@ -39,14 +39,14 @@
 
 	<script>
 		var created = function () {
-			onionConsole.launchService('onion-login-provider');
+			onionConsole.launchService('onion-session-provider');
 		};
 
 		var login = function () {
 			var username = document.querySelector('#username').value;
 			var password = document.querySelector('#password').value;
             
-            onionConsole.services['onion-login-provider'].login(username, password);
+            onionConsole.services['onion-session-provider'].login(username, password);
 		};
 		
 		Polymer({

@@ -49,7 +49,7 @@
 				this.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
 					var appElement = document.createElement(appId);
 					appElement.setAttribute('id', appId);
-					Polymer.dom(this.$.consoleContainer).appendChild(appElement); 
+					Polymer.dom(this.$.appContainer).appendChild(appElement); 
 
 					this.currentApp = appId;
 				});
@@ -59,16 +59,17 @@
 		var ready = function () {
 			window.onionConsole = this;
 
-			this.launchService('onion-login-provider');
+			this.launchService('onion-session-provider');
 
 			this.launchService('onion-apps-provider', function () {
 				this.apps = this.services['onion-apps-provider'].getApps();
 			});
 
-			this.launchApp('onion-login');
+			// this.launchApp('onion-login');
+			this.launchApp('onion-launcher');
 		};
 
-		var testListener = function (e) {
+		var getService = function (e) {
 			// this.launchApp(e.detail);
 			console.log(e.detail);
 		};
@@ -79,7 +80,8 @@
 			ready: ready,
 			launchApp: launchApp,
 			launchService: launchService,
-			services: services
+			services: services,
+			getService: getService
 		});
 	</script>
 </dom-module>
