@@ -16,18 +16,17 @@
 			font-size: inherit;
 			border: none;
 			cursor: pointer;
-			font-weight: 300;
 		}
 
 		#gravatar {
 			height: 24px;
 			width: 24px;
 			border-radius: 12px;
-			margin-right: 10px;
 		}
 
 		#name {
 			font-size: 18px;
+			margin: 0 10px;
 		}
 
 		#user-menu {
@@ -49,7 +48,8 @@
 		<div on-tap="open">
             <button class="dropdown-trigger layout horizontal center">
             	<iron-image id="gravatar" preload sizing="contain" src="//www.gravatar.com/avatar/c27f67acc7d4423d41e1a18bc6c1c02a?d=mm&s=96"></iron-image>
-            	<div class="layout horizontal center">Boken Lin</div>
+            	<div id="name" class="layout horizontal center">Boken Lin</div>
+            	<div class="glyphicons glyphicons-chevron-down layout horizontal center"></div>
             </button>
         </div>
         <iron-dropdown id="dropdown" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]">
