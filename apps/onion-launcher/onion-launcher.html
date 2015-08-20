@@ -18,16 +18,27 @@
 			font-size: 18px;
 		}
 
+		#search {
+			position: relative;
+		}
+
+		#search-icon {
+			position: absolute;
+			height: 32px;
+			width: 32px;
+			right: 0;
+			text-align: center;
+			background-color: transparent;
+		}
+
 		#search-bar {
 			border: 1px rgba(255, 255, 255, 0.25) solid;
 			background-color: rgba(255, 255, 255, 0.1);
-			border-radius: 5px;
-			font-size: 15px;
-			padding: 3px 10px;
 			color: #fff;
 			-webkit-transition: background-color 0.5s, border 0.5s;
     		transition: background-color 0.5s, border 0.5s;
 		}
+
 			#search-bar:focus {
 				border: 1px rgba(255, 255, 255, 0.75) solid;
 				background-color: rgba(255, 255, 255, 0.25);
@@ -53,22 +64,23 @@
 
 	<template>
 		<div id="header" class="layout horizontal center">
-			<div id="device-id" class="flex layout horizontal start-justified center">
-				<div class="icon-onion" id="omega-icon"></div>Onion Omega 0506D6
+			<div id="device-id" class="flex-2 layout horizontal start-justified center">
+				Onion Omega 0506D6
 			</div>
 
 			<div id="search" class="flex layout horizontal center-justified">
+				<label id="search-icon" for="search-bar" class="glyphicons glyphicons-search layout horizontal center-justified center"></label>
 				<input id="search-bar" placeholder="Search" />
 			</div>
 
-			<div id="user-box" class="flex layout horizontal end-justified">
+			<div id="user-box" class="flex-2 layout horizontal end-justified">
 				<onion-userbox></onion-userbox>
 			</div>
 		</div>
 
 		<div id="launcher" class="horizontal layout wrap">
 			<template is="dom-repeat" items="{{apps}}">
-				<onion-app-icon appid="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-app-icon>
+				<onion-app-icon app-id="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-app-icon>
 			</template>
 		</div>
 
@@ -78,7 +90,7 @@
 		'use strict';
 
 		var ready = function () {
-
+			this.apps = onionConsole.apps;
 		};
 
 		Polymer({
