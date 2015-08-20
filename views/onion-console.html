@@ -65,10 +65,11 @@
 				this.apps = this.services['onion-apps-provider'].getApps();
 			});
 
+			// this.launchApp('onion-login');
 			this.launchApp('onion-launcher');
 		};
 
-		var testListener = function (e) {
+		var getService = function (e) {
 			// this.launchApp(e.detail);
 			console.log(e.detail);
 		};
@@ -79,7 +80,8 @@
 			ready: ready,
 			launchApp: launchApp,
 			launchService: launchService,
-			services: services
+			services: services,
+			getService: getService
 		});
 	</script>
 </dom-module>
