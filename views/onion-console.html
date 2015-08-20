@@ -31,13 +31,13 @@
 			callback = callback || this.noop;
 
 			if (!services[serviceId]) {
-				this.importHref(['/services/' + serviceId + '.html'], function () {
+				this.importHref(['/services/' + serviceId + '/' + serviceId+ '.html'], function () {
 					var serviceElement = document.createElement(serviceId);
 					Polymer.dom(this.$.serviceContainer).appendChild(serviceElement);
 
 					services[serviceId] = serviceElement;
 
-					callback.call(this);
+					callback(serviceElement);
 				});
 			}
 		};
@@ -59,19 +59,19 @@
 		var ready = function () {
 			window.onionConsole = this;
 
-			this.launchService('onion-session-provider');
-
-			this.launchService('onion-apps-provider', function () {
-				this.apps = this.services['onion-apps-provider'].getApps();
-			});
-
-			// this.launchApp('onion-login');
-			this.launchApp('onion-launcher');
+			this.launchApp('onion-login');
+			// this.launchApp('onion-settings');
 		};
 
-		var getService = function (e) {
-			// this.launchApp(e.detail);
-			console.log(e.detail);
+		var getService = function (serviceId, callback) {
+			console.log(services);
+			if (serviceId in services) {
+
+				callback.call(services[serviceId]);
+			}else{
+
+				this.launchService(serviceId,callback);
+			}
 		};
 
 		Polymer({
@@ -80,8 +80,8 @@
 			ready: ready,
 			launchApp: launchApp,
 			launchService: launchService,
-			services: services,
 			getService: getService
+
 		});
 	</script>
 </dom-module>

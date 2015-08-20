@@ -1,0 +1,60 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-ajax/iron-ajax.html">
+
+<dom-module id="onion-ubus-provider">
+	<template>
+		<iron-ajax id="ajax" url="{{serverUrl}}" method="POST" content-type="application/json" on-response="handelResponse" handle-as="json"></iron-ajax> 
+	</template>
+
+	<script>
+
+		var openRequests = {};
+		var requestCounter = 1;
+
+		var request = function (package, funtion, params, callback) {
+			callback = callback || function(){};
+
+		    //Remove previous session token
+			if (typeof(Storage) !== 'undefined') {
+				localStorage.removeItem('token');
+				localStorage.removeItem('alive');
+			}
+			
+			var body = {
+				jsonrpc: '2.0',
+				id: requestCounter,
+				method: 'call',
+				params: params
+			};
+
+			openRequests[requestCounter] = callback;
+
+			requestCounter += 1;
+			
+			this.$.ajax.body = JSON.stringify(body);
+			this.$.ajax.generateRequest();
+		};
+
+		var handelResponse = function(request){
+
+			var response = request.detail.response;
+			openRequests[response.id](response.result);
+
+			delete openRequests[response.id];
+		}
+
+
+		Polymer({
+			is: 'onion-ubus-provider',
+            properties: {
+            	token: String,
+            	serverUrl: {
+            		type: String,
+            		value: "http://192.168.5.5/ubus"
+            	}
+            },
+            request: request,
+            handelResponse: handelResponse
+		});
+	</script>
+</dom-module>

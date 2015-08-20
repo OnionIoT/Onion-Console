@@ -36,9 +36,9 @@
 						<label for="password">Password</label>
 						<input id="password" label="Password" type="password"></input>
 					</div>
-					<div id="msg"></div> 
+					<div id="msg">{{loginMsg}}</div> 
 					<div class="form-group">
-						<button onclick="login()" class="btn btn-success">Login</button>
+						<button on-click="login" class="btn btn-success">Login</button>
 					</div>
 				</div>
 			</div>
@@ -46,20 +46,39 @@
 	</template>
 
 	<script>
-		var created = function () {
-			onionConsole.launchService('onion-session-provider');
+		var onionLogin = null;
+
+		var ready = function () {
+			onionLogin = this;
+			onionConsole.getService('onion-session-provider', function(session){
+            	onionLogin.session = session;
+            	console.log('session updated')
+            })
+
+            this.loginMsg = "";
+			
 		};
 
 		var login = function () {
 			var username = document.querySelector('#username').value;
 			var password = document.querySelector('#password').value;
-            
-            onionConsole.services['onion-session-provider'].login(username, password);
+
+			this.session.login(username, password, function(result){
+				if (result.success){
+					onionLogin.loginMsg = "";
+					onionConsole.launchApp("onion-launcher");
+				}else {
+
+					onionLogin.loginMsg = "Login Failed!"
+
+				}
+
+			});
 		};
 		
 		Polymer({
 			is: 'onion-login',
-			created: created,
+			ready: ready,
             login: login
 		});
 	</script>

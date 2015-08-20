@@ -1,19 +1,19 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-signals/iron-signals.html">
-<link rel="import" href="/lib/iron-ajax/iron-ajax.html">
 
 <dom-module id="onion-session-provider">
-	<template>
-		<iron-ajax id="ajax" url="/ubus" method="POST" content-type="application/json" on-response="ajaxResponse" handle-as="json"></iron-ajax> 
-	</template>
-
 	<script>
-		var ajaxResponse = function (res) {
-			console.log(res);
+
+		var loginReturn = null;
+		var settionProvider = null;
+
+		var ready = function (){
+			settionProvider = this;
+			onionConsole.getService('onion-ubus-provider', function(ubus){
+				settionProvider.ubus=ubus;
+			});
 		};
 
-		var login = function (username, password) {
-		    console.log('login');
+		var login = function (username, password, callback) {
 
 		    //Remove previous session token
 			if (typeof(Storage) !== 'undefined') {
@@ -21,44 +21,50 @@
 				localStorage.removeItem('alive');
 			}
 			
-			var body = {
-				jsonrpc: '2.0',
-				id: 1,
-				method: 'call',
-				params: [
-					'00000000000000000000000000000000',
-					'session',
-					'login',
-					{
-						username: username,
-						password: password
-					}
-				]
-			};
-			
-			this.$.ajax.body = JSON.stringify(body);
-			this.$.ajax.generateRequest();
+			params =  [
+				'00000000000000000000000000000000',
+				'session',
+				'login',
+				{
+					username: username,
+					password: password
+				}
+			];
+
+			loginReturn = callback || function(){};
+			this.ubus.request("session", "login", params, setToken);
 		};
 
-		var setToken = function (e, detail, sender) {
-			if (detail.result[0] === 0) { 
-			    console.log('ajaxResponse[' + detail.result[1] + ']');
-                console.log('setToken[' + detail.result[1].ubus_rpc_session + ']');
+		var setToken = function (result) {
+
+			var returnCode = result[0];
+
+
+			if (returnCode === 0) { 
+				var token = result[1].ubus_rpc_session;
+
+                console.log('session token: ' + token);
 				if (typeof(Storage) !== 'undefined') {
-					localStorage.setItem('token', detail.result[1].ubus_rpc_session);
+					localStorage.setItem('token', token);
 					localStorage.setItem('alive', true);
 				    startHeartbeat(10000);
 				}
-				this.fire("launchApp", {appId: "onion-launcher"})
+
+				settionProvider.ubus.token = token;
+				console.log(settionProvider.ubus);
+
+				loginReturn({success: true});
+
 			} else {
-			    document.querySelector('#msg').innerHTML = 'Login failed!';
 			    console.log('Login failed!');
+
+			    loginReturn({success: false});
 			}
 		};
 	
 		var heartbeat = function () {
 		    if (isAlive) {
-		        document.querySelector('#onion-ajax-service').query('omega-heartbeat', {});
+		        // document.querySelector('#onion-ajax-service').query('omega-heartbeat', {});
 			}
 		}; 
 			 
@@ -107,10 +113,11 @@
 		
 		Polymer({
 			is: 'onion-session-provider',
+			ready: ready,
             login: login,
 			logout: logout,
 			setToken: setToken,
-			setAlive: setAlive
+			setAlive: setAlive,
 		});
 	</script>
 </dom-module>
