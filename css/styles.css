@@ -23,7 +23,11 @@ input:focus,
 select:focus,
 textarea:focus,
 button:focus {
-    outline: none;
+    outline: none!important;
+}
+
+input:focus,
+textarea:focus {
     border-color: #6cabe8;
 }
 
