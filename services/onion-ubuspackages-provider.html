@@ -4,8 +4,8 @@
     <template>
     </template>
     <script> 
-    // var host = "..";
-    var host = "http://192.168.5.5"// for debugging
+    var host = "..";
+    //var host = "http://192.168.2.147"// for debugging
 	var ubuspackages = [
 	    {
             id: 'omega-login',
@@ -22,8 +22,23 @@
 			url: host+'/ubus/system.access',
 			body: '{"jsonrpc":"2.0","id":5,"method":"call","params":["{{token}}","session","access",{}]}'
 		},
-	];
-	
+		{
+		    id: 'onion-mac',
+			url: host+'/ubus',
+		    body: '{"jsonrpc":"2.0","id":41,"method":"call","params":["{{token}}","iwinfo","assoclist",{"device":"wlan0"}]}',
+		},
+        {
+            id: 'onion-ip',
+            url: host+'/ubus',
+            body: '{"jsonrpc":"2.0","id":34,"method":"call","params":["{{token}}","network.interface","dump",{}]}',
+        },
+        {
+            id: 'onion-rxtx',
+            url: host+'/ubus',
+            body: '{"jsonrpc":"2.0","id":55,"method":"call","params":["{{token}}","network.device","status",{}]}'			
+		},
+		];
+		
     Polymer({ 
 		is: 'onion-ubuspackages-provider', 
 		properties: {

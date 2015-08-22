@@ -1,0 +1,118 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/views/onion-framework.html">
+<link rel="import" href="/lib/iron-pages/iron-pages.html">
+
+<dom-module id="onion-status">
+	<style>
+	</style>
+	<template>
+		<onion-app-frame title="{{title}}">
+			<app-tools-left>
+				<button on-click="onLeftButton">Left Tool</button>
+			</app-tools-left>
+
+			<app-tools-right>
+				<button on-click="onRightButton">Right Tool</button>
+			</app-tools-right>
+
+			<app-body>
+				<div id="mac"></div>
+				<div id="ip"></div>
+				<div id="rx"></div>
+				<div id="tx"></div>
+			</app-body>
+
+		</onion-app-frame>
+		<iron-signals on-iron-signal-onion-mac="setMAC"></iron-signals>
+		<iron-signals on-iron-signal-onion-ip="setIP"></iron-signals>
+		<iron-signals on-iron-signal-onion-rxtx="setRxTx"></iron-signals>
+	</template>
+	<script>
+		'use strict';
+		var refreshInterval;
+		var ready = function() {
+			this.title = "Omega Status";
+			updateStatus();
+            refresh(10000);
+		};
+		
+		var onLeftButton = function () {
+			alert('left button pressed');
+		};
+
+		var onRightButton = function () {
+			alert('right button pressed');
+		};
+
+	    var refresh = function (interval) {
+		    this.refreshInterval = setInterval(function () {
+		    	updateStatus()
+		    }, interval);
+		};
+		
+		var updateStatus = function() {
+		    document.querySelector('#onion-ajax-service').query('onion-mac', {});
+		};
+		
+	    var setMAC = function(e, detail, sender) {
+		    console.log("set Status");
+			if (detail!==null&&detail.result!==null&&detail.result[0] === 0) { 
+				document.querySelector('#mac').innerHTML = 'MAC: '+detail.result[1].results[0].mac;
+			} else {
+			    document.querySelector('#msg').innerHTML = 'MAC: ---';
+			    console.log('Set MAC address fail!');
+			}
+		    document.querySelector('#onion-ajax-service').query('onion-ip', {});
+		};
+		
+		var setIP = function(e, detail, sender) {
+		    console.log("setIP");
+			document.querySelector('#ip').innerHTML = 'IP: ';
+
+			if(detail!=null&&detail.result!=null&&detail.result[0]===0) {
+			   //var temp=getValues(detail.result[1].interface[2],"ipv4-address");
+			   //console.log(temp);
+			   console.log(detail);
+			}
+			else
+			{
+			    document.querySelector('#ip').innerHTML = 'IP: ---';
+				console.log('Set IP address fail!');
+			}
+			document.querySelector('#onion-ajax-service').query('onion-rxtx', {});
+			
+		};
+		
+		var setRxTx = function(e, detail, sender) {
+		    console.log("setRxTx");
+			document.querySelector('#rx').innerHTML = 'RX: ';
+			document.querySelector('#rx').innerHTML = 'TX: ';
+			
+			if(detail!=null&&detail.result!=null&&detail.result[0]===0) {
+			   console.log('ajaxResponse[' + detail.result[1].wlan0.statistics.rx_bytes+']');
+			   console.log('ajaxResponse[' + detail.result[1].wlan0.statistics.tx_bytes+']');
+			   document.querySelector('#rx').innerHTML = 'RX: '+ detail.result[1].wlan0.statistics.rx_bytes;
+			   document.querySelector('#tx').innerHTML = 'TX: '+ detail.result[1].wlan0.statistics.tx_bytes;
+			}
+			else
+			{
+			    document.querySelector('#rx').innerHTML = 'RX: ---';
+			    document.querySelector('#tx').innerHTML = 'TX: ---';
+				console.log('Set RXTX address fail!');
+			}
+		};
+			
+		Polymer({
+			is: "onion-status",
+			ready: ready,
+			onLeftButton: onLeftButton,
+			onRightButton: onRightButton,
+			refresh: refresh,
+			updateStatus: updateStatus,
+			setMAC: setMAC,
+			setIP: setIP,
+			setRxTx: setRxTx,
+		});
+	</script>
+
+</dom-module>
