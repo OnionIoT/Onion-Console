@@ -1,0 +1,19 @@
+#!/bin/bash
+
+rm -rf dist
+mkdir dist
+cp -r apps css fonts helpers images index.html lib services views dist
+
+find dist -name "*bower*" -exec rm -rf {} \;
+find dist -name "demo" -exec rm -rf {} \;
+find dist -name "test" -exec rm -rf {} \;
+find dist -name "*.md" -exec rm -rf {} \;
+find dist -name "LICENSE*" -exec rm -rf {} \;
+find dist -name "COPYING*" -exec rm -rf {} \;
+find dist -name "package.json" -exec rm -rf {} \;
+find dist -name ".git*" -exec rm -rf {} \;
+find dist -name ".DS_Store" -exec rm -rf {} \;
+
+scp -r dist/* root@192.168.5.13:/www
+
+rm -rf dist
