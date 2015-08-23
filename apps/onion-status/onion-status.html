@@ -32,8 +32,15 @@
 		var refreshInterval;
 		var ready = function() {
 			this.title = "Omega Status";
-			updateStatus();
-            refresh(10000);
+			// updateStatus();
+   //          refresh(10000);
+
+            var onionStatus = this;
+
+            onionConsole.getService("onion-device-provider", function(deviceProvider){
+            	onionStatus.deviceProvider = deviceProvider;
+            	deviceProvider.update();
+            });
 		};
 		
 		var onLeftButton = function () {
@@ -51,7 +58,8 @@
 		};
 		
 		var updateStatus = function() {
-		    document.querySelector('#onion-ajax-service').query('onion-mac', {});
+		    // document.querySelector('#onion-ajax-service').query('onion-mac', {});
+		    this.deviceProvider.update();
 		};
 		
 	    var setMAC = function(e, detail, sender) {

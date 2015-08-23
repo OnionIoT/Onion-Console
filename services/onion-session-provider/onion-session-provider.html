@@ -14,50 +14,34 @@
 		};
 
 		var login = function (username, password, callback) {
-
-		    //Remove previous session token
-			if (typeof(Storage) !== 'undefined') {
-				localStorage.removeItem('token');
-				localStorage.removeItem('alive');
-			}
+			params =  {
+				username: username,
+				password: password
+			};
 			
-			params =  [
-				'00000000000000000000000000000000',
-				'session',
-				'login',
-				{
-					username: username,
-					password: password
-				}
-			];
-
 			loginReturn = callback || function(){};
 			this.ubus.request("session", "login", params, setToken);
 		};
 
 		var setToken = function (result) {
 
+
+			if ("error" in result){
+				loginReturn({success: false});
+				return;
+			}
+
 			var returnCode = result[0];
 
 
 			if (returnCode === 0) { 
 				var token = result[1].ubus_rpc_session;
-
                 console.log('session token: ' + token);
-				if (typeof(Storage) !== 'undefined') {
-					localStorage.setItem('token', token);
-					localStorage.setItem('alive', true);
-				    startHeartbeat(10000);
-				}
-
 				settionProvider.ubus.token = token;
-				console.log(settionProvider.ubus);
-
 				loginReturn({success: true});
 
 			} else {
 			    console.log('Login failed!');
-
 			    loginReturn({success: false});
 			}
 		};

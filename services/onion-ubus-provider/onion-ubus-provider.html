@@ -11,7 +11,7 @@
 		var openRequests = {};
 		var requestCounter = 1;
 
-		var request = function (package, funtion, params, callback) {
+		var request = function (pkg, funct, params, callback) {
 			callback = callback || function(){};
 
 		    //Remove previous session token
@@ -24,11 +24,10 @@
 				jsonrpc: '2.0',
 				id: requestCounter,
 				method: 'call',
-				params: params
+				params: [this.token, pkg, funct, params]
 			};
 
 			openRequests[requestCounter] = callback;
-
 			requestCounter += 1;
 			
 			this.$.ajax.body = JSON.stringify(body);
@@ -36,10 +35,15 @@
 		};
 
 		var handelResponse = function(request){
-
 			var response = request.detail.response;
-			openRequests[response.id](response.result);
 
+			if ("error" in response){
+				openRequests[response.id]({error: response.error});
+				console.log(response.error);
+
+			}else{
+				openRequests[response.id](response.result);
+			}
 			delete openRequests[response.id];
 		}
 
@@ -47,7 +51,10 @@
 		Polymer({
 			is: 'onion-ubus-provider',
             properties: {
-            	token: String,
+            	token: {
+            		type: String,
+            		value: "00000000000000000000000000000000"
+            	},
             	serverUrl: {
             		type: String,
             		value: "http://192.168.5.5/ubus"

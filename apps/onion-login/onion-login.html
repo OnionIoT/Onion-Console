@@ -52,7 +52,6 @@
 			onionLogin = this;
 			onionConsole.getService('onion-session-provider', function(session){
             	onionLogin.session = session;
-            	console.log('session updated')
             })
 
             this.loginMsg = "";
@@ -60,7 +59,8 @@
 		};
 
 		var login = function () {
-			var username = document.querySelector('#username').value;
+			// var username = document.querySelector('#username').value;
+			var username = this.$.username.value;
 			var password = document.querySelector('#password').value;
 
 			this.session.login(username, password, function(result){

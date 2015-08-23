@@ -64,10 +64,9 @@
 		};
 
 		var getService = function (serviceId, callback) {
-			console.log(services);
 			if (serviceId in services) {
 
-				callback.call(services[serviceId]);
+				callback(services[serviceId]);
 			}else{
 
 				this.launchService(serviceId,callback);
