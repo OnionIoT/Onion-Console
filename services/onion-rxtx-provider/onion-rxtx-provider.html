@@ -1,0 +1,43 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="onion-rxtx-provider">
+	<script>
+	    var rxtxResult=null;
+		var rxtxProvider = null;
+		
+		var ready = function (){
+			rxtxProvider = this;
+			onionConsole.getService('onion-ubus-provider', function(ubus){
+				rxtxProvider.ubus=ubus;
+			});
+		};
+
+		var getRxTx = function (callback) {
+			params =  {};
+			rxtxResult = callback || this.noop;
+			this.ubus.request("network.device", "status", params, setResult);
+		};
+
+		var setResult = function (result) {
+			var returnCode = result[0];
+			if (returnCode === 0) { 
+			    var rx=result[1].wlan0.statistics.rx_bytes;
+				var tx=result[1].wlan0.statistics.tx_bytes
+			    console.log('rx['+rx+']');
+			    console.log('tx['+tx+']');
+                rxtxResult([{receive: rx},{send: tx}]);
+			} else {
+			    console.log('Login failed!')
+				rxtxResult({});
+			}
+		};
+	
+		Polymer({
+			is: 'onion-rxtx-provider',
+			noop: function () {},
+			ready: ready,
+			getRxTx: getRxTx,
+			setResult: setResult,
+		});
+	</script>
+</dom-module>
