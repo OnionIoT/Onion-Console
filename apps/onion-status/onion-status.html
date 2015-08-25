@@ -1,0 +1,304 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/views/onion-framework.html">
+<link rel="import" href="/lib/iron-pages/iron-pages.html">
+
+<dom-module id="onion-status">
+	<style>
+	    :host {
+				display: block;
+				height: 100%;
+				width: 100%;
+				background-color: #f2f2f2;
+		}
+
+		h4 {
+			margin-bottom: 10px;
+		}
+
+		table {
+		    width: 100%;
+		}
+		
+		td {
+		    width: 33%;
+		}
+		#statusContainer {
+			height: 100%;
+			width: 100%;
+			padding: 25px;
+			padding-top: 50px;
+			margin-top: -50px;
+			overflow: auto;
+		}
+
+		.status-group {
+			background-color: #fff;
+			margin: 25px auto;
+			margin-top: 10px;
+			padding: 25px;
+			width: 600px;
+			border-radius: 5px;
+			line-height: 40px;
+			border-top: 2px solid #313338;
+			border-top-left-radius: 0;
+			border-top-right-radius: 0;
+		}
+		
+		.status-group:last-child {
+			margin-bottom: 0;
+		}
+
+		.status-field {
+			border-top: 1px solid #ddd;
+		}
+
+		.wrapper {
+			width: 600px;
+			margin: 0 auto;
+		}
+
+		.online {
+			background-color: #5db85c;
+			border-radius: 5px;
+			color: #fff;
+			padding: 5px 10px;
+			font-weight: 600;
+		}
+
+		.offline {
+			background-color: #ff0000;
+			border-radius: 5px;
+			color: #fff;
+			padding: 5px 10px;
+			font-weight: 600;
+			visibility: hidden;
+
+		}
+		
+		.status-group button {
+			font-size: 14px;
+			background-color: #637ca5;
+			color: #fff;
+			border: 1px solid #42536d;
+			border-radius: 5px;
+			padding: 5px 10px;
+			cursor: pointer;
+		}
+		
+		.status-group button:hover, .status-group button:active, .status-group button:focus {
+			background-color: #52698f;
+		}
+	</style>
+	<template>
+		<onion-app-frame title="{{title}}">
+			<app-tools-left>
+				<button on-click="onLeftButton">Left Tool</button>
+			</app-tools-left>
+
+			<app-tools-right>
+				<button on-click="onRightButton">Right Tool</button>
+			</app-tools-right>
+
+			<app-body>
+				<!--div id="ip"></div-->
+				<div class="wrapper">
+						<h4>General Status</h4>
+						<div class="status-group" vertical layout>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Status</td><td><span id="online" class="online">Online</span><span id="offline" class="offline">Offline</span></td><td></td>
+                                    </tr>
+                                </table>						
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Address</td><td>192.168.1.116</td><td></td></tr>
+                                </table>
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Netmask</td><td>255.255.255.0</td><td></td></tr>
+                                </table>
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>MAC Address</td><td>{{mac}}</td><td></td></tr>
+                                </table>
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Received</td><td>{{received}}</td><td></td></tr>
+                                </table>
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Transmitted</td><td>{{transmitted}}</td><td></td></tr>
+                                </table>
+							</div>
+						</div>
+
+						<h4>Interactive Status</h4>
+						<div class="status-group" vertical layout>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Blink</td><td><button>Identify Device</button></td><td></td></tr>
+                                </table>
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>OLED Status</td><td><button>Display status on OLED</button></td><td></td></tr>
+                                </table>
+							</div>
+						</div>
+					</div>
+				</div>				
+			</app-body>
+		</onion-app-frame>
+	</template>
+	<script>
+		'use strict';
+		var onionStatus=null;
+		var refreshInterval=null;
+		var ready = function() {
+			this.title = "Device Status";
+            onionStatus = this;
+            
+			//Get MAC Address
+			onionConsole.getService("onion-mac-provider", function(macProvider) {
+			    onionStatus.macProvider=macProvider;
+				macProvider.getMAC(function(result) {
+					//onionStatus.$.mac.innerHTML='MAC: '+result.mac;
+					onionStatus.mac=result.mac;
+				});
+			});
+			
+			//Get IP Address, NetMask
+			onionConsole.getService("onion-ip-provider", function(ipProvider) {
+			    onionStatus.ipProvider=ipProvider;
+				ipProvider.getIP(function(result) {
+				    var available=result[0].available;
+					if(available==true)
+					{
+					    onionStatus.$.online.style.visibility='visible';
+						onionStatus.$.offline.style.visibility='hidden';
+					}
+					else
+				    {
+						onionStatus.$.online.style.visibility='hidden';
+						onionStatus.$.offline.style.visibility='visible';
+				    }
+					
+					onionStatus.ip='--';
+				});
+			});
+			
+			//Get Receive and Send Bytes
+			onionConsole.getService("onion-rxtx-provider", function(rxtxProvider){
+            	onionStatus.rxtxProvider = rxtxProvider;
+				//rxtxProvider.getRxTx(function(result){
+			    //console.log("rxtxResult["+result+"]");
+				//console.log("rxResult["+result[0].receive+"]");
+				//console.log("rxResult["+result[1].send+"]");
+				updateStatus();	
+				refresh(1000);
+			    //});
+			});
+		     
+		};
+		
+	    var refresh = function (interval) {
+		    refreshInterval = setInterval(function () {
+		    	updateStatus()
+		    }, interval);
+		};
+		
+		
+		
+		var updateStatus = function() {
+		    rxtxProvider.getRxTx(function(result){
+				//onionStatus.$.rx.innerHTML = 'RX: '+ result[0].receive;
+				//onionStatus.$.tx.innerHTML = 'TX: '+ result[1].send;
+				console.log("rxResult["+result[0].received+"]");
+				console.log("txResult["+result[1].transmitted+"]");
+				onionStatus.received=result[0].received+"kB";
+				onionStatus.transmitted=result[1].transmitted+"kB";					
+			});
+		};
+		
+		var onLeftButton = function () {
+			alert('left button pressed');
+			this.rxtxProvider.getRxTx(function(result){
+				    console.log("rxtxResult["+result+"]");
+			});
+		};
+
+		var onRightButton = function () {
+			alert('right button pressed');
+		};
+
+
+		
+		/*
+	    var setMAC = function(e, detail, sender) {
+		    console.log("set Status");
+			if (detail!==null&&detail.result!==null&&detail.result[0] === 0) { 
+				document.querySelector('#mac').innerHTML = 'MAC: '+detail.result[1].results[0].mac;
+			} else {
+			    document.querySelector('#msg').innerHTML = 'MAC: ---';
+			    console.log('Set MAC address fail!');
+			}
+		    document.querySelector('#onion-ajax-service').query('onion-ip', {});
+		};
+		
+		var setIP = function(e, detail, sender) {
+		    console.log("setIP");
+			document.querySelector('#ip').innerHTML = 'IP: ';
+
+			if(detail!=null&&detail.result!=null&&detail.result[0]===0) {
+			   //var temp=getValues(detail.result[1].interface[2],"ipv4-address");
+			   //console.log(temp);
+			   console.log(detail);
+			}
+			else
+			{
+			    document.querySelector('#ip').innerHTML = 'IP: ---';
+				console.log('Set IP address fail!');
+			}
+			document.querySelector('#onion-ajax-service').query('onion-rxtx', {});
+			
+		};
+		
+		var setRxTx = function(e, detail, sender) {
+		    console.log("setRxTx");
+			document.querySelector('#rx').innerHTML = 'RX: ';
+			document.querySelector('#rx').innerHTML = 'TX: ';
+			
+			
+			if(detail!=null&&detail.result!=null&&detail.result[0]===0) {
+			   console.log('ajaxResponse[' + detail.result[1].wlan0.statistics.rx_bytes+']');
+			   console.log('ajaxResponse[' + detail.result[1].wlan0.statistics.tx_bytes+']');
+			   document.querySelector('#rx').innerHTML = 'RX: '+ detail.result[1].wlan0.statistics.rx_bytes;
+			   document.querySelector('#tx').innerHTML = 'TX: '+ detail.result[1].wlan0.statistics.tx_bytes;
+			}
+			else
+			{
+			    document.querySelector('#rx').innerHTML = 'RX: ---';
+			    document.querySelector('#tx').innerHTML = 'TX: ---';
+				console.log('Set RXTX address fail!');
+			}
+		};
+		*/
+		Polymer({
+			is: "onion-status",
+			ready: ready,
+			onLeftButton: onLeftButton,
+			onRightButton: onRightButton,
+			refresh: refresh,
+			updateStatus: updateStatus,
+			//setMAC: setMAC,
+			//setIP: setIP,
+			//setRxTx: setRxTx,
+		});
+	</script>
+
+</dom-module>

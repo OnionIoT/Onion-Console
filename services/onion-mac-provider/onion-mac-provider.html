@@ -1,0 +1,41 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="onion-mac-provider">
+	<script>
+	    var macResult=null;
+		var macProvider = null;
+		
+		var ready = function (){
+			macProvider = this;
+			onionConsole.getService('onion-ubus-provider', function(ubus){
+				macProvider.ubus=ubus;
+			});
+		};
+
+		var getMAC = function (callback) {
+			params =  {"device":"wlan0"};
+			macResult = callback || this.noop;
+			this.ubus.request("iwinfo", "assoclist", params, setResult);
+		};
+
+		var setResult = function (result) {
+			var returnCode = result[0];
+			if (returnCode === 0) { 
+			    var mac=result[1].results[0].mac;
+			    console.log('MAC['+mac+']');
+			    macResult({mac: mac});
+			} else {
+			    console.log('Login failed!')
+				macResult({});
+			}
+		};
+	
+		Polymer({
+			is: 'onion-mac-provider',
+			noop: function () {},
+			ready: ready,
+			getMAC: getMAC,
+			setResult: setResult,
+		});
+	</script>
+</dom-module>

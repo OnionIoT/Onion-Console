@@ -1,0 +1,58 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="onion-device-provider">
+	<script>
+
+		var deviceProvider = null;
+
+		var ready = function (){
+			deviceProvider = this;
+			onionConsole.getService('onion-ubus-provider', function(ubus){
+				deviceProvider.ubus=ubus;
+			});
+		};
+
+		var update = function () {
+
+			params =  {};
+			this.ubus.request("network.device", "status", params, function(result){
+				console.log(result);
+			});
+		};
+
+		var setToken = function (result) {
+
+			var returnCode = result[0];
+
+
+			if (returnCode === 0) { 
+				var token = result[1].ubus_rpc_session;
+
+                console.log('session token: ' + token);
+				if (typeof(Storage) !== 'undefined') {
+					localStorage.setItem('token', token);
+					localStorage.setItem('alive', true);
+				    startHeartbeat(10000);
+				}
+
+				settionProvider.ubus.token = token;
+				console.log(settionProvider.ubus);
+
+				loginReturn({success: true});
+
+			} else {
+			    console.log('Login failed!');
+
+			    loginReturn({success: false});
+			}
+		};
+	
+
+		
+		Polymer({
+			is: 'onion-device-provider',
+			ready: ready,
+			update: update,
+		});
+	</script>
+</dom-module>

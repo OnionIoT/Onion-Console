@@ -13,7 +13,6 @@
 		></iron-ajax> 
 	    <onion-ubuspackages-provider id="onion-ubuspackages-provider"></onion-ubuspackages-provider>
     </template>
-    
     <script> 
 		var query = function(operation, params) {
 		    this.operation=operation;
@@ -24,11 +23,11 @@
 			if(operation=='omega-login')
 			{
 				var username=params.username;
-				//console.log(username);
+				console.log(username);
 				var password=params.password;
-				//console.log(password);
+				console.log(password);
 				var body=ubuspackage.body.replace('{{username}}', username).replace('{{password}}', password); 
-				//console.log('omega-login: body['+body+']');				
+				console.log('omega-login: body['+body+']');				
 				this.$.ajax.url=url;
 				this.$.ajax.body=body;
 				this.$.ajax.generateRequest();
@@ -43,6 +42,36 @@
 				this.$.ajax.body=body;
 				this.$.ajax.generateRequest();
 			} 
+			else if(operation=='onion-mac')
+			{
+			    var token=localStorage.getItem('token');
+				//console.log('omega-status: token['+token+']');
+				var body=ubuspackage.body.replace('{{token}}', token);
+				//console.log('omega-status: body['+body+']');
+				this.$.ajax.url=url;
+				this.$.ajax.body=body;
+				this.$.ajax.generateRequest();
+			}	
+			else if(operation=='onion-ip')
+			{
+			    var token=localStorage.getItem('token');
+				//console.log('omega-status: token['+token+']');
+				var body=ubuspackage.body.replace('{{token}}', token);
+				//console.log('omega-status: body['+body+']');
+				this.$.ajax.url=url;
+				this.$.ajax.body=body;
+				this.$.ajax.generateRequest();
+			}
+			else if(operation=='onion-rxtx')
+			{
+			    var token=localStorage.getItem('token');
+				//console.log('omega-status: token['+token+']');
+				var body=ubuspackage.body.replace('{{token}}', token);
+				//console.log('omega-status: body['+body+']');
+				this.$.ajax.url=url;
+				this.$.ajax.body=body;
+				this.$.ajax.generateRequest();
+			}			
 			else if(operation=='omega-heartbeat')
 			{
 				var token=localStorage.getItem('token');
@@ -52,12 +81,6 @@
 				this.$.ajax.url=url;
 				this.$.ajax.body=body;
 				this.$.ajax.generateRequest();
-			}
-			else if(operation=='omega-logout')
-			{
-				if(typeof(Storage) != 'undefined') {
-					localStorage.setItem('token', '');
-				}
 			}
 		};
 		
@@ -70,7 +93,7 @@
 		Polymer({ 
 			is: 'onion-ajax-service', 
 			query: query,
-			ajaxResponse: ajaxResponse
+			ajaxResponse: ajaxResponse,
 		});
     </script>
 </dom-module>
