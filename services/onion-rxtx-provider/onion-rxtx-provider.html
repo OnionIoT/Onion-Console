@@ -20,12 +20,14 @@
 
 		var setResult = function (result) {
 			var returnCode = result[0];
-			if (returnCode === 0) { 
+			if (returnCode === 0) {  
 			    var rx=result[1].wlan0.statistics.rx_bytes;
-				var tx=result[1].wlan0.statistics.tx_bytes
+				var receivedkB=(parseInt(rx)/1000).toFixed(0);
+				var tx=result[1].wlan0.statistics.tx_bytes;
+				var transmittedkB=(parseInt(tx)/1000).toFixed(0);
 			    console.log('rx['+rx+']');
 			    console.log('tx['+tx+']');
-                rxtxResult([{receive: rx},{send: tx}]);
+                rxtxResult([{received: receivedkB},{transmitted: transmittedkB}]);
 			} else {
 			    console.log('Login failed!')
 				rxtxResult({});

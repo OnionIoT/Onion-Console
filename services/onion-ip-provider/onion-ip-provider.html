@@ -1,0 +1,44 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="onion-ip-provider">
+	<script>
+	    var ipResult=null;
+		var ipProvider = null;
+		
+		var ready = function (){
+			ipProvider = this;
+			onionConsole.getService('onion-ubus-provider', function(ubus){
+				ipProvider.ubus=ubus;
+			});
+		};
+
+		var getIP = function (callback) {
+			params =  {};
+			ipResult = callback || this.noop;
+			this.ubus.request("network.interface", "dump", params, setResult);
+		};
+
+		var setResult = function (result) {
+			var returnCode = result[0];
+			if (returnCode === 0) { 
+			     var available=result[1].interface[2].available;
+				 var ip="";
+			    //var rx=result[1].wlan0.statistics.rx_bytes;
+				//var tx=result[1].wlan0.statistics.tx_bytes
+			    console.log([{available: available},{ip: ip}]);
+				ipResult([{available: available},{ip: ip}]);
+			} else {
+			    console.log('Login failed!')
+				ipResult({});
+			}
+		};
+	
+		Polymer({
+			is: 'onion-ip-provider',
+			noop: function () {},
+			ready: ready,
+			getIP: getIP,
+			setResult: setResult,
+		});
+	</script>
+</dom-module>
