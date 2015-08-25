@@ -2,14 +2,13 @@
 
 <dom-module id="onion-session-provider">
 	<script>
-
 		var loginReturn = null;
-		var settionProvider = null;
+		var sessionProvider = null;
 
-		var ready = function (){
-			settionProvider = this;
-			onionConsole.getService('onion-ubus-provider', function(ubus){
-				settionProvider.ubus=ubus;
+		var ready = function () {
+			sessionProvider = this;
+			onionConsole.getService('onion-ubus-provider', function (ubus) {
+				sessionProvider.ubus = ubus;
 			});
 		};
 
@@ -31,14 +30,13 @@
 				}
 			];
 
-			loginReturn = callback || function(){};
-			this.ubus.request("session", "login", params, setToken);
+			loginReturn = callback || function () {};
+			this.ubus.request('session', 'login', params, setToken);
 		};
 
 		var setToken = function (result) {
 
 			var returnCode = result[0];
-
 
 			if (returnCode === 0) { 
 				var token = result[1].ubus_rpc_session;
@@ -50,8 +48,8 @@
 				    startHeartbeat(10000);
 				}
 
-				settionProvider.ubus.token = token;
-				console.log(settionProvider.ubus);
+				sessionProvider.ubus.token = token;
+				console.log(sessionProvider.ubus);
 
 				loginReturn({success: true});
 

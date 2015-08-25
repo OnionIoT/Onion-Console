@@ -12,7 +12,7 @@
 		var requestCounter = 1;
 
 		var request = function (package, funtion, params, callback) {
-			callback = callback || function(){};
+			callback = callback || function () {};
 
 		    //Remove previous session token
 			if (typeof(Storage) !== 'undefined') {
@@ -35,8 +35,7 @@
 			this.$.ajax.generateRequest();
 		};
 
-		var handelResponse = function(request){
-
+		var handelResponse = function (request) {
 			var response = request.detail.response;
 			openRequests[response.id](response.result);
 
