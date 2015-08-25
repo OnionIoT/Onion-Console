@@ -23,9 +23,7 @@
 		};
 
 		var setToken = function (result) {
-
-
-			if ("error" in result){
+			if ('error' in result) {
 				loginReturn({success: false});
 				return;
 			}
@@ -36,7 +34,7 @@
 				var token = result[1].ubus_rpc_session;
                 console.log('session token: ' + token);
 
-				settionProvider.ubus.token = token;
+				sessionProvider.ubus.token = token;
 				loginReturn({success: true});
 
 			} else {

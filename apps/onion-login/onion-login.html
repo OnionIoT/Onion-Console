@@ -2,6 +2,7 @@
 <link rel="import" href="/lib/iron-signals/iron-signals.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/services/onion-ubuspackages-provider.html">
+<link rel="import" href="/views/bootstrap-alert/bootstrap-alert.html">
 
 <dom-module id="onion-login">
 	<style>
@@ -10,36 +11,37 @@
 			width: 100%;
 		}
 
-		#login-box {
-			width: 320px;
-			border-color: transparent;
-		}
-
 		#login-container {
 			height: 100%;
 			width: 100%;
+		}
+
+		#login-box {
+			width: 320px;
+			background-color: #fff;
 		}
 	</style>
 
 	<template>
 		<div id="login-container" class="layout horizontal center-justified center">
-			<div id="login-box" class="panel panel-default">
-				<div class="panel-heading">
-					<h3 class="panel-title">Login</h3>
+			<div class="card" id="login-box">
+				<div class="card-header">
+					Login
 				</div>
-				<div class="panel-body">
-					<div class="form-group">
-						<label for="username">Username</label>
-						<input type="text" id="username" label="Username"></input>
-					</div>
-					<div class="form-group">
-						<label for="password">Password</label>
-						<input id="password" label="Password" type="password"></input>
-					</div>
-					<div id="msg">{{loginMsg}}</div> 
-					<div class="form-group">
-						<button on-click="login" class="btn btn-success">Login</button>
-					</div>
+				<div class="card-block">
+					<form on-submit="login">
+						<fieldset class="form-group">
+							<label for="username">Username</label>
+							<input type="text" class="form-control" id="username">
+						</fieldset>
+						<fieldset class="form-group">
+							<label for="password">Password</label>
+							<input type="password" class="form-control" id="password">
+						</fieldset>
+						<div id="messageContainer"></div> 
+						
+						<button type="submit" class="btn btn-success">Login</button>
+					</form>
 				</div>
 			</div>
 		</div>
@@ -50,27 +52,27 @@
 
 		var ready = function () {
 			onionLogin = this;
-			onionConsole.getService('onion-session-provider', function(session){
+			onionConsole.getService('onion-session-provider', function (session) {
             	onionLogin.session = session;
-            })
-
-            this.loginMsg = "";
-			
+            });
 		};
 
-		var login = function () {
+		var login = function (e) {
+			e.preventDefault();
+
 			// var username = document.querySelector('#username').value;
 			var username = this.$.username.value;
 			var password = document.querySelector('#password').value;
 
-			this.session.login(username, password, function(result){
-				if (result.success){
-					onionLogin.loginMsg = "";
-					onionConsole.launchApp("onion-launcher");
+			this.session.login(username, password, function (result) {
+				if (result.success) {
+					onionConsole.launchApp('onion-launcher');
 				} else {
+					var alertElement = document.createElement('bootstrap-alert');
+					alertElement.setAttribute('warning', true);
+					alertElement.setAttribute('message', 'Login failed.');
 
-					onionLogin.loginMsg = "Login Failed!"
-
+					Polymer.dom(onionLogin.$.messageContainer).appendChild(alertElement);
 				}
 
 			});

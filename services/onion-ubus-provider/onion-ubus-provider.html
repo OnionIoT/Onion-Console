@@ -7,7 +7,6 @@
 	</template>
 
 	<script>
-
 		var openRequests = {};
 		var requestCounter = 1;
 
@@ -45,7 +44,7 @@
 				openRequests[response.id](response.result);
 			}
 			delete openRequests[response.id];
-		}
+		};
 
 
 		Polymer({
@@ -57,7 +56,7 @@
             	},
             	serverUrl: {
             		type: String,
-            		value: 'http://192.168.5.5/ubus'
+            		value: window.location.origin + '/ubus'
             		// value: "/ubus"
 
             	}
