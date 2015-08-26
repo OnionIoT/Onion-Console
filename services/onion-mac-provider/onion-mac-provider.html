@@ -5,15 +5,15 @@
 	    var macResult=null;
 		var macProvider = null;
 		
-		var ready = function (){
+		var ready = function () {
 			macProvider = this;
-			onionConsole.getService('onion-ubus-provider', function(ubus){
-				macProvider.ubus=ubus;
+			onionConsole.getService('onion-ubus-provider', function (ubus) {
+				macProvider.ubus = ubus;
 			});
 		};
 
 		var getMAC = function (callback) {
-			params =  {"device":"wlan0"};
+			params =  {"device": "wlan0"};
 			macResult = callback || this.noop;
 			this.ubus.request("iwinfo", "assoclist", params, setResult);
 		};
@@ -21,8 +21,8 @@
 		var setResult = function (result) {
 			var returnCode = result[0];
 			if (returnCode === 0) { 
-			    var mac=result[1].results[0].mac;
-			    console.log('MAC['+mac+']');
+			    var mac = result[1].results[0].mac;
+			    console.log('MAC[' + mac + ']');
 			    macResult({mac: mac});
 			} else {
 			    console.log('Login failed!')

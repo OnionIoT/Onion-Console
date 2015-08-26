@@ -1,15 +1,22 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/lib/iron-image/iron-image.html">
-<link rel="import" href="./onion-app-icon.html">
-<link rel="import" href="./onion-userbox.html">
+<link rel="import" href="/bootstrap-elements/bootstrap-dropdown/bootstrap-dropdown.html">
 <link rel="import" href="/fonts/glyphicons.html">
-<link rel="import" href="/fonts/onion.html">
+<link rel="import" href="onion-launcher-icon.html">
 
 <dom-module id="onion-launcher">
 	<style>
+		:host {
+			--dropdown-toggle-theme: {
+				background-color: transparent;
+				border: none;
+				color: #fff;
+				padding-right: 0;
+			};
+		}
+
 		#header {
-			height: 50px;
+			height: 75px;
 			color: #fff;
 			padding: 0 20px;
 		}
@@ -24,63 +31,73 @@
 
 		#search-icon {
 			position: absolute;
-			height: 32px;
-			width: 32px;
+			height: 38px;
+			width: 30px;
 			right: 0;
 			text-align: center;
 			background-color: transparent;
+			padding-bottom: 0;
 		}
 
 		#search-bar {
 			border: 1px rgba(255, 255, 255, 0.25) solid;
 			background-color: rgba(255, 255, 255, 0.1);
 			color: #fff;
-			-webkit-transition: background-color 0.5s, border 0.5s;
-    		transition: background-color 0.5s, border 0.5s;
+			/* -webkit-transition: background-color 0.5s, border 0.5s;
+    		transition: background-color 0.5s, border 0.5s; */
 		}
 
 			#search-bar:focus {
 				border: 1px rgba(255, 255, 255, 0.75) solid;
 				background-color: rgba(255, 255, 255, 0.25);
 			}
-			::-webkit-input-placeholder {
+			#search-bar::-webkit-input-placeholder {
 				color: rgba(255, 255, 255, 0.5);
 			}
-			:-moz-placeholder {
+			#search-bar:-moz-placeholder {
 			   color: rgba(255, 255, 255, 0.5);
 			}
-			::-moz-placeholder {
+			#search-bar::-moz-placeholder {
 			   color: rgba(255, 255, 255, 0.5);
 			}
-			:-ms-input-placeholder {  
+			#search-bar:-ms-input-placeholder {  
 			   color: rgba(255, 255, 255, 0.5);
 			}
 
-		#omega-icon {
-			font-size: 24px;
-			margin-right: 10px;
+		#status {
+			display: inline-block;
+			color: #5cb85c;
+			font-size: 2em;
+			line-height: 18px;
+			vertical-align: middle;
+			margin-right: 5px;
 		}
  	</style>
 
 	<template>
 		<div id="header" class="layout horizontal center">
-			<div id="device-id" class="flex-2 layout horizontal start-justified center">
-				Onion Omega 0506D6
-			</div>
+			<div class="flex-2 layout horizontal"></div>
 
 			<div id="search" class="flex layout horizontal center-justified">
 				<label id="search-icon" for="search-bar" class="glyphicons glyphicons-search layout horizontal center-justified center"></label>
-				<input id="search-bar" placeholder="Search" />
+				<input id="search-bar" class="form-control" placeholder="Search" />
 			</div>
 
-			<div id="user-box" class="flex-2 layout horizontal end-justified">
-				<onion-userbox></onion-userbox>
+			<div class="flex-2 layout horizontal end-justified">
+				<bootstrap-dropdown right>
+					<span class="toggle"><span id="status">&bull;</span><span>{{hostname}}</span></span>
+					<div class="menu">
+						<a class="dropdown-item" href="#">Log Out</a>
+						<a class="dropdown-item" href="#">Shutdown</a>
+						<a class="dropdown-item" href="#">Restart</a>
+					</div>
+				</bootstrap-dropdown>
 			</div>
 		</div>
 
 		<div id="launcher" class="horizontal layout wrap">
 			<template is="dom-repeat" items="{{apps}}">
-				<onion-app-icon app-id="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-app-icon>
+				<onion-launcher-icon app-id="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-launcher-icon>
 			</template>
 		</div>
 
@@ -93,9 +110,21 @@
 			// this.apps = onionConsole.apps;
 			var onionLauncher = this;
 
-			onionConsole.getService("onion-apps-provider", function(appsProvider){
+			onionConsole.getService("onion-apps-provider", function (appsProvider) {
 				onionLauncher.appsProvider = appsProvider;
 				onionLauncher.apps = appsProvider.getApps();
+			});
+
+			onionConsole.getService('onion-ubus-provider', function (ubus) {
+				var params = {
+					config: 'system',
+					section: '@system[0]',
+					option: 'hostname'
+				};
+
+				ubus.request('uci', 'get', params, function (result) {
+					onionLauncher.hostname = result[1].value;
+				});
 			});
 		};
 
@@ -103,7 +132,8 @@
 			is: 'onion-launcher',
 			ready: ready,
 			properties: {
-				apps: Array
+				apps: Array,
+				hostname: String
 			}
 		});
 	</script>

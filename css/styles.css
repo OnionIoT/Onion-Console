@@ -17,10 +17,6 @@ button:focus {
     outline: none!important;
 }
 
-label {
-	font-weight: 700;
-}
-
 #loading {
     position: absolute;
     width: 150px;
@@ -34,4 +30,3 @@ label {
     color: #fff;
     font-weight: inherit;
 }
-
