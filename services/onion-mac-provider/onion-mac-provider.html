@@ -15,18 +15,22 @@
 		var getMAC = function (callback) {
 			params =  {"device": "wlan0"};
 			macResult = callback || this.noop;
-			this.ubus.request("iwinfo", "assoclist", params, setResult);
+			this.ubus.request("iwinfo", "assoclist", params, setMACResult);
 		};
 
-		var setResult = function (result) {
+		var setMACResult = function (result) {
 			var returnCode = result[0];
 			if (returnCode === 0) { 
-			    var mac = result[1].results[0].mac;
-			    console.log('MAC[' + mac + ']');
-			    macResult({mac: mac});
+			    if (result[1]!==null && result[1].results[0]!==null && result[1].results[0].mac!=null) {
+			        var mac = result[1].results[0].mac;
+			        console.log('MAC[' + mac + ']');
+					macResult({mac:mac});
+			    } else {
+				    macResult({mac: ''});    
+				}
 			} else {
-			    console.log('Login failed!')
-				macResult({});
+			    console.log('Failed to get MAC address!')
+				macResult({mac: ''});
 			}
 		};
 	
@@ -35,7 +39,7 @@
 			noop: function () {},
 			ready: ready,
 			getMAC: getMAC,
-			setResult: setResult,
+			setMACResult: setMACResult,
 		});
 	</script>
 </dom-module>

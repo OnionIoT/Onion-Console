@@ -112,12 +112,12 @@
 							</div>
 							<div class="status-field" horizontal layout>
 								<table>
-                                    <tr><td>Address</td><td>192.168.1.116</td><td></td></tr>
+                                    <tr><td>Address</td><td>{{ip}}</td><td></td></tr>
                                 </table>
 							</div>
 							<div class="status-field" horizontal layout>
 								<table>
-                                    <tr><td>Netmask</td><td>255.255.255.0</td><td></td></tr>
+                                    <tr><td>Netmask</td><td>{{netmask}}</td><td></td></tr>
                                 </table>
 							</div>
 							<div class="status-field" horizontal layout>
@@ -127,12 +127,12 @@
 							</div>
 							<div class="status-field" horizontal layout>
 								<table>
-                                    <tr><td>Received</td><td>{{received}}</td><td></td></tr>
+                                    <tr><td>Received (kB)</td><td>{{received}}</td><td></td></tr>
                                 </table>
 							</div>
 							<div class="status-field" horizontal layout>
 								<table>
-                                    <tr><td>Transmitted</td><td>{{transmitted}}</td><td></td></tr>
+                                    <tr><td>Transmitted (kB)</td><td>{{transmitted}}</td><td></td></tr>
                                 </table>
 							</div>
 						</div>
@@ -158,7 +158,9 @@
 	<script>
 		'use strict';
 		var onionStatus=null;
-		var refreshInterval=null;
+		var refreshRxTxInterval=null;
+		var refreshStatusInterval=null;
+		var locked=false;
 		var ready = function() {
 			this.title = "Device Status";
             onionStatus = this;
@@ -167,7 +169,6 @@
 			onionConsole.getService("onion-mac-provider", function(macProvider) {
 			    onionStatus.macProvider=macProvider;
 				macProvider.getMAC(function(result) {
-					//onionStatus.$.mac.innerHTML='MAC: '+result.mac;
 					onionStatus.mac=result.mac;
 				});
 			});
@@ -176,54 +177,61 @@
 			onionConsole.getService("onion-ip-provider", function(ipProvider) {
 			    onionStatus.ipProvider=ipProvider;
 				ipProvider.getIP(function(result) {
-				    var available=result[0].available;
-					if(available==true)
-					{
+					if(result[0].available===true) {
 					    onionStatus.$.online.style.visibility='visible';
 						onionStatus.$.offline.style.visibility='hidden';
-					}
-					else
-				    {
-						onionStatus.$.online.style.visibility='hidden';
-						onionStatus.$.offline.style.visibility='visible';
+					} else {
+					    onionStatus.$.online.style.visibility='hidden';
+					    onionStatus.$.offline.style.visibility='visible';
 				    }
-					
-					onionStatus.ip='--';
+				    onionStatus.ip=result[1].ip;
+					onionStatus.netmask=result[2].netmask;
 				});
 			});
 			
 			//Get Receive and Send Bytes
 			onionConsole.getService("onion-rxtx-provider", function(rxtxProvider){
             	onionStatus.rxtxProvider = rxtxProvider;
-				//rxtxProvider.getRxTx(function(result){
-			    //console.log("rxtxResult["+result+"]");
-				//console.log("rxResult["+result[0].receive+"]");
-				//console.log("rxResult["+result[1].send+"]");
-				updateStatus();	
-				refresh(1000);
-			    //});
-			});
-		     
+				updateRxTx();
+				refreshRxTx(5000);
+			}); 
 		};
 		
-	    var refresh = function (interval) {
-		    refreshInterval = setInterval(function () {
-		    	updateStatus()
+	    var refreshRxTx = function (interval) {
+		    refreshRxTxInterval = setInterval(function () {
+		    	updateRxTx()
 		    }, interval);
 		};
 		
-		
-		
-		var updateStatus = function() {
+		var updateRxTx = function() {
 		    rxtxProvider.getRxTx(function(result){
-				//onionStatus.$.rx.innerHTML = 'RX: '+ result[0].receive;
-				//onionStatus.$.tx.innerHTML = 'TX: '+ result[1].send;
 				console.log("rxResult["+result[0].received+"]");
 				console.log("txResult["+result[1].transmitted+"]");
-				onionStatus.received=result[0].received+"kB";
-				onionStatus.transmitted=result[1].transmitted+"kB";					
+				onionStatus.received=result[0].received;
+				onionStatus.transmitted=result[1].transmitted;							
 			});
 		};
+		
+		/*
+		var refreshStatus = function (interval) {
+		    refreshStatusInterval = setInterval(function () {
+			    updateStatus()
+			}, interval);
+		};
+
+		var updateStatus = function() {
+		  	ipProvider.getIP(function(result) {
+				if(result[0].available===true) {
+				    onionStatus.$.online.style.visibility='visible';
+					onionStatus.$.offline.style.visibility='hidden';
+				} else {
+				    onionStatus.$.online.style.visibility='hidden';
+				    onionStatus.$.offline.style.visibility='visible';
+			    }
+				onionStatus.ip=result[1].ip;
+			});
+		};
+		*/
 		
 		var onLeftButton = function () {
 			alert('left button pressed');
@@ -234,71 +242,18 @@
 
 		var onRightButton = function () {
 			alert('right button pressed');
+			updateStatus();
 		};
 
-
-		
-		/*
-	    var setMAC = function(e, detail, sender) {
-		    console.log("set Status");
-			if (detail!==null&&detail.result!==null&&detail.result[0] === 0) { 
-				document.querySelector('#mac').innerHTML = 'MAC: '+detail.result[1].results[0].mac;
-			} else {
-			    document.querySelector('#msg').innerHTML = 'MAC: ---';
-			    console.log('Set MAC address fail!');
-			}
-		    document.querySelector('#onion-ajax-service').query('onion-ip', {});
-		};
-		
-		var setIP = function(e, detail, sender) {
-		    console.log("setIP");
-			document.querySelector('#ip').innerHTML = 'IP: ';
-
-			if(detail!=null&&detail.result!=null&&detail.result[0]===0) {
-			   //var temp=getValues(detail.result[1].interface[2],"ipv4-address");
-			   //console.log(temp);
-			   console.log(detail);
-			}
-			else
-			{
-			    document.querySelector('#ip').innerHTML = 'IP: ---';
-				console.log('Set IP address fail!');
-			}
-			document.querySelector('#onion-ajax-service').query('onion-rxtx', {});
-			
-		};
-		
-		var setRxTx = function(e, detail, sender) {
-		    console.log("setRxTx");
-			document.querySelector('#rx').innerHTML = 'RX: ';
-			document.querySelector('#rx').innerHTML = 'TX: ';
-			
-			
-			if(detail!=null&&detail.result!=null&&detail.result[0]===0) {
-			   console.log('ajaxResponse[' + detail.result[1].wlan0.statistics.rx_bytes+']');
-			   console.log('ajaxResponse[' + detail.result[1].wlan0.statistics.tx_bytes+']');
-			   document.querySelector('#rx').innerHTML = 'RX: '+ detail.result[1].wlan0.statistics.rx_bytes;
-			   document.querySelector('#tx').innerHTML = 'TX: '+ detail.result[1].wlan0.statistics.tx_bytes;
-			}
-			else
-			{
-			    document.querySelector('#rx').innerHTML = 'RX: ---';
-			    document.querySelector('#tx').innerHTML = 'TX: ---';
-				console.log('Set RXTX address fail!');
-			}
-		};
-		*/
 		Polymer({
 			is: "onion-status",
 			ready: ready,
 			onLeftButton: onLeftButton,
 			onRightButton: onRightButton,
-			refresh: refresh,
-			updateStatus: updateStatus,
-			//setMAC: setMAC,
-			//setIP: setIP,
-			//setRxTx: setRxTx,
+			refreshRxTx: refreshRxTx,
+			updateRxTx: updateRxTx,
+			//refreshStatus: refreshStatus,
+			//updateStatus: updateStatus,
 		});
 	</script>
-
 </dom-module>

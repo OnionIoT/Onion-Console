@@ -15,22 +15,31 @@
 		var getRxTx = function (callback) {
 			params =  {};
 			rxtxResult = callback || this.noop;
-			this.ubus.request("network.device", "status", params, setResult);
+			this.ubus.request("network.device", "status", params, setRxTxResult);
 		};
 
-		var setResult = function (result) {
+		var setRxTxResult = function (result) {
 			var returnCode = result[0];
+			var receivedkB = 0;
+			var transmittedkB = 0;
 			if (returnCode === 0) {  
 			    var rx=result[1].wlan0.statistics.rx_bytes;
-				var receivedkB=(parseInt(rx)/1000).toFixed(0);
+				receivedkB=parseInt(rx);
+				if(receivedkB>0) {
+				    receivedkB=(receivedkB/1000).toFixed(0);
+				}
 				var tx=result[1].wlan0.statistics.tx_bytes;
-				var transmittedkB=(parseInt(tx)/1000).toFixed(0);
-			    console.log('rx['+rx+']');
-			    console.log('tx['+tx+']');
+				transmittedkB=parseInt(tx);
+				if(transmittedkB>0) {
+				    transmittedkB=(transmittedkB/1000).toFixed(0);
+				}
+			    console.log('receivedkB['+receivedkB+']');
+			    console.log('transmittedkB['+transmittedkB+']');
                 rxtxResult([{received: receivedkB},{transmitted: transmittedkB}]);
 			} else {
-			    console.log('Login failed!')
-				rxtxResult({});
+			    console.log('Failed to get received bytes and transmitted bytes!')
+				rxtxResult([{received:''},{transmitted:''}]);
+
 			}
 		};
 	
@@ -39,7 +48,7 @@
 			noop: function () {},
 			ready: ready,
 			getRxTx: getRxTx,
-			setResult: setResult,
+			setRxTxResult: setRxTxResult,
 		});
 	</script>
 </dom-module>

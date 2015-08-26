@@ -15,21 +15,25 @@
 		var getIP = function (callback) {
 			params =  {};
 			ipResult = callback || this.noop;
-			this.ubus.request("network.interface", "dump", params, setResult);
+			this.ubus.request("network.interface", "dump", params, setIPResult);
 		};
 
-		var setResult = function (result) {
+		var setIPResult = function (result) {
 			var returnCode = result[0];
-			if (returnCode === 0) { 
-			     var available=result[1].interface[2].available;
-				 var ip="";
-			    //var rx=result[1].wlan0.statistics.rx_bytes;
-				//var tx=result[1].wlan0.statistics.tx_bytes
-			    console.log([{available: available},{ip: ip}]);
-				ipResult([{available: available},{ip: ip}]);
+			var available = false;
+			var ip = '-';
+			var netmask = '-';
+			if (returnCode === 0) {
+                if(result[1]!==null&&result[1].interface[2]!==null&&result[1].interface[2].available!==null) {
+			        available=result[1].interface[2].available;
+			        console.log('available['+available+']');
+				    ipResult([{available: available},{ip: ip},{netmask: netmask}]);
+				} else {
+				    ipResult([{available: available},{ip: ip},{netmask: netmask}]);
+				}
 			} else {
-			    console.log('Login failed!')
-				ipResult({});
+			    console.log('Failed to get IP address!')
+				ipResult([{available: available},{ip: ip},{netmask: netmask}]);
 			}
 		};
 	
@@ -38,7 +42,7 @@
 			noop: function () {},
 			ready: ready,
 			getIP: getIP,
-			setResult: setResult,
+			setIPResult: setIPResult,
 		});
 	</script>
 </dom-module>
