@@ -33,28 +33,32 @@
 	</template>
 
 	<script>
-		var launchApp = function () {
-			onionConsole.launchApp(this.appId);
-		};
+		'use strict';
 
-		Polymer({
-			is: 'onion-launcher-icon',
-			launchApp: launchApp,
-			properties: {
-				icon: {
-					type: String,
-					valute: "",
-				},
-				title: {
-					type: String,
-					valute: "Untitled",
-				},
-				appId: {
-					type: String,
-					value: ""
+		(function () {
+			var launchApp = function () {
+				onionConsole.launchApp(this.appId);
+			};
+
+			Polymer({
+				is: 'onion-launcher-icon',
+				launchApp: launchApp,
+				properties: {
+					icon: {
+						type: String,
+						valute: "",
+					},
+					title: {
+						type: String,
+						valute: "Untitled",
+					},
+					appId: {
+						type: String,
+						value: ""
+					}
+
 				}
-
-			}
-		});
+			});
+        })();
 	</script>
 </dom-module>

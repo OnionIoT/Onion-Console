@@ -2,7 +2,7 @@
 
 rm -rf dist
 mkdir dist
-cp -r bootstrap-elements apps css fonts helpers images index.html lib services views dist
+cp -r elements apps fonts helpers images index.html lib services views dist
 
 find dist -name "*bower*" -exec rm -rf {} \; 2>&1
 find dist -name "demo" -exec rm -rf {} \; 2>&1

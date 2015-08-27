@@ -5,190 +5,191 @@ import shared service
 	<script>
         'use strict';
 
-        var apps = [
-			{
-                id: 'onion-app-template',
-                name: 'App Template',
-                category: 'Utility',
-                icon: '../images/icons/coffee.png',
-                installed: true
-            },
-            {       
-                id: 'onion-settings',
-                name: 'Settings',
-                category: 'General',
-                icon: '../images/icons/settings.png',
-                installed: true
-            },
+        (function () {
+            var apps = [
+                {
+                    id: 'onion-app-template',
+                    name: 'App Template',
+                    category: 'Utility',
+                    icon: '../images/icons/coffee.png',
+                    installed: true
+                },
+                {       
+                    id: 'onion-settings',
+                    name: 'Settings',
+                    category: 'General',
+                    icon: '../images/icons/settings.png',
+                    installed: true
+                },
 
-            {
-                id: 'onion-status',
-                name: 'Device Status',
-                category: 'General',
-                icon: '../images/icons/status.png',
-                installed: true
-            },
+                {
+                    id: 'onion-status',
+                    name: 'Device Status',
+                    category: 'General',
+                    icon: '../images/icons/status.png',
+                    installed: true
+                },
 
-            // {
-            //     id: 'omega-terminal',
-            //     name: 'Terminal',
-            //     category: 'Utility',
-            //     icon: '../images/icons/terminal.png',
-            //     installed: true
-            // },
-            // {
-            //     id: 'demo-webcam',
-            //     name: 'Webcam',
-            //     category: 'Demos',
-            //     icon: '../images/icons/webcam.png',
-            //     installed: true
-            // },
-            // {
-            //     id: 'demo-robotic-arm',
-            //     name: 'Robotic Arm',
-            //     category: 'Demo',
-            //     icon: '../images/icons/robotic-arm.png',
-            //     installed: true
-            // },
-            // {
-            //     id: 'demo-neopixels',
-            //     name: 'NeoPixels',
-            //     category: 'Demo',
-            //     icon: '../images/icons/led-matrix.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'omega-editor',
-            //     name: 'Text Editor',
-            //     category: 'Utility',
-            //     icon: '../images/icons/pen-icon.png',
-            //     installed: true
-            // },
-            // {
-            //     id: 'file-browser',
-            //     name: 'File Browser',
-            //     category: 'General',
-            //     icon: '../images/icons/file-browser.png',
-            //     installed: false
-            // },
+                // {
+                //     id: 'omega-terminal',
+                //     name: 'Terminal',
+                //     category: 'Utility',
+                //     icon: '../images/icons/terminal.png',
+                //     installed: true
+                // },
+                // {
+                //     id: 'demo-webcam',
+                //     name: 'Webcam',
+                //     category: 'Demos',
+                //     icon: '../images/icons/webcam.png',
+                //     installed: true
+                // },
+                // {
+                //     id: 'demo-robotic-arm',
+                //     name: 'Robotic Arm',
+                //     category: 'Demo',
+                //     icon: '../images/icons/robotic-arm.png',
+                //     installed: true
+                // },
+                // {
+                //     id: 'demo-neopixels',
+                //     name: 'NeoPixels',
+                //     category: 'Demo',
+                //     icon: '../images/icons/led-matrix.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'omega-editor',
+                //     name: 'Text Editor',
+                //     category: 'Utility',
+                //     icon: '../images/icons/pen-icon.png',
+                //     installed: true
+                // },
+                // {
+                //     id: 'file-browser',
+                //     name: 'File Browser',
+                //     category: 'General',
+                //     icon: '../images/icons/file-browser.png',
+                //     installed: false
+                // },
 
-            // {
-            //     id: 'onion-app-store',
-            //     name: 'App Store',
-            //     category: 'General',
-            //     icon: '../images/icons/app-store.png',
-            //     installed: true,
-            //     hidden: true
-            // },
-            // {
-            //     id: 'door-lock',
-            //     name: 'Door Lock',
-            //     category: 'Security',
-            //     icon: '../images/icons/locked-icon.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'thermal-printer',
-            //     name: 'Thermal Printer',
-            //     category: 'Demo',
-            //     icon: '../images/icons/print-icon.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'networking-tools',
-            //     name: 'Networking Tools',
-            //     category: 'Networking',
-            //     icon: '../images/icons/networking.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'coffee-maker',
-            //     name: 'Omega Coffee Maker',
-            //     category: 'Food & Drinks',
-            //     icon: '../images/icons/coffee.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'radiant-heater',
-            //     name: 'Radiant Heater',
-            //     category: 'Demo',
-            //     icon: '../images/icons/heater.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'motorized-skateboard',
-            //     name: 'Motorized Skateboard',
-            //     category: 'Demo',
-            //     icon: '../images/icons/skateboard.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'lawn-sprinkler',
-            //     name: 'Lawn Sprinkler',
-            //     category: 'Demo',
-            //     icon: '../images/icons/water.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'lights',
-            //     name: 'Lights',
-            //     category: 'Demo',
-            //     icon: '../images/icons/bulb-icon.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'bed-buzzer',
-            //     name: 'Bed Buzzer Alarm',
-            //     category: 'Health',
-            //     icon: '../images/icons/bed-buzzer.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'auto-off',
-            //     name: 'Auto Off',
-            //     category: 'Utility',
-            //     icon: '../images/icons/on-off.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'wifi-range-extender',
-            //     name: 'WiFi Range Extender',
-            //     category: 'Networking',
-            //     icon: '../images/icons/wifi-range-extender.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'power-outlet',
-            //     name: 'Power Outlet',
-            //     category: 'Utility',
-            //     icon: '../images/icons/outlet.png',
-            //     installed: false
-            // },
-            // {
-            //     id: 'firewall',
-            //     name: 'Firewall',
-            //     category: 'Security',
-            //     icon: '../images/icons/firewall.png',
-            //     installed: false
-            // },
-        ];
+                // {
+                //     id: 'onion-app-store',
+                //     name: 'App Store',
+                //     category: 'General',
+                //     icon: '../images/icons/app-store.png',
+                //     installed: true,
+                //     hidden: true
+                // },
+                // {
+                //     id: 'door-lock',
+                //     name: 'Door Lock',
+                //     category: 'Security',
+                //     icon: '../images/icons/locked-icon.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'thermal-printer',
+                //     name: 'Thermal Printer',
+                //     category: 'Demo',
+                //     icon: '../images/icons/print-icon.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'networking-tools',
+                //     name: 'Networking Tools',
+                //     category: 'Networking',
+                //     icon: '../images/icons/networking.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'coffee-maker',
+                //     name: 'Omega Coffee Maker',
+                //     category: 'Food & Drinks',
+                //     icon: '../images/icons/coffee.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'radiant-heater',
+                //     name: 'Radiant Heater',
+                //     category: 'Demo',
+                //     icon: '../images/icons/heater.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'motorized-skateboard',
+                //     name: 'Motorized Skateboard',
+                //     category: 'Demo',
+                //     icon: '../images/icons/skateboard.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'lawn-sprinkler',
+                //     name: 'Lawn Sprinkler',
+                //     category: 'Demo',
+                //     icon: '../images/icons/water.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'lights',
+                //     name: 'Lights',
+                //     category: 'Demo',
+                //     icon: '../images/icons/bulb-icon.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'bed-buzzer',
+                //     name: 'Bed Buzzer Alarm',
+                //     category: 'Health',
+                //     icon: '../images/icons/bed-buzzer.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'auto-off',
+                //     name: 'Auto Off',
+                //     category: 'Utility',
+                //     icon: '../images/icons/on-off.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'wifi-range-extender',
+                //     name: 'WiFi Range Extender',
+                //     category: 'Networking',
+                //     icon: '../images/icons/wifi-range-extender.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'power-outlet',
+                //     name: 'Power Outlet',
+                //     category: 'Utility',
+                //     icon: '../images/icons/outlet.png',
+                //     installed: false
+                // },
+                // {
+                //     id: 'firewall',
+                //     name: 'Firewall',
+                //     category: 'Security',
+                //     icon: '../images/icons/firewall.png',
+                //     installed: false
+                // },
+            ];
 
-        var getApps = function () {
-            return apps;
-        };
+            var getApps = function () {
+                return apps;
+            };
 
-        var setData = function(val){
-            document.mydata = val;
-        }
+            var setData = function(val){
+                document.mydata = val;
+            }
 
-        var getData = function(){
-            return document.mydata;
-        }
+            var getData = function(){
+                return document.mydata;
+            }
 
-		Polymer({
-            is: "onion-apps-provider",
-            getApps: getApps
-        });
-
+            Polymer({
+                is: "onion-apps-provider",
+                getApps: getApps
+            });
+        })();
 	</script>
 </dom-model>

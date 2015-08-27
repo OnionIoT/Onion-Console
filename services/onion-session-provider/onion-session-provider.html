@@ -2,103 +2,107 @@
 
 <dom-module id="onion-session-provider">
 	<script>
-		var loginReturn = null;
-		var sessionProvider = null;
+		'use strict';
 
-		var ready = function () {
-			sessionProvider = this;
-			onionConsole.getService('onion-ubus-provider', function (ubus) {
-				sessionProvider.ubus = ubus;
-			});
-		};
+		(function () {
+			var loginReturn = null;
+			var sessionProvider = null;
 
-		var login = function (username, password, callback) {
-			params =  {
-				username: username,
-				password: password
+			var ready = function () {
+				sessionProvider = this;
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					sessionProvider.ubus = ubus;
+				});
+			};
+
+			var login = function (username, password, callback) {
+				var params =  {
+					username: username,
+					password: password
+				};
+				
+				loginReturn = callback || function () {};
+				this.ubus.request('session', 'login', params, setToken);
+			};
+
+			var setToken = function (result) {
+				if ('error' in result) {
+					loginReturn({success: false});
+					return;
+				}
+
+				var returnCode = result[0];
+
+				if (returnCode === 0) { 
+					var token = result[1].ubus_rpc_session;
+	                console.log('session token: ' + token);
+
+					sessionProvider.ubus.token = token;
+					loginReturn({success: true});
+
+				} else {
+				    console.log('Login failed!');
+				    loginReturn({success: false});
+				}
+			};
+		
+			var heartbeat = function () {
+			    if (isAlive) {
+			        // document.querySelector('#onion-ajax-service').query('omega-heartbeat', {});
+				}
+			}; 
+				 
+			var startHeartbeat = function (interval) {
+			    this.heartbeatInterval = setInterval(function () {
+			    	heartbeat()
+			    }, interval);
 			};
 			
-			loginReturn = callback || function () {};
-			this.ubus.request('session', 'login', params, setToken);
-		};
+			var stopHeartbeat = function () {
+			    clearInterval(this.heartbeatInterval);
+				delete this.heartbeatInterval;
+			};
 
-		var setToken = function (result) {
-			if ('error' in result) {
-				loginReturn({success: false});
-				return;
-			}
+			var setAlive = function (e, detail, sender) {
+			    var alive = false;	
+				if (detail !== null && detail.result !== null && detail.result[0] === 0) {
+				    alive = true;    
+				}
+				
+				if (typeof(Storage) !== 'undefined') {
+					localStorage.setItem('alive', alive);
+				}
 
-			var returnCode = result[0];
-
-			if (returnCode === 0) { 
-				var token = result[1].ubus_rpc_session;
-                console.log('session token: ' + token);
-
-				sessionProvider.ubus.token = token;
-				loginReturn({success: true});
-
-			} else {
-			    console.log('Login failed!');
-			    loginReturn({success: false});
-			}
-		};
-	
-		var heartbeat = function () {
-		    if (isAlive) {
-		        // document.querySelector('#onion-ajax-service').query('omega-heartbeat', {});
-			}
-		}; 
-			 
-		var startHeartbeat = function (interval) {
-		    this.heartbeatInterval = setInterval(function () {
-		    	heartbeat()
-		    }, interval);
-		};
-		
-		var stopHeartbeat = function () {
-		    clearInterval(this.heartbeatInterval);
-			delete this.heartbeatInterval;
-		};
-
-		var setAlive = function (e, detail, sender) {
-		    var alive = false;	
-			if (detail !== null && detail.result !== null && detail.result[0] === 0) {
-			    alive = true;    
-			}
-			
-			if (typeof(Storage) !== 'undefined') {
-				localStorage.setItem('alive', alive);
-			}
-
-			if (alive === false) {
-			    logout();
-				//launch onion-login
-			}
-	    };
-		
-		var isAlive = function () {
-		    return 	localStorage.getItem('allive');
-		};
-		
-		var logout = function() {
-			if(this.heartbeatInterval !== null) {
-			    console.log('logout');
-				stopHeartbeat();			
-				if(typeof(Storage) !== 'undefined') {
-					localStorage.removeItem('token');
-					localStorage.removeItem('alive');
+				if (alive === false) {
+				    logout();
 					//launch onion-login
 				}
-		    }
-		};
-		
-		Polymer({
-			is: 'onion-session-provider',
-			ready: ready,
-            login: login,
-			logout: logout,
-			setToken: setToken,
-			setAlive: setAlive,
-		});
+		    };
+			
+			var isAlive = function () {
+			    return 	localStorage.getItem('allive');
+			};
+			
+			var logout = function() {
+				if(this.heartbeatInterval !== null) {
+				    console.log('logout');
+					stopHeartbeat();			
+					if(typeof(Storage) !== 'undefined') {
+						localStorage.removeItem('token');
+						localStorage.removeItem('alive');
+						//launch onion-login
+					}
+			    }
+			};
+			
+			Polymer({
+				is: 'onion-session-provider',
+				ready: ready,
+	            login: login,
+				logout: logout,
+				setToken: setToken,
+				setAlive: setAlive,
+			});
+        })();
 	</script>
 </dom-module>

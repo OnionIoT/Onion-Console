@@ -1,0 +1,66 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="../bootstrap-styles/bootstrap-alert-styles.html">
+
+<dom-module id="bootstrap-alert">
+	<template>
+		<div class$="[[_computeClass(success, info, warning, danger)]]" role="alert">
+			<content>[[message]]</content>
+			<button type="button" class="close" on-click="_close">&times;</span></button>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var _computeClass = function (success, info, warning, danger) {
+				var elementClass = 'alert';
+
+				if (danger) {
+					elementClass += ' alert-danger';
+				} else if (warning) {
+					elementClass += ' alert-warning';
+				} else if (info) {
+					elementClass += ' alert-info';
+				} else if (success) {
+					elementClass += ' alert-success';
+				}
+
+				return elementClass;
+			};
+
+			var _close = function () {
+				this.remove();
+			};
+
+			Polymer({
+	    		is: 'bootstrap-alert',
+	    		properties: {
+	    			success: {
+		    			notify: true,
+				        type: Boolean,
+				        value: false
+		    		},
+		    		info: {
+		    			notify: true,
+				        type: Boolean,
+				        value: false
+		    		},
+		    		warning: {
+		    			notify: true,
+				        type: Boolean,
+				        value: false
+		    		},
+		    		danger: {
+		    			notify: true,
+				        type: Boolean,
+				        value: false
+		    		},
+		    		message: String
+	    		},
+	    		_computeClass: _computeClass,
+	    		_close: _close
+	    	});
+        })();
+	</script>
+</dom-module>

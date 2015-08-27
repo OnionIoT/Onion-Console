@@ -13,7 +13,6 @@
 	</style>
 
 	<template>
-
 		<div class="setting-icon" on-click="switchSetting" setting-id="onion-setting-update">
 			Update &amp; Restore
 		</div>
@@ -21,33 +20,33 @@
 		<div class="setting-icon" on-click="switchSetting" setting-id="onion-setting-time">
 			Date &amp; Time
 		</div>
-
-
 	</template>
 
 	<script>
 		'use strict';
 
-		var ready = function () {
+		(function () {
+			var ready = function () {
 
-		};
+			};
 
-		var switchSetting = function switchSetting(e) {
-			console.log(e);
-			var settingId = e.target.getAttribute("setting-id");
+			var switchSetting = function switchSetting(e) {
+				console.log(e);
+				var settingId = e.target.getAttribute("setting-id");
 
-			this.fire("switchSetting", {settingId: settingId})
+				this.fire("switchSetting", {settingId: settingId})
 
-		}
-
-		Polymer({
-			is: "onion-setting-home",
-			ready: ready,
-			switchSetting: switchSetting,
-			properties: {
-				settings: Array
 			}
-		});
+
+			Polymer({
+				is: "onion-setting-home",
+				ready: ready,
+				switchSetting: switchSetting,
+				properties: {
+					settings: Array
+				}
+			});
+        })();
 	</script>
 
 </dom-module>

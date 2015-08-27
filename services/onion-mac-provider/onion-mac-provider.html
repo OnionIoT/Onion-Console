@@ -2,44 +2,57 @@
 
 <dom-module id="onion-mac-provider">
 	<script>
-	    var macResult=null;
-		var macProvider = null;
-		
-		var ready = function () {
-			macProvider = this;
-			onionConsole.getService('onion-ubus-provider', function (ubus) {
-				macProvider.ubus = ubus;
-			});
-		};
+		'use strict';
 
-		var getMAC = function (callback) {
-			params =  {"device": "wlan0"};
-			macResult = callback || this.noop;
-			this.ubus.request("iwinfo", "assoclist", params, setMACResult);
-		};
+		(function () {
+			var macResult = null;
+			var macProvider = null;
+			
+			var ready = function () {
+				macProvider = this;
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					macProvider.ubus = ubus;
+				});
+			};
 
-		var setMACResult = function (result) {
-			var returnCode = result[0];
-			if (returnCode === 0) { 
-			    if (result[1]!==null && result[1].results[0]!==null && result[1].results[0].mac!=null) {
-			        var mac = result[1].results[0].mac;
-			        console.log('MAC[' + mac + ']');
-					macResult({mac:mac});
-			    } else {
-				    macResult({mac: ''});    
+			var getMAC = function (callback) {
+				var params = {
+					device: 'wlan0'
+				};
+				macResult = callback || this.noop;
+				this.ubus.request('iwinfo', 'assoclist', params, setMACResult);
+			};
+
+			var setMACResult = function (result) {
+				var returnCode = result[0];
+				if (returnCode === 0) { 
+				    if (result[1] !== null && result[1].results[0] !== null && result[1].results[0].mac !== null) {
+				        var mac = result[1].results[0].mac;
+				        console.log('MAC[' + mac + ']');
+						
+						macResult({
+							mac: mac
+						});
+				    } else {
+					    macResult({
+					    	mac: ''
+					    });    
+					}
+				} else {
+				    console.log('Failed to get MAC address!')
+					macResult({
+						mac: ''
+					});
 				}
-			} else {
-			    console.log('Failed to get MAC address!')
-				macResult({mac: ''});
-			}
-		};
-	
-		Polymer({
-			is: 'onion-mac-provider',
-			noop: function () {},
-			ready: ready,
-			getMAC: getMAC,
-			setMACResult: setMACResult,
-		});
+			};
+		
+			Polymer({
+				is: 'onion-mac-provider',
+				noop: function () {},
+				ready: ready,
+				getMAC: getMAC,
+				setMACResult: setMACResult
+			});
+        })();
 	</script>
 </dom-module>

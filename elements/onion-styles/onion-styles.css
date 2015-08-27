@@ -1,11 +1,9 @@
 html, body {
-	font-weight: 400;
 	overflow: hidden;
 }
 
 body {
-	font-family: 'Open Sans', sans-serif;
-    background-image: url('../images/bg/a.jpg');
+    background-image: url('/images/bg/a.jpg');
     background-attachment: fixed;
     background-size: cover;
 }

@@ -40,34 +40,36 @@
 	<script>
 		'use strict';
 
-		var ready = function () {
-			this.title = "Omega Settings";
-			this.currentSetting = "onion-setting-home";
+		(function () {
+			var ready = function () {
+				this.title = "Omega Settings";
+				this.currentSetting = "onion-setting-home";
 
-		};
+			};
 
-		var onShowAll = function(){
-			this.fire("switchSetting", {settingId: "onion-setting-home"});
-		}
-
-		var switchSetting = function(e){
-
-			var settingId = e.detail.settingId;
-			this.currentSetting = settingId;
-
-		}
-
-
-		Polymer({
-			is: "onion-settings",
-			ready: ready,
-			switchSetting: switchSetting,
-			onShowAll: onShowAll,
-			listeners: {
-				switchSetting: "switchSetting"
+			var onShowAll = function(){
+				this.fire("switchSetting", {settingId: "onion-setting-home"});
 			}
 
-		});
+			var switchSetting = function(e){
+
+				var settingId = e.detail.settingId;
+				this.currentSetting = settingId;
+
+			}
+
+
+			Polymer({
+				is: "onion-settings",
+				ready: ready,
+				switchSetting: switchSetting,
+				onShowAll: onShowAll,
+				listeners: {
+					switchSetting: "switchSetting"
+				}
+
+			});
+        })();
 	</script>
 
 </dom-module>

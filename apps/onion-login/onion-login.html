@@ -1,9 +1,8 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-signals/iron-signals.html">
-<link rel="import" href="/bootstrap-elements/bootstrap-styles/bootstrap-shared-styles.html">
-<link rel="import" href="/bootstrap-elements/bootstrap-alert/bootstrap-alert.html">
+<link rel="import" href="/elements/bootstrap-styles/bootstrap-shared-styles.html">
+<link rel="import" href="/elements/bootstrap-alert/bootstrap-alert.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/services/onion-ubuspackages-provider.html">
 
 <dom-module id="onion-login">
 	<style>
@@ -49,40 +48,44 @@
 	</template>
 
 	<script>
-		var onionLogin = null;
+		'use strict';
 
-		var ready = function () {
-			onionLogin = this;
-			onionConsole.getService('onion-session-provider', function (session) {
-            	onionLogin.session = session;
-            });
-		};
+		(function () {
+			var onionLogin = null;
 
-		var login = function (e) {
-			e.preventDefault();
+			var ready = function () {
+				onionLogin = this;
+				onionConsole.getService('onion-session-provider', function (session) {
+	            	onionLogin.session = session;
+	            });
+			};
 
-			// var username = document.querySelector('#username').value;
-			var username = this.$.username.value;
-			var password = document.querySelector('#password').value;
+			var login = function (e) {
+				e.preventDefault();
 
-			this.session.login(username, password, function (result) {
-				if (result.success) {
-					onionConsole.launchApp('onion-launcher');
-				} else {
-					var alertElement = document.createElement('bootstrap-alert');
-					alertElement.setAttribute('warning', true);
-					alertElement.setAttribute('message', 'Login failed.');
+				// var username = document.querySelector('#username').value;
+				var username = this.$.username.value;
+				var password = document.querySelector('#password').value;
 
-					Polymer.dom(onionLogin.$.messageContainer).appendChild(alertElement);
-				}
+				this.session.login(username, password, function (result) {
+					if (result.success) {
+						onionConsole.launchApp('onion-launcher');
+					} else {
+						var alertElement = document.createElement('bootstrap-alert');
+						alertElement.setAttribute('warning', true);
+						alertElement.setAttribute('message', 'Login failed.');
 
+						Polymer.dom(onionLogin.$.messageContainer).appendChild(alertElement);
+					}
+
+				});
+			};
+			
+			Polymer({
+				is: 'onion-login',
+				ready: ready,
+	            login: login
 			});
-		};
-		
-		Polymer({
-			is: 'onion-login',
-			ready: ready,
-            login: login
-		});
+        })();
 	</script>
 </dom-module>

@@ -46,20 +46,22 @@
 	<script>
 		'use strict';
 
-		var ready = function () {
-			this.model = "Onion Omega R1";
-			this.currentVersion = "v0.1.1";
+		(function () {
+			var ready = function () {
+				this.model = "Onion Omega R1";
+				this.currentVersion = "v0.1.1";
 
 
-		};
+			};
 
-		Polymer({
-			is: "onion-setting-update",
-			ready: ready,
-			properties: {
-				settings: Array
-			}
-		});
+			Polymer({
+				is: "onion-setting-update",
+				ready: ready,
+				properties: {
+					settings: Array
+				}
+			});
+        })();
 	</script>
 
 </dom-module>

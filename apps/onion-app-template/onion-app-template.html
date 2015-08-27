@@ -33,36 +33,38 @@
 	<script>
 		'use strict';
 
-		var ready = function () {
+		(function () {
+			var ready = function () {
 
-		};
+			};
 
-		var onAppIcon = function (e) {
-			this.onionConsole.launchApp(e.target);
-		};
+			var onAppIcon = function (e) {
+				this.onionConsole.launchApp(e.target);
+			};
 
-		var onLeftButton = function(){
-			alert('left button pressed');
-		}
-
-		var onRightButton = function(){
-			alert('right button pressed');
-		}
-
-		Polymer({
-			is: "onion-app-template",
-			ready: ready,
-			onLeftButton: onLeftButton,
-			onRightButton: onRightButton,
-			// onAppIcon: onAppIcon,
-			// onDeviceIcon: onDeviceIcon
-			properties: {
-				apps: {
-					type: Array,
-					value: []
-				}
+			var onLeftButton = function(){
+				alert('left button pressed');
 			}
-		});
+
+			var onRightButton = function(){
+				alert('right button pressed');
+			}
+
+			Polymer({
+				is: "onion-app-template",
+				ready: ready,
+				onLeftButton: onLeftButton,
+				onRightButton: onRightButton,
+				// onAppIcon: onAppIcon,
+				// onDeviceIcon: onDeviceIcon
+				properties: {
+					apps: {
+						type: Array,
+						value: []
+					}
+				}
+			});
+		})();
 	</script>
 
 </dom-module>

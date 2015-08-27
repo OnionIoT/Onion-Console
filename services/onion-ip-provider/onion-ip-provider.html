@@ -2,47 +2,51 @@
 
 <dom-module id="onion-ip-provider">
 	<script>
-	    var ipResult=null;
-		var ipProvider = null;
-		
-		var ready = function (){
-			ipProvider = this;
-			onionConsole.getService('onion-ubus-provider', function(ubus){
-				ipProvider.ubus=ubus;
-			});
-		};
+		'use strict';
 
-		var getIP = function (callback) {
-			params =  {};
-			ipResult = callback || this.noop;
-			this.ubus.request("network.interface", "dump", params, setIPResult);
-		};
+		(function () {
+			var ipResult = null;
+			var ipProvider = null;
+			
+			var ready = function () {
+				ipProvider = this;
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					ipProvider.ubus = ubus;
+				});
+			};
 
-		var setIPResult = function (result) {
-			var returnCode = result[0];
-			var available = false;
-			var ip = '-';
-			var netmask = '-';
-			if (returnCode === 0) {
-                if(result[1]!==null&&result[1].interface[2]!==null&&result[1].interface[2].available!==null) {
-			        available=result[1].interface[2].available;
-			        console.log('available['+available+']');
-				    ipResult([{available: available},{ip: ip},{netmask: netmask}]);
+			var getIP = function (callback) {
+				var params =  {};
+				ipResult = callback || this.noop;
+				this.ubus.request('network.interface', 'dump', params, setIPResult);
+			};
+
+			var setIPResult = function (result) {
+				var returnCode = result[0];
+				var available = false;
+				var ip = '-';
+				var netmask = '-';
+				if (returnCode === 0) {
+	                if (result[1] && result[1].interface[2] && result[1].interface[2].available !== null) {
+				        available = result[1].interface[2].available;
+				        console.log('available[' + available + ']');
+					    ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
+					} else {
+					    ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
+					}
 				} else {
-				    ipResult([{available: available},{ip: ip},{netmask: netmask}]);
+				    console.log('Failed to get IP address!')
+					ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
 				}
-			} else {
-			    console.log('Failed to get IP address!')
-				ipResult([{available: available},{ip: ip},{netmask: netmask}]);
-			}
-		};
-	
-		Polymer({
-			is: 'onion-ip-provider',
-			noop: function () {},
-			ready: ready,
-			getIP: getIP,
-			setIPResult: setIPResult,
-		});
+			};
+		
+			Polymer({
+				is: 'onion-ip-provider',
+				noop: function () {},
+				ready: ready,
+				getIP: getIP,
+				setIPResult: setIPResult
+			});
+        })();
 	</script>
 </dom-module>

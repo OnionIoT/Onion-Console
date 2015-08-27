@@ -2,53 +2,71 @@
 
 <dom-module id="onion-rxtx-provider">
 	<script>
-	    var rxtxResult=null;
-		var rxtxProvider = null;
+		'use strict';
+
+		(function () {
+			var rxtxResult = null;
+			var rxtxProvider = null;
+			
+			var ready = function () {
+				rxtxProvider = this;
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					rxtxProvider.ubus = ubus;
+				});
+			};
+
+			var getRxTx = function (callback) {
+				var params =  {};
+				rxtxResult = callback || this.noop;
+				this.ubus.request('network.device', 'status', params, setRxTxResult);
+			};
+
+			var setRxTxResult = function (result) {
+				var returnCode = result[0];
+				var receivedkB = 0;
+				var transmittedkB = 0;
+				
+				if (returnCode === 0) {  
+				    var rx = result[1].wlan0.statistics.rx_bytes;
+					receivedkB = parseInt(rx);
+					if(receivedkB > 0) {
+					    receivedkB = (receivedkB / 1000).toFixed(0);
+					}
+					var tx = result[1].wlan0.statistics.tx_bytes;
+					transmittedkB = parseInt(tx);
+					if(transmittedkB > 0) {
+					    transmittedkB = (transmittedkB / 1000).toFixed(0);
+					}
+				    console.log('receivedkB[' + receivedkB + ']');
+				    console.log('transmittedkB[' + transmittedkB + ']');
+	                rxtxResult([
+	                	{
+	                		received: receivedkB
+	                	},
+	                	{
+	                		transmitted: transmittedkB
+	                	}
+	                ]);
+				} else {
+				    console.log('Failed to get received bytes and transmitted bytes!');
+					rxtxResult([
+						{
+							received: ''
+						},
+						{
+							transmitted:''
+						}
+					]);
+				}
+			};
 		
-		var ready = function (){
-			rxtxProvider = this;
-			onionConsole.getService('onion-ubus-provider', function(ubus){
-				rxtxProvider.ubus=ubus;
+			Polymer({
+				is: 'onion-rxtx-provider',
+				noop: function () {},
+				ready: ready,
+				getRxTx: getRxTx,
+				setRxTxResult: setRxTxResult
 			});
-		};
-
-		var getRxTx = function (callback) {
-			params =  {};
-			rxtxResult = callback || this.noop;
-			this.ubus.request("network.device", "status", params, setRxTxResult);
-		};
-
-		var setRxTxResult = function (result) {
-			var returnCode = result[0];
-			var receivedkB = 0;
-			var transmittedkB = 0;
-			if (returnCode === 0) {  
-			    var rx=result[1].wlan0.statistics.rx_bytes;
-				receivedkB=parseInt(rx);
-				if(receivedkB>0) {
-				    receivedkB=(receivedkB/1000).toFixed(0);
-				}
-				var tx=result[1].wlan0.statistics.tx_bytes;
-				transmittedkB=parseInt(tx);
-				if(transmittedkB>0) {
-				    transmittedkB=(transmittedkB/1000).toFixed(0);
-				}
-			    console.log('receivedkB['+receivedkB+']');
-			    console.log('transmittedkB['+transmittedkB+']');
-                rxtxResult([{received: receivedkB},{transmitted: transmittedkB}]);
-			} else {
-			    console.log('Failed to get received bytes and transmitted bytes!')
-				rxtxResult([{received:''},{transmitted:''}]);
-
-			}
-		};
-	
-		Polymer({
-			is: 'onion-rxtx-provider',
-			noop: function () {},
-			ready: ready,
-			getRxTx: getRxTx,
-			setRxTxResult: setRxTxResult,
-		});
+        })();
 	</script>
 </dom-module>

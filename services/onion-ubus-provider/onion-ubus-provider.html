@@ -7,62 +7,66 @@
 	</template>
 
 	<script>
-		var openRequests = {};
-		var requestCounter = 1;
+		'use strict';
 
-		var request = function (pkg, funct, params, callback) {
-			callback = callback || function () {};
+		(function () {
+			var openRequests = {};
+			var requestCounter = 1;
 
-		    //Remove previous session token
-			if (typeof(Storage) !== 'undefined') {
-				localStorage.removeItem('token');
-				localStorage.removeItem('alive');
-			}
-			
-			var body = {
-				jsonrpc: '2.0',
-				id: requestCounter,
-				method: 'call',
-				params: [this.token, pkg, funct, params]
+			var request = function (pkg, funct, params, callback) {
+				callback = callback || function () {};
+
+			    //Remove previous session token
+				if (typeof(Storage) !== 'undefined') {
+					localStorage.removeItem('token');
+					localStorage.removeItem('alive');
+				}
+				
+				var body = {
+					jsonrpc: '2.0',
+					id: requestCounter,
+					method: 'call',
+					params: [this.token, pkg, funct, params]
+				};
+
+				openRequests[requestCounter] = callback;
+				requestCounter += 1;
+				
+				this.$.ajax.body = JSON.stringify(body);
+				this.$.ajax.generateRequest();
 			};
 
-			openRequests[requestCounter] = callback;
-			requestCounter += 1;
-			
-			this.$.ajax.body = JSON.stringify(body);
-			this.$.ajax.generateRequest();
-		};
+			var handelResponse = function (request) {
+				var response = request.detail.response;
 
-		var handelResponse = function (request) {
-			var response = request.detail.response;
+				if ('error' in response){
+					openRequests[response.id]({error: response.error});
+					console.log(response.error);
 
-			if ('error' in response){
-				openRequests[response.id]({error: response.error});
-				console.log(response.error);
-
-			}else{
-				openRequests[response.id](response.result);
-			}
-			delete openRequests[response.id];
-		};
+				}else{
+					openRequests[response.id](response.result);
+				}
+				delete openRequests[response.id];
+			};
 
 
-		Polymer({
-			is: 'onion-ubus-provider',
-            properties: {
-            	token: {
-            		type: String,
-            		value: '00000000000000000000000000000000'
-            	},
-            	serverUrl: {
-            		type: String,
-            		value: window.location.origin + '/ubus'
-            		// value: "/ubus"
+			Polymer({
+				is: 'onion-ubus-provider',
+	            properties: {
+	            	token: {
+	            		type: String,
+	            		value: '00000000000000000000000000000000'
+	            	},
+	            	serverUrl: {
+	            		type: String,
+	            		value: window.location.origin + '/ubus'
+	            		// value: "/ubus"
 
-            	}
-            },
-            request: request,
-            handelResponse: handelResponse
-		});
+	            	}
+	            },
+	            request: request,
+	            handelResponse: handelResponse
+			});
+        })();
 	</script>
 </dom-module>

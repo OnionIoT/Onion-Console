@@ -1,0 +1,71 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="../bootstrap-styles/bootstrap-dropdown-styles.html">
+<link rel="import" href="./bootstrap-dropdown-behavior.html">
+
+<dom-module id="bootstrap-dropdown">
+	<style>
+		:host {
+			display: block;
+			position: static!important;
+		}
+
+		.dropdown-toggle {
+			@apply(--dropdown-toggle-theme);
+		}
+	</style>
+
+	<template>
+		<div class$="{{_computeDropdownClass(opened)}}">
+			<button class="btn dropdown-toggle dropdown-trigger" type="button" on-tap="toggle">
+				<content select=".toggle"></content>
+			</button>
+	        <div class$="[[_computeMenuClass(right)]]" aria-labelledby="dropdownMenu1">
+				<content select=".menu"></content>
+			</div>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var _computeDropdownClass = function (opened) {
+				return opened ? 'dropdown open' : 'dropdown';
+			};
+
+			var _computeMenuClass = function (right) {
+				return right ? 'dropdown-menu dropdown-content dropdown-menu-right' : 'dropdown-menu dropdown-content';
+			};
+
+			var ready = function () {
+				
+			};
+
+			var toggle = function () {
+				if (this.opened) {
+					this.close();
+				} else {
+					this.open();
+				}
+			};
+
+			Polymer({
+				is: 'bootstrap-dropdown',
+				behaviors: [
+					BootstrapBehaviors.OverlayBehavior
+				],
+				properties: {
+					right: {
+						notify: true,
+				        type: Boolean,
+				        value: false
+					}
+				},
+				ready: ready,
+				toggle: toggle,
+				_computeDropdownClass: _computeDropdownClass,
+				_computeMenuClass: _computeMenuClass
+			});
+        })();
+	</script>
+</dom-module>

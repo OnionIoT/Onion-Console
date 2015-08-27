@@ -157,103 +157,109 @@
 	</template>
 	<script>
 		'use strict';
-		var onionStatus=null;
-		var refreshRxTxInterval=null;
-		var refreshStatusInterval=null;
-		var locked=false;
-		var ready = function() {
-			this.title = "Device Status";
-            onionStatus = this;
-            
-			//Get MAC Address
-			onionConsole.getService("onion-mac-provider", function(macProvider) {
-			    onionStatus.macProvider=macProvider;
-				macProvider.getMAC(function(result) {
-					onionStatus.mac=result.mac;
+
+		(function () {
+			var onionStatus = null;
+			var refreshRxTxInterval = null;
+			var refreshStatusInterval = null;
+			var locked = false;
+
+			var ready = function() {
+				this.title = "Device Status";
+	            onionStatus = this;
+	            
+				//Get MAC Address
+				onionConsole.getService('onion-mac-provider', function (macProvider) {
+				    onionStatus.macProvider=macProvider;
+					macProvider.getMAC(function(result) {
+						onionStatus.mac=result.mac;
+					});
 				});
-			});
+				
+				//Get IP Address, NetMask
+				onionConsole.getService('onion-ip-provider', function (ipProvider) {
+				    onionStatus.ipProvider = ipProvider;
+
+					ipProvider.getIP(function (result) {
+						if (result[0].available === true) {
+						    onionStatus.$.online.style.visibility = 'visible';
+							onionStatus.$.offline.style.visibility = 'hidden';
+						} else {
+						    onionStatus.$.online.style.visibility = 'hidden';
+						    onionStatus.$.offline.style.visibility = 'visible';
+					    }
+
+					    onionStatus.ip = result[1].ip;
+						onionStatus.netmask = result[2].netmask;
+					});
+				});
+				
+				//Get Receive and Send Bytes
+				onionConsole.getService('onion-rxtx-provider', function (rxtxProvider) {
+	            	onionStatus.rxtxProvider = rxtxProvider;
+					updateRxTx();
+					refreshRxTx(5000);
+				}); 
+			};
 			
-			//Get IP Address, NetMask
-			onionConsole.getService("onion-ip-provider", function(ipProvider) {
-			    onionStatus.ipProvider=ipProvider;
-				ipProvider.getIP(function(result) {
-					if(result[0].available===true) {
-					    onionStatus.$.online.style.visibility='visible';
-						onionStatus.$.offline.style.visibility='hidden';
+		    var refreshRxTx = function (interval) {
+			    refreshRxTxInterval = setInterval(function () {
+			    	updateRxTx()
+			    }, interval);
+			};
+			
+			var updateRxTx = function () {
+			    onionStatus.rxtxProvider.getRxTx(function (result) {
+					console.log('rxResult[' + result[0].received + ']');
+					console.log('txResult[' + result[1].transmitted + ']');
+					onionStatus.received = result[0].received;
+					onionStatus.transmitted = result[1].transmitted;							
+				});
+			};
+			
+			/*
+			var refreshStatus = function (interval) {
+			    refreshStatusInterval = setInterval(function () {
+				    updateStatus()
+				}, interval);
+			};
+
+			var updateStatus = function () {
+			  	ipProvider.getIP(function (result) {
+					if(result[0].available === true) {
+					    onionStatus.$.online.style.visibility = 'visible';
+						onionStatus.$.offline.style.visibility = 'hidden';
 					} else {
-					    onionStatus.$.online.style.visibility='hidden';
-					    onionStatus.$.offline.style.visibility='visible';
+					    onionStatus.$.online.style.visibility = 'hidden';
+					    onionStatus.$.offline.style.visibility = 'visible';
 				    }
-				    onionStatus.ip=result[1].ip;
-					onionStatus.netmask=result[2].netmask;
+					onionStatus.ip = result[1].ip;
 				});
-			});
+			};
+			*/
 			
-			//Get Receive and Send Bytes
-			onionConsole.getService("onion-rxtx-provider", function(rxtxProvider){
-            	onionStatus.rxtxProvider = rxtxProvider;
-				updateRxTx();
-				refreshRxTx(5000);
-			}); 
-		};
-		
-	    var refreshRxTx = function (interval) {
-		    refreshRxTxInterval = setInterval(function () {
-		    	updateRxTx()
-		    }, interval);
-		};
-		
-		var updateRxTx = function() {
-		    rxtxProvider.getRxTx(function(result){
-				console.log("rxResult["+result[0].received+"]");
-				console.log("txResult["+result[1].transmitted+"]");
-				onionStatus.received=result[0].received;
-				onionStatus.transmitted=result[1].transmitted;							
-			});
-		};
-		
-		/*
-		var refreshStatus = function (interval) {
-		    refreshStatusInterval = setInterval(function () {
-			    updateStatus()
-			}, interval);
-		};
+			var onLeftButton = function () {
+				alert('left button pressed');
+				this.rxtxProvider.getRxTx(function (result) {
+					console.log('rxtxResult[' + result + ']');
+				});
+			};
 
-		var updateStatus = function() {
-		  	ipProvider.getIP(function(result) {
-				if(result[0].available===true) {
-				    onionStatus.$.online.style.visibility='visible';
-					onionStatus.$.offline.style.visibility='hidden';
-				} else {
-				    onionStatus.$.online.style.visibility='hidden';
-				    onionStatus.$.offline.style.visibility='visible';
-			    }
-				onionStatus.ip=result[1].ip;
-			});
-		};
-		*/
-		
-		var onLeftButton = function () {
-			alert('left button pressed');
-			this.rxtxProvider.getRxTx(function(result){
-				    console.log("rxtxResult["+result+"]");
-			});
-		};
+			var onRightButton = function () {
+				alert('right button pressed');
+				updateStatus();
+			};
 
-		var onRightButton = function () {
-			alert('right button pressed');
-			updateStatus();
-		};
-
-		Polymer({
-			is: "onion-status",
-			ready: ready,
-			onLeftButton: onLeftButton,
-			onRightButton: onRightButton,
-			refreshRxTx: refreshRxTx,
-			updateRxTx: updateRxTx,
-			//refreshStatus: refreshStatus,
-			//updateStatus: updateStatus,
-		});
+			Polymer({
+				is: 'onion-status',
+				ready: ready,
+				onLeftButton: onLeftButton,
+				onRightButton: onRightButton,
+				refreshRxTx: refreshRxTx,
+				updateRxTx: updateRxTx,
+				//refreshStatus: refreshStatus,
+				//updateStatus: updateStatus,
+			});
+        })();
 	</script>
 </dom-module>

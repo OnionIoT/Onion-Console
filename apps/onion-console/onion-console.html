@@ -1,4 +1,5 @@
 <link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/onion-styles/onion-styles.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 
@@ -25,62 +26,64 @@
 	<script>
 		'use strict';
 
-		var services = {};
+		(function () {
+			var services = {};
 
-		var launchService = function (serviceId, callback) {
-			callback = callback || this.noop;
+			var launchService = function (serviceId, callback) {
+				callback = callback || this.noop;
 
-			if (!services[serviceId]) {
-				this.importHref(['/services/' + serviceId + '/' + serviceId+ '.html'], function () {
-					var serviceElement = document.createElement(serviceId);
-					Polymer.dom(this.$.serviceContainer).appendChild(serviceElement);
+				if (!services[serviceId]) {
+					this.importHref(['/services/' + serviceId + '/' + serviceId+ '.html'], function () {
+						var serviceElement = document.createElement(serviceId);
+						Polymer.dom(this.$.serviceContainer).appendChild(serviceElement);
 
-					services[serviceId] = serviceElement;
+						services[serviceId] = serviceElement;
 
-					callback(serviceElement);
-				});
-			}
-		};
+						callback(serviceElement);
+					});
+				}
+			};
 
-		var launchApp = function (appId) {
-			if (this.$.appContainer.querySelector(appId)) {
-				this.currentApp = appId;
-			} else {
-				this.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
-					var appElement = document.createElement(appId);
-					appElement.setAttribute('id', appId);
-					Polymer.dom(this.$.appContainer).appendChild(appElement); 
-
+			var launchApp = function (appId) {
+				if (this.$.appContainer.querySelector(appId)) {
 					this.currentApp = appId;
-				});
-			}
-		};
+				} else {
+					this.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
+						var appElement = document.createElement(appId);
+						appElement.setAttribute('id', appId);
+						Polymer.dom(this.$.appContainer).appendChild(appElement); 
 
-		var ready = function () {
-			window.onionConsole = this;
+						this.currentApp = appId;
+					});
+				}
+			};
 
-			this.launchApp('onion-login');
-			// this.launchApp('onion-settings');
-		};
+			var ready = function () {
+				window.onionConsole = this;
 
-		var getService = function (serviceId, callback) {
-			if (serviceId in services) {
+				this.launchApp('onion-login');
+				// this.launchApp('onion-settings');
+			};
 
-				callback(services[serviceId]);
-			}else{
+			var getService = function (serviceId, callback) {
+				if (serviceId in services) {
 
-				this.launchService(serviceId,callback);
-			}
-		};
+					callback(services[serviceId]);
+				}else{
 
-		Polymer({
-			is: 'onion-console',
-			noop: function () {},
-			ready: ready,
-			launchApp: launchApp,
-			launchService: launchService,
-			getService: getService
+					this.launchService(serviceId,callback);
+				}
+			};
 
-		});
+			Polymer({
+				is: 'onion-console',
+				noop: function () {},
+				ready: ready,
+				launchApp: launchApp,
+				launchService: launchService,
+				getService: getService
+
+			});
+		})();
 	</script>
 </dom-module>
