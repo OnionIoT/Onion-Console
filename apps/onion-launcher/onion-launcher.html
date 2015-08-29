@@ -1,6 +1,9 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown.html">
+<link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown-toggle.html">
+<link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown-menu.html">
+<link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown-item.html">
 <link rel="import" href="/fonts/glyphicons/glyphicons.html">
 <link rel="import" href="onion-launcher-icon.html">
 
@@ -84,13 +87,15 @@
 			</div>
 
 			<div class="flex-2 layout horizontal end-justified">
-				<bootstrap-dropdown right>
-					<span class="toggle"><span id="status">&bull;</span><span>{{hostname}}</span></span>
-					<div class="menu">
-						<a class="dropdown-item" href="#">Log Out</a>
-						<a class="dropdown-item" href="#">Shutdown</a>
-						<a class="dropdown-item" href="#">Restart</a>
-					</div>
+				<bootstrap-dropdown>
+					<bootstrap-dropdown-toggle>
+						<span id="status">&bull;</span><span>{{hostname}}</span>
+					</bootstrap-dropdown-toggle>
+					<bootstrap-dropdown-menu>
+						<bootstrap-dropdown-item>Log Out</bootstrap-dropdown-item>
+						<bootstrap-dropdown-item>Shutdown</bootstrap-dropdown-item>
+						<bootstrap-dropdown-item>Restart</bootstrap-dropdown-item>
+					</bootstrap-dropdown-menu>
 				</bootstrap-dropdown>
 			</div>
 		</div>

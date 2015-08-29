@@ -1,10 +1,11 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="../bootstrap-styles/bootstrap-alert-styles.html">
 
 <dom-module id="bootstrap-alert">
+	<link rel="import" type="css" href="bootstrap-alert.css">
+	
 	<template>
 		<div class$="[[_computeClass(success, info, warning, danger)]]" role="alert">
-			<content>[[message]]</content>
+			<content>{{message}}</content>
 			<button type="button" class="close" on-click="_close">&times;</span></button>
 		</div>
 	</template>

@@ -1,70 +1,57 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="../bootstrap-styles/bootstrap-dropdown-styles.html">
-<link rel="import" href="./bootstrap-dropdown-behavior.html">
+<link rel="import" href="/lib/neon-animation/neon-animations.html">
+<link rel="import" href="/lib/iron-dropdown/iron-dropdown.html">
 
 <dom-module id="bootstrap-dropdown">
-	<style>
-		:host {
-			display: block;
-			position: static!important;
-		}
-
-		.dropdown-toggle {
-			@apply(--dropdown-toggle-theme);
-		}
-	</style>
+	<link rel="import" type="css" href="bootstrap-dropdown.css">
 
 	<template>
-		<div class$="{{_computeDropdownClass(opened)}}">
-			<button class="btn dropdown-toggle dropdown-trigger" type="button" on-tap="toggle">
-				<content select=".toggle"></content>
-			</button>
-	        <div class$="[[_computeMenuClass(right)]]" aria-labelledby="dropdownMenu1">
-				<content select=".menu"></content>
-			</div>
+		<div on-tap="open">
+			<content select="bootstrap-dropdown-toggle"></content>
 		</div>
+
+		<iron-dropdown id="dropdown" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]">	
+			<content select="bootstrap-dropdown-menu"></content>
+		</iron-dropdown>
 	</template>
 
 	<script>
 		'use strict';
 
 		(function () {
-			var _computeDropdownClass = function (opened) {
-				return opened ? 'dropdown open' : 'dropdown';
-			};
-
-			var _computeMenuClass = function (right) {
-				return right ? 'dropdown-menu dropdown-content dropdown-menu-right' : 'dropdown-menu dropdown-content';
-			};
-
 			var ready = function () {
 				
 			};
 
-			var toggle = function () {
-				if (this.opened) {
-					this.close();
-				} else {
-					this.open();
-				}
+			var open = function () {
+				this.$.dropdown.open();
 			};
 
 			Polymer({
 				is: 'bootstrap-dropdown',
-				behaviors: [
-					BootstrapBehaviors.OverlayBehavior
-				],
 				properties: {
-					right: {
-						notify: true,
-				        type: Boolean,
-				        value: false
+					openAnimationConfig: {
+						type: Array,
+						value: [{
+							name: 'fade-in-animation',
+							timing: {
+							delay: 150,
+								duration: 50
+							}
+						}]
+					},
+					closeAnimationConfig: {
+						type: Array,
+						value: [{
+							name: 'fade-out-animation',
+							timing: {
+								duration: 200
+							}
+						}]
 					}
 				},
 				ready: ready,
-				toggle: toggle,
-				_computeDropdownClass: _computeDropdownClass,
-				_computeMenuClass: _computeMenuClass
+				open: open
 			});
         })();
 	</script>

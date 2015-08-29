@@ -1,0 +1,72 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="bootstrap-dropdown-menu">
+	<style>
+		.dropdown-menu {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			z-index: 1000;
+			float: left;
+			min-width: 160px;
+			padding: 5px 0;
+			margin: 2px 0 0;
+			font-size: 1rem;
+			text-align: left;
+			list-style: none;
+			background-color: #fff;
+			-webkit-background-clip: padding-box;
+			      background-clip: padding-box;
+			border: 1px solid rgba(0, 0, 0, .15);
+			border-radius: .25rem;
+		}
+
+		.dropdown-menu-right {
+			right: 0;
+			left: auto;
+		}
+
+		.dropdown-menu-left {
+			right: auto;
+			left: 0;
+		}
+	</style>
+
+	<template>
+		<div class="dropdown-menu">
+			<content></content>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var _computeDropdownClass = function (opened) {
+				return opened ? 'dropdown open' : 'dropdown';
+			};
+
+			var _computeMenuClass = function (right) {
+				return right ? 'dropdown-menu dropdown-content dropdown-menu-right' : 'dropdown-menu dropdown-content';
+			};
+
+			var ready = function () {
+				
+			};
+
+			Polymer({
+				is: 'bootstrap-dropdown-menu',
+				properties: {
+					right: {
+						notify: true,
+				        type: Boolean,
+				        value: false
+					}
+				},
+				ready: ready,
+				_computeDropdownClass: _computeDropdownClass,
+				_computeMenuClass: _computeMenuClass
+			});
+        })();
+	</script>
+</dom-module>
