@@ -12,7 +12,9 @@
 				sessionProvider = this;
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
 					sessionProvider.ubus = ubus;
+					sessionProvider.ubus.isAlive = false;
 				});
+
 			};
 
 			var login = function (username, password, callback) {
@@ -26,72 +28,76 @@
 			};
 
 			var setToken = function (result) {
-				if ('error' in result) {
+				if(result!==null&&result[0]!==null) {
+				    if ('error' in result) {
+				        sessionProvider.ubus.isAlive = false;
+					    loginReturn({success: false});
+					    return;
+				    }
+
+				    var returnCode = result[0];
+				    if (returnCode === 0) { 
+					    var token = result[1].ubus_rpc_session;
+	                    console.log('session token: ' + token);
+
+					    sessionProvider.ubus.token = token;
+					    sessionProvider.ubus.isAlive = true;
+					    startHeartbeat(10000);
+					    loginReturn({success: true});
+
+				    } else {
+				        console.log('Login failed!');
+					    sessionProvider.ubus.isAlive = false;
+				        loginReturn({success: false});
+				    }
+				} else {
+			        sessionProvider.ubus.isAlive = false;
 					loginReturn({success: false});
 					return;
-				}
-
-				var returnCode = result[0];
-
-				if (returnCode === 0) { 
-					var token = result[1].ubus_rpc_session;
-	                console.log('session token: ' + token);
-
-					sessionProvider.ubus.token = token;
-					loginReturn({success: true});
-
-				} else {
-				    console.log('Login failed!');
-				    loginReturn({success: false});
-				}
+			    }
 			};
-		
+		 
 			var heartbeat = function () {
-			    if (isAlive) {
+			    if (sessionProvider.ubus.isAlive===true) {
 			        // document.querySelector('#onion-ajax-service').query('omega-heartbeat', {});
-				}
-			}; 
-				 
+					sessionProvider.ubus.request('session', 'access', {}, setAlive);
+				} else {
+                    logout();   
+				}				
+			};  
+				  
 			var startHeartbeat = function (interval) {
-			    this.heartbeatInterval = setInterval(function () {
+			    sessionProvider.heartbeatInterval = setInterval(function () {  
 			    	heartbeat()
 			    }, interval);
 			};
 			
 			var stopHeartbeat = function () {
-			    clearInterval(this.heartbeatInterval);
-				delete this.heartbeatInterval;
+			    clearInterval(sessionProvider.heartbeatInterval);
+				delete sessionProvider.heartbeatInterval;
+				sessionProvider.ubus.isAlive = false;
+                sessionProvider.ubus.token = '00000000000000000000000000000000';
 			};
 
-			var setAlive = function (e, detail, sender) {
-			    var alive = false;	
-				if (detail !== null && detail.result !== null && detail.result[0] === 0) {
-				    alive = true;    
-				}
-				
-				if (typeof(Storage) !== 'undefined') {
-					localStorage.setItem('alive', alive);
-				}
-
-				if (alive === false) {
+			var setAlive = function (result) {
+				if (result !== null && result[0] === 0) {
+				    sessionProvider.ubus.isAlive = true;   
+                    console.log("Alive");					
+				} else {
+				    sessionProvider.ubus.isAlive = false;
 				    logout();
 					//launch onion-login
-				}
+				} 
 		    };
 			
 			var isAlive = function () {
-			    return 	localStorage.getItem('allive');
+			    return 	sessionProvider.ubus.isAlive;
 			};
 			
 			var logout = function() {
-				if(this.heartbeatInterval !== null) {
+				if(sessionProvider.heartbeatInterval !== null) {
 				    console.log('logout');
 					stopHeartbeat();			
-					if(typeof(Storage) !== 'undefined') {
-						localStorage.removeItem('token');
-						localStorage.removeItem('alive');
-						//launch onion-login
-					}
 			    }
 			};
 			
