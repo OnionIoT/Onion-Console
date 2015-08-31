@@ -86,7 +86,6 @@
 				} else {
 				    sessionProvider.ubus.isAlive = false;
 				    logout();
-					//launch onion-login
 				} 
 		    };
 			
@@ -97,7 +96,8 @@
 			var logout = function() {
 				if(sessionProvider.heartbeatInterval !== null) {
 				    console.log('logout');
-					stopHeartbeat();			
+					stopHeartbeat();	
+                    window.onionConsole.launchApp('onion-login');					
 			    }
 			};
 			
