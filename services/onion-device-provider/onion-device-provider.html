@@ -6,14 +6,119 @@
 
 		(function () {
 			var deviceProvider = null;
+			var macResult = null;
+			var ipResult = null;
+			var rxtxResult = null;
 
 			var ready = function (){
 				deviceProvider = this;
 				onionConsole.getService('onion-ubus-provider', function(ubus){
 					deviceProvider.ubus=ubus;
-				});
+				});			
 			};
 
+			var getMAC = function (callback) {
+				var params = {
+					device: 'wlan0'
+				};
+				macResult = callback || this.noop;
+				this.ubus.request('iwinfo', 'assoclist', params, setMACResult);
+			};
+
+			var setMACResult = function (result) {
+				var returnCode = result[0];
+				if (returnCode === 0) { 
+				    if (result[1] !== null && result[1].results[0] !== null && result[1].results[0].mac !== null) {
+				        var mac = result[1].results[0].mac;
+				        console.log('MAC[' + mac + ']');
+						
+						macResult({
+							mac: mac
+						});
+				    } else {
+					    macResult({
+					    	mac: ''
+					    });    
+					}
+				} else {
+				    console.log('Failed to get MAC address!')
+					macResult({
+						mac: ''
+					});
+				}
+			};
+
+			var getRxTx = function (callback) {
+				var params =  {};
+				rxtxResult = callback || this.noop;
+				this.ubus.request('network.device', 'status', params, setRxTxResult);
+			};
+
+			var setRxTxResult = function (result) {
+				var returnCode = result[0];
+				var receivedkB = 0;
+				var transmittedkB = 0;
+				
+				if (returnCode === 0) {  
+				    var rx = result[1].wlan0.statistics.rx_bytes;
+					receivedkB = parseInt(rx);
+					if(receivedkB > 0) {
+					    receivedkB = (receivedkB / 1000).toFixed(0);
+					}
+					var tx = result[1].wlan0.statistics.tx_bytes;
+					transmittedkB = parseInt(tx);
+					if(transmittedkB > 0) {
+					    transmittedkB = (transmittedkB / 1000).toFixed(0);
+					}
+				    console.log('receivedkB[' + receivedkB + ']');
+				    console.log('transmittedkB[' + transmittedkB + ']');
+	                rxtxResult([
+	                	{
+	                		received: receivedkB
+	                	},
+	                	{
+	                		transmitted: transmittedkB
+	                	}
+	                ]);
+				} else {
+				    console.log('Failed to get received bytes and transmitted bytes!');
+					rxtxResult([
+						{
+							received: ''
+						},
+						{
+							transmitted:''
+						}
+					]);
+				}
+			};
+
+			var getIP = function (callback) {
+				var params =  {};
+				ipResult = callback || this.noop;
+				this.ubus.request('network.interface', 'dump', params, setIPResult);
+			};
+
+			var setIPResult = function (result) {
+				var returnCode = result[0];
+				var available = false;
+				var ip = '-';
+				var netmask = '-';
+				if (returnCode === 0) {
+	                if (result[1] && result[1].interface[2] && result[1].interface[2].available !== null) {
+				        available = result[1].interface[2].available;
+				        console.log('available[' + available + ']');
+					    ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
+					} else {
+					    ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
+					}
+				} else {
+				    console.log('Failed to get IP address!')
+					ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
+				}
+			};
+		
+			/*
 			var update = function () {
 
 				params =  {};
@@ -48,11 +153,19 @@
 				    loginReturn({success: false});
 				}
 			};
-			
+			*/
 			Polymer({
 				is: 'onion-device-provider',
 				ready: ready,
-				update: update,
+				//update: update,
+				noop: function () {},
+				ready: ready,
+				getMAC: getMAC,
+				setMACResult: setMACResult,
+				getRxTx: getRxTx,
+				setRxTxResult: setRxTxResult,
+				getIP: getIP,
+				setIPResult: setIPResult,
 			});
         })();
 	</script>

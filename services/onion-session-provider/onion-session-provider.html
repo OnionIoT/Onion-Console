@@ -14,6 +14,11 @@
 					sessionProvider.ubus = ubus;
 					sessionProvider.ubus.isAlive = false;
 				});
+				
+				onionConsole.getService("onion-apps-provider", function (appsProvider) {
+					sessionProvider.appsProvider = appsProvider;
+					//onionLauncher.apps = appsProvider.getApps();
+				});
 
 			};
 
@@ -58,8 +63,7 @@
 			};
 		 
 			var heartbeat = function () {
-			    if (sessionProvider.ubus.isAlive===true) {
-			        // document.querySelector('#onion-ajax-service').query('omega-heartbeat', {});
+			    if (isAlive()===true) {
 					sessionProvider.ubus.request('session', 'access', {}, setAlive);
 				} else {
                     logout();   
@@ -86,8 +90,8 @@
 				} else {
 				    sessionProvider.ubus.isAlive = false;
 				    logout();
-				} 
-		    };
+				}   
+		    }; 
 			
 			var isAlive = function () {
 			    return 	sessionProvider.ubus.isAlive;
@@ -108,6 +112,10 @@
 				logout: logout,
 				setToken: setToken,
 				setAlive: setAlive,
+				heartbeat: heartbeat,
+				startHeartbeat: startHeartbeat,
+				stopHeartbeat: stopHeartbeat,
+				isAlive: isAlive,
 			});
         })();
 	</script>
