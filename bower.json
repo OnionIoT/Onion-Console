@@ -22,6 +22,7 @@
     "iron-image": "PolymerElements/iron-image#~1.0.2",
     "iron-pages": "PolymerElements/iron-pages#^1.0.0",
     "iron-signals": "PolymerElements/iron-signals#^1.0.2",
-    "polymer": "~1.1.1"
+    "polymer": "~1.1.1",
+    "juicy-ace-editor": "Juicy/juicy-ace-editor#polymer_1.0"
   }
 }

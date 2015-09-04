@@ -1,0 +1,74 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/views/onion-framework.html">
+<!--link rel="import" href="/lib/iron-pages/iron-pages.html"-->
+<link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
+
+<!--link rel="import" href="ace-element.html"-->
+
+<dom-module id="onion-editor">
+	<style>
+		:host {
+		    display: block;
+	  	    height: 100%;
+			width: 100%;
+			background-color: black;
+		}
+		juicy-ace-editor {
+	        width: 100%;
+	        height: 100%;
+	    }
+	</style>
+	<template>
+		<onion-app-frame title="{{title}}">
+			<app-tools-left>
+				<button on-click="onLeftButton">Left Tool</button>
+				<p><a href="test.html">Check it live!</a></p>
+			</app-tools-left>
+
+			<app-tools-right>
+				<button on-click="onRightButton">Right Tool</button>
+			</app-tools-right>
+			<app-body>
+                <juicy-ace-editor id="editor-container"
+                    theme="{{theme}}"
+                    mode="{{mode}}"
+                    fontsize="{{fontsize}}"
+                    readonly="{{readonly}}"
+                    softtabs="{{softtabs}}"
+                    tabsize="{{tabsize}}">Edit code in there!</juicy-ace-editor>
+			</app-body>
+		</onion-app-frame>	
+	</template>
+	<script>
+		'use strict';
+
+		(function () {
+			var onionEditor = null;
+			var ready = function() {
+				this.title = "Onion Editor";
+				onionEditor = this;
+				onionEditor.theme = "ace/theme/monokai";
+				onionEditor.mode = "ace/mode/html"
+	            //onionStatus = this;
+				
+				//onionConsole.getService("onion-session-provider", function (sessionProvider) {
+				//	onionStatus.sessionProvider = sessionProvider;
+			};
+				
+			var onLeftButton = function () {
+				alert('left button pressed');
+			};
+
+			var onRightButton = function () {
+				alert('right button pressed');
+			};
+
+			Polymer({
+				is: 'onion-editor',
+				ready: ready,
+				onLeftButton: onLeftButton,
+				onRightButton: onRightButton,
+			});
+        })();
+	</script>
+</dom-module>
