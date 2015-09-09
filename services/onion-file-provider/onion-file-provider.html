@@ -1,0 +1,71 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="onion-file-provider">
+	<script>
+		'use strict';
+
+		(function () {
+			var fileProvider = null;
+			var fileListResult = null;
+			var currentFilePath = null;
+
+			var ready = function (){
+				fileProvider = this;
+				onionConsole.getService('onion-ubus-provider', function(ubus){
+					fileProvider.ubus=ubus;
+				});			
+			};
+
+			var getFileList = function (filepath,callback) {
+			    currentFilePath = filepath;
+				var params = {
+					path: filepath
+				};
+				fileListResult = callback || this.noop;
+				this.ubus.request('file', 'list', params, setFileListResult);
+			};
+
+			var setFileListResult = function (result) {
+				var returnCode = result[0];
+				if (returnCode === 0) { 
+				    if (result[1] !== null) {
+				        console.log('FileListResult[' + JSON.stringify(result[1]) + ']');	
+                        var filelist=[{"name":"..","type":"folder"}];
+                        for (var i = 0; i < result[1].entries.length; i++) {
+						
+							if(result[1].entries[i].type==="directory")
+							{
+							    result[1].entries[i].type="folder";
+							}
+							filelist.push(result[1].entries[i]);
+						}
+						console.log('FileListResult[' + JSON.stringify(result[1]) + ']');
+						
+						fileListResult({
+							fileList: filelist
+						});
+				    } else {
+					    fileListResult({
+					    	fileList: ''
+					    });    
+					}
+				} else {
+				    console.log('Failed to get file list!')
+					fileListResult({
+						fileList: ''
+					});
+				}
+			};
+
+			Polymer({
+				is: 'onion-file-provider',
+				ready: ready,
+				//update: update,
+				noop: function () {},
+				ready: ready,
+				getFileList: getFileList,
+				setFileListResult: setFileListResult,
+			});
+        })();
+	</script>
+</dom-module>

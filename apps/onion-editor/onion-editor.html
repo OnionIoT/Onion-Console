@@ -1,9 +1,9 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/views/onion-framework.html">
-<!--link rel="import" href="/lib/iron-pages/iron-pages.html"-->
 <link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
-
-<!--link rel="import" href="ace-element.html"-->
+<link rel="import" href="/lib/file-tree/file-tree.html">
+<link rel="import" href="/lib/paper-menu/paper-menu.html">
+<link rel="import" href="/lib/paper-menu/paper-submenu.html">
 
 <dom-module id="onion-editor">
 	<style>
@@ -13,29 +13,52 @@
 			width: 100%;
 			background-color: black;
 		}
+        #file-panel { 
+			width: 15%; 
+			height: 100%;
+			float:left;
+            color: white;			
+		    background-color:#272822;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+            font-size: 16px;
+			line-height: normal;
+			direction: ltr;			
+		}
 		juicy-ace-editor {
 	        width: 100%;
 	        height: 100%;
+			margin-left:15%
 	    }
+		.horizontal-section {
+			padding: 0 !important;
+        }
+		paper-item {
+			--paper-item: {
+			cursor: pointer;
+			};
+		}
 	</style>
 	<template>
 		<onion-app-frame title="{{title}}">
 			<app-tools-left>
 				<button on-click="onLeftButton">Left Tool</button>
-				<p><a href="test.html">Check it live!</a></p>
 			</app-tools-left>
 
 			<app-tools-right>
 				<button on-click="onRightButton">Right Tool</button>
 			</app-tools-right>
-			<app-body>
-                <juicy-ace-editor id="editor-container"
-                    theme="{{theme}}"
-                    mode="{{mode}}"
-                    fontsize="{{fontsize}}"
-                    readonly="{{readonly}}"
-                    softtabs="{{softtabs}}"
-                    tabsize="{{tabsize}}">Edit code in there!</juicy-ace-editor>
+			<app-body>	
+				<div id="file-panel" class="horizontal-section">
+                <paper-menu>				
+					<template is="dom-repeat" items="{{fileItems}}">
+						<paper-item>{{item.name}}</paper-item>
+					</template>
+				</paper-menu>
+				</div>
+				<juicy-ace-editor 
+				    id="editor-container"
+                    theme="ace/theme/monokai"
+					fontsize="16px">Edit code in there!</juicy-ace-editor>
 			</app-body>
 		</onion-app-frame>	
 	</template>
@@ -47,16 +70,35 @@
 			var ready = function() {
 				this.title = "Onion Editor";
 				onionEditor = this;
-				onionEditor.theme = "ace/theme/monokai";
-				onionEditor.mode = "ace/mode/html"
-	            //onionStatus = this;
 				
-				//onionConsole.getService("onion-session-provider", function (sessionProvider) {
-				//	onionStatus.sessionProvider = sessionProvider;
+				onionConsole.getService("onion-session-provider", function (sessionProvider) {
+					onionEditor.sessionProvider = sessionProvider;
+				});
+				
+				if(onionEditor.sessionProvider.isAlive()===true)
+				{   
+					onionConsole.getService('onion-file-provider', function (fileProvider) {
+						onionEditor.fileProvider=fileProvider;
+						//Get file list
+						fileProvider.getFileList("/",function(result) {
+							console.log(JSON.stringify(result.fileList));
+							onionEditor.fileItems=result.fileList;
+						});
+					});
+				};
 			};
 				
 			var onLeftButton = function () {
-				alert('left button pressed');
+				//alert('left button pressed');							
+				onionConsole.getService('onion-file-provider', function (fileProvider) {
+					onionEditor.fileProvider=fileProvider;
+					//Get file list
+					fileProvider.getFileList("/",function(result) {
+						console.log(JSON.stringify(result.fileList));
+						onionEditor.fileItems=result.fileList;
+					});
+				});
+							
 			};
 
 			var onRightButton = function () {
