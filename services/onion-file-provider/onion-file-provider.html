@@ -3,7 +3,7 @@
 <dom-module id="onion-file-provider">
 	<script>
 		'use strict';
-
+		
 		(function () {
 			var fileProvider = null;
 			var fileListResult = null;
@@ -22,29 +22,42 @@
 					path: filepath
 				};
 				fileListResult = callback || this.noop;
-				this.ubus.request('file', 'list', params, setFileListResult);
+				this.ubus.request('file', 'list', params, setFileList);
 			};
+			
+			var getFileContent = function(fullFilename, callback) {
+			    var params = {
+				    path: fullFilename
+				};
+				fileContentResult = call || this.noop;
+				this.ubus.request('file', 'read', params, setFileContent);
+			}
 
-			var setFileListResult = function (result) {
+			var setFileList = function (result) {
 				var returnCode = result[0];
 				if (returnCode === 0) { 
 				    if (result[1] !== null) {
-				        console.log('FileListResult[' + JSON.stringify(result[1]) + ']');	
-                        var filelist=[{"name":"..","type":"folder"}];
+                        var filelist=[{"name":"..","type":"directory","preview":"folder"}];
                         for (var i = 0; i < result[1].entries.length; i++) {
-						
+						    var newEntry={"name":"","type":"","preview":"description"};
+							newEntry.name=result[1].entries[i].name;
+							newEntry.type=result[1].entries[i].type;
 							if(result[1].entries[i].type==="directory")
 							{
-							    result[1].entries[i].type="folder";
+							    newEntry.preview="folder";
 							}
-							filelist.push(result[1].entries[i]);
+							else if(result[1].entries[i].type==="symlink")
+							{
+							    newEntry.preview="link";
+							}
+							filelist.push(newEntry);
 						}
-						console.log('FileListResult[' + JSON.stringify(result[1]) + ']');
-						
+						//console.log('FileListResult[' + JSON.stringify(result[1]) + ']');
 						fileListResult({
 							fileList: filelist
 						});
 				    } else {
+					    console.log('Empty file list!')
 					    fileListResult({
 					    	fileList: ''
 					    });    
@@ -56,15 +69,32 @@
 					});
 				}
 			};
+			
+			var setFileContent = function(result)
+			{
+				var returnCode = result[0];
+				if (returnCode === 0) { 
+					if (result[1] !== null) {
+					    fileContentResult({
+						    fileContent: result[1].data
+						});
+					}
+				} else {
+				    console.log('Failed to get file content!');
+					fileContentResult({
+					    fileContent: ''
+					});
+				}
+			}
 
 			Polymer({
 				is: 'onion-file-provider',
 				ready: ready,
-				//update: update,
 				noop: function () {},
-				ready: ready,
 				getFileList: getFileList,
-				setFileListResult: setFileListResult,
+				getFileContent: getFileContent,
+				setFileList: setFileList,
+				setFileContent: setFileContent,
 			});
         })();
 	</script>

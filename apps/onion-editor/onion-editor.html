@@ -1,9 +1,7 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/views/onion-framework.html">
 <link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
-<link rel="import" href="/lib/file-tree/file-tree.html">
-<link rel="import" href="/lib/paper-menu/paper-menu.html">
-<link rel="import" href="/lib/paper-menu/paper-submenu.html">
+<link rel="import" href="/lib/file-list/file-list.html">
 
 <dom-module id="onion-editor">
 	<style>
@@ -13,21 +11,31 @@
 			width: 100%;
 			background-color: black;
 		}
+		#path-panel {
+		    color: black;
+		    background-color:white;
+			font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+            font-size: 12px;
+			padding: 5px;
+            line-height: 20px;
+		}
         #file-panel { 
-			width: 15%; 
-			height: 100%;
+			width:25%; 
+			height: 85%;
 			float:left;
-            color: white;			
-		    background-color:#272822;
+            color: black;			
+		    background-color: white;
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-            font-size: 16px;
+            font-size: 12px;
 			line-height: normal;
-			direction: ltr;			
+			direction: ltr;		
+            overflow-x: auto;
+            overflow-y: auto;			
 		}
 		juicy-ace-editor {
 	        width: 100%;
-	        height: 100%;
-			margin-left:15%
+	        height: 90%;
+			margin-left:25%
 	    }
 		.horizontal-section {
 			padding: 0 !important;
@@ -48,12 +56,9 @@
 				<button on-click="onRightButton">Right Tool</button>
 			</app-tools-right>
 			<app-body>	
-				<div id="file-panel" class="horizontal-section">
-                <paper-menu>				
-					<template is="dom-repeat" items="{{fileItems}}">
-						<paper-item>{{item.name}}</paper-item>
-					</template>
-				</paper-menu>
+			    <div id="path-panel">{{pathPanel}}</div>
+				<div id="file-panel">
+				    <file-list id="file-list">No File</file-list>
 				</div>
 				<juicy-ace-editor 
 				    id="editor-container"
@@ -67,49 +72,146 @@
 
 		(function () {
 			var onionEditor = null;
-			var ready = function() {
+			var currentPath = null;
+			var currentFileList = null;
+			var currentFile=null;
+			var files = [{
+				type: "folder",
+				name: "Documents"
+			  },
+			  {
+				type: "folder",
+				name: "www"
+			  },
+			  {
+				type: "description",
+				name: "zoo.png"
+			  },
+			  {
+				type: "description",
+				name: "homework.pdf"
+			  }
+			];
+			var ready = function() { 
 				this.title = "Onion Editor";
 				onionEditor = this;
-				
+
 				onionConsole.getService("onion-session-provider", function (sessionProvider) {
 					onionEditor.sessionProvider = sessionProvider;
 				});
-				
+
 				if(onionEditor.sessionProvider.isAlive()===true)
 				{   
+				    currentPath="/";
 					onionConsole.getService('onion-file-provider', function (fileProvider) {
 						onionEditor.fileProvider=fileProvider;
 						//Get file list
-						fileProvider.getFileList("/",function(result) {
-							console.log(JSON.stringify(result.fileList));
-							onionEditor.fileItems=result.fileList;
+						fileProvider.getFileList(currentPath,function(result) {
+							currentFileList=result.fileList;
+				            var file = document.getElementById("file-list");
+                            file.setAttribute("files", JSON.stringify(result.fileList));
+					        onionEditor.pathPanel=currentPath;								
+							file.addEventListener("click", function(evt) {
+				                openFolder(evt.target.textContent);
+							});
 						});
 					});
-				};
+				};		
 			};
 				
 			var onLeftButton = function () {
-				//alert('left button pressed');							
-				onionConsole.getService('onion-file-provider', function (fileProvider) {
+				alert('left button pressed');		
+                onionConsole.getService('onion-file-provider', function (fileProvider) {
 					onionEditor.fileProvider=fileProvider;
 					//Get file list
-					fileProvider.getFileList("/",function(result) {
-						console.log(JSON.stringify(result.fileList));
-						onionEditor.fileItems=result.fileList;
+					fileProvider.getFileContent(currentPath,function(result) {
+						currentFileList=result.fileList;
+				        var file = document.getElementById("file-list");
+                        file.setAttribute("files", JSON.stringify(result.fileList));
+				        onionEditor.pathPanel=currentPath;								
+						file.addEventListener("click", function(evt) {
+				            openFolder(evt.target.textContent);
+						});
 					});
 				});
-							
 			};
 
 			var onRightButton = function () {
 				alert('right button pressed');
 			};
+			 
+			var findTypeById = function (source, name) {
+				for (var i = 0; i < source.length; i++) {
+					if (source[i].name === name) {
+					return source[i].type;
+					}
+				}
+				//exception
+			}
+			 
+			var openFolder = function(path) {
+				onionConsole.getService('onion-file-provider', function (fileProvider) {
+					onionEditor.fileProvider=fileProvider;
+					if(path==="..")
+					{
+						if(currentPath!=="/")
+						{
+							path=currentPath.substring(0,currentPath.lastIndexOf("/"));
+							if(path==="")
+							{
+								path="/";
+							}
+						}
+						else
+						{
+							path=currentPath;
+						}
+					}
+					else if (path!=="/")
+					{
+						if(findTypeById(currentFileList, path)==="directory")
+						{
+							if(currentPath==="/")
+							{
+								path=currentPath+path;
+							}
+							else
+							{
+								path=currentPath+"/"+path;
+							}
+						}
+						else
+						{
+							path="";
+						}
+					}
+
+					if(path!=="")
+					{
+						currentPath=path;
+						//Get file list
+						fileProvider.getFileList(path,function(result) {
+							currentFileList=result.fileList;
+							var file = document.getElementById("file-list");
+							file.setAttribute("files", JSON.stringify(result.fileList));	
+							file.sortOn = "name";
+							onionEditor.pathPanel=currentPath;	
+						});
+					}
+					else
+					{
+						console.log("It's a file");
+					}
+				});
+			}
 
 			Polymer({
 				is: 'onion-editor',
 				ready: ready,
+				files: files,
 				onLeftButton: onLeftButton,
 				onRightButton: onRightButton,
+				openFolder: openFolder,
 			});
         })();
 	</script>
