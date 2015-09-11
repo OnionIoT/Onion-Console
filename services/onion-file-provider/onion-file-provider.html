@@ -7,7 +7,8 @@
 		(function () {
 			var fileProvider = null;
 			var fileListResult = null;
-			var currentFilePath = null;
+			var fileContentResult = null;
+			//var currentFilePath = null;
 
 			var ready = function (){
 				fileProvider = this;
@@ -17,7 +18,7 @@
 			};
 
 			var getFileList = function (filepath,callback) {
-			    currentFilePath = filepath;
+			    //currentFilePath = filepath;
 				var params = {
 					path: filepath
 				};
@@ -29,7 +30,7 @@
 			    var params = {
 				    path: fullFilename
 				};
-				fileContentResult = call || this.noop;
+				fileContentResult = callback || this.noop;
 				this.ubus.request('file', 'read', params, setFileContent);
 			}
 
