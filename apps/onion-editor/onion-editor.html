@@ -20,7 +20,7 @@
             line-height: 20px;
 		}
         #file-list-container { 
-			width:25%; 
+			width:20%; 
 			height: 85%;
 			float:left;
             color: black;			
@@ -35,7 +35,7 @@
 		juicy-ace-editor {
 	        width: 100%;
 	        height: 85%;
-			margin-left:25%;
+			margin-left:20%;
 	    }
 		.horizontal-section {
 			padding: 0 !important;
@@ -93,7 +93,7 @@
 							currentFolderFile.list=result.fileList;
 				            var file = document.getElementById("file-list");
                             file.setAttribute("files", JSON.stringify(currentFolderFile.list));
-                            onionEditor.currentPath=currentFolderFile.currentFolder;							
+                            onionEditor.currentPath=currentFolderFile.folder;							
 							file.addEventListener("click", function(evt) {
 				                openFolder(evt.target.textContent);
 							});
