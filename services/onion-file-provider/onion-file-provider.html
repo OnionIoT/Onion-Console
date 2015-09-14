@@ -8,7 +8,7 @@
 			var fileProvider = null;
 			var fileListResult = null;
 			var fileContentResult = null;
-			//var currentFilePath = null;
+			var fileSaveResult = null;
 
 			var ready = function (){
 				fileProvider = this;
@@ -18,8 +18,7 @@
 			};
 
 			var getFileList = function (filepath,callback) {
-			    //currentFilePath = filepath;
-				var params = {
+			var params = {
 					path: filepath
 				};
 				fileListResult = callback || this.noop;
@@ -33,7 +32,16 @@
 				fileContentResult = callback || this.noop;
 				this.ubus.request('file', 'read', params, setFileContent);
 			}
-
+                
+			var saveFileContent = function(fullFilename, data, callback) {
+			    var params = {
+				    path: fullFilename,
+					data: data
+				};
+				fileSaveResult = callback || this.noop;
+				this.ubus.request('file', 'write', params, saveFileContentResult);
+			}
+			
 			var setFileList = function (result) {
 				var returnCode = result[0];
 				if (returnCode === 0) { 
@@ -83,11 +91,26 @@
 				} else {
 				    console.log('Failed to get file content!');
 					fileContentResult({
-					    fileContent: ''
+					    fileContent: null
 					});
 				}
 			}
 
+			var saveFileContentResult = function(result)
+			{
+			    var returnCode = result[0];
+				if (returnCode === 0) { 
+					fileSaveResult({
+					    saveResult: true
+					});
+				} else {
+				    console.log('Failed to save file content!');
+					fileSaveResult({
+					    saveResult: false
+					});
+				}
+			}
+			
 			Polymer({
 				is: 'onion-file-provider',
 				ready: ready,
@@ -96,6 +119,8 @@
 				getFileContent: getFileContent,
 				setFileList: setFileList,
 				setFileContent: setFileContent,
+				saveFileContent: saveFileContent,
+				saveFileContentResult: saveFileContentResult,
 			});
         })();
 	</script>
