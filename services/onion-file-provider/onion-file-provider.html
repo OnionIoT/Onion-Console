@@ -82,12 +82,18 @@
 			var setFileContent = function(result)
 			{
 				var returnCode = result[0];
+				console.log("setFileContent resultcode["+returnCode+"]");
 				if (returnCode === 0) { 
 					if (result[1] !== null) {
 					    fileContentResult({
 						    fileContent: result[1].data
 						});
 					}
+				} else if (returnCode === 5){
+				    console.log('Empty file!');
+					fileContentResult({
+					    fileContent: ''
+					});
 				} else {
 				    console.log('Failed to get file content!');
 					fileContentResult({
