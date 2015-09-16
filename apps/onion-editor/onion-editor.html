@@ -11,7 +11,7 @@
 			width: 100%;
 			background-color: black;
 		}
-		#path-container {
+		#folder-container {
 		    color: black;
 		    background-color:white;
 			font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
@@ -37,7 +37,7 @@
 			height: 85%;
 			margin-left:20%;
 		}
-	    #juicy-ace-editor {
+	    #fileEditor {
 	        width: 100%;
 	        height: 100%;
 	    }
@@ -58,22 +58,21 @@
 			<app-tools-left>
 				<button on-click="onLeftButton">Open</button>
 			</app-tools-left>
-
 			<app-tools-right>
 				<button on-click="onRightButton">Save</button>
 			</app-tools-right>
+			
 			<app-body>	
-			    <div id="path-container">{{currentPath}}</div>
+			    <div id="folder-container">{{currentFolder}}</div>
 				<div id="file-list-container">
-				    <file-list id="file-list">No File</file-list>
+				    <file-list id="fileList">No File</file-list>
 				</div>
 				<div id="editor-container">
 				    <juicy-ace-editor 
-				        id="juicy-ace-editor"
+				        id="fileEditor"
                         theme="ace/theme/monokai"
 					    mode="ace/mode/text" 
 					    fontsize="16px">{{currentCode}}</juicy-ace-editor>
-					 <paper-toast id="toast1" text="Your draft has been discarded."></paper-toast>
 				</div>
 			</app-body>
 		</onion-app-frame>	
@@ -83,33 +82,34 @@
 
 		(function () {
 			var onionEditor = null;
+			var folderFileInfo=null;
 			var backsplash=null;
 			var extSymbol=null;
-			var currentFolderFile=null;
-			var ready = function() { 
-				this.title = "Onion Editor";
-				onionEditor = this;
-				backsplash="/";
-				extSymbol=".";
-				currentFolderFile={"folder":backsplash,"file":"","list":null,"fileInEdit":""};
 
-				onionConsole.getService("onion-session-provider", function (sessionProvider) {
+			var ready = function() {
+				onionEditor = this;	
+				backsplash='/';
+				extSymbol='.';
+				folderFileInfo={"folder":backsplash,"file":"","list":null,"fileInEdit":""};
+				onionEditor.title = "Onion Editor";
+				onionConsole.getService('onion-session-provider', function (sessionProvider) {
 					onionEditor.sessionProvider = sessionProvider;
 				});
 
-				if(onionEditor.sessionProvider.isAlive()===true)
-				{   
+				if(onionEditor.sessionProvider.isAlive()===true) {   
 					onionConsole.getService('onion-file-provider', function (fileProvider) {
 						onionEditor.fileProvider=fileProvider;
 						//Get file list
-						fileProvider.getFileList(currentFolderFile.folder,function(result) {
-							currentFolderFile.list=result.fileList;
-				            var file = document.getElementById("file-list");
-                            file.setAttribute("files", JSON.stringify(currentFolderFile.list));
-                            onionEditor.currentPath=currentFolderFile.folder;							
-							file.addEventListener("click", function(evt) {
-				                openFolder(evt.target.textContent);
-							});
+						fileProvider.getFileList(folderFileInfo.folder, function(result) {
+							if(result.fileList!=='')
+							{
+							    onionEditor.currentFolder=folderFileInfo.folder
+								folderFileInfo.list=result.fileList;
+                                onionEditor.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));			
+							    onionEditor.$.fileList.addEventListener('click', function(evt) {
+				                    openFolder(evt.target.textContent);
+							    });
+							};
 						});
 					});
 				};		
@@ -131,6 +131,23 @@
 				}
 			}
 			 
+			var isFileChanged = function() {
+			    var changed=false;
+			    if(folderFileInfo.fileInEdit!=="" &&				
+	               onionEditor.currentCode!==onionEditor.$.fileEditor.editor.session.getValue()) {
+				    changed=true;
+				} 
+				return changed;
+			}
+			
+			var getFileExtension = function() {
+			    var extension='';
+			    if(folderFileInfo.file!=='') {
+			        extension=folderFileInfo.file.substring(folderFileInfo.file.lastIndexOf(extSymbol)+1,folderFileInfo.file.length);
+			    }
+				return extension;
+			}
+			
 			var openFolder = function(path) {
                 if(onionEditor.sessionProvider.isAlive()===true) {
 			        var currentFile="";
@@ -142,20 +159,20 @@
 							return;
 						}
 					    else if(path==="..")	{
-						    if(currentFolderFile.folder===backsplash||currentFolderFile.folder.lastIndexOf(backsplash)===0) {
+						    if(folderFileInfo.folder===backsplash||folderFileInfo.folder.lastIndexOf(backsplash)===0) {
 							    path=backsplash;
 						    } else {
-							    path=currentFolderFile.folder.substring(0,currentFolderFile.folder.lastIndexOf(backsplash));
+							    path=folderFileInfo.folder.substring(0,folderFileInfo.folder.lastIndexOf(backsplash));
                             }
 					    } else {
-				            if(findTypeById(currentFolderFile.list,path)==="directory") {
-							    if(currentFolderFile.folder===backsplash) {
-								    path=currentFolderFile.folder+path;
+				            if(findTypeById(folderFileInfo.list,path)==="directory") {
+							    if(folderFileInfo.folder===backsplash) {
+								    path=folderFileInfo.folder+path;
 							    } else {
-								    path=currentFolderFile.folder+backsplash+path;
+								    path=folderFileInfo.folder+backsplash+path;
 							    }
 						    } else {
-							    if(currentFolderFile.folder===backsplash) {
+							    if(folderFileInfo.folder===backsplash) {
 							        currentFile=path;
 								} else {
 								    currentFile=backsplash+path;
@@ -164,18 +181,16 @@
 					    }
 
 					    if(currentFile==="") {
-						    currentFolderFile.folder=path;
+						    folderFileInfo.folder=path;
                             //Get file list					
-                            fileProvider.getFileList(currentFolderFile.folder,function(result) {
-							    currentFolderFile.list=result.fileList;
-							    var file = document.getElementById("file-list");
-							    file.setAttribute("files", JSON.stringify(currentFolderFile.list));	
-							    //file.sortOn = "name";
-							    onionEditor.currentPath=currentFolderFile.folder;	
+                            fileProvider.getFileList(folderFileInfo.folder,function(result) {
+							    onionEditor.currentFolder=folderFileInfo.folder;	
+							    folderFileInfo.list=result.fileList;
+							    onionEditor.$.fileList.setAttribute("files", JSON.stringify(folderFileInfo.list));	 
 						    });
 					    } else {
-					        currentFolderFile.file=currentFile;
-						    console.log("It's a file["+currentFolderFile.folder+currentFolderFile.file+"]");
+					        folderFileInfo.file=currentFile;
+						    console.log("It's a file["+folderFileInfo.folder+folderFileInfo.file+"]");
 							openFile();
 					    }
 				    });
@@ -184,24 +199,23 @@
 			
 			var openFile = function()
 			{
-			    if(onionEditor.sessionProvider.isAlive()===true && currentFolderFile.file!=='') {
-                    if(currentFolderFile.fileInEdit!=="" &&				
-	                   onionEditor.currentCode!==document.getElementById('juicy-ace-editor').editor.session.getValue())	{
+			    if(onionEditor.sessionProvider.isAlive()===true && folderFileInfo.file!=='') {
+                    if(isFileChanged())	{
 					    if(confirm('Do you want to save the file?')) {
 						    saveFile();
 						}
 				    }    
-				    var ext=currentFolderFile.file.substring(currentFolderFile.file.lastIndexOf(extSymbol)+1,currentFolderFile.file.length);
-				    document.getElementById('juicy-ace-editor').editor.session.setMode('ace/mode/'+ext);
+				    var ext=getFileExtension();
+					onionEditor.$.fileEditor.editor.session.setMode('ace/mode/'+ext);
                     onionConsole.getService('onion-file-provider', function (fileProvider) {
 					    onionEditor.fileProvider=fileProvider;
 					    //Get file list
-					    fileProvider.getFileContent(currentFolderFile.folder+currentFolderFile.file,function(result) {
+					    fileProvider.getFileContent(folderFileInfo.folder+folderFileInfo.file,function(result) {
 						    if(result.fileContent!=null) {
 						        onionEditor.currentCode=result.fileContent;
-								currentFolderFile.fileInEdit=currentFolderFile.folder+currentFolderFile.file;
+								folderFileInfo.fileInEdit=folderFileInfo.folder+folderFileInfo.file;
 							} else {    
-							    alert('Failed to open \"'+currentFolderFile.folder+currentFolderFile.file+'\"');
+							    alert('Failed to open \"'+folderFileInfo.folder+folderFileInfo.file+'\"');
 							}
 					    });
 				    });
@@ -210,17 +224,17 @@
 			
 			var saveFile = function()
 			{
-				if(onionEditor.sessionProvider.isAlive()===true && currentFolderFile.fileInEdit!=='') {	
+				if(onionEditor.sessionProvider.isAlive()===true && folderFileInfo.fileInEdit!=='') {	
 				    onionConsole.getService('onion-file-provider', function (fileProvider) {
 					    onionEditor.fileProvider=fileProvider;
 					    //Get file list
-						var codeInEdit=document.getElementById('juicy-ace-editor').editor.session.getValue();
-					    fileProvider.saveFileContent(currentFolderFile.fileInEdit,codeInEdit,function(result) {
+						var codeInEdit=onionEditor.$.fileEditor.editor.session.getValue();
+					    fileProvider.saveFileContent(folderFileInfo.fileInEdit,codeInEdit,function(result) {
 						    if(result.saveResult===true) {
 							    onionEditor.currentCode=codeInEdit;
-						        alert('\"'+currentFolderFile.fileInEdit+'\" saved successfully');
+						        alert('\"'+folderFileInfo.fileInEdit+'\" saved successfully');
 							} else {    
-							    alert('Failed to save \"'+currentFolderFile.fileInEdit+'\"');
+							    alert('Failed to save \"'+folderFileInfo.fileInEdit+'\"');
 							}
 					    });
 				    });
@@ -235,6 +249,9 @@
 				openFolder: openFolder,
 				openFile: openFile,
 				saveFile: saveFile,
+				isFileChanged: isFileChanged,
+				findTypeById: findTypeById,
+				getFileExtension: getFileExtension,
 			});
         })();
 	</script>
