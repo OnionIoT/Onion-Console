@@ -9,6 +9,7 @@
 			var fileListResult = null;
 			var fileContentResult = null;
 			var fileSaveResult = null;
+			var execCommandResult = null;
 
 			var ready = function (){
 				fileProvider = this;
@@ -39,7 +40,16 @@
 					data: data
 				};
 				fileSaveResult = callback || this.noop;
-				this.ubus.request('file', 'write', params, saveFileContentResult);
+				this.ubus.request('file', 'write', params, setSaveFileContentResult);
+			}
+			
+			var execCommand = function(command, parameters, callback) {
+			    var params = {
+				    command: command,
+					params: parameters
+				};
+				execCommandResult = callback || this.noop;
+				this.ubus.request('file', 'exec', params, setExecCommandResult);
 			}
 			
 			var setFileList = function (result) {
@@ -102,7 +112,7 @@
 				}
 			}
 
-			var saveFileContentResult = function(result)
+			var setSaveFileContentResult = function(result)
 			{
 			    var returnCode = result[0];
 				if (returnCode === 0) { 
@@ -117,16 +127,32 @@
 				}
 			}
 			
+			var setExecCommandResult = function(result)
+			{
+				if (result[0] === 0 && result[1].code===0) { 
+					execCommandResult({
+					    execResult: true
+					});
+				} else {
+				    console.log('Failed to execute command!');
+					execCommandResult({
+					    execResult: false
+					});
+				}
+			}
+			
 			Polymer({
 				is: 'onion-file-provider',
 				ready: ready,
 				noop: function () {},
 				getFileList: getFileList,
 				getFileContent: getFileContent,
-				setFileList: setFileList,
-				setFileContent: setFileContent,
 				saveFileContent: saveFileContent,
-				saveFileContentResult: saveFileContentResult,
+				execCommand: execCommand,
+			    setFileList: setFileList,
+				setFileContent: setFileContent,
+				setSaveFileContentResult: setSaveFileContentResult,
+				setExecCommandResult: setExecCommandResult,
 			});
         })();
 	</script>
