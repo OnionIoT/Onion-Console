@@ -1,6 +1,6 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/views/onion-framework.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
 
 <dom-module id="onion-status">
 	<style>
@@ -90,16 +90,13 @@
 		}
 	</style>
 	<template>
-		<onion-app-frame title="{{title}}">
-			<app-tools-left>
+		<onion-app>
+			<onion-app-toolbar>
 				<button on-click="onLeftButton">Left Tool</button>
-			</app-tools-left>
-
-			<app-tools-right>
 				<button on-click="onRightButton">Right Tool</button>
-			</app-tools-right>
+			</onion-app-toolbar>
 
-			<app-body>
+			<onion-app-body>
 				<!--div id="ip"></div-->
 				<div class="wrapper">
 						<h4>General Status</h4>
@@ -152,8 +149,8 @@
 						</div>
 					</div>
 				</div>				
-			</app-body>
-		</onion-app-frame>
+			</onion-app-body>
+		</onion-app>
 	</template>
 	<script>
 		'use strict';

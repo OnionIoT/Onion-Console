@@ -1,0 +1,94 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/fonts/glyphicons/glyphicons.html">
+
+<dom-module id="onion-app">
+	<style>
+		:host {
+			display: block;
+			height: 100%;
+			width: 100%;
+		}
+
+		#appContainer {
+			display: block;
+			height: 100%;
+			width: 100%;
+		}
+
+		#appToolbar {
+	    	height: 50px;
+	    }
+
+	    #launcher-button {
+	    	height: 50px;
+	    	width: 50px;
+	    	margin-left: 10px;
+	    	background-color: transparent;
+	    	border: none;
+	    }
+	    	#launcher-button .glyphicons {
+	    		font-size: 24px;
+	    	}
+	</style>
+
+	<template>
+		<div id="appContainer">
+			<div id="appToolbar" class="layout horizontal center" hidden="{{hideToolbar}}">
+				<div hidden="{{hideLauncher}}">
+					<button id="launcher-button" on-tap="onLauncher"><span class="glyphicons glyphicons-show-thumbnails"></span></button>
+				</div>
+
+				<content select="onion-app-toolbar"></content>
+			</div>
+
+			<content select="onion-app-body"></content>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var ready = function () {
+				this.$.appContainer.style.color = this.color;
+				this.$.appContainer.style.backgroundColor = this.backgroundColor;
+
+				this.$.appToolbar.style.color = this.toolbarColor;
+				this.$.appToolbar.style.backgroundColor = this.toolbarBackgroundColor;
+			};
+
+			var onLauncher = function (e) {
+				onionConsole.launchApp("onion-launcher");
+			};
+
+
+			Polymer({
+				is: 'onion-app',
+				ready: ready,
+	            onLauncher: onLauncher,
+	            properties: {
+	            	hideToolbar: Boolean,
+	            	hideLauncher: Boolean,
+	            	color: {
+	            		type: String,
+	            		value: '#333'
+	            	},
+	            	backgroundColor: {
+	            		type: String,
+	            		value: '#fff'
+	            	},
+	            	toolbarColor: {
+	            		type: String,
+	            		value: '#fff'
+	            	},
+	            	toolbarBackgroundColor: {
+	            		type: String,
+	            		value: 'rgba(0, 0, 0, 0.25)'
+	            	}
+	            }
+			});
+        })();
+	</script>
+
+</dom-module>

@@ -1,7 +1,7 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/views/onion-framework.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 
+<link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="./onion-setting-home.html">
 <link rel="import" href="./onion-setting-update.html">
 
@@ -12,17 +12,14 @@
 
 	<template>
 
-		<onion-app-frame title="{{title}}">
+		<onion-app>
 
-			<app-tools-left>
+			<onion-app-toolbar>
 				<button on-click="onShowAll">Show All</button>
-			</app-tools-left>
-
-			<app-tools-right>
 				<input	placeholder="Search">
-			</app-tools-right>
+			</onion-app-toolbar>
 
-			<app-body>
+			<onion-app-body>
 
 				<iron-pages id="settingContainer" attr-for-selected="id" selected="{{currentSetting}}">
 					<onion-setting-home id='onion-setting-home'></onion-setting-home>
@@ -30,10 +27,9 @@
 					<onion-setting-update id="onion-setting-update"></onion-setting-update>
 
 				</iron-pages>
+			</onion-app-body>
 
-			</app-body>
-
-		</onion-app-frame>
+		</onion-app>
 
 	</template>
 

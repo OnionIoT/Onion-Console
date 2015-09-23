@@ -1,32 +1,24 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/views/onion-framework.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
 
 <dom-module id="onion-app-template">
 	<style>
 	</style>
 
 	<template>
+		<onion-app title="Onion App Template">
+			<onion-app-toolbar>
 
-		<onion-app-frame title="Onion App Template">
+			</onion-app-toolbar>
 
-			<app-tools-left>
-				<button on-click="onLeftButton">Left Tool</button>
-			</app-tools-left>
-
-			<app-tools-right>
-				<button on-click="onRightButton">Right Tool</button>
-			</app-tools-right>
-
-			<app-body>
+			<onion-app-body>
 				<div>
 					<h1>
 						Body of the App goes here
 					</h1>
 				</div>
-
-			</app-body>
-
-		</onion-app-frame>
+			</onion-app-body>
+		</onion-app>
 
 	</template>
 
@@ -51,7 +43,7 @@
 			}
 
 			Polymer({
-				is: "onion-app-template",
+				is: 'onion-app-template',
 				ready: ready,
 				onLeftButton: onLeftButton,
 				onRightButton: onRightButton,

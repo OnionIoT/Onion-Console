@@ -1,9 +1,9 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/views/onion-framework.html">
 <link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
 <link rel="import" href="/lib/file-list/file-list.html">
 <link rel="import" href="/lib/iron-icon/iron-icon.html">
 <link rel="import" href="/lib/paper-dialog/paper-dialog.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
 
 <dom-module id="onion-editor">
 	<style>
@@ -71,15 +71,8 @@
         }
 	</style>
 	<template>
-		<onion-app-frame title="{{title}}">
-			<app-tools-left>
-				<button on-click="onLeftButton">Left Button</button>
-			</app-tools-left>
-			<app-tools-right>
-				<button on-click="onRightButton">Right Button</button>
-			</app-tools-right>
-			
-			<app-body>
+		<onion-app>
+			<onion-app-body>
                 <div id="dialog-container">			
                     <paper-dialog id="newDialog" modal>
                         <paper-button on-click="newFolderDialog">New Folder</paper-button>
@@ -106,7 +99,7 @@
 					    fontsize="16px">{{currentCode}}</juicy-ace-editor>
 				</div>
 			</app-body>
-		</onion-app-frame>	
+		</onion-app>	
 	</template>
 	<script>
 		'use strict';
@@ -155,14 +148,6 @@
 						});
 					});
 				};		
-			};
-				
-			var onLeftButton = function () {
-			    alert('Left button click');
-			};
-
-			var onRightButton = function () {
-			    alert('Right button click');
 			};
 			 
 			var findTypeById = function (sourceList, name) {
@@ -351,8 +336,6 @@
 			Polymer({
 				is: 'onion-editor',
 				ready: ready,
-				onLeftButton: onLeftButton,
-				onRightButton: onRightButton,
 				openFolder: openFolder,
 				openFile: openFile,
 				saveFile: saveFile,

@@ -116,7 +116,7 @@
 				// this.apps = onionConsole.apps;
 				var onionLauncher = this;
 
-				onionConsole.getService("onion-apps-provider", function (appsProvider) {
+				onionConsole.getService('onion-apps-provider', function (appsProvider) {
 					onionLauncher.appsProvider = appsProvider;
 					onionLauncher.apps = appsProvider.getApps();
 				});
