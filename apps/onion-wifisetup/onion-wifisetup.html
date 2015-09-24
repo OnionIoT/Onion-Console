@@ -33,7 +33,12 @@
 							<!-- Detected networks -->
 							<label for="wifi-select" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Detected Networks</label>
 							<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-								<select class="form-control c-select" id="wifi-select" autocomplete="off" on-change="selectSsid">
+								<select class="form-control c-select" id="wifi-select" autocomplete="off" on-change="selectSsid" selected=0>
+									<!-- optional message on menu -->
+									<template is="dom-if" if="{{wifiScanMsgEn}}">
+										<option value="" disabled selected>{{wifiScanMsg}}</option>
+									</template>
+									<!-- list out the wifi networks -->
 									<template is="dom-repeat" items="{{networks}}">
 										<option value="{{index}}">{{item.ssid}}</option>
 									</template>
@@ -58,7 +63,7 @@
 							<label for="wifi-encryption" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Security</label>
 							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
 								<select class="form-control c-select" id="wifi-encryption" autocomplete="off" value="{{networkAuth::input}}">
-									<option value="none">None</option>
+									<option value="none" selected>None</option>
 									<option value="wep">WEP</option>
 									<option value="psk">WPA</option>
 									<option value="psk2">WPA2</option>
@@ -102,15 +107,29 @@
 				onionWifisetup.networks 	= [];
 				onionWifisetup.networkId	= -1;
 
-				//scanWifiNetwork();
+				this.hideScanMessage();
+
+				//this.scanWifiNetwork();
 			};
 
 			var onAppIcon = function (e) {
 				this.onionConsole.launchApp(e.target);
 			};
 
+			var showScanMessage = function (message) {
+				this.wifiScanMsgEn 	= true;
+				this.wifiScanMsg 	= message;
+			};
+
+			var hideScanMessage = function() {
+				this.wifiScanMsgEn 	= false;
+				console.log("Hide scan message!");
+			};
+
 			var scanWifiNetwork = function() {
 				var onionWifisetup = this;
+
+				onionWifisetup.showScanMessage("Scanning...");
 
 				// get the ubus service
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
@@ -132,6 +151,7 @@
 								}
 
 								// add newly detected networks to array
+								onionWifisetup.hideScanMessage();
 								var detectedNetworks = data[1].results;
 								for (let i = 0; i < detectedNetworks.length; i++) {
 									onionWifisetup.push('networks', detectedNetworks[i] );
@@ -188,14 +208,14 @@
 				console.log("arguments: ", params);
 
 				// get the ubus service
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
+				/*onionConsole.getService('onion-ubus-provider', function (ubus) {
 					// do ubus wifi-setup
 					ubus.request('onion', 'wifi-setup', params, function (data) {
 						if (data) {
 							console.log("wifi-setup response: ", data);
 						}
 					});
-				});
+				});*/
 			}
 
 			var onLeftButton = function(){
@@ -209,8 +229,8 @@
 			Polymer({
 				is: 'onion-wifisetup',
 				ready: ready,
-				onLeftButton: onLeftButton,
-				onRightButton: onRightButton,
+				showScanMessage: showScanMessage,
+				hideScanMessage: hideScanMessage,
 				scanWifiNetwork: scanWifiNetwork,
 				selectSsid: selectSsid,
 				setupWifi: setupWifi,
