@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ipAddr="omega-0100.local"
+
 rm -rf dist
 mkdir dist
 cp -r elements apps fonts helpers images index.html lib services views dist
@@ -14,6 +16,6 @@ find dist -name "package.json" -exec rm -rf {} \; 2>&1
 find dist -name ".git*" -exec rm -rf {} \; 2>&1
 find dist -name ".DS_Store" -exec rm -rf {} \; 2>&1
 
-rsync --progress -rv ./dist/* root@192.168.3.1:/www
+rsync --progress -rv ./dist/* root@$ipAddr:/www
 
 rm -rf dist

@@ -129,7 +129,9 @@
 					};
 
 					ubus.request('uci', 'get', params, function (result) {
-						onionLauncher.hostname = result[1].value;
+						if (result[0] == 0) {
+							onionLauncher.hostname = result[1].value;
+						}
 					});
 				});
 			};
