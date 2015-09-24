@@ -4,7 +4,7 @@
 	<style>
 		.dropdown-menu {
 			position: absolute;
-			top: 100%;
+			top: 38px;
 			left: 0;
 			z-index: 1000;
 			float: left;
@@ -33,7 +33,7 @@
 	</style>
 
 	<template>
-		<div class="dropdown-menu">
+		<div class$="{{_computeMenuClass(right)}}">
 			<content></content>
 		</div>
 	</template>
@@ -42,12 +42,8 @@
 		'use strict';
 
 		(function () {
-			var _computeDropdownClass = function (opened) {
-				return opened ? 'dropdown open' : 'dropdown';
-			};
-
 			var _computeMenuClass = function (right) {
-				return right ? 'dropdown-menu dropdown-content dropdown-menu-right' : 'dropdown-menu dropdown-content';
+				return right ? 'dropdown-menu dropdown-menu-right' : 'dropdown-menu dropdown-menu-left';
 			};
 
 			var ready = function () {
@@ -64,7 +60,6 @@
 					}
 				},
 				ready: ready,
-				_computeDropdownClass: _computeDropdownClass,
 				_computeMenuClass: _computeMenuClass
 			});
         })();

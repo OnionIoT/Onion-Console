@@ -1,17 +1,72 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/neon-animation/neon-animations.html">
 <link rel="import" href="/lib/iron-dropdown/iron-dropdown.html">
 
 <dom-module id="bootstrap-dropdown">
-	<link rel="import" type="css" href="bootstrap-dropdown.css">
+	<style>
+		:host {
+			height: 100%;
+		}
+
+		.dropup,
+		.dropdown {
+		  position: relative;
+		}
+
+		.open > .dropdown-menu {
+		  display: block;
+		}
+
+		.open > a {
+		  outline: 0;
+		}
+
+		.dropdown-header {
+		  display: block;
+		  padding: 3px 20px;
+		  font-size: .85rem;
+		  line-height: 1.5;
+		  color: #818a91;
+		  white-space: nowrap;
+		}
+
+		.dropdown-backdrop {
+		  position: fixed;
+		  top: 0;
+		  right: 0;
+		  bottom: 0;
+		  left: 0;
+		  z-index: 990;
+		}
+
+		.pull-right > .dropdown-menu {
+		  right: 0;
+		  left: auto;
+		}
+
+		.dropup .caret,
+		.navbar-fixed-bottom .dropdown .caret {
+		  content: "";
+		  border-top: 0;
+		  border-bottom: .3em solid;
+		}
+
+		.dropup .dropdown-menu,
+		.navbar-fixed-bottom .dropdown .dropdown-menu {
+		  top: auto;
+		  bottom: 100%;
+		  margin-bottom: 2px;
+		}
+	</style>
 
 	<template>
 		<div on-tap="open">
 			<content select="bootstrap-dropdown-toggle"></content>
 		</div>
 
-		<iron-dropdown id="dropdown" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]">	
-			<content select="bootstrap-dropdown-menu"></content>
+		<iron-dropdown id="dropdown">
+			<div class="dropdown-content">
+				<content select="bootstrap-dropdown-menu"></content>
+			</div>
 		</iron-dropdown>
 	</template>
 
@@ -30,25 +85,7 @@
 			Polymer({
 				is: 'bootstrap-dropdown',
 				properties: {
-					openAnimationConfig: {
-						type: Array,
-						value: [{
-							name: 'fade-in-animation',
-							timing: {
-							delay: 150,
-								duration: 50
-							}
-						}]
-					},
-					closeAnimationConfig: {
-						type: Array,
-						value: [{
-							name: 'fade-out-animation',
-							timing: {
-								duration: 200
-							}
-						}]
-					}
+					
 				},
 				ready: ready,
 				open: open
