@@ -2,29 +2,9 @@ html, body {
 	overflow: hidden;
 }
 
-body {
-    background-image: url('/images/bg/a.jpg');
-    background-attachment: fixed;
-    background-size: cover;
-}
-
 input:focus,
 select:focus,
 textarea:focus,
 button:focus {
     outline: none!important;
-}
-
-#loading {
-    position: absolute;
-    width: 150px;
-    text-align: center;
-    height: 32px;
-    line-height: 32px;
-    left: 50%;
-    top: 50%;
-    margin-left: -75px;
-    margin-top: -16px;
-    color: #fff;
-    font-weight: inherit;
 }
