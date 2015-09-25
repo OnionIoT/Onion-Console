@@ -1,5 +1,6 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-signals/iron-signals.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/elements/bootstrap-alert/bootstrap-alert.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 
@@ -22,28 +23,32 @@
 	</style>
 
 	<template>
-		<div id="login-container" class="layout horizontal center-justified center">
-			<div class="card" id="login-box">
-				<div class="card-header">
-					Login
+		<onion-app hide-toolbar background="transparent">
+			<onion-app-body>
+				<div id="login-container" class="layout horizontal center-justified center">
+					<div class="card" id="login-box">
+						<div class="card-header">
+							Login
+						</div>
+						<div class="card-block">
+							<form on-submit="login">
+								<fieldset class="form-group">
+									<label for="username">Username</label>
+									<input type="text" class="form-control" id="username" on-keydown="checkUsernameKey" autofocus>
+								</fieldset>
+								<fieldset class="form-group">
+									<label for="password">Password</label>
+									<input type="password" class="form-control" id="password">
+								</fieldset>
+								<div id="messageContainer"></div> 
+								
+								<button type="submit" class="btn btn-success">Login</button>
+							</form>
+						</div>
+					</div>
 				</div>
-				<div class="card-block">
-					<form on-submit="login">
-						<fieldset class="form-group">
-							<label for="username">Username</label>
-							<input type="text" class="form-control" id="username" on-keydown="checkUsernameKey" autofocus>
-						</fieldset>
-						<fieldset class="form-group">
-							<label for="password">Password</label>
-							<input type="password" class="form-control" id="password">
-						</fieldset>
-						<div id="messageContainer"></div> 
-						
-						<button type="submit" class="btn btn-success">Login</button>
-					</form>
-				</div>
-			</div>
-		</div>
+			</onion-app-body>
+		</onion-app>
 	</template>
 
 	<script>
@@ -87,6 +92,7 @@
 			
 			Polymer({
 				is: 'onion-login',
+				behaviors: [Onion.AppBehavior],
 				ready: ready,
 	            login: login,
 	            checkUsernameKey: checkUsernameKey

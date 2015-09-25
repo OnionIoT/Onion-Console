@@ -10,6 +10,15 @@
 			width: 100%;
 		}
 
+		:host ::content onion-app-toolbar {
+			width: 100%;
+		}
+
+		:host ::content onion-app-body {
+			width: 100%;
+			height: 100%;
+		}
+
 		#appContainer {
 			display: block;
 			height: 100%;
@@ -18,6 +27,7 @@
 
 		#appToolbar {
 	    	height: 50px;
+	    	width: 100%;
 	    }
 
 	    #launcher-button {
@@ -52,10 +62,10 @@
 		(function () {
 			var ready = function () {
 				this.$.appContainer.style.color = this.color;
-				this.$.appContainer.style.backgroundColor = this.backgroundColor;
+				this.$.appContainer.style.background = this.background;
 
 				this.$.appToolbar.style.color = this.toolbarColor;
-				this.$.appToolbar.style.backgroundColor = this.toolbarBackgroundColor;
+				this.$.appToolbar.style.background = this.toolbarBackground;
 			};
 
 			var onLauncher = function (e) {
@@ -74,7 +84,7 @@
 	            		type: String,
 	            		value: '#333'
 	            	},
-	            	backgroundColor: {
+	            	background: {
 	            		type: String,
 	            		value: '#fff'
 	            	},
@@ -82,12 +92,45 @@
 	            		type: String,
 	            		value: '#fff'
 	            	},
-	            	toolbarBackgroundColor: {
+	            	toolbarBackground: {
 	            		type: String,
 	            		value: 'rgba(0, 0, 0, 0.25)'
 	            	}
 	            }
 			});
+        })();
+
+        (function () {
+        	var Onion = window.Onion = window.Onion || {};
+
+        	var start = function () {
+        		console.log('Starting ' + this.appName);
+        	};
+
+        	var fg = function () {
+        		console.log('Moving ' + this.appName + ' to the foreground');
+        	};
+
+        	var bg = function () {
+        		console.log('Moving ' + this.appName + ' to the background');
+        	};
+
+        	var quit = function () {
+        		console.log('Quitting ' + this.appName);
+        	};
+
+        	Onion.AppBehavior = {
+        		properties: {
+        			appName: {
+        				type: String,
+        				value: 'Unnamed App'
+        			}
+        		},
+        		start: start,
+        		fg: fg,
+        		bg: bg,
+        		quit: quit
+        	};
         })();
 	</script>
 

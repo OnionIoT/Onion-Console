@@ -1,5 +1,6 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown.html">
 <link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown-toggle.html">
 <link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown-menu.html">
@@ -10,12 +11,8 @@
 <dom-module id="onion-launcher">
 	<style>
 		:host {
-			--dropdown-toggle-theme: {
-				background-color: transparent;
-				border: none;
-				color: #fff;
-				padding-right: 0;
-			};
+			width: 100%;
+			height: 100%;
 		}
 
 		#header {
@@ -78,43 +75,52 @@
  	</style>
 
 	<template>
-		<div id="header" class="layout horizontal center">
-			<div class="flex-2 layout horizontal"></div>
+		<onion-app hide-launcher background="transparent" toolbar-background="transparent">
+			<onion-app-toolbar>
+				<div id="header" class="layout horizontal center">
+					<div class="flex-2 layout horizontal"></div>
 
-			<div id="search" class="flex layout horizontal center-justified">
-				<label id="search-icon" for="search-bar" class="glyphicons glyphicons-search layout horizontal center-justified center"></label>
-				<input id="search-bar" class="form-control" placeholder="Search" />
-			</div>
+					<div id="search" class="flex layout horizontal center-justified">
+						<label id="search-icon" for="search-bar" class="glyphicons glyphicons-search layout horizontal center-justified center"></label>
+						<input id="search-bar" class="form-control" placeholder="Search" />
+					</div>
 
-			<div class="flex-2 layout horizontal end-justified">
-				<bootstrap-dropdown>
-					<bootstrap-dropdown-toggle theme="onion">
-						<span id="status">&bull;</span><span>{{hostname}}</span>
-					</bootstrap-dropdown-toggle>
-					<bootstrap-dropdown-menu right>
-						<bootstrap-dropdown-item>Log Out</bootstrap-dropdown-item>
-						<bootstrap-dropdown-item>Shutdown</bootstrap-dropdown-item>
-						<bootstrap-dropdown-item>Restart</bootstrap-dropdown-item>
-					</bootstrap-dropdown-menu>
-				</bootstrap-dropdown>
-			</div>
-		</div>
+					<div class="flex-2 layout horizontal end-justified">
+						<bootstrap-dropdown>
+							<bootstrap-dropdown-toggle theme="onion">
+								<span id="status">&bull;</span><span>{{hostname}}</span>
+							</bootstrap-dropdown-toggle>
+							<bootstrap-dropdown-menu right>
+								<bootstrap-dropdown-item>Log Out</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item>Shutdown</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item>Restart</bootstrap-dropdown-item>
+							</bootstrap-dropdown-menu>
+						</bootstrap-dropdown>
+					</div>
+				</div>
+			</onion-app-toolbar>
 
-		<div id="launcher" class="horizontal layout wrap">
-			<template is="dom-repeat" items="{{apps}}">
-				<onion-launcher-icon app-id="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-launcher-icon>
-			</template>
-		</div>
-
+			<onion-app-body>
+				<div class="layout horizontal center-justified">
+					<div id="appsContainer" class="horizontal layout wrap">
+						<template is="dom-repeat" items="{{apps}}">
+							<onion-launcher-icon app-id="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-launcher-icon>
+						</template>
+					</div>
+				</div>
+			</onion-app-body>
+		</onion-app>
 	</template>
 
 	<script>
 		'use strict';
 
 		(function () {
+			var onionLauncher;
+
 			var ready = function () {
 				// this.apps = onionConsole.apps;
-				var onionLauncher = this;
+				onionLauncher = this;
 
 				onionConsole.getService('onion-apps-provider', function (appsProvider) {
 					onionLauncher.appsProvider = appsProvider;
@@ -136,9 +142,23 @@
 				});
 			};
 
+			var attached = function () {
+				var setAppsContainerWidth = function () {
+					var windowWidth = onionLauncher.$$('onion-app').offsetWidth,
+						appsContainerWidth = Math.floor(windowWidth / 228) * 228;
+
+					onionLauncher.$.appsContainer.style.width = appsContainerWidth + 'px';
+				};
+
+				window.addEventListener('resize', setAppsContainerWidth, true);
+				setAppsContainerWidth();
+			};
+
 			Polymer({
 				is: 'onion-launcher',
 				ready: ready,
+				attached: attached,
+				behaviors: [Onion.AppBehavior],
 				properties: {
 					apps: Array,
 					hostname: String

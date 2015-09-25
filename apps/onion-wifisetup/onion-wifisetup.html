@@ -229,6 +229,7 @@
 			Polymer({
 				is: 'onion-wifisetup',
 				ready: ready,
+				behaviors: [Onion.AppBehavior],
 				showScanMessage: showScanMessage,
 				hideScanMessage: hideScanMessage,
 				scanWifiNetwork: scanWifiNetwork,

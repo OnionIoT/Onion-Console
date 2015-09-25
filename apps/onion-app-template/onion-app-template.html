@@ -6,7 +6,7 @@
 	</style>
 
 	<template>
-		<onion-app title="Onion App Template">
+		<onion-app>
 			<onion-app-toolbar>
 
 			</onion-app-toolbar>
@@ -45,6 +45,7 @@
 			Polymer({
 				is: 'onion-app-template',
 				ready: ready,
+				behaviors: [Onion.AppBehavior],
 				onLeftButton: onLeftButton,
 				onRightButton: onRightButton,
 				// onAppIcon: onAppIcon,

@@ -11,26 +11,19 @@
 	</style>
 
 	<template>
-
 		<onion-app>
-
 			<onion-app-toolbar>
 				<button on-click="onShowAll">Show All</button>
 				<input	placeholder="Search">
 			</onion-app-toolbar>
 
 			<onion-app-body>
-
 				<iron-pages id="settingContainer" attr-for-selected="id" selected="{{currentSetting}}">
 					<onion-setting-home id='onion-setting-home'></onion-setting-home>
-
 					<onion-setting-update id="onion-setting-update"></onion-setting-update>
-
 				</iron-pages>
 			</onion-app-body>
-
 		</onion-app>
-
 	</template>
 
 	<script>
@@ -58,6 +51,7 @@
 			Polymer({
 				is: "onion-settings",
 				ready: ready,
+				behaviors: [Onion.AppBehavior],
 				switchSetting: switchSetting,
 				onShowAll: onShowAll,
 				listeners: {
