@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ipAddr="omega-0100.local"
+ipAddr="192.168.3.1"
 
 rm -rf dist
 mkdir dist

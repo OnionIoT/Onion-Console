@@ -31,7 +31,7 @@
 					<form on-submit="login">
 						<fieldset class="form-group">
 							<label for="username">Username</label>
-							<input type="text" class="form-control" id="username">
+							<input type="text" class="form-control" id="username" on-keydown="checkUsernameKey" autofocus>
 						</fieldset>
 						<fieldset class="form-group">
 							<label for="password">Password</label>
@@ -59,10 +59,16 @@
 	            });
 			};
 
+			var checkUsernameKey = function (e) {
+				if (e.which === 13) {
+					e.preventDefault();
+					this.$.password.focus();
+				}
+			};
+
 			var login = function (e) {
 				e.preventDefault();
 
-				// var username = document.querySelector('#username').value;
 				var username = this.$.username.value;
 				var password = document.querySelector('#password').value;
 
@@ -76,14 +82,14 @@
 
 						Polymer.dom(onionLogin.$.messageContainer).appendChild(alertElement);
 					}
-
 				});
 			};
 			
 			Polymer({
 				is: 'onion-login',
 				ready: ready,
-	            login: login
+	            login: login,
+	            checkUsernameKey: checkUsernameKey
 			});
         })();
 	</script>

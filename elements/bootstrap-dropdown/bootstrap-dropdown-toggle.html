@@ -20,7 +20,7 @@
 	</style>
 
 	<template>
-		<button class="btn btn-secondary dropdown-toggle" type="button">
+		<button class$="{{_computeDropdownToggleClass(theme)}}" type="button">
 			<content></content>
 		</button>
 	</template>
@@ -29,12 +29,8 @@
 		'use strict';
 
 		(function () {
-			var _computeDropdownClass = function (opened) {
-				return opened ? 'dropdown open' : 'dropdown';
-			};
-
-			var _computeMenuClass = function (right) {
-				return right ? 'dropdown-menu dropdown-content dropdown-menu-right' : 'dropdown-menu dropdown-content';
+			var _computeDropdownToggleClass = function (theme) {
+				return 'btn btn-' + theme + ' dropdown-toggle';
 			};
 
 			var ready = function () {
@@ -45,14 +41,16 @@
 				is: 'bootstrap-dropdown-toggle',
 				properties: {
 					right: {
-						notify: true,
 				        type: Boolean,
 				        value: false
+					},
+					theme: {
+						type: String,
+						value: 'default'
 					}
 				},
 				ready: ready,
-				_computeDropdownClass: _computeDropdownClass,
-				_computeMenuClass: _computeMenuClass
+				_computeDropdownToggleClass: _computeDropdownToggleClass
 			});
         })();
 	</script>
