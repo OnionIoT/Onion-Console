@@ -82,7 +82,7 @@
 
 					<div id="search" class="flex layout horizontal center-justified">
 						<label id="search-icon" for="search-bar" class="glyphicons glyphicons-search layout horizontal center-justified center"></label>
-						<input id="search-bar" class="form-control" placeholder="Search" />
+						<input id="search-bar" class="form-control" placeholder="Search" value="{{filterString::input}}" on-keydown="filterEscapeWatcher">
 					</div>
 
 					<div class="flex-2 layout horizontal end-justified">
@@ -103,7 +103,7 @@
 			<onion-app-body>
 				<div class="layout horizontal center-justified">
 					<div id="appsContainer" class="horizontal layout wrap">
-						<template is="dom-repeat" items="{{apps}}">
+						<template is="dom-repeat" items="{{apps}}" filter="{{searchFilter(filterString)}}">
 							<onion-launcher-icon app-id="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-launcher-icon>
 						</template>
 					</div>
@@ -154,14 +154,34 @@
 				setAppsContainerWidth();
 			};
 
+			var searchFilter = function (filterString) {
+				return function (app) {
+					if (filterString === '') {
+						return true;
+					} else {
+						return app.name.toLowerCase().includes(filterString.toLowerCase());
+					}
+				}
+			};
+
+			var filterEscapeWatcher = function (e) {
+				if (e.which === 27) {
+					this.set('filterString', '');
+					this.$['search-bar'].blur();
+				}
+			};
+
 			Polymer({
 				is: 'onion-launcher',
 				ready: ready,
 				attached: attached,
 				behaviors: [Onion.AppBehavior],
+				searchFilter: searchFilter,
+				filterEscapeWatcher: filterEscapeWatcher,
 				properties: {
 					apps: Array,
-					hostname: String
+					hostname: String,
+					filterString: String
 				}
 			});
         })();

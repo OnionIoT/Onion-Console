@@ -16,6 +16,6 @@ find dist -name "package.json" -exec rm -rf {} \; 2>&1
 find dist -name ".git*" -exec rm -rf {} \; 2>&1
 find dist -name ".DS_Store" -exec rm -rf {} \; 2>&1
 
-rsync --progress -rv ./dist/* root@$ipAddr:/www
+rsync --progress -crv ./dist/* root@$ipAddr:/www
 
 rm -rf dist
