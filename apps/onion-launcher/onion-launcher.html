@@ -134,7 +134,7 @@
 					};
 
 					ubus.request('uci', 'get', params, function (result) {
-						if (result[0] == 0) {
+						if (result[0] === 0) {
 							onionLauncher.hostname = result[1].value;
 						}
 					});
@@ -143,10 +143,7 @@
 
 			var attached = function () {
 				var setAppsContainerWidth = function () {
-					var windowWidth = onionLauncher.$$('onion-app').offsetWidth,
-						appsContainerWidth = Math.floor(windowWidth / 228) * 228;
-
-					onionLauncher.$.appsContainer.style.width = appsContainerWidth + 'px';
+					onionLauncher.$.appsContainer.style.width = Math.floor(window.innerWidth / 228) * 228 + 'px';
 				};
 
 				window.addEventListener('resize', setAppsContainerWidth, true);

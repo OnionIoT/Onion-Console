@@ -14,12 +14,6 @@
 					sessionProvider.ubus = ubus;
 					sessionProvider.ubus.isAlive = false;
 				});
-				
-				onionConsole.getService("onion-apps-provider", function (appsProvider) {
-					sessionProvider.appsProvider = appsProvider;
-					//onionLauncher.apps = appsProvider.getApps();
-				});
-
 			};
 
 			var login = function (username, password, callback) {
@@ -33,7 +27,7 @@
 			};
 
 			var setToken = function (result) {
-				if(result!==null&&result[0]!==null) {
+				if(result !== null && result[0] !== null) {
 				    if ('error' in result) {
 				        sessionProvider.ubus.isAlive = false;
 					    loginReturn({success: false});
@@ -63,7 +57,7 @@
 			};
 		 
 			var heartbeat = function () {
-			    if (isAlive()===true) {
+			    if (isAlive() === true) {
 					sessionProvider.ubus.request('session', 'access', {}, setAlive);
 				} else {
                     logout();   
@@ -86,7 +80,7 @@
 			var setAlive = function (result) {
 				if (result !== null && result[0] === 0) {
 				    sessionProvider.ubus.isAlive = true;   
-                    console.log("Alive");					
+                    console.log('Alive');					
 				} else {
 				    sessionProvider.ubus.isAlive = false;
 				    logout();
@@ -97,7 +91,7 @@
 			    return 	sessionProvider.ubus.isAlive;
 			};
 			
-			var logout = function() {
+			var logout = function () {
 				if(sessionProvider.heartbeatInterval !== null) {
 				    console.log('logout');
 					stopHeartbeat();	

@@ -33,8 +33,7 @@
 			var handelResponse = function (request) { 
 				var response = request.detail.response;
 
-                if(response!==null)
-                {
+                if (response !== null) {
  				    if ('error' in response){
 					    openRequests[response.id]({error: response.error});
 					    console.log(response.error);  
