@@ -1,0 +1,58 @@
+{
+	"onion-console": {
+		"description": "Permissions to allow onion-console to work properly",
+		"read": {
+			"ubus": {
+				"file": [
+					"list",
+					"read",
+					"exec",
+					"write",
+					"stat"
+				],
+				"onion": [
+					"wifi-scan",
+					"oupgrade",
+					"wifi-setup"
+				],
+				"system": [
+					"info"
+				],
+				"iwinfo": [
+					"assoclist"
+				],
+				"network.device": [
+					"status"
+				],
+				"network.interface": [
+					"dump"
+				],
+				"uci": [
+					"get",
+					"rpcd"
+				]
+			}
+		},
+		"write": {
+			"ubus": {
+				"onion": [
+					"wifi-scan",
+					"wifi-setup",
+					"oupgrade"
+				],
+				"uci": [
+					"get",
+
+					"rpcd"
+				],
+				"file": [
+					"list",
+					"read",
+					"exec",
+					"write",
+					"stat"
+				],
+			}
+		}
+	}
+}
