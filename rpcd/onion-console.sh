@@ -106,7 +106,7 @@ DirList () {
 ########################
 ##### Main Program #####
 
-cmdAppList="dir-list"
+cmdAppList="app-list"
 cmdStatus="status"
 
 jsonAppList='"'"$cmdAppList"'": { }'
