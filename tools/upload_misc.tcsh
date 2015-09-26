@@ -15,6 +15,7 @@ cd -
 echo "Omega IP: $ipAddr"
 
 
-# transfer file
+# transfer files
 rsync --progress -rv ./acl.d/* root@$ipAddr:/usr/share/rpcd/acl.d
+rsync --progress -rv ./rpcd/onion-console.sh root@$ipAddr:/usr/libexec/rpcd/onion-console
 

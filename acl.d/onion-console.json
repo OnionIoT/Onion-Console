@@ -15,6 +15,9 @@
 					"oupgrade",
 					"wifi-setup"
 				],
+				"onion-console": [
+					"app-list"
+				],
 				"system": [
 					"info"
 				],
@@ -39,6 +42,9 @@
 					"wifi-scan",
 					"wifi-setup",
 					"oupgrade"
+				],
+				"onion-console": [
+					"app-list"
 				],
 				"uci": [
 					"get",
