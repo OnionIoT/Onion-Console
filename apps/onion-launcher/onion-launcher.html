@@ -31,7 +31,7 @@
 
 		#search-icon {
 			position: absolute;
-			height: 38px;
+			height: 30px;
 			width: 30px;
 			right: 0;
 			text-align: center;
@@ -43,8 +43,7 @@
 			border: 1px rgba(255, 255, 255, 0.25) solid;
 			background-color: rgba(255, 255, 255, 0.1);
 			color: #fff;
-			/* -webkit-transition: background-color 0.5s, border 0.5s;
-    		transition: background-color 0.5s, border 0.5s; */
+			padding: 3px 10px;
 		}
 
 			#search-bar:focus {
@@ -75,7 +74,7 @@
  	</style>
 
 	<template>
-		<onion-app hide-launcher background="transparent" toolbar-background="transparent">
+		<onion-app app-name="Launcher" hide-title hide-launcher background="transparent" toolbar-background="transparent">
 			<onion-app-toolbar>
 				<div id="header" class="layout horizontal center">
 					<div class="flex-2 layout horizontal"></div>

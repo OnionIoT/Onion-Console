@@ -71,10 +71,8 @@
 
 			var getService = function (serviceId, callback) {
 				if (serviceId in services) {
-
 					callback(services[serviceId]);
-				}else{
-
+				} else {
 					this.launchService(serviceId,callback);
 				}
 			};
@@ -86,7 +84,6 @@
 				launchApp: launchApp,
 				launchService: launchService,
 				getService: getService
-
 			});
 		})();
 	</script>

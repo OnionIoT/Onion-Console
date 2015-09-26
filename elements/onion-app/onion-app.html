@@ -40,6 +40,11 @@
 	    	#launcher-button .glyphicons {
 	    		font-size: 24px;
 	    	}
+
+	    #app-name {
+	    	font-size: 20px;
+	    	margin-right: 15px;
+	    }
 	</style>
 
 	<template>
@@ -48,6 +53,8 @@
 				<div hidden="{{hideLauncher}}">
 					<button id="launcher-button" on-tap="onLauncher"><span class="glyphicons glyphicons-show-thumbnails"></span></button>
 				</div>
+
+				<div id="app-name" hidden="{{hideTitle}}">{{appName}}</div>
 
 				<content select="onion-app-toolbar"></content>
 			</div>
@@ -69,7 +76,7 @@
 			};
 
 			var onLauncher = function (e) {
-				onionConsole.launchApp("onion-launcher");
+				onionConsole.launchApp('onion-launcher');
 			};
 
 
@@ -80,6 +87,7 @@
 	            properties: {
 	            	hideToolbar: Boolean,
 	            	hideLauncher: Boolean,
+	            	hideTitle: Boolean,
 	            	color: {
 	            		type: String,
 	            		value: '#333'
@@ -95,13 +103,18 @@
 	            	toolbarBackground: {
 	            		type: String,
 	            		value: 'rgba(0, 0, 0, 0.25)'
-	            	}
+	            	},
+	            	appName: String
 	            }
 			});
         })();
 
         (function () {
         	var Onion = window.Onion = window.Onion || {};
+
+        	var ready = function () {
+        		this.appName = this.$$('onion-app').appName || this.appName;
+        	};
 
         	var start = function () {
         		console.log('Starting ' + this.appName);
@@ -126,6 +139,7 @@
         				value: 'Unnamed App'
         			}
         		},
+        		ready: ready,
         		start: start,
         		fg: fg,
         		bg: bg,

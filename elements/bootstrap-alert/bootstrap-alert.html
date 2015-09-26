@@ -5,7 +5,7 @@
 	
 	<template>
 		<div class$="[[_computeClass(success, info, warning, danger)]]" role="alert">
-			<content>{{message}}</content>
+			<content></content>
 			<button type="button" class="close" on-click="_close">&times;</span></button>
 		</div>
 	</template>
@@ -56,8 +56,7 @@
 		    			notify: true,
 				        type: Boolean,
 				        value: false
-		    		},
-		    		message: String
+		    		}
 	    		},
 	    		_computeClass: _computeClass,
 	    		_close: _close

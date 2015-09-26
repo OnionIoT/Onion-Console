@@ -6,7 +6,7 @@
 	</style>
 
 	<template>
-		<onion-app>
+		<onion-app app-name="Onion App Template">
 			<onion-app-toolbar>
 
 			</onion-app-toolbar>
@@ -26,10 +26,6 @@
 		'use strict';
 
 		(function () {
-			var ready = function () {
-
-			};
-
 			var onAppIcon = function (e) {
 				this.onionConsole.launchApp(e.target);
 			};
@@ -44,7 +40,7 @@
 
 			Polymer({
 				is: 'onion-app-template',
-				ready: ready,
+				ready: function () {},
 				behaviors: [Onion.AppBehavior],
 				onLeftButton: onLeftButton,
 				onRightButton: onRightButton,

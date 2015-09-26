@@ -23,7 +23,7 @@
 	</style>
 
 	<template>
-		<onion-app hide-toolbar background="transparent">
+		<onion-app app-name="Login" hide-toolbar background="transparent">
 			<onion-app-body>
 				<div id="login-container" class="layout horizontal center-justified center">
 					<div class="card" id="login-box">
@@ -83,9 +83,10 @@
 					} else {
 						var alertElement = document.createElement('bootstrap-alert');
 						alertElement.setAttribute('warning', true);
-						alertElement.setAttribute('message', 'Login failed.');
+						Polymer.dom(alertElement).innerHTML = 'Login failed.';
 
 						Polymer.dom(onionLogin.$.messageContainer).appendChild(alertElement);
+						Polymer.dom.flush();
 					}
 				});
 			};
