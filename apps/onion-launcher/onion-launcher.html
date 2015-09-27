@@ -103,7 +103,9 @@
 				<div class="layout horizontal center-justified">
 					<div id="appsContainer" class="horizontal layout wrap">
 						<template is="dom-repeat" items="{{apps}}" filter="{{searchFilter(filterString)}}">
-							<onion-launcher-icon app-id="{{item.id}}" icon="{{item.icon}}" title="{{item.name}}"></onion-launcher-icon>
+							<template is="dom-if" if="{{item.icon}}">
+								<onion-launcher-icon app-id="{{item.id}}" icon="{{appIconURL(item.id)}}" title="{{item.name}}"></onion-launcher-icon>
+							</template>
 						</template>
 					</div>
 				</div>
@@ -123,7 +125,13 @@
 
 				onionConsole.getService('onion-apps-provider', function (appsProvider) {
 					onionLauncher.appsProvider = appsProvider;
-					onionLauncher.apps = appsProvider.getApps();
+
+					var appsInterval = setInterval(function () {
+						if (appsProvider.apps.length) {
+							clearInterval(appsInterval);
+							onionLauncher.set('apps', appsProvider.apps);
+						}
+					}, 0);
 				});
 
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
@@ -160,6 +168,10 @@
 				}
 			};
 
+			var appIconURL = function (id) {
+				return '/apps/' + id + '/icon.png';
+			};
+
 			var filterEscapeWatcher = function (e) {
 				if (e.which === 27) {
 					this.set('filterString', '');
@@ -171,8 +183,10 @@
 				is: 'onion-launcher',
 				ready: ready,
 				attached: attached,
+				apps: [],
 				behaviors: [Onion.AppBehavior],
 				searchFilter: searchFilter,
+				appIconURL: appIconURL,
 				filterEscapeWatcher: filterEscapeWatcher,
 				properties: {
 					apps: Array,
@@ -184,3 +198,4 @@
 	</script>
 
 </dom-module>
+
