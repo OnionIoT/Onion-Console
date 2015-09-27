@@ -24,47 +24,16 @@ Log () {
 	fi
 }
 
-
-# function to parse json params object
-# returns a string via echo
-_ParseArgumentsObject () {
-	local retArgumentString=""
-
-	# select the arguments object
-	json_select params
-	
-	# read through all the arguments
-	json_get_keys keys
-
-	for key in $keys
-	do
-		# get the key value
-		json_get_var val "$key"
-		
-		# specific key modifications
-		if 	[ "$key" == "ssid" ] ||
-			[ "$key" == "password" ];
-		then
-			# add double quotes around ssid and password
-			val="\"$val\""
-		fi
-
-		retArgumentString="$retArgumentString-$key $val "
-	done
-
-	echo "$retArgumentString"
-}
-
-# function to return an array of all directories
+# function to return an array of all apps and if the app has an icon there
 # 	argument 1: directory to check
-DirList () {
+AppList () {
 	bExists=0
 
 	# json setup           
 	json_init              
 	
 	# create the directory array
-	json_add_array directories
+	json_add_array apps
 	
 	#check if the directory exists
 	if [ -d $1 ]
@@ -76,7 +45,7 @@ DirList () {
 		cd $1
 		
 		# grab all the directories and correct the formatting                          
-		dirs=`find . -type d -maxdepth 1 -mindepth 1 | sed -e 's/\.\///' | tr '\n' ';'`
+		dirs=`find . -type d -maxdepth 1 -mindepth 1 | tr '\n' ';'`
 		
 		
 		
@@ -87,8 +56,22 @@ DirList () {
 			val=${rest%%;*}
 			rest=${rest#*;}
 
-			# val now holds a directory
-			json_add_string "dir" "$val"
+			# find if this directory has icon.png
+			icon=`find $val -name "icon.png"`
+
+			bIcon=0
+			if [ "$icon" != "" ]; then
+				bIcon=1
+			fi
+
+			# format the directory name
+			val=`echo $val | sed -e 's/\.\///'`
+
+			# create and populate object for this network
+			json_add_object
+			json_add_string "app" "$val"
+			json_add_boolean "icon.png" $bIcon
+			json_close_object
 		done	
 	fi
 
@@ -106,11 +89,14 @@ DirList () {
 ########################
 ##### Main Program #####
 
+appLocation="/www/apps"
+
 cmdAppList="app-list"
 cmdStatus="status"
 
 jsonAppList='"'"$cmdAppList"'": { }'
 jsonStatus='"'"$cmdStatus"'": { }'
+
 
 case "$1" in
     list)
@@ -121,11 +107,8 @@ case "$1" in
 
 		case "$2" in
 			$cmdAppList)
-				# set the location to check for directories
-				appLocation="/www/apps"
-
-				# run the wifi scan
-				DirList "$appLocation"
+				# run the app-list scan
+				AppList "$appLocation"
 			;;
 			$cmdStatus)
 				# dummy call for now
