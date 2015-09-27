@@ -91,11 +91,6 @@
 	</style>
 	<template>
 		<onion-app app-name="Status">
-			<onion-app-toolbar>
-				<button on-click="onLeftButton">Left Tool</button>
-				<button on-click="onRightButton">Right Tool</button>
-			</onion-app-toolbar>
-
 			<onion-app-body>
 				<!--div id="ip"></div-->
 				<div class="wrapper">
@@ -243,25 +238,11 @@
 				});
 			};
 			*/
-			
-			var onLeftButton = function () {
-				alert('left button pressed');
-				this.rxtxProvider.getRxTx(function (result) {
-					console.log('rxtxResult[' + result + ']');
-				});
-			};
-
-			var onRightButton = function () {
-				alert('right button pressed');
-				updateStatus();
-			};
 
 			Polymer({
 				is: 'onion-status',
 				ready: ready,
 				behaviors: [Onion.AppBehavior],
-				onLeftButton: onLeftButton,
-				onRightButton: onRightButton,
 				refreshRxTx: refreshRxTx,
 				stopRefreshRxTx: stopRefreshRxTx,
 				updateRxTx: updateRxTx,

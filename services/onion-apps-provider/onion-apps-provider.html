@@ -6,6 +6,18 @@ import shared service
         'use strict';
 
         (function () {
+            var appProvider = null,
+                apps;
+
+            var ready = function () {
+                appProvider = this;
+                onionConsole.getService('onion-ubus-provider', function (ubus) {
+                    ubus.request('onion-console', 'app-list', {}, function (result) {
+                        console.log(result);
+                    });
+                });
+            };
+
             var apps = [
                 {
                     id: 'onion-app-template',
@@ -199,8 +211,9 @@ import shared service
             }
 
             Polymer({
-                is: "onion-apps-provider",
-                getApps: getApps
+                is: 'onion-apps-provider',
+                getApps: getApps,
+                ready: ready
             });
         })();
 	</script>
