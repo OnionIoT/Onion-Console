@@ -44,33 +44,27 @@ AppList () {
 		# go to the directory
 		cd $1
 		
-		# grab all the directories and correct the formatting                          
-		dirs=`find . -type d -maxdepth 1 -mindepth 1 | tr '\n' ';'`
+		# grab all the app.json files and correct the formatting                          
+		appList=`find . -name "app.json" | tr '\n' ';'`
 		
-		
-		
-		# split the list of directories
-		rest=$dirs
+		# split the list of json files
+		rest=$appList
 		while [ "$rest" != "" ]
 		do
 			val=${rest%%;*}
 			rest=${rest#*;}
 
-			# find if this directory has icon.png
-			icon=`find $val -name "icon.png"`
+			# read in the contents of the json file
+			appData=`cat $val | tr '\n' ' '`
+			
+			# find json commands to run for the app json file
+			jshnCmd=`jshn -r "$appData"`
+			# remove the json_init call
+			jshnCmd=`echo $jshnCmd | sed -e 's/json_init;//'`
 
-			bIcon=0
-			if [ "$icon" != "" ]; then
-				bIcon=1
-			fi
-
-			# format the directory name
-			val=`echo $val | sed -e 's/\.\///'`
-
-			# create and populate object for this network
-			json_add_object
-			json_add_string "app" "$val"
-			json_add_boolean "icon.png" $bIcon
+			# create and populate object for this app
+			json_add_object 
+			eval $jshnCmd
 			json_close_object
 		done	
 	fi
