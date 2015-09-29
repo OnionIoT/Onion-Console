@@ -12,7 +12,15 @@
 				sessionProvider = this;
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
 					sessionProvider.ubus = ubus;
-					sessionProvider.ubus.isAlive = false;
+
+					checkToken(function (hasToken) {
+						if (hasToken) {
+							sessionProvider.ubus.token = sessionStorage.getItem('_omega_session_token');
+							sessionProvider.ubus.isAlive = true;
+						} else {
+							sessionProvider.ubus.isAlive = false;
+						}
+					});
 				});
 			};
 
@@ -27,7 +35,7 @@
 			};
 
 			var setToken = function (result) {
-				if(result !== null && result[0] !== null) {
+				if (result !== null && result[0] !== null) {
 				    if ('error' in result) {
 				        sessionProvider.ubus.isAlive = false;
 					    loginReturn({success: false});
@@ -39,6 +47,7 @@
 					    var token = result[1].ubus_rpc_session;
 	                    console.log('session token: ' + token);
 
+	                    sessionStorage.setItem('_omega_session_token', token);
 					    sessionProvider.ubus.token = token;
 					    sessionProvider.ubus.isAlive = true;
 					    startHeartbeat(10000);
@@ -90,12 +99,18 @@
 			var isAlive = function () {
 			    return 	sessionProvider.ubus.isAlive;
 			};
+
+			var checkToken = function (callback) {
+				callback = callback || function () {};
+				callback(typeof(Storage) !== 'undefined' && sessionStorage.getItem('_omega_session_token'));
+			};
 			
 			var logout = function () {
-				if(sessionProvider.heartbeatInterval !== null) {
+				if (sessionProvider.heartbeatInterval !== null) {
 				    console.log('logout');
+				    sessionStorage.removeItem('_omega_session_token');
 					stopHeartbeat();	
-                    window.onionConsole.launchApp('onion-login');					
+                    onionConsole.launchApp('onion-login');					
 			    }
 			};
 			
@@ -110,6 +125,7 @@
 				startHeartbeat: startHeartbeat,
 				stopHeartbeat: stopHeartbeat,
 				isAlive: isAlive,
+				checkToken: checkToken
 			});
         })();
 	</script>

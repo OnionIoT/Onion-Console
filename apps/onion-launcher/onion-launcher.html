@@ -90,7 +90,7 @@
 								<span id="status">&bull;</span><span>{{hostname}}</span>
 							</bootstrap-dropdown-toggle>
 							<bootstrap-dropdown-menu right>
-								<bootstrap-dropdown-item>Log Out</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="onLogout">Log Out</bootstrap-dropdown-item>
 								<bootstrap-dropdown-item>Shutdown</bootstrap-dropdown-item>
 								<bootstrap-dropdown-item>Restart</bootstrap-dropdown-item>
 							</bootstrap-dropdown-menu>
@@ -151,7 +151,7 @@
 
 			var attached = function () {
 				var setAppsContainerWidth = function () {
-					onionLauncher.$.appsContainer.style.width = Math.floor(window.innerWidth / 228) * 228 + 'px';
+					onionLauncher.$.appsContainer.style.width = Math.floor(window.innerWidth / 250) * 250 + 'px';
 				};
 
 				window.addEventListener('resize', setAppsContainerWidth, true);
@@ -179,6 +179,12 @@
 				}
 			};
 
+			var onLogout = function () {
+				onionConsole.getService('onion-session-provider', function (sessionProvider) {
+					sessionProvider.logout();
+				});
+			};
+
 			Polymer({
 				is: 'onion-launcher',
 				ready: ready,
@@ -192,7 +198,8 @@
 					apps: Array,
 					hostname: String,
 					filterString: String
-				}
+				},
+				onLogout: onLogout
 			});
         })();
 	</script>

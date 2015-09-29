@@ -69,7 +69,7 @@
 		</div>
 
 		<iron-dropdown id="dropdown">
-			<div class="dropdown-content">
+			<div class="dropdown-content" on-tap="close">
 				<content select="bootstrap-dropdown-menu"></content>
 			</div>
 		</iron-dropdown>
@@ -87,13 +87,18 @@
 				this.$.dropdown.open();
 			};
 
+			var close = function () {
+				this.$.dropdown.close();
+			};
+
 			Polymer({
 				is: 'bootstrap-dropdown',
 				properties: {
 					
 				},
 				ready: ready,
-				open: open
+				open: open,
+				close: close
 			});
         })();
 	</script>

@@ -61,6 +61,13 @@
 				onionLogin = this;
 				onionConsole.getService('onion-session-provider', function (session) {
 	            	onionLogin.session = session;
+
+	            	onionLogin.session.checkToken(function (hasToken) {
+	            		if (hasToken) {
+		            		onionConsole.launchApp('onion-launcher');
+		            		onionLogin.quit();
+		            	}
+	            	});
 	            });
 			};
 
@@ -80,6 +87,7 @@
 				this.session.login(username, password, function (result) {
 					if (result.success) {
 						onionConsole.launchApp('onion-launcher');
+						onionLogin.quit();
 					} else {
 						var alertElement = document.createElement('bootstrap-alert');
 						alertElement.setAttribute('warning', true);
