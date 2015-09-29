@@ -1,9 +1,9 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
-<link rel="import" href="/lib/file-list/file-list.html">
 <link rel="import" href="/lib/iron-icon/iron-icon.html">
 <link rel="import" href="/lib/paper-dialog/paper-dialog.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="/elements/onion-file-list/onion-file-list.html">
 
 <dom-module id="onion-editor">
 	<style>
@@ -11,8 +11,23 @@
 		    display: block;
 	  	    height: 100%;
 			width: 100%;
-			background-color: black;
 		}
+
+		onion-app-body > div {
+			height: 100%;
+			width: 100%;
+		}
+
+		#side-bar {
+			width: 300px;
+			height: 100%;
+			overflow: scroll;
+		}
+
+		onion-file-list {
+			height: 100%;
+		}
+
 		#folder-container {
 		    color: black;
 		    background-color:white;
@@ -21,24 +36,12 @@
 			padding: 5px;
             line-height: 20px;
 		}
-        #file-list-container { 
-			width:20%; 
-			height: 85%;
-			float:left;
-            color: black;			
-		    background-color: white;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-            font-size: 12px;
-			line-height: normal;
-			direction: ltr;		
-            overflow-x: auto;
-            overflow-y: auto;			
-		}
+
 		#editor-container {
-		    width:80%;
-			height: 85%;
-			margin-left:20%;
+		    width: 100%;
+			height: 100%;
 		}
+
 	    #fileEditor {
 	        width: 100%;
 	        height: 100%;
@@ -73,11 +76,23 @@
 	<template>
 		<onion-app app-name="Editor">
 			<onion-app-body>
-                <div id="dialog-container">			
+				<div class="horizontal layout">
+					<div id="side-bar">
+					    <div id="folder-container">{{currentFolder}}</div>
+						<onion-file-list id="fileList">No File</onion-file-list>
+					</div>
+
+					<div id="editor-container" class="flex">
+					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="16px">{{currentCode}}</juicy-ace-editor>
+					</div>
+				</div>
+
+				<div id="dialog-container">			
                     <paper-dialog id="newDialog" modal>
                         <paper-button on-click="newFolderDialog">New Folder</paper-button>
 				        <paper-button on-click="newFileDialog">New File</paper-button>
-                    </paper-dialog>        
+                    </paper-dialog>
+
 					<paper-dialog id="inputDialog" modal>
 					    <div>
 							<label for="folderFilename" id="labelString"></label><br>
@@ -87,18 +102,7 @@
 					    <paper-button on-click="createFile" autofocus>OK</paper-button
                     </paper-dialog>       
 			    </div>
-			    <div id="folder-container">{{currentFolder}}</div>
-				<div id="file-list-container">
-				    <file-list id="fileList">No File</file-list>
-				</div>
-				<div id="editor-container">
-				    <juicy-ace-editor 
-				        id="fileEditor"
-                        theme="ace/theme/monokai"
-					    mode="ace/mode/text" 
-					    fontsize="16px">{{currentCode}}</juicy-ace-editor>
-				</div>
-			</app-body>
+			</onion-app-body>
 		</onion-app>	
 	</template>
 	<script>

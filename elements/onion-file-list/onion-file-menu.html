@@ -1,0 +1,104 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="/lib/neon-animation/animations/scale-up-animation.html">
+
+<dom-module id="onion-file-menu">
+
+	<style>
+		:host {
+			display: none;
+			background-color: #fff;
+		}
+	</style>
+
+	<template>
+		<content></content>
+	</template>
+
+</dom-module>
+
+<script>
+
+	Polymer({
+		is: 'onion-file-menu',
+
+		behaviors: [
+			Polymer.NeonAnimationRunnerBehavior
+		],
+
+		properties: {
+
+			/**
+			 * `opened` indicates the the dropdown is opened.
+			*/
+			opened: {
+				type: Boolean,
+				value: false
+			},
+
+			/**
+			 * `opening` indicates the the dropdown is in the process of opening.
+			*/
+			opening: {
+				type: Boolean,
+				value: false
+			},
+
+			/**
+			 * `animationConfig` is a configuration object for the dropdown's animations.
+			*/
+			animationConfig: {
+				type: Object,
+				value: function() {
+					return {
+						entry: [{
+							name: 'scale-up-animation',
+							transformOrigin: '100% 0',
+							timing: {
+								duration: 150
+							},
+							node: this
+						}]
+					};
+				}
+			}
+		},
+
+		listeners: {
+			'neon-animation-finish': '_onAnimationFinish'
+		},
+
+		/**
+			* `_onAnimationFinish` is callback for when an animation completes.
+		*/
+		_onAnimationFinish: function() {
+			if (this.opening) {
+				this.opening = false;
+				this.opened = true;
+				this.style.display = 'inline-block';
+			}
+		},
+
+		/**
+			* `show` shows the dropdown menu.
+		*/
+		show: function() {
+			if(!this.opened && !this.opening){
+				this.opening = true;
+				this.playAnimation('entry');
+				this.style.display = 'inline-block';
+			}
+		},
+
+		/**
+			* `hide` hides the dropdown menu.
+		*/
+		hide: function() {
+			if(!this.opening){
+				this.opened = false;
+				this.style.display = '';
+			}
+		}
+	});
+
+</script>
