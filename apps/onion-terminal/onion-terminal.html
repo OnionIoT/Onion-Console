@@ -1,0 +1,62 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
+<link rel="import" href="/lib/file-list/file-list.html">
+<link rel="import" href="/lib/iron-icon/iron-icon.html">
+<link rel="import" href="/lib/paper-dialog/paper-dialog.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
+
+<dom-module id="onion-terminal">
+	<style>
+		:host {
+		    display: block;
+	  	    height: 100%;
+			width: 100%;
+			background-color: black;
+		}
+		
+		#sshContainer {
+		    height: 100%;
+		    width: 100%;
+		    padding-top: 50px;
+		    margin-top: -50px;
+	        }
+
+		#shellinabox {
+		    background: transparent;
+		    border: none;
+		    width: 100%;
+		    height: 100%;
+		    display: block;
+		    margin: 0;
+		    padding: 0;
+		}
+		
+	</style>
+	<template>
+	    <onion-app app-name="Terminal">
+	        <onion-app-body>
+                    <div id="sshContainer">
+		        <iframe id="shellinabox" src={{sourceIP}}></iframe>
+		    </div>
+		</onion-app-body>
+            </onion-app>	
+	</template>
+	<script>
+            'use strict';
+            
+	    (function () {
+	        var onionTerminal=null;
+                var ready = function() {
+		    onionTerminal=this;
+		    onionTerminal.title = "Onion Terminal";
+		    onionTerminal.sourceIP="//192.168.1.110:4200";
+                };
+			
+                Polymer({
+                    is: 'onion-terminal',
+                    ready: ready,
+                    behaviors: [Onion.AppBehavior],
+                });
+        })();
+	</script>
+</dom-module>
