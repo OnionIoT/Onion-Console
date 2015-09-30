@@ -49,7 +49,23 @@
                 var ready = function() {
 		    onionTerminal=this;
 		    onionTerminal.title = "Onion Terminal";
-		    onionTerminal.sourceIP="//192.168.1.110:4200";
+		    
+		    onionConsole.getService("onion-session-provider", function (sessionProvider) {
+                        onionTerminal.sessionProvider = sessionProvider;
+                    });
+		    
+		    if(onionTerminal.sessionProvider.isAlive()===true)
+                    {
+                        onionConsole.getService('onion-device-provider', function (deviceProvider) {
+			    onionTerminal.deviceProvider=deviceProvider;
+                            //Get IP Address, NetMask
+                            deviceProvider.getIP(function (result) {
+			        if (result[0].available === true) {
+                                    onionTerminal.sourceIP= '//'+result[1].ip+':4200';
+			        };
+			    });
+		        });
+		    }
                 };
 			
                 Polymer({

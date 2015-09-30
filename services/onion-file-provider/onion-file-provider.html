@@ -46,7 +46,7 @@
 			var execCommand = function(command, parameters, callback) {
 			    var params = {
 				    command: command,
-					params: parameters
+				    params: parameters
 				};
 				execCommandResult = callback || this.noop;
 				this.ubus.request('file', 'exec', params, setExecCommandResult);
@@ -56,8 +56,8 @@
 				var returnCode = result[0];
 				if (returnCode === 0) { 
 				    if (result[1] !== null) {
-                        var filelist=[{"name":"..","type":"directory","preview":"folder"}];
-                        for (var i = 0; i < result[1].entries.length; i++) {
+                                        var filelist=[{"name":"..","type":"directory","preview":"folder"}];
+                                                for (var i = 0; i < result[1].entries.length; i++) {
 						    var newEntry={"name":"","type":"","preview":"description"};
 							newEntry.name=result[1].entries[i].name;
 							newEntry.type=result[1].entries[i].type;

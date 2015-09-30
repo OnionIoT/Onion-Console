@@ -170,7 +170,7 @@
 						onionStatus.deviceProvider=deviceProvider;
 						//Get MAC Address
 						deviceProvider.getMAC(function(result) {
-							onionStatus.mac=result.mac;
+						    onionStatus.mac=result.mac;
 						});
 						//Get IP Address, NetMask
 						deviceProvider.getIP(function (result) {
@@ -189,7 +189,7 @@
 						updateRxTx();
 						refreshRxTx(10000);
 					});	
-                }			
+                                }			
 			};
 			
 		    var refreshRxTx = function (interval) {

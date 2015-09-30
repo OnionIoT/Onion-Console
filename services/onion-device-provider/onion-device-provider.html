@@ -92,32 +92,34 @@
 					]);
 				}
 			};
-
+			
 			var getIP = function (callback) {
-				var params =  {};
+				var params =  {
+				    command: 'ifconfig', 
+				};
 				ipResult = callback || this.noop;
-				this.ubus.request('network.interface', 'dump', params, setIPResult);
+				this.ubus.request('file', 'exec', params, setIPResult);
 			};
-
+			
 			var setIPResult = function (result) {
-				var returnCode = result[0];
-				var available = false;
-				var ip = '-';
-				var netmask = '-';
-				if (returnCode === 0) {
-	                if (result[1] && result[1].interface[2] && result[1].interface[2].available !== null) {
-				        available = result[1].interface[2].available;
-				        console.log('available[' + available + ']');
-					    ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
-					} else {
-					    ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
-					}
-				} else {
-				    console.log('Failed to get IP address!')
-					ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
-				}
+			    var returnCode = result[0];
+			    var available = false;
+			    var ip = '-';
+			    var netmask = '-';
+                            if (result[0] === 0 && result[1].code===0) { 
+			        available=true;
+				var startIndex=result[1].stdout.lastIndexOf('inet addr:');
+				var endIndex=result[1].stdout.indexOf('  Bcast',startIndex);
+				ip=result[1].stdout.substring(startIndex+'inet addr:'.length,endIndex);
+				startIndex=result[1].stdout.lastIndexOf('Mask:');
+				endIndex=result[1].stdout.indexOf('\n',startIndex);
+				netmask=result[1].stdout.substring(startIndex+'Mask:'.length,endIndex);
+				console.log('Available['+available+'] IP['+ip+'] Netmask['+netmask+']');
+			    } else {
+				console.log('Failed to get IP address command!');
+			    }
+			    ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
 			};
-		
 			/*
 			var update = function () {
 
