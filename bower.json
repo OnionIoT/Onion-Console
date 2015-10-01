@@ -15,8 +15,7 @@
     "tests"
   ],
   "dependencies": {
-    "file-list": "OnionIoT/file-list#master",
-    "iron-ajax": "PolymerElements/iron-ajax#~1.0.4",
+    "iron-ajax": "PolymerElements/iron-ajax#latest",
     "iron-dropdown": "PolymerElements/iron-dropdown#~1.0.4",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#~1.0.3",
     "iron-icons": "PolymerElements/iron-icons#~1.0.3",
@@ -25,9 +24,6 @@
     "iron-pages": "PolymerElements/iron-pages#^1.0.0",
     "iron-signals": "PolymerElements/iron-signals#^1.0.2",
     "juicy-ace-editor": "Juicy/juicy-ace-editor#polymer_1.0",
-    "paper-dialog": "PolymerElements/paper-dialog#~1.0.1",
-    "polymer": "~1.1.1",
-    "paper-material": "PolymerElements/paper-material#~1.0.2",
-    "paper-button": "PolymerElements/paper-button#~1.0.7"
+    "polymer": "~1.1.1"
   }
 }

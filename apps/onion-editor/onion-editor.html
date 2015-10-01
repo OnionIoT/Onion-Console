@@ -1,8 +1,10 @@
 <link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
 <link rel="import" href="/lib/iron-icon/iron-icon.html">
-<link rel="import" href="/lib/paper-dialog/paper-dialog.html">
+<link rel="import" href="/fonts/glyphicons/glyphicons.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
 <link rel="import" href="/elements/onion-file-list/onion-file-list.html">
 
 <dom-module id="onion-editor">
@@ -21,21 +23,29 @@
 		#side-bar {
 			width: 300px;
 			height: 100%;
-			overflow: scroll;
+			position: relative;
 		}
 
-		onion-file-list {
-			height: 100%;
-		}
+			#current-folder {
+				font-size: 13px;
+				position: absolute;
+				top: 0;
+				width: 100%;
+			    color: black;
+			    background-color: #bdc3c7;
+				font-family: monospace;
+				padding: 10px;
+	            line-height: 20px;
+	            z-index: 10;
+			}
 
-		#folder-container {
-		    color: black;
-		    background-color:white;
-			font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-            font-size: 12px;
-			padding: 5px;
-            line-height: 20px;
-		}
+			onion-file-list {
+				width: 100%;
+				height: 100%;
+				padding-top: 40px;
+				background-color: #ecf0f1;
+				overflow: scroll;
+			}
 
 		#editor-container {
 		    width: 100%;
@@ -54,36 +64,48 @@
         }
 		paper-item {
 			--paper-item: {
-			cursor: pointer;
+				cursor: pointer;
 			};
 		}
-		paper-dialog.colored {
-            border: 2px solid;
-            border-color: var(--paper-green-500);
-            background-color: var(--paper-light-green-50);
-            color: var(--paper-green-500);
-        }
-        paper-dialog.size-position {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-        }
-        paper-dialog.size-position {
-          width: 300px;
-          height: 300px;
-        }
+
+		onion-app-toolbar button {
+			padding: 0 10px;
+			background-color: transparent;
+		}
+			onion-app-toolbar button:hover {
+				background-color: rgba(255, 255, 255, 0.5);
+			}
+		onion-app-toolbar button > .glyphicons {
+			margin-right: 5px;
+		}
 	</style>
 	<template>
-		<onion-app app-name="Editor">
+		<onion-app app-name="Editor" toolbar-background="#34495e" toolbar-color="#fff">
+			<onion-app-toolbar>
+				<div class="layout horizontal">
+					<div class="flex">
+						<button><span class="glyphicons glyphicons-folder-new"></span><span>New Folder</span></button>
+						<button><span class="glyphicons glyphicons-file"></span><span>New File</span></button>
+						<button><span class="glyphicons glyphicons-folder-minus"></span><span>Delete Folder</span></button>
+						<button><span class="glyphicons glyphicons-bin"></span><span>Delete File</span></button>
+						<button><span class="glyphicons glyphicons-erase"></span><span>Rename</span></button>
+					</div>
+					<div>
+						<button><span class="glyphicons glyphicons-ok-2"></span><span>Save</span></button>
+						<button><span class="glyphicons glyphicons-remove-2"></span><span>Close</span></button>
+					</div>
+				</div>
+			</onion-app-toolbar>
+
 			<onion-app-body>
 				<div class="horizontal layout">
 					<div id="side-bar">
-					    <div id="folder-container">{{currentFolder}}</div>
+					    <div id="current-folder">{{currentFolder}}</div>
 						<onion-file-list id="fileList">No File</onion-file-list>
 					</div>
 
 					<div id="editor-container" class="flex">
-					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="16px">{{currentCode}}</juicy-ace-editor>
+					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px">{{currentCode}}</juicy-ace-editor>
 					</div>
 				</div>
 
@@ -109,49 +131,53 @@
 		'use strict';
 
 		(function () {
-			var onionEditor = null;
-			var folderFileInfo=null;
-			var backsplash=null;
-			var extSymbol=null;
+			var onionEditor = null,
+				folderFileInfo = null,
+				backsplash = null,
+				extSymbol = null;
 
-			var ready = function() {
+			var ready = function () {
 				onionEditor = this;	
-				backsplash='/';
-				extSymbol='.';
-				folderFileInfo={"folder":backsplash,"file":"","list":null,"fileInEdit":""};
-				onionEditor.title = "Onion Editor";
+				backsplash = '/';
+				extSymbol = '.';
+				
+				folderFileInfo = {
+					folder: backsplash,
+					file: '',
+					list: null,
+					fileInEdit: ''
+				};
+
 				onionConsole.getService('onion-session-provider', function (sessionProvider) {
 					onionEditor.sessionProvider = sessionProvider;
-				});
 
-				if(onionEditor.sessionProvider.isAlive()===true) {   
-					onionConsole.getService('onion-file-provider', function (fileProvider) {
-						onionEditor.fileProvider=fileProvider;
-						//Get file list
-						fileProvider.getFileList(folderFileInfo.folder, function(result) {
-							if(result.fileList!=='') {
-							    onionEditor.currentFolder=folderFileInfo.folder
-								folderFileInfo.list=result.fileList;
-                                onionEditor.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));			
-							    onionEditor.$.fileList.addEventListener('click', function(evt) {
-									if(typeof evt.target.icon==='undefined') {
-				                        openFolder(evt.target.textContent);
-									} else {
-									    console.log("Click add icon");
-										if(evt.target.icon==="add")
-									    {
-											onionEditor.$.newDialog.open();
+					if (sessionProvider.isAlive() === true) {   
+						onionConsole.getService('onion-file-provider', function (fileProvider) {
+							onionEditor.fileProvider = fileProvider;
+
+							//Get file list
+							fileProvider.getFileList(folderFileInfo.folder, function (result) {
+								if (result.fileList !== '') {
+								    onionEditor.currentFolder = folderFileInfo.folder
+									folderFileInfo.list = result.fileList;
+	                                onionEditor.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));			
+								    onionEditor.$.fileList.addEventListener('click', function (e) {
+										if (typeof e.target.icon === 'undefined') {
+					                        openFolder(e.target.textContent);
+										} else {
+										    console.log('Click add icon');
+											if (e.target.icon === 'add') {
+												onionEditor.$.newDialog.open();
+											} else if(e.target.icon === 'save') {
+											    saveFile();
+											}
 										}
-										else if(evt.target.icon==="save")
-										{
-										    saveFile();
-										}
-									}						
-							    });
-							};
+								    });
+								};
+							});
 						});
-					});
-				};		
+					}
+				});	
 			};
 			 
 			var findTypeById = function (sourceList, name) {
@@ -182,7 +208,7 @@
 			}
 			
 			var openFolder = function(path) {
-                if(onionEditor.sessionProvider.isAlive()===true) {
+                if(onionEditor.sessionProvider.isAlive() === true) {
 			        var currentFile="";
 					var changed=true;
 				    onionConsole.getService('onion-file-provider', function (fileProvider) {

@@ -1,0 +1,176 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-overlay-behavior/iron-overlay-behavior.html">
+
+<dom-module id="bootstrap-modal">
+	<style>
+		.modal-footer:after,
+		.modal-header:after {
+		    clear: both
+		}
+		
+		.modal,
+		.modal-open {
+		    overflow: hidden
+		}
+		
+		.modal-content {
+		    -webkit-background-clip: padding-box
+		}
+		.modal {
+		    position: fixed;
+		    top: 0;
+		    right: 0;
+		    bottom: 0;
+		    left: 0;
+		    z-index: 1050;
+		    display: none;
+		    -webkit-overflow-scrolling: touch;
+		    outline: 0
+		}
+		.modal-footer:after,
+		.modal-footer:before,
+		.modal-header:after,
+		.modal-header:before {
+		    display: table;
+		    content: " "
+		}
+		.modal.fade .modal-dialog {
+		    -webkit-transition: -webkit-transform .3s ease-out;
+		    -o-transition: -o-transform .3s ease-out;
+		    transition: transform .3s ease-out;
+		    -webkit-transform: translate(0, -25%);
+		    -ms-transform: translate(0, -25%);
+		    -o-transform: translate(0, -25%);
+		    transform: translate(0, -25%)
+		}
+		.modal.in .modal-dialog {
+		    -webkit-transform: translate(0, 0);
+		    -ms-transform: translate(0, 0);
+		    -o-transform: translate(0, 0);
+		    transform: translate(0, 0)
+		}
+		.modal-open .modal {
+		    overflow-x: hidden;
+		    overflow-y: auto
+		}
+		.modal-dialog {
+		    position: relative;
+		    width: auto;
+		    margin: 10px
+		}
+		.modal-content {
+		    position: relative;
+		    background-color: #fff;
+		    background-clip: padding-box;
+		    border: 1px solid rgba(0, 0, 0, .2);
+		    border-radius: .3rem;
+		    outline: 0
+		}
+		.modal-backdrop {
+		    position: fixed;
+		    top: 0;
+		    right: 0;
+		    bottom: 0;
+		    left: 0;
+		    z-index: 1040;
+		    background-color: #000
+		}
+		.modal-backdrop.fade {
+		    opacity: 0
+		}
+		.modal-backdrop.in {
+		    opacity: .5
+		}
+		.modal-header {
+		    padding: 15px;
+		    border-bottom: 1px solid #e5e5e5
+		}
+		.modal-header .close {
+		    margin-top: -2px
+		}
+		.modal-title {
+		    margin: 0;
+		    line-height: 1.5
+		}
+		.modal-body {
+		    position: relative;
+		    padding: 15px
+		}
+		.modal-footer {
+		    padding: 15px;
+		    text-align: right;
+		    border-top: 1px solid #e5e5e5
+		}
+		
+		.modal-footer .btn+.btn {
+		    margin-bottom: 0;
+		    margin-left: 5px
+		}
+		.modal-footer .btn-group .btn+.btn {
+		    margin-left: -1px
+		}
+		.modal-footer .btn-block+.btn-block {
+		    margin-left: 0
+		}
+		.modal-scrollbar-measure {
+		    position: absolute;
+		    top: -9999px;
+		    width: 50px;
+		    height: 50px;
+		    overflow: scroll
+		}
+		@media (min-width: 34em) {
+		    .modal-dialog {
+		        width: 600px;
+		        margin: 30px auto
+		    }
+		    .modal-sm {
+		        width: 300px
+		    }
+		}
+		@media (min-width: 48em) {
+		    .modal-lg {
+		        width: 900px
+		    }
+		}
+	</style>
+
+	<template>
+		<div class="modal">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close" hidden="{{!closeButton}}">
+							<span aria-hidden="true">&times;</span>
+							<span class="sr-only">Close</span>
+						</button>
+						<h4 class="modal-title">Modal title</h4>
+					</div>
+					<div class="modal-body">
+						<p>One fine body&hellip;</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+
+			Polymer({
+				is: 'bootstrap-modal',
+				behaviors: [Polymer.IronOverlayBehavior],
+				properties: {
+					closeButton: Boolean,
+
+				}
+			});
+		})();
+	</script>
+</dom-module>

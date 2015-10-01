@@ -13,6 +13,16 @@
 		:host ::content onion-app-toolbar {
 			width: 100%;
 		}
+			:host ::content onion-app-toolbar button {
+				border: none;
+				height: 50px;
+				line-height: 24px;
+				background-color: transparent;
+			}
+				:host ::content onion-app-toolbar button > .glyphicons {
+					display: inline;
+					line-height: 24px;
+				}
 
 		:host ::content onion-app-body {
 			width: 100%;
@@ -35,12 +45,11 @@
 	    	width: 100%;
 	    	position: absolute;
 	    	top: 0;
+	    	padding: 0 15px;
 	    }
 
 	    #launcher-button {
 	    	height: 50px;
-	    	width: 50px;
-	    	margin-left: 10px;
 	    	background-color: transparent;
 	    	border: none;
 	    }
@@ -50,7 +59,8 @@
 
 	    #app-name {
 	    	font-size: 20px;
-	    	margin-right: 15px;
+	    	margin-left: 5px;
+	    	margin-right: 50px;
 	    	white-space: nowrap;
 	    }
 	</style>
