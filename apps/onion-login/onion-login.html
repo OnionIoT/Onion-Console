@@ -1,52 +1,40 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-signals/iron-signals.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
 <link rel="import" href="/elements/bootstrap-alert/bootstrap-alert.html">
-<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 
 <dom-module id="onion-login">
 	<style>
-		:host {
-			height: 100%;
-			width: 100%;
-		}
-
-		#login-container {
-			height: 100%;
-			width: 100%;
-		}
-
-		#login-box {
-			width: 320px;
-			background-color: #fff;
+		bootstrap-modal {
+			width: 360px;
 		}
 	</style>
 
 	<template>
 		<onion-app app-name="Login" hide-toolbar background="transparent">
 			<onion-app-body>
-				<div id="login-container" class="layout horizontal center-justified center">
-					<div class="card" id="login-box">
-						<div class="card-header">
-							Login
-						</div>
-						<div class="card-block">
-							<form on-submit="login">
-								<fieldset class="form-group">
-									<label for="username">Username</label>
-									<input type="text" class="form-control" id="username" on-keydown="checkUsernameKey" autofocus>
-								</fieldset>
-								<fieldset class="form-group">
-									<label for="password">Password</label>
-									<input type="password" class="form-control" id="password">
-								</fieldset>
-								<div id="messageContainer"></div> 
-								
-								<button type="submit" class="btn btn-success">Login</button>
-							</form>
-						</div>
-					</div>
-				</div>
+				<bootstrap-modal id="loginDialog" no-cancel-on-esc-key no-cancel-on-outside-click>
+					<bootstrap-modal-header>
+						<h5>Login</h5>
+					</bootstrap-modal-header>
+
+					<bootstrap-modal-body>
+						<form on-submit="login">
+							<fieldset class="form-group">
+								<label for="username">Username</label>
+								<input type="text" class="form-control" id="username" on-keydown="checkUsernameKey" autofocus>
+							</fieldset>
+							<fieldset class="form-group">
+								<label for="password">Password</label>
+								<input type="password" class="form-control" id="password">
+							</fieldset>
+							<div id="messageContainer"></div> 
+							
+							<button type="submit" class="btn btn-success">Login</button>
+						</form>
+					</bootstrap-modal-body>
+				</bootstrap-modal>
 			</onion-app-body>
 		</onion-app>
 	</template>
@@ -78,6 +66,17 @@
 				}
 			};
 
+			var start = function () {
+				// Such a hack, get it fixed later
+				setTimeout(function () {
+					onionLogin.$.loginDialog.open();
+				}, 1000);
+			};
+
+			var quit = function () {
+				this.$.loginDialog.close();
+			};
+
 			var login = function (e) {
 				e.preventDefault();
 
@@ -106,6 +105,10 @@
 				behaviors: [Onion.AppBehavior],
 				ready: ready,
 	            login: login,
+	            attached: start,
+	            start: start,
+	            fg: start,
+	            quit: quit,
 	            checkUsernameKey: checkUsernameKey
 			});
         })();

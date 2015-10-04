@@ -57,7 +57,6 @@
 						appElement.setAttribute('id', appId);
 						Polymer.dom(this.$.appContainer).appendChild(appElement); 
 
-						appElement.start();
 						this.currentApp = appId;
 					});
 				}
@@ -65,7 +64,9 @@
 
 			var ready = function () {
 				window.onionConsole = this;
+			};
 
+			var attached = function () {
 				this.launchApp('onion-login');
 			};
 
@@ -81,6 +82,7 @@
 				is: 'onion-console',
 				noop: function () {},
 				ready: ready,
+				attached: attached,
 				launchApp: launchApp,
 				launchService: launchService,
 				getService: getService

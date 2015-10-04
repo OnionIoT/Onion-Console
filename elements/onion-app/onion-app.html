@@ -135,6 +135,10 @@
         (function () {
         	var Onion = window.Onion = window.Onion || {};
 
+        	var attached = function () {
+        		this.start();
+        	};
+
         	var ready = function () {
         		this.appName = this.$$('onion-app').appName || this.appName;
         	};
@@ -162,6 +166,7 @@
         				value: 'Unnamed App'
         			}
         		},
+        		attached: attached,
         		ready: ready,
         		start: start,
         		fg: fg,
