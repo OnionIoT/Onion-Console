@@ -19,7 +19,8 @@
 					"app-list"
 				],
 				"system": [
-					"info"
+					"info",
+					"hostname"
 				],
 				"iwinfo": [
 					"assoclist"
@@ -29,12 +30,13 @@
 				],
 				"network.interface": [
 					"dump"
-				],
-				"uci": [
-					"get",
-					"rpcd"
 				]
-			}
+			},
+			"uci": [
+				"system",
+				"get",
+				"rpcd"
+			]
 		},
 		"write": {
 			"ubus": {
@@ -46,10 +48,6 @@
 				"onion-console": [
 					"app-list"
 				],
-				"uci": [
-					"get",
-					"rpcd"
-				],
 				"file": [
 					"list",
 					"read",
@@ -57,7 +55,11 @@
 					"write",
 					"stat"
 				],
-			}
+			},
+			"uci": [
+				"get",
+				"rpcd"
+			]
 		}
 	}
 }
