@@ -82,10 +82,12 @@
 				e.preventDefault();
 
 				var username = this.$.username.value;
-				var password = document.querySelector('#password').value;
+				var password = this.$.password.value;
 
 				this.session.login(username, password, function (result) {
 					if (result.success) {
+						onionLogin.$.username.value = '';
+						onionLogin.$.password.value = '';
 						onionConsole.launchApp('onion-launcher');
 						onionLogin.quit();
 					} else {

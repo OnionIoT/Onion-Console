@@ -1,0 +1,55 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="bootstrap-modal-header">
+	<style>
+		.modal-header:after {
+		    clear: both
+		}
+		
+		.modal-header:after,
+		.modal-header:before {
+		    display: table;
+		    content: " "
+		}
+		
+		.modal-header {
+		    padding: 15px;
+		    border-bottom: 1px solid #e5e5e5
+		}
+		.modal-header .close {
+		    margin-top: -2px
+		}
+		.modal-title {
+		    margin: 0;
+		    line-height: 1.5
+		}
+	</style>
+
+	<template>
+		<div class="modal-header">
+			<template is="dom-if" if="{{closeButton}}">
+				<button type="button" class="close" dialog-dismiss>
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</template>
+
+			<content></content>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			Polymer({
+				is: 'bootstrap-modal-header',
+				properties: {
+					closeButton: {
+						type: Boolean,
+						value: false
+					}
+				}
+			});
+		})();
+	</script>
+</dom-module>

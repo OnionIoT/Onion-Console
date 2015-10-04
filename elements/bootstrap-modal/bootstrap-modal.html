@@ -8,24 +8,8 @@
 		    clear: both
 		}
 		
-		.modal,
-		.modal-open {
-		    overflow: hidden
-		}
-		
 		.modal-content {
-		    -webkit-background-clip: padding-box
-		}
-		.modal {
-		    position: fixed;
-		    top: 0;
-		    right: 0;
-		    bottom: 0;
-		    left: 0;
-		    z-index: 1050;
-		    display: none;
-		    -webkit-overflow-scrolling: touch;
-		    outline: 0
+		    -webkit-background-clip: padding-box;
 		}
 		.modal-footer:after,
 		.modal-footer:before,
@@ -33,25 +17,6 @@
 		.modal-header:before {
 		    display: table;
 		    content: " "
-		}
-		.modal.fade .modal-dialog {
-		    -webkit-transition: -webkit-transform .3s ease-out;
-		    -o-transition: -o-transform .3s ease-out;
-		    transition: transform .3s ease-out;
-		    -webkit-transform: translate(0, -25%);
-		    -ms-transform: translate(0, -25%);
-		    -o-transform: translate(0, -25%);
-		    transform: translate(0, -25%)
-		}
-		.modal.in .modal-dialog {
-		    -webkit-transform: translate(0, 0);
-		    -ms-transform: translate(0, 0);
-		    -o-transform: translate(0, 0);
-		    transform: translate(0, 0)
-		}
-		.modal-open .modal {
-		    overflow-x: hidden;
-		    overflow-y: auto
 		}
 		.modal-dialog {
 		    position: relative;
@@ -65,21 +30,6 @@
 		    border: 1px solid rgba(0, 0, 0, .2);
 		    border-radius: .3rem;
 		    outline: 0
-		}
-		.modal-backdrop {
-		    position: fixed;
-		    top: 0;
-		    right: 0;
-		    bottom: 0;
-		    left: 0;
-		    z-index: 1040;
-		    background-color: #000
-		}
-		.modal-backdrop.fade {
-		    opacity: 0
-		}
-		.modal-backdrop.in {
-		    opacity: .5
 		}
 		.modal-header {
 		    padding: 15px;
@@ -136,24 +86,25 @@
 	</style>
 
 	<template>
-		<div class="modal">
-			<div class="modal-dialog" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close" hidden="{{!closeButton}}">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<content></content>
+				<!-- <div class="modal-header">
+					<template is="dom-if" if="{{closeButton}}">
+						<button type="button" class="close" dialog-dismiss>
 							<span aria-hidden="true">&times;</span>
-							<span class="sr-only">Close</span>
 						</button>
-						<h4 class="modal-title">Modal title</h4>
-					</div>
-					<div class="modal-body">
-						<p>One fine body&hellip;</p>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary">Save changes</button>
-					</div>
+					</template>
+
+					<content select="bootstrap-modal-header"></content>
 				</div>
+				<div class="modal-body">
+					<content select="bootstrap-modal-body"></content>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary">Save changes</button>
+				</div> -->
 			</div>
 		</div>
 	</template>
@@ -162,14 +113,117 @@
 		'use strict';
 
 		(function () {
+			var _updateClosingReasonConfirmed = function (confirmed) {
+				this.closingReason = this.closingReason || {};
+				this.closingReason.confirmed = confirmed;
+			};
+
+			var _onDialogClick = function (event) {
+				var target = event.target;
+
+				while (target && target !== this) {
+					if (target.hasAttribute) {
+						if (target.hasAttribute('dialog-dismiss')) {
+							this._updateClosingReasonConfirmed(false);
+							this.close();
+							break;
+						} else if (target.hasAttribute('dialog-confirm')) {
+							this._updateClosingReasonConfirmed(true);
+							this.close();
+							break;
+						}
+					}
+
+					target = target.parentNode;
+				}
+			};
+
+			var _onIronOverlayOpened = function () {
+				if (this.modal) {
+					document.body.addEventListener('focus', this._boundOnFocus, true);
+					this.backdropElement.addEventListener('click', this._boundOnBackdropClick);
+				}
+			};
+
+			var _onIronOverlayClosed = function () {
+				document.body.removeEventListener('focus', this._boundOnFocus, true);
+				this.backdropElement.removeEventListener('click', this._boundOnBackdropClick);
+			};
+
+			var _onFocus = function (event) {
+				if (this.modal) {
+					var target = event.target;
+					while (target && target !== this && target !== document.body) {
+						target = target.parentNode;
+					}
+
+					if (target) {
+						if (target === document.body) {
+							if (this._lastFocusedElement) {
+								this._lastFocusedElement.focus();
+							} else {
+								this._focusNode.focus();
+							}
+						} else {
+							this._lastFocusedElement = event.target;
+						}
+					}
+				}
+			};
+
+			var _onBackdropClick = function () {
+				if (this.modal) {
+					if (this._lastFocusedElement) {
+						this._lastFocusedElement.focus();
+					} else {
+						this._focusNode.focus();
+					}
+				}
+			};
 
 			Polymer({
 				is: 'bootstrap-modal',
 				behaviors: [Polymer.IronOverlayBehavior],
+				hostAttributes: {
+					role: 'dialog',
+					tabindex: '-1'
+				},
 				properties: {
-					closeButton: Boolean,
-
-				}
+					closeButton: {
+						type: Boolean,
+						value: false
+					},
+					withBackdrop: {
+						type: Boolean,
+						value: true
+					},
+					_lastFocusedElement: {
+						type: Object
+					},
+					_boundOnFocus: {
+						type: Function,
+						value: function () {
+							return this._onFocus.bind(this);
+						}
+					},
+					_boundOnBackdropClick: {
+						type: Function,
+						value: function () {
+							return this._onBackdropClick.bind(this);
+						}
+					}
+				},
+				listeners: {
+					'tap': '_onDialogClick',
+					'iron-overlay-opened': '_onIronOverlayOpened',
+					'iron-overlay-closed': '_onIronOverlayClosed'
+				},
+				_updateClosingReasonConfirmed: _updateClosingReasonConfirmed,
+				_onDialogClick: _onDialogClick,
+				_onIronOverlayOpened: _onIronOverlayOpened,
+				_onIronOverlayClosed: _onIronOverlayClosed,
+				_onFocus: _onFocus,
+				_onBackdropClick: _onBackdropClick
 			});
 		})();
 	</script>

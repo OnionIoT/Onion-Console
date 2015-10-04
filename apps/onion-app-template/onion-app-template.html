@@ -1,5 +1,9 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal-header.html">
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal-body.html">
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal-footer.html">
 
 <dom-module id="onion-app-template">
 	<style>
@@ -16,7 +20,26 @@
 					<h1>
 						Body of the App goes here
 					</h1>
+					<button on-tap="openModal">Open</button>
 				</div>
+
+				<bootstrap-modal id="test">
+					<bootstrap-modal-header close-button>
+						<h4 class="modal-title">Modal title</h4>
+					</bootstrap-modal-header>
+
+					<bootstrap-modal-body>
+						<div>Dialog body</div>
+						<div class="buttons">
+							<button dialog-dismiss>Cancel</button>
+							<button dialog-confirm>Accept</button>
+						</div>
+					</bootstrap-modal-body>
+
+					<bootstrap-modal-footer>
+						<button class="btn-default">Test</button>
+					</bootstrap-modal-footer>
+				</bootstrap-modal>
 			</onion-app-body>
 		</onion-app>
 
@@ -30,22 +53,15 @@
 				this.onionConsole.launchApp(e.target);
 			};
 
-			var onLeftButton = function(){
-				alert('left button pressed');
-			}
-
-			var onRightButton = function(){
-				alert('right button pressed');
-			}
+			var openModal = function () {
+				this.$.test.open();
+			};
 
 			Polymer({
 				is: 'onion-app-template',
 				ready: function () {},
 				behaviors: [Onion.AppBehavior],
-				onLeftButton: onLeftButton,
-				onRightButton: onRightButton,
-				// onAppIcon: onAppIcon,
-				// onDeviceIcon: onDeviceIcon
+				openModal: openModal,
 				properties: {
 					apps: {
 						type: Array,
