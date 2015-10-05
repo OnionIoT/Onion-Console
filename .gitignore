@@ -8,6 +8,8 @@ lib-cov
 *.gz
 *.swp
 
+*.sublime-*
+
 pids
 logs
 results
@@ -16,4 +18,5 @@ results
 .settings
 .DS_Store
 
-/lib/
+tools/config.ini
+
