@@ -18,7 +18,7 @@ echo "Omega IP: $ipAddr"
 # transfer files
 rm -rf dist
 mkdir dist
-cp -r elements apps fonts images index.html lib services dist
+cp -r www/elements www/apps www/fonts www/images www/index.html www/lib www/services dist
 
 find dist -name "*bower*" -exec rm -rf {} \; 2>/dev/null
 find dist -name "demo" -exec rm -rf {} \; 2>/dev/null
