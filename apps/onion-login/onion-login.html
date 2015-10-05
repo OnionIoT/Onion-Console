@@ -6,7 +6,7 @@
 
 <dom-module id="onion-login">
 	<style>
-		bootstrap-modal {
+		bootstrap-modal ::shadow .modal-dialog {
 			width: 360px;
 		}
 	</style>
@@ -67,14 +67,15 @@
 			};
 
 			var start = function () {
-				// Such a hack, get it fixed later
 				setTimeout(function () {
 					onionLogin.$.loginDialog.open();
 				}, 1000);
 			};
 
 			var quit = function () {
-				this.$.loginDialog.close();
+				setTimeout(function () {
+					onionLogin.$.loginDialog.close();
+				}, 1000);
 			};
 
 			var login = function (e) {

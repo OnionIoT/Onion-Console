@@ -41,13 +41,16 @@
 		'use strict';
 
 		(function () {
+			var ready = function () {
+				var parent = Polymer.dom(this).parentNode;
+				this.closeButton = parent.closeButton;
+			};
+
 			Polymer({
 				is: 'bootstrap-modal-header',
+				ready: ready,
 				properties: {
-					closeButton: {
-						type: Boolean,
-						value: false
-					}
+					
 				}
 			});
 		})();

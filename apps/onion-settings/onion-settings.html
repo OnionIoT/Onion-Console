@@ -1,27 +1,53 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
-
 <link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="/elements/bootstrap-pills/bootstrap-pills.html">
 <link rel="import" href="./onion-setting-home.html">
 <link rel="import" href="./onion-setting-update.html">
 
 
 <dom-module id="onion-settings">
 	<style>
+		:host {
+			height: 100%;
+			width: 100%;
+			--bootstrap-pill-border-radius: 0;
+			--bootstrap-pill-background-color: #2c3e50;
+		}
+
+		onion-app-body > div {
+			height: 100%;
+			width: 100%;
+		}
+
+		#side-bar {
+			width: 250px;
+			height: 100%;
+			position: relative;
+			background-color: #34495e;
+			color: #fff;
+		}
+			#side-bar ul li a {
+				border-radius: 0;
+			}
 	</style>
 
 	<template>
-		<onion-app app-name="Settings">
-			<onion-app-toolbar>
-				<button on-click="onShowAll">Show All</button>
-				<input	placeholder="Search">
-			</onion-app-toolbar>
-
+		<onion-app app-name="Settings" toolbar-color="#2c3e50" toolbar-background="#ecf0f1">
 			<onion-app-body>
-				<iron-pages id="settingContainer" attr-for-selected="id" selected="{{currentSetting}}">
-					<onion-setting-home id='onion-setting-home'></onion-setting-home>
-					<onion-setting-update id="onion-setting-update"></onion-setting-update>
-				</iron-pages>
+				<div class="horizontal layout">
+					<div id="side-bar">
+						<bootstrap-pills stacked>
+							<bootstrap-pill active>Settings Home</bootstrap-pill>
+							<bootstrap-pill>Update & Restore</bootstrap-pill>
+						</bootstrap-pills>
+					</div>
+
+					<iron-pages id="settingContainer" attr-for-selected="id" selected="{{currentSetting}}">
+						<onion-setting-home id='onion-setting-home'></onion-setting-home>
+						<onion-setting-update id="onion-setting-update"></onion-setting-update>
+					</iron-pages>
+				</div>
 			</onion-app-body>
 		</onion-app>
 	</template>
@@ -31,31 +57,28 @@
 
 		(function () {
 			var ready = function () {
-				this.title = "Omega Settings";
-				this.currentSetting = "onion-setting-home";
+				this.title = 'Omega Settings';
+				this.currentSetting = 'onion-setting-home';
 
 			};
 
-			var onShowAll = function(){
-				this.fire("switchSetting", {settingId: "onion-setting-home"});
-			}
+			var onShowAll = function () {
+				this.fire('switchSetting', {settingId: 'onion-setting-home'});
+			};
 
-			var switchSetting = function(e){
-
+			var switchSetting = function (e) {
 				var settingId = e.detail.settingId;
 				this.currentSetting = settingId;
-
-			}
-
+			};
 
 			Polymer({
-				is: "onion-settings",
+				is: 'onion-settings',
 				ready: ready,
 				behaviors: [Onion.AppBehavior],
 				switchSetting: switchSetting,
 				onShowAll: onShowAll,
 				listeners: {
-					switchSetting: "switchSetting"
+					switchSetting: 'switchSetting'
 				}
 
 			});

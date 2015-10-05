@@ -6,20 +6,8 @@
 
 <dom-module id="bootstrap-modal">
 	<style>
-		.modal-footer:after,
-		.modal-header:after {
-		    clear: both
-		}
-		
 		.modal-content {
 		    -webkit-background-clip: padding-box;
-		}
-		.modal-footer:after,
-		.modal-footer:before,
-		.modal-header:after,
-		.modal-header:before {
-		    display: table;
-		    content: " "
 		}
 		.modal-dialog {
 		    position: relative;
@@ -34,56 +22,10 @@
 		    border-radius: .3rem;
 		    outline: 0
 		}
-		.modal-header {
-		    padding: 15px;
-		    border-bottom: 1px solid #e5e5e5
-		}
-		.modal-header .close {
-		    margin-top: -2px
-		}
-		.modal-title {
-		    margin: 0;
-		    line-height: 1.5
-		}
-		.modal-body {
-		    position: relative;
-		    padding: 15px
-		}
-		.modal-footer {
-		    padding: 15px;
-		    text-align: right;
-		    border-top: 1px solid #e5e5e5
-		}
-		
-		.modal-footer .btn+.btn {
-		    margin-bottom: 0;
-		    margin-left: 5px
-		}
-		.modal-footer .btn-group .btn+.btn {
-		    margin-left: -1px
-		}
-		.modal-footer .btn-block+.btn-block {
-		    margin-left: 0
-		}
-		.modal-scrollbar-measure {
-		    position: absolute;
-		    top: -9999px;
-		    width: 50px;
-		    height: 50px;
-		    overflow: scroll
-		}
 		@media (min-width: 34em) {
 		    .modal-dialog {
 		        width: 600px;
 		        margin: 30px auto
-		    }
-		    .modal-sm {
-		        width: 300px
-		    }
-		}
-		@media (min-width: 48em) {
-		    .modal-lg {
-		        width: 900px
 		    }
 		}
 	</style>
@@ -92,22 +34,6 @@
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<content></content>
-				<!-- <div class="modal-header">
-					<template is="dom-if" if="{{closeButton}}">
-						<button type="button" class="close" dialog-dismiss>
-							<span aria-hidden="true">&times;</span>
-						</button>
-					</template>
-
-					<content select="bootstrap-modal-header"></content>
-				</div>
-				<div class="modal-body">
-					<content select="bootstrap-modal-body"></content>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary">Save changes</button>
-				</div> -->
 			</div>
 		</div>
 	</template>
