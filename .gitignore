@@ -13,6 +13,7 @@ lib-cov
 pids
 logs
 results
+tmp
 
 .project
 .settings

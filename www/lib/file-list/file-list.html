@@ -1,0 +1,565 @@
+<!--
+@license
+Copyright (c) 2015 Winston Howes. All rights reserved.
+This code may only be used under the MIT license found at https://github.com/winhowes/file-list/blob/master/LICENSE
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+An element creating a searchable, sortable, list of files.
+
+Example:
+
+    <file-list>No Files</file-list>
+
+@demo
+-->
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="file-menu.html">
+
+<dom-module id="file-list">
+
+  <style>
+    paper-material {
+      display: block;
+      background-color: #fff;
+    }
+
+    .row {
+      display: flex;
+      position: relative;
+      padding: 5px;
+      line-height: 20px;
+	  -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    .row:not(:last-of-type) {
+      border-bottom: 1px solid #eee;
+    }
+
+    .row:hover,
+    .row.hovered {
+      background-color: #fafafa;
+    }
+
+    .hidden {
+      display: none;
+      position: absolute;
+      right: 0px;
+      top: 0px;
+      bottom: 0px;
+      width: 140px;
+      text-align: right;
+      padding-right: 10px;
+      color: #fff;
+      background-color: #1f8dd6;
+    }
+
+    .row:hover .hidden,
+    .row.hovered .hidden {
+      display: block;
+    }
+
+    .row.hovered {
+      z-index: 1;
+    }
+
+    .row iron-icon {
+      margin: 0 10px;
+    }
+
+    .row span {
+      flex: 1 30%;
+    }
+
+    .clickable {
+      cursor: pointer;
+    }
+
+    .clickable:hover {
+      text-decoration: underline;
+    }
+
+    .responsiveText {
+      white-space: pre;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nameEdit {
+      display: none;
+      z-index: 1;
+    }
+
+    file-menu {
+      color: #222;
+      width: 140px;
+      position: absolute;
+      top: 3px;
+      right: 10px;
+      text-align: left;
+    }
+
+    file-menu paper-material {
+      padding: 5px 0px;
+    }
+
+    file-menu div {
+      cursor: pointer;
+      padding: 0px 5px;
+    }
+
+    file-menu div:hover {
+      background-color: #eee;
+    }
+
+    [hidden] {
+      display: none;
+    }
+	
+	.fab {
+      position: absolute;
+      display: inline-block;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      color: #fff;
+      overflow: hidden;
+      transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition-delay: 0.2s;
+      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+	  z-index: 1;
+
+    }
+	
+	.fab:active {
+      box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
+      transition-delay: 0s;
+    }
+
+    .fab > iron-icon {
+      margin: 11px;
+    }
+
+    .fab > iron-icon::shadow path {
+      fill: #fff;
+    }
+	
+    .fab.add {
+        background-color: #d23f31;
+	    left: 13%;
+	    bottom: 5%
+    }
+	
+	.fab.save {
+	    background-color: #d23f31;
+	    left: 13%;
+	    bottom: 15%
+	}
+  </style>
+
+  <template>
+    <div hidden$="{{_hasElements(_files)}}">
+    <content></content>
+    </div>
+	<div class="fab add">
+        <iron-icon icon="add" on-click="addMenu"></iron-icon>
+    </div>	
+    <div class="fab save">
+        <iron-icon icon="save" on-click="saveMenu"></iron-icon>
+    </div>
+    <paper-material>
+      <template is="dom-repeat" items="{{_files}}">
+        <div class="row">
+          <iron-icon icon="{{item.preview}}" class="clickable" on-click="open"></iron-icon>
+          <span class="clickable nameDisplay responsiveText" title$="{{item.name}}" on-click="open">{{item.name}}</span>
+          <!--span class="nameEdit">
+            <input type="text" value="{{item.name}}" on-blur="saveRename" on-keydown="saveRename">
+          </span-->
+          <!--span>{{item.type}}</span>
+          <span class="responsiveText">{{item.dateModified}}</span>
+          <div class="hidden">
+            <paper-button on-click="share">Share</paper-button>
+            <paper-icon-button icon="more-vert" on-click="openMenu"></paper-icon-button>
+            <file-menu>
+              <paper-material elevation="2">
+                <div on-click="share">
+                  <iron-icon icon="link"></iron-icon> Share...
+                </div>
+                <div on-click="download">
+                  <iron-icon icon="file-download"></iron-icon> Download
+                </div>
+                <div on-click="rename">
+                  <iron-icon icon="create"></iron-icon> Rename
+                </div>
+                <div on-click="move">
+                  <iron-icon icon="flip-to-front"></iron-icon> Move...
+                </div>
+                <div on-click="delete">
+                  <iron-icon icon="delete"></iron-icon> Delete...
+                </div>
+              </paper-material>
+            </file-menu>
+          </div-->
+        </div>
+
+      </template>
+
+    </paper-material>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'file-list',
+
+    properties: {
+      /**
+       * An array of file objects
+       *
+       * @type [{preview: string, name: string, type: string, dateModified: string}]
+       */
+      files: {
+        type: Array,
+        notify: true,
+        value: function() {
+          return [];
+        },
+        observer: '_filesChanged'
+      },
+
+      /**
+       * The property to sort on
+      */
+      sortOn: {
+        type: String,
+        notify: true,
+        value: 'name',
+        observer: '_sortOnChanged'
+      },
+
+      /**
+       * _reversed: A boolean value indicating whether or not the list is reversed
+      */
+      _reversed: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    ready: function() {
+      var closeMenu = this.closeMenu.bind(this);
+      document.addEventListener("click", closeMenu, true);
+      document.addEventListener("keydown", function(e){
+        if (e.keyCode == 27) {
+          closeMenu();
+        }
+      }, true);
+    },
+
+    /**
+     * `_filesChanged` is called when the files are updated and backs up the files array
+    */
+    _filesChanged: function() {
+      this._sortOnChanged();
+    },
+
+    /**
+     * `_sortOnChanged` is called when the sortOn property is changed
+    */
+    _sortOnChanged: function() {
+      var sortFields ={
+        dateModified: true,
+        name: true,
+        preview: true,
+        type: true
+      };
+      if (!sortFields.hasOwnProperty(this.sortOn)) {
+        this.sortOn = 'name';
+      }
+      this.files = this.files.sort(this._comparator.bind(this));
+      this._updateFileList();
+    },
+
+    /**
+     * `_updateFileList` updates the visible list of files
+    */
+    _updateFileList: function() {
+      this._files = this.files.slice(0);
+      this.filter(this._keyword || "");
+    },
+
+    /**
+     * `reverseSort` reverses the files in the file list
+    */
+    reverseSort: function() {
+      this._reversed = !this._reversed;
+      this.files.reverse();
+      this._updateFileList();
+    },
+
+    /**
+     * `filter` filters the files by name against a keyword
+     *
+     * @param {string} a keyword to filter by
+    */
+    filter: function(keyword) {
+      keyword = keyword.trim().toLowerCase() || "";
+      this._keyword = keyword;
+      this._files = this.files.filter(function(item){
+        return !item.name.toLowerCase().indexOf(keyword) || !item.type.toLowerCase().indexOf(keyword);
+      });
+    },
+
+    /**
+     * The `open` event is fired whenever `open` is called.
+     *
+     * @event open
+    */
+
+    /**
+     * The `share` event is fired whenever `share` is called.
+     *
+     * @event share
+    */
+
+    /**
+     * The `download` event is fired whenever `download` is called.
+     *
+     * @event download
+    */
+
+    /**
+     * The `rename` event is fired whenever `saveRename` is called and actual rename has occurred
+     *
+     * @event rename
+    */
+
+    /**
+     * The `move` event is fired whenever `move` is called.
+     *
+     * @event move
+    */
+
+    /**
+     * The `delete` event is fired whenever `delete` is called.
+     *
+     * @event delete
+    */
+
+    saveMenu: function(e) {
+	   this.fire("save", e.model__data__)
+	},
+	
+	addMenu: function(e) {
+	   this.fire("add", e.model__data__)
+	},
+	
+    /**
+     * `open` is called when a file is clicked and fires a open event
+     *
+     * @param {string} a polymer event object.
+    */
+    open: function(e) {
+      this.fire("open", e.model.__data__.item)
+    },
+
+    /**
+     * `share` is called when a file's share button is clicked and fires a share event
+     *
+     * @param {string} a polymer event object.
+    */
+    share: function(e) {
+      this.fire("share", e.model.__data__.item)
+    },
+
+    /**
+     * `download` is called when a file's download button is clicked and fires a download event
+     *
+     * @param {string} a polymer event object.
+    */
+    download: function(e) {
+      this.fire("download", e.model.__data__.item)
+    },
+
+    /**
+     * `saveRename` fires an event with the newly renamed file if the file was indeed renamed
+     *
+     * @param {string} a polymer event object.
+    */
+    saveRename: function(e) {
+      if (e.keyCode && e.keyCode != 27 && e.keyCode != 13) {
+        return;
+      }
+
+      var display, edit, row = this._getParentRow(e.target);
+      for (var i = 0; i < row.childElementCount; i++) {
+          if (this._hasClass(row.children[i], "nameDisplay")) {
+            display = row.children[i];
+            i++;
+          }
+          if (this._hasClass(row.children[i], "nameEdit")) {
+            edit = row.children[i];
+          }
+          if (edit && display) {
+            break;
+          }
+      }
+
+      display.style.display = '';
+      edit.style.display = '';
+
+      if (e.keyCode && e.keyCode == 27) {
+        edit.children[0].value = display.textContent;
+        return;
+      }
+
+      var newName = edit.children[0].value.trim();
+      if (newName && newName != display.textContent.trim()){
+        for(i=0; i < this.files.length; i++) {
+          if(this.files[i].name == display.textContent) {
+            e.model.set('item.name', newName);
+            this.files[i].name = newName;
+            this._updateFileList();
+            break;
+          }
+        }
+        this._sortOnChanged();
+        if (this._reversed) {
+          this.reverseSort();
+        }
+        this.fire("rename", e.model.__data__.item)
+      }
+    },
+
+    /**
+     * `rename` is called when a file's rename button is clicked and prepares for the file to be renamed
+     *
+     * @param {string} a polymer event object.
+    */
+    rename: function(e) {
+      var display, edit, row = this._getParentRow(e.target);
+      for (var i = 0; i < row.childElementCount; i++) {
+          if (this._hasClass(row.children[i], "nameDisplay")) {
+            display = row.children[i];
+            i++;
+          }
+          if (this._hasClass(row.children[i], "nameEdit")) {
+            edit = row.children[i];
+          }
+          if (edit && display) {
+            break;
+          }
+      }
+      display.style.display = 'none';
+      edit.style.display = 'inline';
+      edit.children[0].value = display.textContent;
+      edit.children[0].focus();
+      edit.children[0].select();
+    },
+
+    /**
+     * `move` is called when a file's move button is clicked and fires a move event
+     *
+     * @param {string} a polymer event object.
+    */
+    move: function(e) {
+      this.fire("move", e.model.__data__.item)
+    },
+
+    /**
+     * `delete` is called when a file's delete button is clicked and fires a delete event
+     *
+     * @param {string} a polymer event object.
+    */
+    delete: function(e) {
+      this.fire("delete", e.model.__data__.item)
+    },
+
+    /**
+     * `openMenu` is called when a file's open menu button is clicked
+     *
+     * @param {string} a polymer event object.
+    */
+    openMenu: function(e) {
+      e.stopPropagation();
+      this.closeMenu();
+      this.openedMenu = e.target.parentNode.nextElementSibling;
+      this.openedMenu.show();
+      var row = this._getParentRow(this.openedMenu);
+      this.toggleClass("hovered", false, this.$$(".hovered"));
+      this.toggleClass("hovered", true, row);
+    },
+
+    /**
+     * `closeMenu` closes a file's menu
+     *
+     * @param {string} a polymer event object.
+    */
+    closeMenu: function(e) {
+      if(this.openedMenu){
+        this.toggleClass("hovered", false, this.$$(".hovered"));
+        this.openedMenu.hide();
+      }
+    },
+
+    /**
+     * `_hasClass` returns whether or not an element has a particular class
+     *
+     * @param {htmlElement} an html element to check.
+     * @param {string} the class name to check.
+     * @return {boolean} a polymer event object.
+    */
+    _hasClass: function(element, className) {
+      return (' ' + element.className + ' ').indexOf(' ' + className + ' ') > -1;
+    },
+
+    /**
+     * `_getParentRow` returns the parent row for a node
+     *
+     * @param {htmlElement} an html element for which to get the parent row.
+     * @return {htmlElement} the html element of the parent row.
+    */
+    _getParentRow: function(node) {
+      while(node.parentNode && !this._hasClass(node, "row")){
+        node = node.parentNode;
+      }
+      return node;
+    },
+
+    /**
+     * `_hasElements` returns whether or not an array is has elements
+     *
+     * @param {array}
+    */
+    _hasElements: function(arr) {
+      return arr.length !== 0;
+    },
+    /**
+     * `_comparator` compares two file objects for `Array.sort`.
+     * @param {file} a
+     * @param {file} b
+     */
+    _comparator: function(a, b) {
+      if(a[this.sortOn].toLowerCase() < b[this.sortOn].toLowerCase()) {
+          return -1;
+      } else if(b[this.sortOn].toLowerCase() < a[this.sortOn].toLowerCase()) {
+          return 1;
+      } else {
+          return 0;
+      }
+    }
+  });
+
+</script>
