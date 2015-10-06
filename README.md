@@ -41,13 +41,12 @@ Possible Keys:
   * Value should be null string, ""
 * Check
   * This will check for running shellinabox daemons
-  * Return will be in following format
-```
+  * Return will be in following format `
 {
-        "pids": "",
-        "running": 0
+        "pids": "1211 1213 ",
+        "running": 2
 }
-```
+`
   * Value should be null string, ""
 * Stop
   * This will stop all running shellinabox daemons 
