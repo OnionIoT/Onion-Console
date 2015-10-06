@@ -37,18 +37,18 @@ Takes argument in following format `{"params":{"key":"value"}}
 
 Possible Keys:
 * Start
-** This will start the shellinabox daemon
-** Value should be null string, ""
+  * This will start the shellinabox daemon
+  * Value should be null string, ""
 * Check
-** This will check for running shellinabox daemons
-** Return will be in following format
+  * This will check for running shellinabox daemons
+  * Return will be in following format
 ```
 {
         "pids": "",
         "running": 0
 }
 ```
-** Value should be null string, ""
+  * Value should be null string, ""
 * Stop
-** This will stop all running shellinabox daemons
-** Value should be null string, ""
+  * This will stop all running shellinabox daemons 
+  * Value should be null string, ""
