@@ -1,11 +1,12 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 <link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="import" href="/lib/iron-icons/notification-icons.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/elements/bootstrap-pills/bootstrap-pills.html">
-<link rel="import" href="./onion-setting-home.html">
-<link rel="import" href="./onion-setting-update.html">
-
+<link rel="import" href="./onion-settings-general.html">
+<link rel="import" href="./onion-settings-wifi.html">
+<link rel="import" href="./onion-settings-update.html">
 
 <dom-module id="onion-settings">
 	<style>
@@ -36,6 +37,8 @@
 			width: 100%;
 			height: 100%;
 			background-color: #ecf0f1;
+			padding: 25px;
+			overflow: scroll;
 		}
 	</style>
 
@@ -44,15 +47,17 @@
 			<onion-app-body>
 				<div class="horizontal layout">
 					<div id="side-bar">
-						<bootstrap-pills stacked>
-							<bootstrap-pill active><iron-icon icon="icons:home"></iron-icon><span>Settings Home</span></bootstrap-pill>
-							<bootstrap-pill><iron-icon icon="icons:system-update-alt"></iron-icon><span>Update & Restore</span></bootstrap-pill>
+						<bootstrap-pills stacked selected="{{currentTab}}">
+							<template is="dom-repeat" items="{{subApps}}">
+								<bootstrap-pill><iron-icon icon="{{item.icon}}"></iron-icon><span>{{item.name}}</span></bootstrap-pill>
+							</template>
 						</bootstrap-pills>
 					</div>
 
-					<iron-pages id="settingContainer" attr-for-selected="id" selected="{{currentSetting}}">
-						<onion-setting-home id='onion-setting-home'></onion-setting-home>
-						<onion-setting-update id="onion-setting-update"></onion-setting-update>
+					<iron-pages id="settingContainer" attr-for-selected="id" selected="[[currentSetting(subApps, currentTab)]]">
+						<onion-settings-general id="onion-settings-general"></onion-settings-general>
+						<onion-settings-wifi id="onion-settings-wifi"></onion-settings-wifi>
+						<onion-settings-update id="onion-settings-update"></onion-settings-update>
 					</iron-pages>
 				</div>
 			</onion-app-body>
@@ -65,29 +70,41 @@
 		(function () {
 			var ready = function () {
 				this.title = 'Omega Settings';
-				this.currentSetting = 'onion-setting-home';
-
+				this.subApps = [
+					{
+						name: 'General Settings',
+						icon: 'icons:settings',
+						page: 'onion-settings-general'
+					},
+					{
+						name: 'Wi-Fi Settings',
+						icon: 'notification:wifi',
+						page: 'onion-settings-wifi'
+					},
+					{
+						name: 'Update & Restore',
+						icon: 'icons:get-app',
+						page: 'onion-settings-update'
+					}
+				];
 			};
 
-			var onShowAll = function () {
-				this.fire('switchSetting', {settingId: 'onion-setting-home'});
-			};
-
-			var switchSetting = function (e) {
-				var settingId = e.detail.settingId;
-				this.currentSetting = settingId;
+			var currentSetting = function (subApps, currentTab) {
+				return subApps[currentTab].page;
 			};
 
 			Polymer({
 				is: 'onion-settings',
 				ready: ready,
+				currentSetting: currentSetting,
 				behaviors: [Onion.AppBehavior],
-				switchSetting: switchSetting,
-				onShowAll: onShowAll,
-				listeners: {
-					switchSetting: 'switchSetting'
+				properties: {
+					currentTab: {
+						type: String,
+						value: '0',
+						notify: true
+					}
 				}
-
 			});
         })();
 	</script>

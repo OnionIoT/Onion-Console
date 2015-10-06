@@ -1,0 +1,219 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/bootstrap-alert/bootstrap-alert.html">
+
+<dom-module id="onion-settings-update">
+	<style>
+		.container {
+			width: 600px;
+			margin: 0 auto;
+		}
+
+		.card {
+			margin-top: 15px;
+			background-color: #fff;
+		}
+	</style>
+
+	<template>
+
+		<div class="container">
+			<h4>Firmware Upgrade</h4>
+			<div class="card card-block">
+				<bootstrap-alert warning no-close>
+					<h6>Attention!</h6>
+					<p>Firmware upgrade will erase all files outside of the <code>/etc</code> directory. Please backup any custom files before proceeding.</p>
+				</bootstrap-alert>
+
+				<table class="table">
+					<tbody>
+						<tr>
+							<th scope="row">Name</th>
+							<td>{{name}}</td>
+						</tr>
+						<tr>
+							<th scope="row">Model</th>
+							<td>{{model}}</td>
+						</tr>
+						<tr>
+							<th scope="row">Revision</th>
+							<td>{{modelRev}}</td>
+						</tr>
+						<tr>
+							<th scope="row">Firmware</th>
+							<td>{{currentVersion}}</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<button class="btn btn-success">Upgrade</button>
+			</div>
+
+			<br />
+
+			<h4>Factory Reset</h4>
+			<div class="card card-block">
+				<bootstrap-alert danger no-close>
+					<h6>Attention!</h6>
+					<p>This will erase everything on the Omega and reset the device to factory default settings. Please backup any custom files on the device before proceeding.</p>
+				</bootstrap-alert>
+				<button class="btn btn-warning">Factory Reset</button>
+			</div>
+		</div>
+
+
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var ready = function () {
+				this.model 		= "Onion Omega";
+				this.modelRev 	= "R1";
+				this.dataReady	= 0;
+
+				this.getFirmwareInfo();
+				this.checkFirmwareInfo();
+			};
+
+			// use ubus to get the firmware info data
+			var getFirmwareInfo = function () {
+				var onionSettingUpdate 	= this;
+
+				// get the ubus service
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					var params = {
+						params: {
+							check: ''
+						}
+					};
+
+					// do ubus oupgrade check
+					ubus.request('onion', 'oupgrade', params, function (data) {
+						if (data) {
+							var returnCode = data[0];
+							console.log("oupgrade check return code: ", returnCode);
+
+							if (returnCode === 0) {
+								onionSettingUpdate.data = data[1];
+								console.log(onionSettingUpdate.data);	// get rid of this when app is done
+
+								// denote that data has be received
+								onionSettingUpdate.dataReady = 1;
+							}
+							else {
+								console.log("oupgrade check error");
+							}
+						}
+					});
+				});
+			};
+
+			// make sense of the firmware info data
+			var checkFirmwareInfo = function () {
+				var onionSettingUpdate 	= this;
+
+				var checkDataReadyInterval = setInterval(function () {
+					if (onionSettingUpdate.dataReady === 1) {
+						// stop the loop after this code
+						clearInterval(checkDataReadyInterval);
+
+
+						// current omega firmware:
+						//	onionSettingUpdate.data.device.version
+						//	onionSettingUpdate.data.device.major
+						//	onionSettingUpdate.data.device.minor
+						//	onionSettingUpdate.data.device.revision
+						//	onionSettingUpdate.data.device.build
+
+						onionSettingUpdate.data.device.build = 0; //tmp until oupgrade update
+
+						onionSettingUpdate.data.device.string 	= onionSettingUpdate.data.device.version + " (b" + onionSettingUpdate.data.device.build + ")";
+						onionSettingUpdate.currentVersion 		= onionSettingUpdate.data.device.string;
+						
+
+						// latest omega firmware:
+						//	onionSettingUpdate.data.repo.version
+						//	onionSettingUpdate.data.repo.major
+						//	onionSettingUpdate.data.repo.minor
+						//	onionSettingUpdate.data.repo.revision
+						//	onionSettingUpdate.data.repo.build
+
+						onionSettingUpdate.data.repo.build = 0; //tmp until oupgrade update
+
+						onionSettingUpdate.data.repo.string 	= onionSettingUpdate.data.repo.version + " (b" + onionSettingUpdate.data.repo.build + ")";
+						onionSettingUpdate.latestVersion 		= onionSettingUpdate.data.repo.string;
+
+
+						// info on binary file:
+						//	binary name: 	onionSettingUpdate.data.image.binary
+						//	path on Omega: 	onionSettingUpdate.data.image.local
+						//	URL (not needed): 	onionSettingUpdate.data.image.url;
+
+						
+						// check if build number update is possible
+						onionSettingUpdate.data.buildUpgrade = false;
+						if (!onionSettingUpdate.data.upgrade &&	(onionSettingUpdate.data.device.build !== onionSettingUpdate.data.repo.build) ) {
+							onionSettingUpdate.data.buildUpgrade = true;
+						}
+
+						// info on upgrade:
+						//	onionSettingUpdate.data.upgrade
+						//		true: 	upgrade required, version numbers do not match
+						// 		false: 	upgrade not required, version numbers match
+						// 	onionSettingUpdate.data.buildUpgrade
+						//		true: 	upgrade possible, version numbers match but build numbers do not
+						// 		false: 	upgrade not required, version numbers AND build numbers match
+						// upgrade table
+						//	case	upgrade 	buildUpgrade 	perform upgrade:
+						//	1 		true 		false			yes - version number mismatch
+						//	2 		false 		true			yes - build number mismatch
+						// 	3		false		false			no  - same version and build numbers
+						
+					}
+				}, 1000);
+			};
+
+			// use ubus to initiate the firmware upgrade
+			var upgradeFirmware = function () {
+				var onionSettingUpdate 	= this;
+
+				// get the ubus service
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					var params = {
+						params: {
+							force: ''
+						}
+					};
+
+					// do ubus oupgrade
+					ubus.request('onion', 'oupgrade', params, function (data) {
+						if (data) {
+							var returnCode = data[0];
+							console.log("oupgrade return code: ", returnCode);
+
+							if (returnCode === 0) {
+								console.log("oupgrade started!");
+							}
+							else {
+								console.log("oupgrade error");
+							}
+						}
+					});
+				});
+			};
+
+			Polymer({
+				is: "onion-settings-update",
+				ready: ready,
+				getFirmwareInfo: getFirmwareInfo,
+				checkFirmwareInfo: checkFirmwareInfo,
+				upgradeFirmware: upgradeFirmware,
+				properties: {
+					settings: Array
+				}
+			});
+        })();
+	</script>
+
+</dom-module>
