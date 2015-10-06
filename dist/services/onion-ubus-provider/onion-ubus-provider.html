@@ -1,0 +1,74 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-ajax/iron-ajax.html">
+
+<dom-module id="onion-ubus-provider">
+	<template>
+		<iron-ajax id="ajax" url="{{serverUrl}}" method="POST" content-type="application/json" on-response="handelResponse" handle-as="json"></iron-ajax> 
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var openRequests = {};
+			var requestCounter = 1;
+
+			var request = function (pkg, funct, params, callback) {
+				callback = callback || function () {};
+
+				var body = {
+					jsonrpc: '2.0',
+					id: requestCounter,
+					method: 'call',
+					params: [this.token, pkg, funct, params]
+				};
+
+				openRequests[requestCounter] = callback;
+				requestCounter += 1;
+				
+				this.$.ajax.body = JSON.stringify(body); 
+				this.$.ajax.generateRequest();
+			};
+
+			var handelResponse = function (request) {
+				var response = request.detail.response;
+
+                if (response !== null) {
+ 				    if ('error' in response){
+					    openRequests[response.id]({error: response.error});
+					    console.log(response.error);  
+				    } else {
+					    openRequests[response.id](response.result);
+				    }
+				    delete openRequests[response.id];
+				} else {
+				    this.isAlive = false;
+					this.token = '00000000000000000000000000000000';
+				}
+			};
+
+
+			Polymer({
+				is: 'onion-ubus-provider',
+	            properties: {
+	            	token: {
+	            		type: String,
+	            		value: '00000000000000000000000000000000'
+	            	},
+	            	serverUrl: {
+	            		type: String,
+	            		value: window.location.origin + '/ubus'
+	            		// value: "/ubus"
+
+	            	},
+					isAlive: {
+					    type: Boolean,
+						value: false
+					}
+	            },
+	            request: request,
+	            handelResponse: handelResponse
+			});
+        })();
+	</script>
+</dom-module>

@@ -1,0 +1,246 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
+
+<dom-module id="onion-file-list">
+	<style>
+		:host {
+			display: block;
+			height: 100%;
+			width: 100%;
+			font-size: 13px;
+		}
+
+		.file-row {
+			display: flex;
+			position: relative;
+			padding: 5px;
+		}
+		.file-row:not(:last-of-type) {
+			border-bottom: 1px solid #eee;
+		}
+		.file-row:hover,
+		.file-row.hovered {
+			background-color: #fafafa;
+		}
+		.file-row:hover .hidden,
+		.file-row.hovered .hidden {
+			display: block;
+		}
+		.file-row.hovered {
+			z-index: 1;
+		}
+		.file-row iron-icon {
+			margin: 0 10px;
+		}
+		.file-row span {
+			flex: 1 30%;
+		}
+		.clickable {
+			cursor: pointer;
+		}
+		.clickable:hover {
+			text-decoration: underline;
+		}
+		.responsiveText {
+			white-space: pre;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.nameDisplay {
+			line-height: 24px;
+		}
+		.nameEdit {
+			display: none;
+			z-index: 1;
+		}
+	</style>
+
+	<template>
+		<div hidden$="{{_hasElements(_files)}}">
+			<content></content>
+		</div>
+		<template is="dom-repeat" items="{{_files}}">
+			<div class="file-row">
+				<iron-icon icon="{{item.preview}}" class="clickable" on-click="open"></iron-icon>
+				<span class="clickable nameDisplay responsiveText" title$="{{item.name}}" on-click="open">{{item.name}}</span>
+				<span class="nameEdit">
+					<input type="text" value="{{item.name}}" on-blur="saveRename" on-keydown="saveRename">
+				</span>
+			</div>
+		</template>
+	</template>
+
+</dom-module>
+
+<script>
+	'use strict';
+
+	var ready = function () {
+		
+	};
+
+	var _filesChanged = function () {
+		this._sortOnChanged();
+	};
+
+	var _sortOnChanged = function () {
+		var sortFields ={
+			dateModified: true,
+			name: true,
+			preview: true,
+			type: true
+		};
+		if (!sortFields.hasOwnProperty(this.sortOn)) {
+			this.sortOn = 'name';
+		}
+		this.files = this.files.sort(this._comparator.bind(this));
+		this._updateFileList();
+	};
+
+	var _updateFileList = function () {
+		this._files = this.files.slice(0);
+		this.filter(this._keyword || "");
+	};
+
+	var reverseSort = function () {
+		this._reversed = !this._reversed;
+		this.files.reverse();
+		this._updateFileList();
+	};
+
+	var filter = function (keyword) {
+		keyword = keyword.trim().toLowerCase() || "";
+		this._keyword = keyword;
+		this._files = this.files.filter(function(item){
+			return !item.name.toLowerCase().indexOf(keyword) || !item.type.toLowerCase().indexOf(keyword);
+		});
+	};
+
+	var open = function(e) {
+		this.fire('open', e.model.__data__.item)
+	};
+
+	var saveRename = function(e) {
+		if (e.keyCode && e.keyCode != 27 && e.keyCode != 13) {
+			return;
+		}
+		var display, edit, row = this._getParentRow(e.target);
+		for (var i = 0; i < row.childElementCount; i++) {
+				if (this._hasClass(row.children[i], 'nameDisplay')) {
+					display = row.children[i];
+					i++;
+				}
+				if (this._hasClass(row.children[i], 'nameEdit')) {
+					edit = row.children[i];
+				}
+				if (edit && display) {
+					break;
+				}
+		}
+		display.style.display = '';
+		edit.style.display = '';
+		if (e.keyCode && e.keyCode == 27) {
+			edit.children[0].value = display.textContent;
+			return;
+		}
+		var newName = edit.children[0].value.trim();
+		if (newName && newName != display.textContent.trim()){
+			for(i=0; i < this.files.length; i++) {
+				if(this.files[i].name == display.textContent) {
+					e.model.set('item.name', newName);
+					this.files[i].name = newName;
+					this._updateFileList();
+					break;
+				}
+			}
+			this._sortOnChanged();
+			if (this._reversed) {
+				this.reverseSort();
+			}
+			this.fire("rename", e.model.__data__.item)
+		}
+	};
+
+	var rename = function(e) {
+		var display, edit, row = this._getParentRow(e.target);
+		for (var i = 0; i < row.childElementCount; i++) {
+				if (this._hasClass(row.children[i], 'nameDisplay')) {
+					display = row.children[i];
+					i++;
+				}
+				if (this._hasClass(row.children[i], 'nameEdit')) {
+					edit = row.children[i];
+				}
+				if (edit && display) {
+					break;
+				}
+		}
+		display.style.display = 'none';
+		edit.style.display = 'inline';
+		edit.children[0].value = display.textContent;
+		edit.children[0].focus();
+		edit.children[0].select();
+	};
+
+	var _hasClass = function (element, className) {
+		return (' ' + element.className + ' ').indexOf(' ' + className + ' ') > -1;
+	};
+
+	var _getParentRow = function (node) {
+		while(node.parentNode && !this._hasClass(node, 'file-row')){
+			node = node.parentNode;
+		}
+		return node;
+	};
+
+	var _hasElements = function (arr) {
+		return arr.length !== 0;
+	};
+
+	var _comparator = function (a, b) {
+		if (a[this.sortOn].toLowerCase() < b[this.sortOn].toLowerCase()) {
+			return -1;
+		} else if(b[this.sortOn].toLowerCase() < a[this.sortOn].toLowerCase()) {
+			return 1;
+		} else {
+			return 0;
+		}
+	};
+
+	Polymer({
+		is: 'onion-file-list',
+		properties: {
+			files: {
+				type: Array,
+				notify: true,
+				value: function() {
+					return [];
+				},
+				observer: '_filesChanged'
+			},
+			sortOn: {
+				type: String,
+				notify: true,
+				value: 'name',
+				observer: '_sortOnChanged'
+			},
+			_reversed: {
+				type: Boolean,
+				value: false
+			}
+		},
+		ready: ready,
+		_filesChanged: _filesChanged,
+		_sortOnChanged: _sortOnChanged,
+		_updateFileList: _updateFileList,
+		reverseSort: reverseSort,
+		filter: filter,
+		open: open,
+		saveRename: saveRename,
+		rename: rename,
+		_hasClass: _hasClass,
+		_getParentRow: _getParentRow,
+		_hasElements: _hasElements,
+		_comparator: _comparator 
+	});
+</script>

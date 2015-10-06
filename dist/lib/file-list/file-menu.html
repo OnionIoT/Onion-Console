@@ -1,0 +1,120 @@
+<!--
+@license
+Copyright (c) 2015 Winston Howes. All rights reserved.
+This code may only be used under the MIT license found at https://github.com/winhowes/file-list/blob/master/LICENSE
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+An animatable dropdown menu.
+
+Example:
+
+    <file-menu></file-menu>
+
+@demo
+-->
+<link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="../neon-animation/animations/scale-up-animation.html">
+
+<dom-module id="file-menu">
+
+  <style>
+    :host {
+      display: none;
+      background-color: #fff;
+    }
+  </style>
+
+  <template>
+    <content></content>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'file-menu',
+
+    behaviors: [
+      Polymer.NeonAnimationRunnerBehavior
+    ],
+
+    properties: {
+
+      /**
+       * `opened` indicates the the dropdown is opened.
+      */
+      opened: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * `opening` indicates the the dropdown is in the process of opening.
+      */
+      opening: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * `animationConfig` is a configuration object for the dropdown's animations.
+      */
+      animationConfig: {
+        type: Object,
+        value: function() {
+          return {
+            entry: [{
+              name: 'scale-up-animation',
+              transformOrigin: '100% 0',
+              timing: {
+                duration: 150
+              },
+              node: this
+            }]
+          };
+        }
+      }
+    },
+
+    listeners: {
+      'neon-animation-finish': '_onAnimationFinish'
+    },
+
+    /**
+      * `_onAnimationFinish` is callback for when an animation completes.
+    */
+    _onAnimationFinish: function() {
+      if (this.opening) {
+        this.opening = false;
+        this.opened = true;
+        this.style.display = 'inline-block';
+      }
+    },
+
+    /**
+      * `show` shows the dropdown menu.
+    */
+    show: function() {
+      if(!this.opened && !this.opening){
+        this.opening = true;
+        this.playAnimation('entry');
+        this.style.display = 'inline-block';
+      }
+    },
+
+    /**
+      * `hide` hides the dropdown menu.
+    */
+    hide: function() {
+      if(!this.opening){
+        this.opened = false;
+        this.style.display = '';
+      }
+    }
+  });
+
+</script>

@@ -1,0 +1,51 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="onion-setting-home">
+	<style>
+		.setting-icon {
+			width: 100px;
+			height: 100px;
+			background-color: red;
+
+			margin: 50px;
+		}
+	</style>
+
+	<template>
+		<div class="setting-icon" on-click="switchSetting" setting-id="onion-setting-update">
+			Update &amp; Restore
+		</div>
+
+		<div class="setting-icon" on-click="switchSetting" setting-id="onion-setting-time">
+			Date &amp; Time
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var ready = function () {
+
+			};
+
+			var switchSetting = function switchSetting(e) {
+				console.log(e);
+				var settingId = e.target.getAttribute("setting-id");
+
+				this.fire("switchSetting", {settingId: settingId})
+
+			}
+
+			Polymer({
+				is: "onion-setting-home",
+				ready: ready,
+				switchSetting: switchSetting,
+				properties: {
+					settings: Array
+				}
+			});
+        })();
+	</script>
+
+</dom-module>

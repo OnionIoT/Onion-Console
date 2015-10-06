@@ -1,0 +1,32 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+import shared service
+
+<dom-model id="onion-apps-provider">
+	<script>
+        'use strict';
+
+        (function () {
+            var appProvider = null,
+                apps = [];
+
+            var ready = function () {
+                appProvider = this;
+                onionConsole.getService('onion-ubus-provider', function (ubus) {
+                    ubus.request('onion-console', 'app-list', {}, function (result) {
+                        if (result.length === 2 && result[1].exists) {
+                            for (let i = 0; i < result[1].apps.length; i++) {
+                                apps.push(result[1].apps[i]);
+                            }
+                        }
+                    });
+                });
+            };
+
+            Polymer({
+                is: 'onion-apps-provider',
+                apps: apps,
+                ready: ready
+            });
+        })();
+	</script>
+</dom-model>

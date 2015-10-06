@@ -1,0 +1,159 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="onion-file-provider">
+	<script>
+		'use strict';
+		
+		(function () {
+			var fileProvider = null;
+			var fileListResult = null;
+			var fileContentResult = null;
+			var fileSaveResult = null;
+			var execCommandResult = null;
+
+			var ready = function (){
+				fileProvider = this;
+				onionConsole.getService('onion-ubus-provider', function(ubus){
+					fileProvider.ubus=ubus;
+				});			
+			};
+
+			var getFileList = function (filepath,callback) {
+			var params = {
+					path: filepath
+				};
+				fileListResult = callback || this.noop;
+				this.ubus.request('file', 'list', params, setFileList);
+			};
+			
+			var getFileContent = function(fullFilename, callback) {
+			    var params = {
+				    path: fullFilename
+				};
+				fileContentResult = callback || this.noop;
+				this.ubus.request('file', 'read', params, setFileContent);
+			}
+                
+			var saveFileContent = function(fullFilename, data, callback) {
+			    var params = {
+				    path: fullFilename,
+					data: data
+				};
+				fileSaveResult = callback || this.noop;
+				this.ubus.request('file', 'write', params, setSaveFileContentResult);
+			}
+			
+			var execCommand = function(command, parameters, callback) {
+			    var params = {
+				    command: command,
+				    params: parameters
+				};
+				execCommandResult = callback || this.noop;
+				this.ubus.request('file', 'exec', params, setExecCommandResult);
+			}
+			
+			var setFileList = function (result) {
+				var returnCode = result[0];
+				if (returnCode === 0) { 
+				    if (result[1] !== null) {
+                                        var filelist=[{"name":"..","type":"directory","preview":"folder"}];
+                                                for (var i = 0; i < result[1].entries.length; i++) {
+						    var newEntry={"name":"","type":"","preview":"description"};
+							newEntry.name=result[1].entries[i].name;
+							newEntry.type=result[1].entries[i].type;
+							if(result[1].entries[i].type==="directory")
+							{
+							    newEntry.preview="folder";
+							}
+							else if(result[1].entries[i].type==="symlink")
+							{
+							    newEntry.preview="link";
+							}
+							filelist.push(newEntry);
+						}
+						//console.log('FileListResult[' + JSON.stringify(result[1]) + ']');
+						fileListResult({
+							fileList: filelist
+						});
+				    } else {
+					    console.log('Empty file list!')
+					    fileListResult({
+					    	fileList: ''
+					    });    
+					}
+				} else {
+				    console.log('Failed to get file list!')
+					fileListResult({
+						fileList: ''
+					});
+				}
+			};
+			
+			var setFileContent = function(result)
+			{
+				var returnCode = result[0];
+				//console.log("setFileContent resultcode["+returnCode+"]");
+				if (returnCode === 0) { 
+					if (result[1] !== null) {
+					    fileContentResult({
+						    fileContent: result[1].data
+						});
+					}
+				} else if (returnCode === 5){
+				    console.log('Empty file!');
+					fileContentResult({
+					    fileContent: ''
+					});
+				} else {
+				    console.log('Failed to get file content!');
+					fileContentResult({
+					    fileContent: null
+					});
+				}
+			}
+
+			var setSaveFileContentResult = function(result)
+			{
+			    var returnCode = result[0];
+				if (returnCode === 0) { 
+					fileSaveResult({
+					    saveResult: true
+					});
+				} else {
+				    console.log('Failed to save file content!');
+					fileSaveResult({
+					    saveResult: false
+					});
+				}
+			}
+			
+			var setExecCommandResult = function(result)
+			{
+				if (result[0] === 0 && result[1].code===0) { 
+					execCommandResult({
+					    execResult: true
+					});
+				} else {
+				    console.log('Failed to execute command!');
+					execCommandResult({
+					    execResult: false
+					});
+				}
+			}
+			
+			Polymer({
+				is: 'onion-file-provider',
+				ready: ready,
+				noop: function () {},
+				getFileList: getFileList,
+				getFileContent: getFileContent,
+				saveFileContent: saveFileContent,
+				execCommand: execCommand,
+			    setFileList: setFileList,
+				setFileContent: setFileContent,
+				setSaveFileContentResult: setSaveFileContentResult,
+				setExecCommandResult: setExecCommandResult,
+			});
+        })();
+	</script>
+</dom-module>

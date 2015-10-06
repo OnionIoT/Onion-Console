@@ -1,0 +1,57 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="bootstrap-dropdown-toggle">
+	<style>
+		.dropdown-toggle:after {
+			display: inline-block;
+			width: 0;
+			height: 0;
+			margin-left: .25rem;
+			vertical-align: middle;
+			content: '';
+			border-top: .3em solid;
+			border-right: .3em solid transparent;
+			border-left: .3em solid transparent;
+		}
+
+		.dropdown-toggle:focus {
+			outline: 0;
+		}
+	</style>
+
+	<template>
+		<button class$="{{_computeDropdownToggleClass(theme)}}" type="button">
+			<content></content>
+		</button>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var _computeDropdownToggleClass = function (theme) {
+				return 'btn btn-' + theme + ' dropdown-toggle';
+			};
+
+			var ready = function () {
+				
+			};
+
+			Polymer({
+				is: 'bootstrap-dropdown-toggle',
+				properties: {
+					right: {
+				        type: Boolean,
+				        value: false
+					},
+					theme: {
+						type: String,
+						value: 'default'
+					}
+				},
+				ready: ready,
+				_computeDropdownToggleClass: _computeDropdownToggleClass
+			});
+        })();
+	</script>
+</dom-module>

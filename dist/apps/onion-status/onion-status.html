@@ -1,0 +1,254 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-pages/iron-pages.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
+
+<dom-module id="onion-status">
+	<style>
+	    :host {
+				display: block;
+				height: 100%;
+				width: 100%;
+				background-color: #f2f2f2;
+		}
+
+		h4 {
+			margin-bottom: 10px;
+		}
+
+		table {
+		    width: 100%;
+		}
+		
+		td {
+		    width: 33%;
+		}
+		#statusContainer {
+			height: 100%;
+			width: 100%;
+			padding: 25px;
+			padding-top: 50px;
+			margin-top: -50px;
+			overflow: auto;
+		}
+
+		.status-group {
+			background-color: #fff;
+			margin: 25px auto;
+			margin-top: 10px;
+			padding: 25px;
+			width: 600px;
+			border-radius: 5px;
+			line-height: 40px;
+			border-top: 2px solid #313338;
+			border-top-left-radius: 0;
+			border-top-right-radius: 0;
+		}
+		
+		.status-group:last-child {
+			margin-bottom: 0;
+		}
+
+		.status-field {
+			border-top: 1px solid #ddd;
+		}
+
+		.wrapper {
+			width: 600px;
+			margin: 0 auto;
+		}
+
+		.online {
+			background-color: #5db85c;
+			border-radius: 5px;
+			color: #fff;
+			padding: 5px 10px;
+			font-weight: 600;
+		}
+
+		.offline {
+			background-color: #ff0000;
+			border-radius: 5px;
+			color: #fff;
+			padding: 5px 10px;
+			font-weight: 600;
+			visibility: hidden;
+
+		}
+		
+		.status-group button {
+			font-size: 14px;
+			background-color: #637ca5;
+			color: #fff;
+			border: 1px solid #42536d;
+			border-radius: 5px;
+			padding: 5px 10px;
+			cursor: pointer;
+		}
+		
+		.status-group button:hover, .status-group button:active, .status-group button:focus {
+			background-color: #52698f;
+		}
+	</style>
+	<template>
+		<onion-app app-name="Status">
+			<onion-app-body>
+				<!--div id="ip"></div-->
+				<div class="wrapper">
+						<h4>General Status</h4>
+						<div class="status-group" vertical layout>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Status</td><td><span id="online" class="online">Online</span><span id="offline" class="offline">Offline</span></td><td></td>
+                                    </tr>
+                                </table>						
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Address</td><td>{{ip}}</td><td></td></tr>
+                                </table>
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Netmask</td><td>{{netmask}}</td><td></td></tr>
+                                </table>
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>MAC Address</td><td>{{mac}}</td><td></td></tr>
+                                </table>
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Received (kB)</td><td>{{received}}</td><td></td></tr>
+                                </table>
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Transmitted (kB)</td><td>{{transmitted}}</td><td></td></tr>
+                                </table>
+							</div>
+						</div>
+
+						<h4>Interactive Status</h4>
+						<div class="status-group" vertical layout>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>Blink</td><td><button>Identify Device</button></td><td></td></tr>
+                                </table>
+							</div>
+							<div class="status-field" horizontal layout>
+								<table>
+                                    <tr><td>OLED Status</td><td><button>Display status on OLED</button></td><td></td></tr>
+                                </table>
+							</div>
+						</div>
+					</div>
+				</div>				
+			</onion-app-body>
+		</onion-app>
+	</template>
+	<script>
+		'use strict';
+
+		(function () {
+			var onionStatus = null;
+			var refreshRxTxInterval = null;
+			var refreshStatusInterval = null;
+			var locked = false;
+
+			var ready = function() {
+				this.title = "Device Status";
+	            onionStatus = this;
+				
+				onionConsole.getService("onion-session-provider", function (sessionProvider) {
+					onionStatus.sessionProvider = sessionProvider;
+				});
+				
+				if(onionStatus.sessionProvider.isAlive()===true)
+				{
+					onionConsole.getService('onion-device-provider', function (deviceProvider) {
+						onionStatus.deviceProvider=deviceProvider;
+						//Get MAC Address
+						deviceProvider.getMAC(function(result) {
+						    onionStatus.mac=result.mac;
+						});
+						//Get IP Address, NetMask
+						deviceProvider.getIP(function (result) {
+							if (result[0].available === true) {
+								onionStatus.$.online.style.visibility = 'visible';
+								onionStatus.$.offline.style.visibility = 'hidden';
+							} else {
+								onionStatus.$.online.style.visibility = 'hidden';
+								onionStatus.$.offline.style.visibility = 'visible';
+							}
+
+							onionStatus.ip = result[1].ip;
+							onionStatus.netmask = result[2].netmask;
+						});
+						//Get received and transmitted bytes
+						updateRxTx();
+						refreshRxTx(10000);
+					});	
+                                }			
+			};
+			
+		    var refreshRxTx = function (interval) {
+			    refreshRxTxInterval = setInterval(function () {
+			    	updateRxTx()
+			    }, interval);
+			}; 
+			
+			var stopRefreshRxTx = function () { 
+			    clearInterval(onionStatus.refreshRxTxInterval);
+				delete onionStatus.refreshRxTxInterval;
+			};
+			
+			var updateRxTx = function () {
+			    if(onionStatus.sessionProvider.isAlive()===true) 
+				{
+					onionStatus.deviceProvider.getRxTx(function (result) {
+						//console.log('rxResult[' + result[0].received + ']');
+						//console.log('txResult[' + result[1].transmitted + ']'); 
+						onionStatus.received = result[0].received;
+						onionStatus.transmitted = result[1].transmitted;							
+					});
+				} 
+				else {
+				    stopRefreshRxTx();
+				}
+			};
+			
+			/*
+			var refreshStatus = function (interval) {
+			    refreshStatusInterval = setInterval(function () {
+				    updateStatus()
+				}, interval);
+			};
+
+			var updateStatus = function () {
+			  	ipProvider.getIP(function (result) {
+					if(result[0].available === true) {
+					    onionStatus.$.online.style.visibility = 'visible';
+						onionStatus.$.offline.style.visibility = 'hidden';
+					} else {
+					    onionStatus.$.online.style.visibility = 'hidden';
+					    onionStatus.$.offline.style.visibility = 'visible';
+				    }
+					onionStatus.ip = result[1].ip;
+				});
+			};
+			*/
+
+			Polymer({
+				is: 'onion-status',
+				ready: ready,
+				behaviors: [Onion.AppBehavior],
+				refreshRxTx: refreshRxTx,
+				stopRefreshRxTx: stopRefreshRxTx,
+				updateRxTx: updateRxTx,
+				//refreshStatus: refreshStatus,
+				//updateStatus: updateStatus,
+			});
+        })();
+	</script>
+</dom-module>
