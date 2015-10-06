@@ -1,28 +1,8 @@
 #!/bin/sh
 
-. /usr/share/libubox/jshn.sh
+# include the Onion sh lib
+. /usr/lib/onion/lib.sh
 
-bLogEnabled=0
-logFile="/tmp/$logName"
-
-# function to setup logging
-SetupLog () {
-	if [ $bLogEnabled == 1 ]; then
-		if [ -f $logFile ]; then
-			rm -rf $logFile
-		fi
-
-		touch $logFile
-	fi
-}
-
-# function to perform logging
-#	argument 1: message to be logged
-Log () {
-	if [ $bLogEnabled == 1 ]; then
-		echo "$1" >> $logFile
-	fi
-}
 
 # function to return an array of all apps and if the app has an icon there
 # 	argument 1: directory to check
@@ -79,6 +59,69 @@ AppList () {
 	json_dump
 }
 
+# function to control shellinabox daemon
+ShellinaboxCtrl () {
+	# parse the arguments object
+	local argumentString=$(_ParseArgumentsObject)
+
+	# initialize json response object
+	json_init
+
+	# check arguments for supported commands
+	for argument in $argumentString
+	do
+		if [ "$argument" == "-start" ]
+		then
+			# start the shellinabox daemon
+			Log "ShellinaboxCtrl:: Start the shellinabox daemon"
+			/usr/sbin/shellinaboxd -t -s "/:$(id -u):$(id -g):HOME:"'/bin/ash'
+
+			json_add_boolean "start" 1
+		elif [ "$argument" == "-check" ]
+		then
+			# check if the shellinabox daemon is running
+			Log "ShellinaboxCtrl:: Check for shellinabox daemon"
+			
+			# find the processes and their pids
+			pids=$(_getPids shellinabox ubus)
+			Log "ShellinaboxCtrl:: found following pids: $pids"
+			json_add_string "pids" "$pids"
+
+			# count the number of processes
+			count=0
+			for pid in $pids 
+			do
+				count=`expr $count + 1`
+			done
+
+			json_add_int "running" $count
+		elif [ "$argument" == "-stop" ]
+		then 
+			# stop the shellinabox daemon
+			Log "ShellinaboxCtrl:: Stop the shellinabox daemon"
+
+			# find the pids
+			pids=$(_getPids shellinabox ubus)
+
+			# stop each of them
+			count=0
+			for pid in $pids 
+			do
+				count=`expr $count + 1`
+				kill $pid
+			done
+
+			json_add_int "stopped" $count
+		else
+			# unsupported command, do nothing
+			Log "ShellinaboxCtrl:: unsupported command: $argument"
+		fi
+	done
+
+	# output the json
+	json_dump
+}
+
 
 ########################
 ##### Main Program #####
@@ -86,15 +129,17 @@ AppList () {
 appLocation="/www/apps"
 
 cmdAppList="app-list"
+cmdShellinabox="shellinabox"
 cmdStatus="status"
 
 jsonAppList='"'"$cmdAppList"'": { }'
+jsonShellinabox='"'"$cmdShellinabox"'": { "params": { "key": "value" } }'
 jsonStatus='"'"$cmdStatus"'": { }'
 
 
 case "$1" in
     list)
-		echo "{ $jsonAppList, $jsonStatus }"
+		echo "{ $jsonAppList, $jsonShellinabox, $jsonStatus }"
     ;;
     call)
 		Log "Function: call, Method: $2"
@@ -103,6 +148,17 @@ case "$1" in
 			$cmdAppList)
 				# run the app-list scan
 				AppList "$appLocation"
+			;;
+			$cmdShellinabox)
+				# read the json arguments
+				read input;
+				Log "Json argument: $input"
+
+				# parse the json
+				json_load "$input"
+
+				# parse the json and run wifisetup
+				ShellinaboxCtrl
 			;;
 			$cmdStatus)
 				# dummy call for now
