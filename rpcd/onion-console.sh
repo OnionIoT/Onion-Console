@@ -67,48 +67,48 @@ ShellinaboxCtrl () {
 	# initialize json response object
 	json_init
 
+	# find the pids of any running shellinabox processes
+	pids=$(_getPids shellinabox ubus)
+
+	# count the number of processes
+	count=0
+	for pid in $pids 
+	do
+		count=`expr $count + 1`
+	done
+
 	# check arguments for supported commands
 	for argument in $argumentString
 	do
 		if [ "$argument" == "-start" ]
 		then
-			# start the shellinabox daemon
-			Log "ShellinaboxCtrl:: Start the shellinabox daemon"
-			/usr/sbin/shellinaboxd -t -s "/:$(id -u):$(id -g):HOME:"'/bin/ash'
+			# start the shellinabox daemon (if there are none running)
+			Log "ShellinaboxCtrl:: Start the shellinabox daemon, current count is $count"
 
-			json_add_boolean "start" 1
+			if [ $count -eq 0 ]
+			then
+				json_add_boolean "start" 1
+				/usr/sbin/shellinaboxd -t -s "/:$(id -u):$(id -g):HOME:"'/bin/ash' &
+			else
+				json_add_boolean "start" 0
+			fi			
 		elif [ "$argument" == "-check" ]
 		then
 			# check if the shellinabox daemon is running
 			Log "ShellinaboxCtrl:: Check for shellinabox daemon"
-			
-			# find the processes and their pids
-			pids=$(_getPids shellinabox ubus)
 			Log "ShellinaboxCtrl:: found following pids: $pids"
+			
 			json_add_string "pids" "$pids"
-
-			# count the number of processes
-			count=0
-			for pid in $pids 
-			do
-				count=`expr $count + 1`
-			done
-
 			json_add_int "running" $count
 		elif [ "$argument" == "-stop" ]
 		then 
 			# stop the shellinabox daemon
 			Log "ShellinaboxCtrl:: Stop the shellinabox daemon"
 
-			# find the pids
-			pids=$(_getPids shellinabox ubus)
-
-			# stop each of them
-			count=0
+			# stop each process
 			for pid in $pids 
 			do
-				count=`expr $count + 1`
-				kill $pid
+				kill $pid >& /dev/null
 			done
 
 			json_add_int "stopped" $count

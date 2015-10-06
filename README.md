@@ -33,7 +33,7 @@ Returns an array of all installed console apps, information includes everything 
 Allows for control of the shellinabox daemon through ubus
 
 ##### Usage
-Takes argument in following format `{"params":{"key":"value"}}
+Takes argument in following format `{"params":{"key":"value"}}`
 
 Possible Keys:
 * Start
