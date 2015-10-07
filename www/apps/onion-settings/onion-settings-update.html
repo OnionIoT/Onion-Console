@@ -126,8 +126,6 @@
 						//	onionSettingUpdate.data.device.revision
 						//	onionSettingUpdate.data.device.build
 
-						onionSettingUpdate.data.device.build = 0; //tmp until oupgrade update
-
 						onionSettingUpdate.data.device.string 	= onionSettingUpdate.data.device.version + " (b" + onionSettingUpdate.data.device.build + ")";
 						onionSettingUpdate.currentVersion 		= onionSettingUpdate.data.device.string;
 						
@@ -139,8 +137,6 @@
 						//	onionSettingUpdate.data.repo.revision
 						//	onionSettingUpdate.data.repo.build
 
-						onionSettingUpdate.data.repo.build = 0; //tmp until oupgrade update
-
 						onionSettingUpdate.data.repo.string 	= onionSettingUpdate.data.repo.version + " (b" + onionSettingUpdate.data.repo.build + ")";
 						onionSettingUpdate.latestVersion 		= onionSettingUpdate.data.repo.string;
 
@@ -150,24 +146,18 @@
 						//	path on Omega: 	onionSettingUpdate.data.image.local
 						//	URL (not needed): 	onionSettingUpdate.data.image.url;
 
-						
-						// check if build number update is possible
-						onionSettingUpdate.data.buildUpgrade = false;
-						if (!onionSettingUpdate.data.upgrade &&	(onionSettingUpdate.data.device.build !== onionSettingUpdate.data.repo.build) ) {
-							onionSettingUpdate.data.buildUpgrade = true;
-						}
 
 						// info on upgrade:
 						//	onionSettingUpdate.data.upgrade
 						//		true: 	upgrade required, version numbers do not match
 						// 		false: 	upgrade not required, version numbers match
-						// 	onionSettingUpdate.data.buildUpgrade
+						// 	onionSettingUpdate.data.build_mismatch
 						//		true: 	upgrade possible, version numbers match but build numbers do not
 						// 		false: 	upgrade not required, version numbers AND build numbers match
 						// upgrade table
-						//	case	upgrade 	buildUpgrade 	perform upgrade:
+						//	case	upgrade 	build_mismatch 	perform upgrade:
 						//	1 		true 		false			yes - version number mismatch
-						//	2 		false 		true			yes - build number mismatch
+						//	2 		false 		true			yes, but optional - build number mismatch
 						// 	3		false		false			no  - same version and build numbers
 						
 					}
