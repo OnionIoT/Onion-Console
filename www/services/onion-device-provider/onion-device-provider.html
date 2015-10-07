@@ -93,7 +93,7 @@
 			    var ip = '-';
 			    var netmask = '-';
                             if (result[0] === 0 && result[1].code===0) { 
-				var wlanIndex=result[1].stdout.lastIndexOf('wlan0');
+				var wlanIndex=result[1].stdout.indexOf('wlan0');
 				if(wlanIndex>0)
 				{
 				    available=true;

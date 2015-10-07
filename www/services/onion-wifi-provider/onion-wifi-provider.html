@@ -1,0 +1,95 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="onion-wifi-provider">
+	<script>
+		'use strict';
+
+		(function () {
+            var wifiProvider = null;
+            var wifiScanResult=null;
+            var wifiSetupResult=null;
+            var apSetupResult = null;
+
+            var ready = function (){
+                wifiProvider = this;
+                onionConsole.getService('onion-ubus-provider', function(ubus){
+                wifiProvider.ubus=ubus;
+				});			
+            };
+
+            var wifiScan = function (callback) {
+                var params = {
+                    device: 'wlan0'
+                };
+                wifiScanResult = callback || this.noop;
+                this.ubus.request('onion', 'wifi-scan', params, setWifiScanResult);
+            };
+
+            var setWifiScanResult = function (data) {
+                if (data) {
+                    var returnCode = data[0];
+				    if (returnCode === 0) { 
+				        if(data[1] !== null && data[1].results !== null) {
+				            wifiScanResult({ wifiScan: data[1].results});
+					    } else {
+					        console.log('No available WiFi AP around');
+					        wifiScanResult({ wifiScan: []});
+					    }
+				    } else {
+				        console.log('WiFi scan failed!')
+					    wifiScanResult({ wifiScan: []});
+				    }
+				} else {
+				    console.log('WiFi scan failed!')
+					wifiScanResult({ wifiScan: []});
+				}
+			};
+
+			var wifiSetup = function (networkSsid, networkPassword, networkAuth, callback) {
+                var params = {
+                    ssid: networkSsid,
+                    password: networkPassword,
+                    auth: networkAuth,
+				};
+				wifiSetupResult = callback || this.noop;
+				this.ubus.request('onion', 'wifi-setup', params, setWifiSetupResult);
+			};
+
+			var setWifiSetupResult = function (data) {
+                if (data) {
+				    console.log('WiFi Setup response: '+ data);
+                }
+            };
+			
+			var apSetup = function (networkSsid, networkPassword, networkAuth, callback) {
+				var params =  {
+                    ssid: networkSsid,
+                    password: networkPassword,
+                    auth: networkAuth,
+					accesspoint: '', 
+				};
+				apSetupResult = callback || this.noop;
+				this.ubus.request('onion', 'wifi-setup', params, setApSetupResult);
+			};
+			
+			var setApSetupResult = function (result) {
+                if (data) {
+				    console.log('AP Setup response: '+ data);
+                }
+			};
+			
+			Polymer({
+				is: 'onion-wifi-provider',
+				ready: ready,
+				noop: function () {},
+				ready: ready,
+				wifiScan: wifiScan,
+				setWifiScanResult: setWifiScanResult,
+				wifiSetup: wifiSetup,
+				setWifiSetupResult: setWifiSetupResult,
+				apSetup: apSetup,
+				setApSetupResult: setApSetupResult,
+			});
+        })();
+	</script>
+</dom-module>
