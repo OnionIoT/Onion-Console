@@ -1,4 +1,5 @@
 <link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-menu-behavior/iron-menu-behavior.html">
 <link rel="import" href="./bootstrap-pill.html">
 
 <dom-module id="bootstrap-pills">
@@ -65,12 +66,21 @@
 
 			Polymer({
 				is: 'bootstrap-pills',
+				behaviors: [Polymer.IronMenuBehavior],
 				_computeClass: _computeClass,
 				properties: {
 					stacked: {
 						type: Boolean,
 						value: false
-					}
+					},
+					selected: {
+						type: String,
+						notify: true
+					},
+					selectable: {
+						type: String,
+						value: 'bootstrap-pill'
+					},
 				}
 			});
         })();

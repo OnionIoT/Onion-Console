@@ -1,10 +1,12 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="import" href="/lib/iron-icons/notification-icons.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/elements/bootstrap-pills/bootstrap-pills.html">
-<link rel="import" href="./onion-setting-home.html">
-<link rel="import" href="./onion-setting-update.html">
-
+<link rel="import" href="./onion-settings-general.html">
+<link rel="import" href="./onion-settings-wifi.html">
+<link rel="import" href="./onion-settings-update.html">
 
 <dom-module id="onion-settings">
 	<style>
@@ -12,7 +14,8 @@
 			height: 100%;
 			width: 100%;
 			--bootstrap-pill-border-radius: 0;
-			--bootstrap-pill-background-color: #2c3e50;
+			--bootstrap-pill-background-color: #ecf0f1;
+			--bootstrap-pill-color: #373a3c;
 		}
 
 		onion-app-body > div {
@@ -24,28 +27,37 @@
 			width: 250px;
 			height: 100%;
 			position: relative;
-			background-color: #34495e;
-			color: #fff;
+			background-color: #fff;
 		}
-			#side-bar ul li a {
-				border-radius: 0;
-			}
+			#side-bar bootstrap-pill iron-icon {
+			margin-right: 5px;
+		}
+			
+		iron-pages {
+			width: 100%;
+			height: 100%;
+			background-color: #ecf0f1;
+			padding: 25px;
+			overflow: scroll;
+		}
 	</style>
 
 	<template>
-		<onion-app app-name="Settings" toolbar-color="#2c3e50" toolbar-background="#ecf0f1">
+		<onion-app app-name="Settings" toolbar-color="#fff" toolbar-background="#7f8c8d">
 			<onion-app-body>
 				<div class="horizontal layout">
 					<div id="side-bar">
-						<bootstrap-pills stacked>
-							<bootstrap-pill active>Settings Home</bootstrap-pill>
-							<bootstrap-pill>Update & Restore</bootstrap-pill>
+						<bootstrap-pills stacked selected="{{currentTab}}">
+							<template is="dom-repeat" items="{{subApps}}">
+								<bootstrap-pill><iron-icon icon="{{item.icon}}"></iron-icon><span>{{item.name}}</span></bootstrap-pill>
+							</template>
 						</bootstrap-pills>
 					</div>
 
-					<iron-pages id="settingContainer" attr-for-selected="id" selected="{{currentSetting}}">
-						<onion-setting-home id='onion-setting-home'></onion-setting-home>
-						<onion-setting-update id="onion-setting-update"></onion-setting-update>
+					<iron-pages id="settingContainer" attr-for-selected="id" selected="[[currentSetting(subApps, currentTab)]]">
+						<onion-settings-general id="onion-settings-general"></onion-settings-general>
+						<onion-settings-wifi id="onion-settings-wifi"></onion-settings-wifi>
+						<onion-settings-update id="onion-settings-update"></onion-settings-update>
 					</iron-pages>
 				</div>
 			</onion-app-body>
@@ -58,29 +70,41 @@
 		(function () {
 			var ready = function () {
 				this.title = 'Omega Settings';
-				this.currentSetting = 'onion-setting-home';
-
+				this.subApps = [
+					{
+						name: 'General Settings',
+						icon: 'icons:settings',
+						page: 'onion-settings-general'
+					},
+					{
+						name: 'Wi-Fi Settings',
+						icon: 'notification:wifi',
+						page: 'onion-settings-wifi'
+					},
+					{
+						name: 'Update & Restore',
+						icon: 'icons:get-app',
+						page: 'onion-settings-update'
+					}
+				];
 			};
 
-			var onShowAll = function () {
-				this.fire('switchSetting', {settingId: 'onion-setting-home'});
-			};
-
-			var switchSetting = function (e) {
-				var settingId = e.detail.settingId;
-				this.currentSetting = settingId;
+			var currentSetting = function (subApps, currentTab) {
+				return subApps[currentTab].page;
 			};
 
 			Polymer({
 				is: 'onion-settings',
 				ready: ready,
+				currentSetting: currentSetting,
 				behaviors: [Onion.AppBehavior],
-				switchSetting: switchSetting,
-				onShowAll: onShowAll,
-				listeners: {
-					switchSetting: 'switchSetting'
+				properties: {
+					currentTab: {
+						type: String,
+						value: '0',
+						notify: true
+					}
 				}
-
 			});
         })();
 	</script>

@@ -1,6 +1,6 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/fonts/glyphicons/glyphicons.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
 
 <dom-module id="onion-app">
 	<style>
@@ -13,15 +13,15 @@
 		:host ::content onion-app-toolbar {
 			width: 100%;
 		}
+
 			:host ::content onion-app-toolbar button {
 				border: none;
 				height: 50px;
 				line-height: 24px;
 				background-color: transparent;
 			}
-				:host ::content onion-app-toolbar button > .glyphicons {
-					display: inline;
-					line-height: 24px;
+				:host ::content onion-app-toolbar button > * {
+					vertical-align: middle;
 				}
 
 		:host ::content onion-app-body {
@@ -49,13 +49,10 @@
 	    }
 
 	    #launcher-button {
-	    	height: 50px;
-	    	background-color: transparent;
-	    	border: none;
+	    	cursor: pointer;
+	    	--iron-icon-height: 32px;
+    		--iron-icon-width: 32px;
 	    }
-	    	#launcher-button .glyphicons {
-	    		font-size: 24px;
-	    	}
 
 	    #app-name {
 	    	font-size: 20px;
@@ -69,7 +66,7 @@
 		<div id="appContainer" class$="{{appContainerClass(hideToolbar)}}">
 			<div id="appToolbar" class="layout horizontal center" hidden="{{hideToolbar}}">
 				<div hidden="{{hideLauncher}}">
-					<button id="launcher-button" on-tap="onLauncher"><span class="glyphicons glyphicons-show-thumbnails"></span></button>
+					<iron-icon icon="icons:apps" id="launcher-button" on-tap="onLauncher"></iron-icon>
 				</div>
 
 				<div id="app-name" hidden="{{hideTitle}}">{{appName}}</div>

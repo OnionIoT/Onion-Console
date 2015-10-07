@@ -2,10 +2,24 @@
 
 <dom-module id="bootstrap-pill">
 	<style>
+		:host {
+			outline: none!important;
+		}
+		:host ::content * {
+			vertical-align: middle;
+		}
+
 		.nav-link {
 			display: block;
 			padding: .5em 1em;
 			border-radius: var(--bootstrap-pill-border-radius, 0.2rem);
+			cursor: pointer;
+			color: var(--bootstrap-link-color, #373a3c);
+		}
+
+		.nav-link:focus,
+		.nav-link:hover {
+			text-decoration: none
 		}
 
 		.nav-link.active,
@@ -15,14 +29,13 @@
 		.nav-item.open .nav-link:focus,
 		.nav-item.open .nav-link:hover {
 			color: var(--bootstrap-pill-color, #fff);
-			cursor: pointer;
 			background-color: var(--bootstrap-pill-background-color, #0275d8);
 		}
 	</style>
 
 	<template>
 		<li class="nav-item">
-			<a class$="[[_computeClass(active)]]">
+			<a class$="[[_computeClass(ariaSelected)]]">
 				<content></content>
 			</a>
 		</li>		
@@ -32,17 +45,18 @@
 		'use strict';
 
 		(function () {
-			var _computeClass = function (active) {
-				return 'nav-link' + (active ? ' active' : '');
+			var _computeClass = function (ariaSelected) {
+				return 'nav-link' + (ariaSelected ? ' active' : '');
 			};
 
 			Polymer({
 				is: 'bootstrap-pill',
 				_computeClass: _computeClass,
 				properties: {
-					active: {
+					ariaSelected: {
 						type: Boolean,
-						value: false
+						value: false,
+						notify: true
 					}
 				}
 			});

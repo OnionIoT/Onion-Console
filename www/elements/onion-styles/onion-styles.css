@@ -2,6 +2,7 @@ html, body {
 	overflow: hidden;
 }
 
+a:focus,
 input:focus,
 select:focus,
 textarea:focus,

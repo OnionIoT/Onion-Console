@@ -1,8 +1,7 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
-<link rel="import" href="/lib/iron-icon/iron-icon.html">
-<link rel="import" href="/fonts/glyphicons/glyphicons.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
 <link rel="import" href="/elements/onion-file-list/onion-file-list.html">
@@ -75,7 +74,7 @@
 			onion-app-toolbar button:hover {
 				background-color: rgba(255, 255, 255, 0.5);
 			}
-		onion-app-toolbar button > .glyphicons {
+		onion-app-toolbar button > iron-icon {
 			margin-right: 5px;
 		}
 	</style>
@@ -84,15 +83,15 @@
 			<onion-app-toolbar>
 				<div class="layout horizontal">
 					<div class="flex">
-						<button><span class="glyphicons glyphicons-folder-new"></span><span>New Folder</span></button>
-						<button><span class="glyphicons glyphicons-file"></span><span>New File</span></button>
-						<button><span class="glyphicons glyphicons-folder-minus"></span><span>Delete Folder</span></button>
-						<button><span class="glyphicons glyphicons-bin"></span><span>Delete File</span></button>
-						<button><span class="glyphicons glyphicons-erase"></span><span>Rename</span></button>
+						<button><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>New Folder</span></button>
+						<button><iron-icon class="toolbar-icon" icon="icons:note-add"></iron-icon><span>New File</span></button>
+						<button><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
+						<button><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon></span><span>Delete File</span></button>
+						<button><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename</span></button>
 					</div>
 					<div>
-						<button><span class="glyphicons glyphicons-ok-2"></span><span>Save</span></button>
-						<button><span class="glyphicons glyphicons-remove-2"></span><span>Close</span></button>
+						<button><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
+						<button><iron-icon class="toolbar-icon" icon="icons:close"></iron-icon><span>Close</span></button>
 					</div>
 				</div>
 			</onion-app-toolbar>

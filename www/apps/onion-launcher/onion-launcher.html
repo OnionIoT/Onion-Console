@@ -1,8 +1,8 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown.html">
-<link rel="import" href="/fonts/glyphicons/glyphicons.html">
 <link rel="import" href="./onion-launcher-icon.html">
 
 <dom-module id="onion-launcher">
@@ -10,6 +10,14 @@
 		:host {
 			width: 100%;
 			height: 100%;
+		}
+
+		* {
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: -moz-none;
+			-o-user-select: none;
+			user-select: none;
 		}
 
 		#header {
@@ -28,13 +36,17 @@
 
 		#search-icon {
 			position: absolute;
-			height: 30px;
-			width: 30px;
+			height: 32px;
+			width: 32px;
 			right: 0;
 			text-align: center;
 			background-color: transparent;
-			padding-bottom: 0;
+			margin-bottom: 0;
 		}
+			#search-icon > iron-icon {
+				--iron-icon-height: 32px;
+    			--iron-icon-width: 20px;
+			}
 
 		#search-bar {
 			border: 1px rgba(255, 255, 255, 0.25) solid;
@@ -77,7 +89,7 @@
 					<div class="flex-2 layout horizontal"></div>
 
 					<div id="search" class="flex layout horizontal center-justified">
-						<label id="search-icon" for="search-bar" class="glyphicons glyphicons-search layout horizontal center-justified center"></label>
+						<label id="search-icon" for="search-bar"><iron-icon icon="icons:search"></iron-icon></label>
 						<input id="search-bar" class="form-control" placeholder="Search" value="{{filterString::input}}" on-keydown="filterEscapeWatcher">
 					</div>
 

@@ -1,60 +1,63 @@
 <link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/bootstrap-alert/bootstrap-alert.html">
 
-<dom-module id="onion-setting-update">
+<dom-module id="onion-settings-update">
 	<style>
-		.content {
-			color: black;
+		.container {
+			width: 600px;
+			margin: 0 auto;
+		}
+
+		.card {
+			margin-top: 15px;
+			background-color: #fff;
 		}
 	</style>
 
 	<template>
 
-		<div class="content layout vertical center">
+		<div class="container">
+			<h4>Firmware Upgrade</h4>
+			<div class="card card-block">
+				<bootstrap-alert warning no-close>
+					<h6>Attention!</h6>
+					<p>Firmware upgrade will erase all files outside of the <code>/etc</code> directory. Please backup any custom files before proceeding.</p>
+				</bootstrap-alert>
 
-			<!-- header -->
-			<div class="layout horizontal center">
-				<div>FIRMWARE UPGRADE</div>
-			</div>
-			<br>
+				<table class="table">
+					<tbody>
+						<tr>
+							<th scope="row">Name</th>
+							<td>{{name}}</td>
+						</tr>
+						<tr>
+							<th scope="row">Model</th>
+							<td>{{model}}</td>
+						</tr>
+						<tr>
+							<th scope="row">Revision</th>
+							<td>{{modelRev}}</td>
+						</tr>
+						<tr>
+							<th scope="row">Firmware</th>
+							<td>{{currentVersion}}</td>
+						</tr>
+					</tbody>
+				</table>
 
-
-			<div class="layout horizontal center">
-				<div>Name:</div> 
-				<div>{{name}}</div>
-			</div>
-			<br>
-
-			<div class="layout horizontal center">
-				<div>Model:</div> 
-				<div>{{model}}</div>
-			</div>
-			<div class="layout horizontal center">
-				<div>Revision:</div> 
-				<div>{{modelRev}}</div>
-			</div>
-			<br>
-
-			<div class="layout horizontal center">
-				<div>Firmware:</div> 
-				<div>{{currentVersion}}</div>
-			</div>
-
-			<div class="layout horizontal center">
-				<div>Latest Firmware:</div>
-				<div>{{latestVersion}}</div>
-			</div>
-			<br>
-			<br>
-
-			<div class="layout horizontal center">
-				<button>Upgrade</button>
+				<button class="btn btn-success">Upgrade</button>
 			</div>
 
-			<br>
-			<br>
+			<br />
 
-			<button>Factory Reset</button>
-
+			<h4>Factory Reset</h4>
+			<div class="card card-block">
+				<bootstrap-alert danger no-close>
+					<h6>Attention!</h6>
+					<p>This will erase everything on the Omega and reset the device to factory default settings. Please backup any custom files on the device before proceeding.</p>
+				</bootstrap-alert>
+				<button class="btn btn-warning">Factory Reset</button>
+			</div>
 		</div>
 
 
@@ -201,7 +204,7 @@
 			};
 
 			Polymer({
-				is: "onion-setting-update",
+				is: "onion-settings-update",
 				ready: ready,
 				getFirmwareInfo: getFirmwareInfo,
 				checkFirmwareInfo: checkFirmwareInfo,
