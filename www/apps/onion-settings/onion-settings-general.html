@@ -19,8 +19,8 @@
 	<template>
 
 		<div class="container">
-			<h4>Basic Settings</h4>
 			<form id="settings">
+				<h4>Basic Settings</h4>
 				<div class="card card-block">
 					<div class="form-group row">
 						<label for="hostname" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Omega Name</label>
@@ -119,6 +119,27 @@
 						</div>
 					</div>
 				</div>
+
+				<br />
+
+				<h4>Security Settings</h4>
+				<div class="card card-block">
+					<div class="form-group row">
+						<label for="password" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Root Password</label>
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+							<input type="password" class="form-control" id="password" autocomplete="off" value="{{password::input}}" />
+						</div>
+					</div>
+					<div class="form-group row">
+						<!-- Detected networks -->
+						<label for="password-2" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Verify Password</label>
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+							<input type="password-2" class="form-control" id="password-2" autocomplete="off" value="{{password2::input}}" />
+						</div>
+					</div>
+				</div>
+
+				<br />
 
 				<div class="form-group row">
 					<!-- start wifi-config -->
