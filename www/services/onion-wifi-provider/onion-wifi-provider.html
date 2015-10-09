@@ -46,36 +46,62 @@
 			};
 
 			var wifiSetup = function (networkSsid, networkPassword, networkAuth, callback) {
-                var params = {
-                    ssid: networkSsid,
-                    password: networkPassword,
-                    auth: networkAuth,
+				var params = {
+					params: {
+						ssid: networkSsid,
+						password: networkPassword,
+						auth: networkAuth
+					}
 				};
 				wifiSetupResult = callback || this.noop;
 				this.ubus.request('onion', 'wifi-setup', params, setWifiSetupResult);
 			};
 
 			var setWifiSetupResult = function (data) {
-                if (data) {
-				    console.log('WiFi Setup response: '+ data);
-                }
+                if (data[0]!=null) {
+				    var returnCode = data[0];
+					if(returnCode === 0)
+					{
+				        console.log('WiFi Setup successfully!');
+					    wifiSetupResult({wifiSetup: true});
+					} else {
+					    console.log('WiFi Setup failed, response: '+ data[0]);
+					    wifiSetupResult({wifiSetup: false});
+					}
+                } else {
+				    console.log('WiFi Setup failed!');
+					wifiSetupResult({wifiSetup: false});
+				}
             };
 			
 			var apSetup = function (networkSsid, networkPassword, networkAuth, callback) {
-				var params =  {
-                    ssid: networkSsid,
-                    password: networkPassword,
-                    auth: networkAuth,
-					accesspoint: '', 
+				var params = {
+					params: {
+						ssid: networkSsid,
+						password: networkPassword,
+						auth: networkAuth,
+						accesspoint: ''
+					}
 				};
 				apSetupResult = callback || this.noop;
 				this.ubus.request('onion', 'wifi-setup', params, setApSetupResult);
 			};
 			
-			var setApSetupResult = function (result) {
-                if (data) {
-				    console.log('AP Setup response: '+ data);
-                }
+			var setApSetupResult = function (data) {
+                if (data[0]!=null) {
+				    var returnCode = data[0];
+					if(returnCode ===0 && data[1].connecting==="true")
+					{
+					    console.log('AP Setup successfully!');
+						apSetupResult({apSetup: true});
+					} else {
+				        console.log('AP Setup failed, response: '+ data[0]);
+					    apSetupResult({apSetup: false});
+					}
+                } else {
+				    console.log('AP Setup failed!');
+					apSetupResult({apSetup: false});
+				}
 			};
 			
 			Polymer({
