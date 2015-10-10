@@ -1,0 +1,180 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
+
+<dom-module id="onion-settings-ap">
+	<style>
+		body {
+			background-color: #f2f2f2;
+			padding-top: 4rem;
+			padding-bottom: 4rem;
+		}
+
+		.main {
+			background-color: #fff;
+			border-color: transparent;
+			padding: 4rem 2rem;
+			margin-bottom: 0;
+		}
+
+		.container {
+			width: 600px;
+			margin: 0 auto;
+		}
+
+		.card {
+			margin-top: 15px;
+			background-color: #fff;
+		}
+			.card form > .form-group:last-child {
+				margin-bottom: 0;
+			}
+	</style>
+
+	<template>
+		<div class="container">
+			<h4 class="card-title">AP Network Setup</h4>
+			<div class="card card-block">
+				<form id="ap-form">
+					<div class="form-group row">
+						<!-- ssid -->
+						<label for="ap-ssid" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">AP Network (SSID)</label>
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+							<input type="text" class="form-control" id="apSsid" autocomplete="off" value=""/>
+						</div>
+					</div>
+					<div class="form-group row">
+						<!-- encryption select -->
+						<label for="ap-encryption" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Security</label>
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+							<select class="form-control c-select" id="apEncryption" autocomplete="off" value="None">
+								<option value="none" selected>None</option>
+								<option value="wep">WEP</option>
+								<option value="psk">WPA</option>
+								<option value="psk2">WPA2</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group row">
+						<!-- password -->
+						<label for="ap-key" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">AP Password</label>
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+							<input type="password" class="form-control" id="apKey" autocomplete="off" value=""/>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
+							<div id="ap-message">{{apMessage}}</div>
+						</div>
+					</div>
+
+					<div class="form-group row">
+						<!-- start ap-config -->
+						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
+						<button id="ap-config-button" type="button" class="btn btn-success btn-block" on-click="setupAP">Configure AP</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+		    var wpaKeyMinLength=8;
+			var wepKeyMinLength=10;
+			var wepKeyMaxLength=26;
+			var regEx=new RegExp(/^[0-9A-Fa-f]+$/);
+			var onionAPsetup = null;
+			
+			var ready = function () {
+				onionAPsetup = this;
+				
+				onionConsole.getService("onion-session-provider", function (sessionProvider) {
+                    onionAPsetup.sessionProvider = sessionProvider;
+                });
+				
+                if(onionAPsetup.sessionProvider.isAlive()===true)
+				{
+                    onionConsole.getService("onion-wifi-provider", function (wifiProvider) {
+                        onionAPsetup.wifiProvider=wifiProvider;
+					});
+                };
+			};
+
+			var onAppIcon = function (e) {
+				this.onionConsole.launchApp(e.target);
+			};
+
+			var setupAP = function () {
+			    onionAPsetup.apMessage="";
+				if(verifyKey(onionAPsetup.$.apKey.value, onionAPsetup.$.apEncryption.value)) {
+			        if(onionAPsetup.sessionProvider.isAlive()===true)
+                    {   
+				        onionAPsetup.wifiProvider.apSetup(onionAPsetup.$.apSsid.value, onionAPsetup.$.apKey.value, onionAPsetup.$.apEncryption.value, function (data) {
+						    if(data.apSetup===false) {
+						        onionAPsetup.apMessage="AP setup failed!"; 
+						    } else {
+						        onionAPsetup.apMessage="AP setup successfully!";
+						    }
+					    });
+				    }
+				}
+			}
+			
+			var verifyKey = function(key, authType) {
+			    var valid=true;
+				var length=key.length;
+				if(authType==='psk' || authType==='psk2') {
+				    if(length<wpaKeyMinLength) {
+					    valid=false;
+						onionAPsetup.apMessage="WPA/WPA2 key should be at least eight (8) characters long";
+					}
+				} else if(authType=='wep') {
+				    if(length!==wepKeyMinLength && length !=wepKeyMaxLength) {
+					    valid=false;
+						onionAPsetup.apMessage="WEP key should be ten (10) or twenty-six (26) characters long";
+					} else {
+						if(regEx.test(key)===false) {
+						    valid=false;
+						    onionAPsetup.apMessage="WEP key should be a hexdecimal string";   
+						}
+					}
+				}
+			    return valid;
+			}
+			
+			Polymer({
+				is: 'onion-settings-ap',
+				ready: ready,
+				setupAP: setupAP,
+				verifyKey: verifyKey,
+				properties: {
+					networks: {
+						type: Array,
+						notify: true
+					},
+					networkSsid: {
+						type: String,
+						notify: true
+					},
+					networkAuth: {
+						type: String,
+						notify: true
+					},
+					networkPassword: {
+						type: String,
+						notify: true
+					},
+					test: {
+						type: String,
+						notify: true,
+						value: "test"
+					},
+				}
+			});
+		})();
+	</script>
+</dom-module>
