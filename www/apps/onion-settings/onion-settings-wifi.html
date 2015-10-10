@@ -86,7 +86,7 @@
 
 					<div class="row">
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
-							<div id="wifi-message"></div>
+							<div id="wifi-message">{{wifiMessage}}</div>
 						</div>
 					</div>
 
@@ -105,14 +105,26 @@
 		'use strict';
 
 		(function () {
+			var onionWifisetup = null;
 			var ready = function () {
-				var onionWifisetup = this;
+				onionWifisetup = this;
 				onionWifisetup.networks 	= [];
 				onionWifisetup.networkId	= -1;
 
 				this.hideScanMessage();
 
 				//this.scanWifiNetwork();
+				
+				onionConsole.getService("onion-session-provider", function (sessionProvider) {
+                    onionWifisetup.sessionProvider = sessionProvider;
+                });
+				
+                if(onionWifisetup.sessionProvider.isAlive()===true)
+				{
+                    onionConsole.getService("onion-wifi-provider", function (wifiProvider) {
+                        onionWifisetup.wifiProvider=wifiProvider;
+					});
+                };
 			};
 
 			var onAppIcon = function (e) {
@@ -130,8 +142,6 @@
 			};
 
 			var scanWifiNetwork = function() {
-				var onionWifisetup = this;
-
 				onionWifisetup.showScanMessage("Scanning...");
 
 				// get the ubus service
@@ -194,31 +204,23 @@
 				}
 				console.log("Auth: ", this.networkAuth);
 			};
-
-			var setupWifi = function () {
-				var onionWifisetup = this;
-
-				// create the argument object for the ubus call
-				var params = {
-					params: {
-						ssid: this.networkSsid,
-						password: this.networkPassword,
-						auth: this.networkAuth
-					}
-				};
-
-				console.log("Setting up Wifi");
-				console.log("arguments: ", params);
-
-				// get the ubus service
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
-					// do ubus wifi-setup
-					ubus.request('onion', 'wifi-setup', params, function (data) {
-						if (data) {
-							console.log("wifi-setup response: ", data);
-						}
-					});
-				});
+		
+		    var setupWifi = function () {
+			    onionWifisetup.wifiMessage="";
+			    var verifyResult=onionWifisetup.wifiProvider.verifyKey(onionWifisetup.networkPassword, onionWifisetup.networkAuth);
+				if(verifyResult=="OK") {
+                    if(onionWifisetup.sessionProvider.isAlive()===true) {   
+				        onionWifisetup.wifiProvider.wifiSetup(onionWifisetup.networkSsid, onionWifisetup.networkPassword, onionWifisetup.networkAuth, function (data) {
+					        if(data.wifiSetup===false) {
+						        onionWifisetup.wifiMessage="WiFi setup failed!";
+						    } else {
+						        onionWifisetup.wifiMessage="WiFi setup successfully!";
+						    }
+					    });
+				    }
+				} else {
+				    onionWifisetup.wifiMessage=verifyResult;
+				}
 			}
 
 			Polymer({

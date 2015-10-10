@@ -83,10 +83,6 @@
 		'use strict';
 
 		(function () {
-		    var wpaKeyMinLength=8;
-			var wepKeyMinLength=10;
-			var wepKeyMaxLength=26;
-			var regEx=new RegExp(/^[0-9A-Fa-f]+$/);
 			var onionAPsetup = null;
 			
 			var ready = function () {
@@ -109,8 +105,9 @@
 			};
 
 			var setupAP = function () {
-			    onionAPsetup.apMessage="";
-				if(verifyKey(onionAPsetup.$.apKey.value, onionAPsetup.$.apEncryption.value)) {
+			    onionAPsetup.apMessage=""; 
+				var verifyResult=onionAPsetup.wifiProvider.verifyKey(onionAPsetup.$.apKey.value, onionAPsetup.$.apEncryption.value);
+				if(verifyResult=="OK") {
 			        if(onionAPsetup.sessionProvider.isAlive()===true)
                     {   
 				        onionAPsetup.wifiProvider.apSetup(onionAPsetup.$.apSsid.value, onionAPsetup.$.apKey.value, onionAPsetup.$.apEncryption.value, function (data) {
@@ -121,41 +118,16 @@
 						    }
 					    });
 				    }
+				} else {
+				    onionAPsetup.apMessage=verifyResult;
 				}
 			}
-			
-			var verifyKey = function(key, authType) {
-			    var valid=true;
-				var length=key.length;
-				if(authType==='psk' || authType==='psk2') {
-				    if(length<wpaKeyMinLength) {
-					    valid=false;
-						onionAPsetup.apMessage="WPA/WPA2 key should be at least eight (8) characters long";
-					}
-				} else if(authType=='wep') {
-				    if(length!==wepKeyMinLength && length !=wepKeyMaxLength) {
-					    valid=false;
-						onionAPsetup.apMessage="WEP key should be ten (10) or twenty-six (26) characters long";
-					} else {
-						if(regEx.test(key)===false) {
-						    valid=false;
-						    onionAPsetup.apMessage="WEP key should be a hexdecimal string";   
-						}
-					}
-				}
-			    return valid;
-			}
-			
+
 			Polymer({
 				is: 'onion-settings-ap',
 				ready: ready,
 				setupAP: setupAP,
-				verifyKey: verifyKey,
 				properties: {
-					networks: {
-						type: Array,
-						notify: true
-					},
 					networkSsid: {
 						type: String,
 						notify: true

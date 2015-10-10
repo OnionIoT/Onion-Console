@@ -9,6 +9,10 @@
             var wifiScanResult=null;
             var wifiSetupResult=null;
             var apSetupResult = null;
+		    var wpaKeyMinLength=8;
+			var wepKeyMinLength=10;
+			var wepKeyMaxLength=26;
+			var regEx=new RegExp(/^[0-9A-Fa-f]+$/);
 
             var ready = function (){
                 wifiProvider = this;
@@ -104,6 +108,25 @@
 				}
 			};
 			
+			var verifyKey = function(key, authType) {
+			    var verfyResult="OK";
+				var length=key.length;
+				if(authType==='psk' || authType==='psk2') {
+				    if(length<wpaKeyMinLength) {
+						verfyResult="WPA/WPA2 key should be at least eight (8) characters long";
+					}
+				} else if(authType=='wep') {
+				    if(length!==wepKeyMinLength && length !=wepKeyMaxLength) {
+					    verfyResult="WEP key should be ten (10) or twenty-six (26) characters long";
+					} else {
+						if(regEx.test(key)===false) {
+						    verfyResult="WEP key should be a hexdecimal string";   
+						}
+					}
+				}
+			    return verfyResult;
+			}
+			
 			Polymer({
 				is: 'onion-wifi-provider',
 				ready: ready,
@@ -115,6 +138,7 @@
 				setWifiSetupResult: setWifiSetupResult,
 				apSetup: apSetup,
 				setApSetupResult: setApSetupResult,
+				verifyKey: verifyKey,
 			});
         })();
 	</script>
