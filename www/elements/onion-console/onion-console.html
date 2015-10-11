@@ -47,10 +47,14 @@
 				}
 			};
 
-			var launchApp = function (appId) {
+			var launchApp = function (appId, relaunch) {
 				if (this.$.appContainer.querySelector(appId)) {
 					onionConsole.$.appContainer.querySelector(appId).fg();
 					this.currentApp = appId;
+
+					if (relaunch) {
+						onionConsole.$.appContainer.querySelector(appId).start();
+					}
 				} else {
 					this.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
 						var appElement = document.createElement(appId);

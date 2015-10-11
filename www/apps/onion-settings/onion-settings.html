@@ -90,7 +90,7 @@
 						page: 'onion-settings-wifi'
 					},
 					{
-						name: 'AP Settings',
+						name: 'Access Point Settings',
 						icon: 'hardware:router',
 						page: 'onion-settings-ap'
 					},
@@ -104,7 +104,9 @@
 
 			var _currentTabChanged = function (e) {
 				setTimeout(function () {
-					onionSettings.$[onionSettings.subApps[e.detail.value].page].init();
+					if (onionSettings.$[onionSettings.subApps[e.detail.value].page].init) {
+						onionSettings.$[onionSettings.subApps[e.detail.value].page].init();
+					}
 				}, 100);
 			};
 

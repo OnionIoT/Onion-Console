@@ -126,14 +126,18 @@
 		'use strict';
 
 		(function () {
-			var onionLauncher;
+			var onionLauncher,
+				initialized = false;
 
 			var ready = function () {
 				// this.apps = onionConsole.apps;
 				onionLauncher = this;
+			};
 
+			var start = function () {
 				onionConsole.getService('onion-apps-provider', function (appsProvider) {
 					onionLauncher.appsProvider = appsProvider;
+					appsProvider.reload();
 
 					var appsInterval = setInterval(function () {
 						if (appsProvider.apps.length) {
@@ -197,6 +201,7 @@
 			Polymer({
 				is: 'onion-launcher',
 				ready: ready,
+				start: start,
 				attached: attached,
 				apps: [],
 				behaviors: [Onion.AppBehavior],
