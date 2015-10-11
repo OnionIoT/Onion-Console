@@ -2,11 +2,14 @@
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 <link rel="import" href="/lib/iron-icons/iron-icons.html">
 <link rel="import" href="/lib/iron-icons/notification-icons.html">
+<link rel="import" href="/lib/iron-icons/hardware-icons.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/elements/bootstrap-pills/bootstrap-pills.html">
 <link rel="import" href="./onion-settings-general.html">
 <link rel="import" href="./onion-settings-wifi.html">
+<link rel="import" href="./onion-settings-ap.html">
 <link rel="import" href="./onion-settings-update.html">
+
 
 <dom-module id="onion-settings">
 	<style>
@@ -57,6 +60,7 @@
 					<iron-pages id="settingContainer" attr-for-selected="id" selected="[[currentSetting(subApps, currentTab)]]">
 						<onion-settings-general id="onion-settings-general"></onion-settings-general>
 						<onion-settings-wifi id="onion-settings-wifi"></onion-settings-wifi>
+						<onion-settings-ap id="onion-settings-ap"></onion-settings-ap>
 						<onion-settings-update id="onion-settings-update"></onion-settings-update>
 					</iron-pages>
 				</div>
@@ -84,6 +88,11 @@
 						name: 'Wi-Fi Settings',
 						icon: 'notification:wifi',
 						page: 'onion-settings-wifi'
+					},
+					{
+						name: 'AP Settings',
+						icon: 'hardware:router',
+						page: 'onion-settings-ap'
 					},
 					{
 						name: 'Update & Restore',

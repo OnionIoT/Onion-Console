@@ -36,11 +36,11 @@ Allows for control of the shellinabox daemon through ubus
 Takes argument in following format `{"params":{"key":"value"}}`
 
 Possible Keys:
-* Start
+* start
   * This will start the shellinabox daemon
   * Value should be null string, ""
-* Check
-  * This will check for running shellinabox daemons
+* check
+  * This will check for running shellinabox daemon
   * Return will be in following format `
 {
         "pids": "1211 1213 ",
@@ -48,6 +48,9 @@ Possible Keys:
 }
 `
   * Value should be null string, ""
-* Stop
-  * This will stop all running shellinabox daemons 
+* stop
+  * This will stop any running shellinabox daemon
+  * Value should be null string, ""
+* restart
+  * This will restart the shellinabox daemon
   * Value should be null string, ""

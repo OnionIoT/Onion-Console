@@ -9,6 +9,10 @@
             var wifiScanResult = null;
             var wifiSetupResult = null;
             var apSetupResult = null;
+		    var wpaKeyMinLength=8;
+			var wepKeyMinLength=10;
+			var wepKeyMaxLength=26;
+			var regEx=new RegExp(/^[0-9A-Fa-f]+$/);
 
             var ready = function () {
                 wifiProvider = this;
@@ -46,37 +50,82 @@
 			};
 
 			var wifiSetup = function (networkSsid, networkPassword, networkAuth, callback) {
-                var params = {
-                    ssid: networkSsid,
-                    password: networkPassword,
-                    auth: networkAuth,
+				var params = {
+					params: {
+						ssid: networkSsid,
+						password: networkPassword,
+						auth: networkAuth
+					}
 				};
 				wifiSetupResult = callback || this.noop;
 				this.ubus.request('onion', 'wifi-setup', params, setWifiSetupResult);
 			};
 
 			var setWifiSetupResult = function (data) {
-                if (data) {
-				    console.log('WiFi Setup response: '+ data);
-                }
+                if (data[0]!=null) {
+				    var returnCode = data[0];
+					if(returnCode === 0)
+					{
+				        console.log('WiFi Setup successfully!');
+					    wifiSetupResult({wifiSetup: true});
+					} else {
+					    console.log('WiFi Setup failed, response: '+ data[0]);
+					    wifiSetupResult({wifiSetup: false});
+					}
+                } else {
+				    console.log('WiFi Setup failed!');
+					wifiSetupResult({wifiSetup: false});
+				}
             };
 			
 			var apSetup = function (networkSsid, networkPassword, networkAuth, callback) {
-				var params =  {
-                    ssid: networkSsid,
-                    password: networkPassword,
-                    auth: networkAuth,
-					accesspoint: '', 
+				var params = {
+					params: {
+						ssid: networkSsid,
+						password: networkPassword,
+						auth: networkAuth,
+						accesspoint: ''
+					}
 				};
 				apSetupResult = callback || this.noop;
 				this.ubus.request('onion', 'wifi-setup', params, setApSetupResult);
 			};
 			
-			var setApSetupResult = function (result) {
-                if (data) {
-				    console.log('AP Setup response: '+ data);
-                }
+			var setApSetupResult = function (data) {
+                if (data[0]!=null) {
+				    var returnCode = data[0];
+					if(returnCode ===0 && data[1].connecting==="true")
+					{
+					    console.log('AP Setup successfully!');
+						apSetupResult({apSetup: true});
+					} else {
+				        console.log('AP Setup failed, response: '+ data[0]);
+					    apSetupResult({apSetup: false});
+					}
+                } else {
+				    console.log('AP Setup failed!');
+					apSetupResult({apSetup: false});
+				}
 			};
+			
+			var verifyKey = function(key, authType) {
+			    var verfyResult="OK";
+				var length=key.length;
+				if(authType==='psk' || authType==='psk2') {
+				    if(length<wpaKeyMinLength) {
+						verfyResult="WPA/WPA2 key should be at least eight (8) characters long";
+					}
+				} else if(authType=='wep') {
+				    if(length!==wepKeyMinLength && length !=wepKeyMaxLength) {
+					    verfyResult="WEP key should be ten (10) or twenty-six (26) characters long";
+					} else {
+						if(regEx.test(key)===false) {
+						    verfyResult="WEP key should be a hexdecimal string";   
+						}
+					}
+				}
+			    return verfyResult;
+			}
 			
 			Polymer({
 				is: 'onion-wifi-provider',
@@ -89,6 +138,7 @@
 				setWifiSetupResult: setWifiSetupResult,
 				apSetup: apSetup,
 				setApSetupResult: setApSetupResult,
+				verifyKey: verifyKey,
 			});
         })();
 	</script>
