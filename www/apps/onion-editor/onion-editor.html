@@ -83,15 +83,15 @@
 			<onion-app-toolbar>
 				<div class="layout horizontal">
 					<div class="flex">
-						<button><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>New Folder</span></button>
-						<button><iron-icon class="toolbar-icon" icon="icons:note-add"></iron-icon><span>New File</span></button>
-						<button><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
+						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>New Folder</span></button>
+						<button on-click="newFileDialog"><iron-icon class="toolbar-icon" icon="icons:note-add"></iron-icon><span>New File</span></button>
+						<!--button><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
 						<button><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon></span><span>Delete File</span></button>
-						<button><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename</span></button>
+						<button><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename</span></button-->
 					</div>
 					<div>
-						<button><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
-						<button><iron-icon class="toolbar-icon" icon="icons:close"></iron-icon><span>Close</span></button>
+						<button on-click="saveFile"><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
+						<button on-click="closeFile"><iron-icon class="toolbar-icon" icon="icons:close"></iron-icon><span>Close</span></button>
 					</div>
 				</div>
 			</onion-app-toolbar>
@@ -107,22 +107,6 @@
 					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px">{{currentCode}}</juicy-ace-editor>
 					</div>
 				</div>
-
-				<div id="dialog-container">			
-                    <paper-dialog id="newDialog" modal>
-                        <paper-button on-click="newFolderDialog">New Folder</paper-button>
-				        <paper-button on-click="newFileDialog">New File</paper-button>
-                    </paper-dialog>
-
-					<paper-dialog id="inputDialog" modal>
-					    <div>
-							<label for="folderFilename" id="labelString"></label><br>
-							<input type="text" id="folderFilename">
-						</div>
-                        <paper-button dialog-dismiss>Cancel</paper-button>
-					    <paper-button on-click="createFile" autofocus>OK</paper-button
-                    </paper-dialog>       
-			    </div>
 			</onion-app-body>
 		</onion-app>	
 	</template>
@@ -258,14 +242,16 @@
 				}
 			}
 			
-			var openFile = function()
-			{
+			var openFile = function() {
+			    closeFile();
 			    if(onionEditor.sessionProvider.isAlive()===true && folderFileInfo.file!=='') {
-                    if(isFileChanged())	{
+                    /*
+					if(isFileChanged())	{
 					    if(confirm('Do you want to save the file?')) {
 						    saveFile();
 						}
-				    }    
+				    } 
+                    */					
 				    var ext=getFileExtension();
 					onionEditor.$.fileEditor.editor.session.setMode('ace/mode/'+ext);
                     onionConsole.getService('onion-file-provider', function (fileProvider) {
@@ -283,8 +269,24 @@
 				}
             }
 			
-			var saveFile = function()
-			{
+			var closeFile = function() {
+			    if(onionEditor.sessionProvider.isAlive()===true && folderFileInfo.file!=='') {
+			        if(isFileChanged())	{
+					    if(confirm('Do you want to save \"'+folderFileInfo.fileInEdit+'\" ?')) {
+						    if(typeof saveFile() === "boolean") {
+							    onionEditor.currentCode="";
+					            folderFileInfo.fileInEdit="";
+							}
+						}
+				    } else {
+					    onionEditor.currentCode="";
+					    folderFileInfo.fileInEdit="";
+					}
+			    }
+			}
+			
+			var saveFile = function() {
+			    //var saveResult=true;
 				if(onionEditor.sessionProvider.isAlive()===true && folderFileInfo.fileInEdit!=='') {	
 				    onionConsole.getService('onion-file-provider', function (fileProvider) {
 					    onionEditor.fileProvider=fileProvider;
@@ -293,45 +295,49 @@
 					    fileProvider.saveFileContent(folderFileInfo.fileInEdit,codeInEdit,function(result) {
 						    if(result.saveResult===true) {
 							    onionEditor.currentCode=codeInEdit;
-						        alert('\"'+folderFileInfo.fileInEdit+'\" saved successfully');
+						        alert('\"'+folderFileInfo.fileInEdit+'\" saved successfully!!');
 							} else {    
 							    alert('Failed to save \"'+folderFileInfo.fileInEdit+'\"');
+								//saveResult=false;
 							}
 					    });
 				    });
 				}
+				//return saveResult;
 			}
 			
-			var newFolderDialog = function()
-			{
-                 onionEditor.$.newDialog.close();
-				 onionEditor.$.inputDialog.open();
-				 onionEditor.$.labelString.innerText="New Folder Name";
-				 onionEditor.$.folderFilename.value='';
+			var newFolderDialog = function() {
+				var folderName = prompt("Please enter new folder name");
+				if(folderName!==null) {
+				    createFile("folder",folderName);
+				}
 			}
 			
-			var newFileDialog = function()
-			{
-                 onionEditor.$.newDialog.close();
-				 onionEditor.$.inputDialog.open();
-				 onionEditor.$.labelString.innerText="New File Name";
-				 onionEditor.$.folderFilename.value='';
+			var newFileDialog = function() {
+				var fileName=prompt("Please enter new file name");
+				if(fileName!==null) {
+				    createFile("file",fileName);
+				}
 			}
 			
-			var createFile = function()
-			{
-				onionEditor.$.inputDialog.close();
+			var createFile = function(type,filename) {
+			    if(filename==="")
+				{
+				    alert("Invalid "+type+" name!!");
+					return;
+				}
+				
 			    if(onionEditor.sessionProvider.isAlive()===true ) {
 				    onionConsole.getService('onion-file-provider', function (fileProvider) {
 					    onionEditor.fileProvider=fileProvider;
-						var newFilename=onionEditor.$.folderFilename.value
+						var newFilename=filename;
 						if(folderFileInfo.folder===backsplash) {
 						    newFilename=folderFileInfo.folder+newFilename;
 						} else {
 							newFilename=folderFileInfo.folder+backsplash+newFilename;
 					    }
 						
-						if(onionEditor.$.labelString.innerText==='New Folder Name') {
+						if(type==='folder') {
 							fileProvider.execCommand('mkdir',[newFilename],function(result) {
 								if(result.execResult===true) {
 							        openFolder(folderFileInfo.folder);
@@ -340,8 +346,7 @@
 							    }
 							});
 						} else {
-						    if(findTypeById(folderFileInfo.list,onionEditor.$.folderFilename.value)==='')
-							{
+						    if(findTypeById(folderFileInfo.list,filename)==='') {
 							    fileProvider.execCommand('touch',[newFilename],function(result) {
 						            if(result.execResult===true) {
 							            openFolder(folderFileInfo.folder);
@@ -349,9 +354,7 @@
 							            alert('Failed to create \"'+newFilename+'\"');
 							        }	
 					            });
-							}
-							else
-							{
+							} else {
 							   alert('\"'+newFilename+'\" already exist!');
 							}
 						}
@@ -359,7 +362,6 @@
 				} else {
 				    alert('Session time out! Failed to create Folder or File!');
 				}
-				
 			}
 			
 			Polymer({
@@ -368,6 +370,7 @@
 				behaviors: [Onion.AppBehavior],
 				openFolder: openFolder,
 				openFile: openFile,
+				closeFile: closeFile,
 				saveFile: saveFile,
 				isFileChanged: isFileChanged,
 				findTypeById: findTypeById,
