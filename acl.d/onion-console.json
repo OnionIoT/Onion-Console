@@ -1,65 +1,69 @@
 {
-	"onion-console": {
-		"description": "Permissions to allow onion-console to work properly",
-		"read": {
-			"ubus": {
-				"file": [
-					"list",
-					"read",
-					"exec",
-					"write",
-					"stat"
-				],
-				"onion": [
-					"wifi-scan",
-					"oupgrade",
-					"wifi-setup"
-				],
-				"onion-console": [
-					"app-list"
-				],
-				"system": [
-					"info",
-					"hostname"
-				],
-				"iwinfo": [
-					"assoclist"
-				],
-				"network.device": [
-					"status"
-				],
-				"network.interface": [
-					"dump"
-				]
-			},
-			"uci": [
-				"system",
-				"get",
-				"rpcd"
-			]
-		},
-		"write": {
-			"ubus": {
-				"onion": [
-					"wifi-scan",
-					"wifi-setup",
-					"oupgrade"
-				],
-				"onion-console": [
-					"app-list"
-				],
-				"file": [
-					"list",
-					"read",
-					"exec",
-					"write",
-					"stat"
-				],
-			},
-			"uci": [
-				"get",
-				"rpcd"
-			]
-		}
-	}
+        "onion-console": {
+                "description": "Permissions to allow onion-console to work properly",
+                "read": {
+                        "ubus": {
+                                "file": [
+                                        "list",
+                                        "read",
+                                        "exec",
+                                        "write",
+                                        "stat"
+                                ],
+                                "onion": [
+                                        "wifi-scan",
+                                        "oupgrade",
+                                        "wifi-setup"
+                                ],
+                                "onion-console": [
+                                        "app-list"
+                                ],
+                                "system": [
+                                        "info",
+                                        "hostname"
+                                ],
+                                "iwinfo": [
+                                        "assoclist"
+                                ],
+                                "network.device": [
+                                        "status"
+                                ],
+                                "network.interface": [
+                                        "dump"
+                                ],
+                                "uci": [
+                                        "*"
+                                ]
+                        },
+                        "uci": [
+                                "system",
+                                "get",
+                                "rpcd"
+                        ]
+                },
+                "write": {
+                        "ubus": {
+                                "onion": [
+                                        "wifi-scan",
+                                        "wifi-setup",
+                                        "oupgrade"
+                                ],
+                                "onion-console": [
+                                        "app-list"
+                                ],
+                                "file": [
+                                        "list",
+                                        "read",
+                                        "exec",
+                                        "write",
+                                        "stat"
+                                ],
+                        },
+                        "uci": [
+                                "get",
+                                "rpcd"
+                        ]
+                }
+        }
+
 }

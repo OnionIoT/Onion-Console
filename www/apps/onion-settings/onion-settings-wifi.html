@@ -3,12 +3,6 @@
 
 <dom-module id="onion-settings-wifi">
 	<style>
-		body {
-			background-color: #f2f2f2;
-			padding-top: 4rem;
-			padding-bottom: 4rem;
-		}
-
 		.main {
 			background-color: #fff;
 			border-color: transparent;
@@ -32,7 +26,49 @@
 
 	<template>
 		<div class="container">
-			<h4 class="card-title">Wi-Fi Network Setup</h4>
+			<h4>Wi-Fi Access Point Setup</h4>
+
+			<div class="card card-block">
+				<form id="wifi-form">
+					<div class="form-group row">
+						<!-- ssid -->
+						<label for="wifi-ssid" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Access Point Name</label>
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+							<input type="text" class="form-control" id="wifi-ssid" autocomplete="off" value="{{apSsid::input}}"/>
+						</div>
+					</div>
+					<div class="form-group row">
+						<!-- encryption select -->
+						<label for="wifi-encryption" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Security</label>
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+							<select class="form-control c-select" id="wifi-encryption" autocomplete="off" value="{{apAuth::input}}">
+								<option value="none" selected>None</option>
+								<option value="wep">WEP</option>
+								<option value="psk">WPA</option>
+								<option value="psk2">WPA2</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group row">
+						<!-- password -->
+						<label for="wifi-key" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Password</label>
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+							<input type="password" class="form-control" id="wifi-key" autocomplete="off" value="{{apPassword::input}}">
+						</div>
+					</div>
+
+					<div class="form-group row">
+						<!-- start wifi-config -->
+						<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
+						<button id="wifi-config-button" type="button" class="btn btn-success btn-block" on-click="configAp">Configure Access Point</button>
+						</div>
+					</div>
+				</form>
+			</div>
+
+			<br />
+
+			<h4>Wi-Fi Network Setup</h4>
 			<div class="card card-block">
 				<form id="wifi-form">
 					<div class="form-group row">
@@ -105,66 +141,85 @@
 		'use strict';
 
 		(function () {
+			var onionSettingsWifi,
+				apSsid;
+
 			var ready = function () {
-				var onionWifisetup = this;
-				onionWifisetup.networks 	= [];
-				onionWifisetup.networkId	= -1;
+				onionSettingsWifi = this;
+				this.networks = [];
+				this.networkId = -1;
 
 				this.hideScanMessage();
-
-				//this.scanWifiNetwork();
 			};
 
-			var onAppIcon = function (e) {
-				this.onionConsole.launchApp(e.target);
+			var init = function () {
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					ubus.request('network.interface', 'dump', {
+						// config: 'system',
+						// section: '@wifi-iface[0]',
+						// option: '*'
+					}, function (result) {
+						console.log(result);
+						if (result[0] === 0) {
+							// hostnameCopy = result[1].value;
+							// onionSettingsGeneral.hostname = result[1].value;
+						}
+					});
+
+					// ubus.request('uci', 'get', {
+					// 	config: 'system',
+					// 	section: '@system[0]',
+					// 	option: 'timezone'
+					// }, function (result) {
+					// 	if (result[0] === 0) {
+					// 		timezoneCopy = result[1].value;
+					// 		onionSettingsGeneral.timezone = result[1].value;
+					// 	}
+					// });
+	            });
 			};
 
 			var showScanMessage = function (message) {
-				this.wifiScanMsgEn 	= true;
-				this.wifiScanMsg 	= message;
+				this.wifiScanMsgEn = true;
+				this.wifiScanMsg = message;
 			};
 
-			var hideScanMessage = function() {
-				this.wifiScanMsgEn 	= false;
-				console.log("Hide scan message!");
+			var hideScanMessage = function () {
+				this.wifiScanMsgEn = false;
+				console.log('Hide scan message!');
 			};
 
-			var scanWifiNetwork = function() {
-				var onionWifisetup = this;
-
-				onionWifisetup.showScanMessage("Scanning...");
+			var scanWifiNetwork = function () {
+				onionSettingsWifi.showScanMessage('Scanning...');
 
 				// get the ubus service
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
-					var params = {
-						device: 'wlan0'
-					};
-
 					// do ubus wifi-scan
-					ubus.request('onion', 'wifi-scan', params, function (data) {
+					ubus.request('onion', 'wifi-scan', {
+						device: 'wlan0'
+					}, function (data) {
 						if (data) {
 							var returnCode = data[0];
-							console.log("scan return code: ", returnCode);
+							console.log('scan return code: ', returnCode);
 
 							if (returnCode === 0) {
 								//// successful scan
 								// clear out old networks
-								while (onionWifisetup.networks.length > 0) {
-									onionWifisetup.pop('networks');
+								while (onionSettingsWifi.networks.length > 0) {
+									onionSettingsWifi.pop('networks');
 								}
 
 								// add newly detected networks to array
-								onionWifisetup.hideScanMessage();
+								onionSettingsWifi.hideScanMessage();
 								var detectedNetworks = data[1].results;
 								for (let i = 0; i < detectedNetworks.length; i++) {
-									onionWifisetup.push('networks', detectedNetworks[i] );
+									onionSettingsWifi.push('networks', detectedNetworks[i] );
 								}
 
-								console.log("wifi-scan data:");
-								console.log(onionWifisetup.networks);
-							}
-							else {
-								console.log("scan error");
+								console.log('wifi-scan data:');
+								console.log(onionSettingsWifi.networks);
+							} else {
+								console.log('scan error');
 							}
 						}
 					});
@@ -176,7 +231,7 @@
 
 				// find the selected network in the list
 				var selectedNetwork = this.networks[this.networkId];
-				console.log("Selected network: ");
+				console.log('Selected network: ');
 				console.log(selectedNetwork);
 
 				// find the ssid
@@ -192,7 +247,7 @@
 				} else if (selectedNetwork.encryption.indexOf('WEP') !== -1) {
 					this.networkAuth = "wep";
 				}
-				console.log("Auth: ", this.networkAuth);
+				console.log('Auth: ', this.networkAuth);
 			};
 
 			var setupWifi = function () {
@@ -207,29 +262,29 @@
 					}
 				};
 
-				console.log("Setting up Wifi");
-				console.log("arguments: ", params);
+				console.log('Setting up Wifi');
+				console.log('arguments: ', params);
 
 				// get the ubus service
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
 					// do ubus wifi-setup
 					ubus.request('onion', 'wifi-setup', params, function (data) {
 						if (data) {
-							console.log("wifi-setup response: ", data);
+							console.log('wifi-setup response: ', data);
 						}
 					});
 				});
-			}
+			};
 
 			Polymer({
 				is: 'onion-settings-wifi',
 				ready: ready,
+				init: init,
 				showScanMessage: showScanMessage,
 				hideScanMessage: hideScanMessage,
 				scanWifiNetwork: scanWifiNetwork,
 				selectSsid: selectSsid,
 				setupWifi: setupWifi,
-				// onDeviceIcon: onDeviceIcon
 				properties: {
 					networks: {
 						type: Array,

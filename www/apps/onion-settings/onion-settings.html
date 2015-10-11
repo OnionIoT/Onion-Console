@@ -68,7 +68,11 @@
 		'use strict';
 
 		(function () {
+			var onionSettings;
+
 			var ready = function () {
+				onionSettings = this;
+
 				this.title = 'Omega Settings';
 				this.subApps = [
 					{
@@ -89,6 +93,12 @@
 				];
 			};
 
+			var _currentTabChanged = function (e) {
+				setTimeout(function () {
+					onionSettings.$[onionSettings.subApps[e.detail.value].page].init();
+				}, 100);
+			};
+
 			var currentSetting = function (subApps, currentTab) {
 				return subApps[currentTab].page;
 			};
@@ -97,6 +107,7 @@
 				is: 'onion-settings',
 				ready: ready,
 				currentSetting: currentSetting,
+				_currentTabChanged: _currentTabChanged,
 				behaviors: [Onion.AppBehavior],
 				properties: {
 					currentTab: {
@@ -104,6 +115,9 @@
 						value: '0',
 						notify: true
 					}
+				},
+				listeners: {
+					'current-tab-changed': '_currentTabChanged'
 				}
 			});
         })();

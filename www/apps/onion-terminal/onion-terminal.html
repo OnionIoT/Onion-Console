@@ -8,71 +8,68 @@
 <dom-module id="onion-terminal">
 	<style>
 		:host {
-		    display: block;
-	  	    height: 100%;
+			display: block;
+	  		height: 100%;
 			width: 100%;
-			background-color: black;
 		}
 		
 		#sshContainer {
-		    height: 100%;
-		    width: 100%;
-		    padding-top: 50px;
-		    margin-top: -50px;
-	        }
+			height: 100%;
+			width: 100%;
+			padding-top: 50px;
+		   }
 
 		#shellinabox {
-		    background: transparent;
-		    border: none;
-		    width: 100%;
-		    height: 100%;
-		    display: block;
-		    margin: 0;
-		    padding: 0;
+			background: transparent;
+			border: none;
+			width: 100%;
+			height: 100%;
+			display: block;
+			margin: 0;
+			padding: 0;
 		}
 		
 	</style>
 	<template>
-	    <onion-app app-name="Terminal">
-	        <onion-app-body>
-                    <div id="sshContainer">
-		        <iframe id="shellinabox" src={{sourceIP}}></iframe>
-		    </div>
-		</onion-app-body>
-            </onion-app>	
+		<onion-app app-name="Terminal">
+			<onion-app-body>
+				<iframe id="shellinabox" src="{{sourceIP}}"></iframe>
+			</onion-app-body>
+		</onion-app>	
 	</template>
 	<script>
-            'use strict';
-            
-	    (function () {
-	        var onionTerminal=null;
-                var ready = function() {
-		    onionTerminal=this;
-		    onionTerminal.title = "Onion Terminal";
-		    
-		    onionConsole.getService("onion-session-provider", function (sessionProvider) {
-                        onionTerminal.sessionProvider = sessionProvider;
-                    });
-		    
-		    if(onionTerminal.sessionProvider.isAlive()===true)
-                    {
-                        onionConsole.getService('onion-device-provider', function (deviceProvider) {
-			    onionTerminal.deviceProvider=deviceProvider;
-                            //Get IP Address, NetMask
-                            deviceProvider.getIP(function (result) {
-			        if (result[0].available === true) {
-                                    onionTerminal.sourceIP= '//'+result[1].ip+':4200';
-			        };
-			    });
-		        });
-		    }
-                };
+		'use strict';
 			
-                Polymer({
-                    is: 'onion-terminal',
-                    ready: ready,
-                    behaviors: [Onion.AppBehavior],
-                });
-        })();
+		(function () {
+			var onionTerminal = null;
+			
+			var ready = function() {
+				onionTerminal = this;
+				onionTerminal.title = 'Onion Terminal';
+				
+				onionConsole.getService('onion-session-provider', function (sessionProvider) {
+					onionTerminal.sessionProvider = sessionProvider;
+
+					if (onionTerminal.sessionProvider.isAlive() === true) {
+						onionConsole.getService('onion-device-provider', function (deviceProvider) {
+							onionTerminal.deviceProvider = deviceProvider;
+							
+							//Get IP Address, NetMask
+							deviceProvider.getIP(function (result) {
+								if (result[0].available === true) {
+									onionTerminal.sourceIP = '//' + result[1].ip + ':4200';
+								};
+							});
+						});
+					}
+				});
+			};
+			
+			Polymer({
+				is: 'onion-terminal',
+				ready: ready,
+				behaviors: [Onion.AppBehavior],
+			});
+		})();
 	</script>
 </dom-module>
