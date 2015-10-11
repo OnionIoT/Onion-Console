@@ -36,7 +36,14 @@
                 if (response !== null) {
  				    if ('error' in response){
 					    openRequests[response.id]({error: response.error});
-					    console.log(response.error);  
+					    console.log(response.error);
+
+					    // If access denied, log out
+					    if (response.error.code === -32002) {
+					    	onionConsole.getService('onion-session-provider', function (sessionProvider) {
+								sessionProvider.logout();
+							});
+					    } 
 				    } else {
 					    openRequests[response.id](response.result);
 				    }

@@ -68,10 +68,12 @@
 
 		(function () {
 			var ready = function () {
-				this.model 		= "Onion Omega";
-				this.modelRev 	= "R1";
+				this.model 		= 'Onion Omega';
+				this.modelRev 	= 'R1';
 				this.dataReady	= 0;
+			};
 
+			var init = function () {
 				this.getFirmwareInfo();
 				this.checkFirmwareInfo();
 			};
@@ -92,7 +94,7 @@
 					ubus.request('onion', 'oupgrade', params, function (data) {
 						if (data) {
 							var returnCode = data[0];
-							console.log("oupgrade check return code: ", returnCode);
+							console.log('oupgrade check return code: ', returnCode);
 
 							if (returnCode === 0) {
 								onionSettingUpdate.data = data[1];
@@ -102,7 +104,7 @@
 								onionSettingUpdate.dataReady = 1;
 							}
 							else {
-								console.log("oupgrade check error");
+								console.log('oupgrade check error');
 							}
 						}
 					});
@@ -180,13 +182,13 @@
 					ubus.request('onion', 'oupgrade', params, function (data) {
 						if (data) {
 							var returnCode = data[0];
-							console.log("oupgrade return code: ", returnCode);
+							console.log('oupgrade return code: ', returnCode);
 
 							if (returnCode === 0) {
-								console.log("oupgrade started!");
+								console.log('oupgrade started!');
 							}
 							else {
-								console.log("oupgrade error");
+								console.log('oupgrade error');
 							}
 						}
 					});
@@ -194,8 +196,9 @@
 			};
 
 			Polymer({
-				is: "onion-settings-update",
+				is: 'onion-settings-update',
 				ready: ready,
+				init: init,
 				getFirmwareInfo: getFirmwareInfo,
 				checkFirmwareInfo: checkFirmwareInfo,
 				upgradeFirmware: upgradeFirmware,

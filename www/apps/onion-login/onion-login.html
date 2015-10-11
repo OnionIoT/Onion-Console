@@ -88,7 +88,7 @@
 					if (result.success) {
 						onionLogin.$.username.value = '';
 						onionLogin.$.password.value = '';
-						onionConsole.launchApp('onion-launcher');
+						onionConsole.launchApp('onion-launcher', true);
 						onionLogin.quit();
 					} else {
 						var alertElement = document.createElement('bootstrap-alert');

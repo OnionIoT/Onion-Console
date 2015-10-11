@@ -6,15 +6,15 @@
 
 		(function () {
             var wifiProvider = null;
-            var wifiScanResult=null;
-            var wifiSetupResult=null;
+            var wifiScanResult = null;
+            var wifiSetupResult = null;
             var apSetupResult = null;
 		    var wpaKeyMinLength=8;
 			var wepKeyMinLength=10;
 			var wepKeyMaxLength=26;
 			var regEx=new RegExp(/^[0-9A-Fa-f]+$/);
 
-            var ready = function (){
+            var ready = function () {
                 wifiProvider = this;
                 onionConsole.getService('onion-ubus-provider', function(ubus){
                 wifiProvider.ubus=ubus;
