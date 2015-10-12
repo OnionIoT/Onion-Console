@@ -56,7 +56,7 @@
 					<h6>Attention!</h6>
 					<p>This will erase everything on the Omega and reset the device to factory default settings. Please backup any custom files on the device before proceeding.</p>
 				</bootstrap-alert>
-				<button class="btn btn-warning">Factory Reset</button>
+				<button class="btn btn-warning" on-click="resetFactorySettings">Factory Reset</button>
 			</div>
 		</div>
 
@@ -196,6 +196,28 @@
 				});
 			};
 
+			// use ubus to reset to factory settings
+			var resetFactorySettings = function () {
+				var onionSettingUpdate 	= this;
+				console.log('starting factory reset');
+
+				// get the ubus service
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					var params = {
+						command: '/usr/sbin/factory-reset',
+						params: ['-f']
+					};
+
+					// make the ubus call
+					ubus.request('file', 'exec', params, function (data) {
+						if (data) {
+							var returnCode = data[0];
+							console.log('return code: ', returnCode);
+						}
+					});
+				});
+			};
+
 			Polymer({
 				is: 'onion-settings-update',
 				ready: ready,
@@ -203,6 +225,7 @@
 				getFirmwareInfo: getFirmwareInfo,
 				checkFirmwareInfo: checkFirmwareInfo,
 				upgradeFirmware: upgradeFirmware,
+				resetFactorySettings: resetFactorySettings,
 				properties: {
 					settings: Array
 				}
