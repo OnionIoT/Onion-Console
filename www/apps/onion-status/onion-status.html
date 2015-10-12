@@ -1,5 +1,5 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-pages/iron-pages.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 
 <dom-module id="onion-status">
@@ -8,8 +8,40 @@
 				display: block;
 				height: 100%;
 				width: 100%;
-				background-color: #f2f2f2;
 		}
+
+		onion-app-body > div {
+			height: 100%;
+			width: 100%;
+			overflow: scroll;
+			padding: 15px;
+			background-color: #f2f2f2;
+		}
+
+		.status {
+			width: 300px;
+			border-color: transparent;
+			margin-left: 5px;
+			margin-right: 5px;
+		}
+			.status .card-block {
+				background-color: #fff;
+			}
+				.status .card-block > p:last-child {
+					margin-bottom: 0;
+				}
+				.status .card-block:last-child {
+					height: 200px;
+					border-bottom-right-radius: .25rem;
+					border-bottom-left-radius: .25rem;
+				}
+
+			.status > .status-heading {
+				color: #fff;
+				background-color: #16a085;
+				border-top-left-radius: .25rem;
+				border-top-right-radius: .25rem;
+			}
 
 		h4 {
 			margin-bottom: 10px;
@@ -52,11 +84,6 @@
 			border-top: 1px solid #ddd;
 		}
 
-		.wrapper {
-			width: 600px;
-			margin: 0 auto;
-		}
-
 		.online {
 			background-color: #5db85c;
 			border-radius: 5px;
@@ -90,63 +117,59 @@
 		}
 	</style>
 	<template>
-		<onion-app app-name="Status">
+		<onion-app app-name="Status" toolbar-background="#16a085">
 			<onion-app-body>
-				<!--div id="ip"></div-->
-				<div class="wrapper">
-						<h4>General Status</h4>
-						<div class="status-group" vertical layout>
-							<div class="status-field" horizontal layout>
-								<table>
-                                    <tr><td>Status</td><td><span id="online" class="online">Online</span><span id="offline" class="offline">Offline</span></td><td></td>
-                                    </tr>
-                                </table>						
+				<div class="layout horizontal center-justified start">
+					<div id="cardsContainer" class="horizontal layout wrap">
+						<div class="card status">
+							<div class="card-block status-heading">
+								<h4 class="card-title" id="online">Online</h4>
+								<h4 class="card-title" id="offline">Offline</h4>
+								<h6 class="card-subtitle text-muted">Device Status</h6>
 							</div>
-							<div class="status-field" horizontal layout>
-								<table>
-                                    <tr><td>Address</td><td>{{ip}}</td><td></td></tr>
-                                </table>
-							</div>
-							<div class="status-field" horizontal layout>
-								<table>
-                                    <tr><td>Netmask</td><td>{{netmask}}</td><td></td></tr>
-                                </table>
-							</div>
-							<div class="status-field" horizontal layout>
-								<table>
-                                    <tr><td>MAC Address</td><td>{{mac}}</td><td></td></tr>
-                                </table>
-							</div>
-							<div class="status-field" horizontal layout>
-								<table>
-                                    <tr><td>Received (kB)</td><td>{{received}}</td><td></td></tr>
-                                </table>
-							</div>
-							<div class="status-field" horizontal layout>
-								<table>
-                                    <tr><td>Transmitted (kB)</td><td>{{transmitted}}</td><td></td></tr>
-                                </table>
+							<div class="card-block">
+								<p><strong>Uptime</strong>:&nbsp;<span>{{uptime}}</span></p>
+								<p><strong>Memory</strong>:&nbsp;<span>{{memory}}</span></p>
+								<p><strong>Load</strong>:&nbsp;<span>{{load}}</span></p>
 							</div>
 						</div>
 
-						<h4>Interactive Status</h4>
-						<div class="status-group" vertical layout>
-							<div class="status-field" horizontal layout>
-								<table>
-                                    <tr><td>Blink</td><td><button>Identify Device</button></td><td></td></tr>
-                                </table>
+						<div class="card status">
+							<div class="card-block status-heading">
+								<h4 class="card-title">{{ip}}</h4>
+								<h6 class="card-subtitle text-muted">Wi-Fi Network</h6>
 							</div>
-							<div class="status-field" horizontal layout>
-								<table>
-                                    <tr><td>OLED Status</td><td><button>Display status on OLED</button></td><td></td></tr>
-                                </table>
+							<div class="card-block">
+								<p><strong>Netmask</strong>:&nbsp;<span>{{netmask}}</span></p>
+								<p><strong>MAC Address</strong>:&nbsp;<span>{{mac}}</span></p>
+							</div>
+						</div>
+
+						<div class="card status">
+							<div class="card-block status-heading">
+								<h4 class="card-title">{{received}}</h4>
+								<h6 class="card-subtitle text-muted">Bytes Received</h6>
+							</div>
+							<div class="card-block">
+								<p class="card-text">The is the total number of bytes received by the Omega</p>
+							</div>
+						</div>
+
+						<div class="card status">
+							<div class="card-block status-heading">
+								<h4 class="card-title">{{transmitted}}</h4>
+								<h6 class="card-subtitle text-muted">Bytes Transmitted</h6>
+							</div>
+							<div class="card-block">
+								<p class="card-text">The is the total number of bytes transmitted by the Omega</p>
 							</div>
 						</div>
 					</div>
-				</div>				
+				</div>			
 			</onion-app-body>
 		</onion-app>
 	</template>
+
 	<script>
 		'use strict';
 
@@ -157,46 +180,66 @@
 			var locked = false;
 
 			var ready = function() {
-				this.title = "Device Status";
+				this.title = 'Device Status';
 	            onionStatus = this;
 				
-				onionConsole.getService("onion-session-provider", function (sessionProvider) {
+				onionConsole.getService('onion-session-provider', function (sessionProvider) {
 					onionStatus.sessionProvider = sessionProvider;
 				});
 				
-				if(onionStatus.sessionProvider.isAlive()===true)
-				{
+				if (onionStatus.sessionProvider.isAlive() === true) {
 					onionConsole.getService('onion-device-provider', function (deviceProvider) {
-						onionStatus.deviceProvider=deviceProvider;
+						setInterval(function () {
+							deviceProvider.getSystem(function (result) {
+								console.log(result);
+								onionStatus.uptime = new Date(result[1].uptime * 1000).toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, '$1');
+								onionStatus.memory = (result[1].memory.total - result[1].memory.free) + ' / ' + result[1].memory.total;
+								onionStatus.load = result[1].load[0] + ' ' + result[1].load[1] + ' ' + result[1].load[2];
+							});
+						}, 1000);
+
+						onionStatus.deviceProvider = deviceProvider;
+
 						//Get MAC Address
-						deviceProvider.getMAC(function(result) {
-						    onionStatus.mac=result.mac;
+						deviceProvider.getMAC(function (result) {
+						    onionStatus.mac = result.mac;
 						});
+
 						//Get IP Address, NetMask
 						deviceProvider.getIP(function (result) {
 							if (result[0].available === true) {
-								onionStatus.$.online.style.visibility = 'visible';
-								onionStatus.$.offline.style.visibility = 'hidden';
+								onionStatus.$.online.style.display = 'block';
+								onionStatus.$.offline.style.display = 'none';
 							} else {
-								onionStatus.$.online.style.visibility = 'hidden';
-								onionStatus.$.offline.style.visibility = 'visible';
+								onionStatus.$.online.style.display = 'none';
+								onionStatus.$.offline.style.display = 'block';
 							}
 
 							onionStatus.ip = result[1].ip;
 							onionStatus.netmask = result[2].netmask;
 						});
+
 						//Get received and transmitted bytes
 						updateRxTx();
 						refreshRxTx(10000);
 					});	
-                                }			
+                }			
+			};
+
+			var attached = function () {
+				var setCardsContainerWidth = function () {
+					onionStatus.$.cardsContainer.style.width = Math.floor(window.innerWidth / 310) * 310 + 'px';
+				};
+
+				window.addEventListener('resize', setCardsContainerWidth, true);
+				setCardsContainerWidth();
 			};
 			
 		    var refreshRxTx = function (interval) {
 			    refreshRxTxInterval = setInterval(function () {
 			    	updateRxTx()
 			    }, interval);
-			}; 
+			};
 			
 			var stopRefreshRxTx = function () { 
 			    clearInterval(onionStatus.refreshRxTxInterval);
@@ -204,16 +247,14 @@
 			};
 			
 			var updateRxTx = function () {
-			    if(onionStatus.sessionProvider.isAlive()===true) 
-				{
+			    if (onionStatus.sessionProvider.isAlive() === true) {
 					onionStatus.deviceProvider.getRxTx(function (result) {
 						//console.log('rxResult[' + result[0].received + ']');
 						//console.log('txResult[' + result[1].transmitted + ']'); 
 						onionStatus.received = result[0].received;
 						onionStatus.transmitted = result[1].transmitted;							
 					});
-				} 
-				else {
+				} else {
 				    stopRefreshRxTx();
 				}
 			};
@@ -242,6 +283,7 @@
 			Polymer({
 				is: 'onion-status',
 				ready: ready,
+				attached: attached,
 				behaviors: [Onion.AppBehavior],
 				refreshRxTx: refreshRxTx,
 				stopRefreshRxTx: stopRefreshRxTx,

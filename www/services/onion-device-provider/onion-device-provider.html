@@ -48,6 +48,10 @@
 				}
 			};
 
+			var getSystem = function (callback) {
+				deviceProvider.ubus.request('system', 'info', {}, callback);
+			};
+
 			var getRxTx = function (callback) {
 				var params =  {};
 				rxtxResult = callback || this.noop;
@@ -92,24 +96,26 @@
 			    var available = false;
 			    var ip = '-';
 			    var netmask = '-';
-                            if (result[0] === 0 && result[1].code===0) { 
-				var wlanIndex=result[1].stdout.indexOf('wlan0');
-				if(wlanIndex>0)
-				{
-				    available=true;
-				    var startIndex=result[1].stdout.indexOf('inet addr:',wlanIndex);
-				    var endIndex=result[1].stdout.indexOf('  Bcast',startIndex);
-				    ip=result[1].stdout.substring(startIndex+'inet addr:'.length,endIndex);
-				    startIndex=result[1].stdout.lastIndexOf('Mask:');
-				    endIndex=result[1].stdout.indexOf('\n',startIndex);
-				    netmask=result[1].stdout.substring(startIndex+'Mask:'.length,endIndex);
-				    console.log('Available['+available+'] IP['+ip+'] Netmask['+netmask+']');
-				} else {
-				    console.log('Failed to retrieve IP address information!');
-				}
+                
+                if (result[0] === 0 && result[1].code === 0) { 
+					var wlanIndex = result[1].stdout.indexOf('wlan0');
+					if(wlanIndex>0)
+					{
+					    available=true;
+					    var startIndex=result[1].stdout.indexOf('inet addr:',wlanIndex);
+					    var endIndex=result[1].stdout.indexOf('  Bcast',startIndex);
+					    ip=result[1].stdout.substring(startIndex+'inet addr:'.length,endIndex);
+					    startIndex=result[1].stdout.lastIndexOf('Mask:');
+					    endIndex=result[1].stdout.indexOf('\n',startIndex);
+					    netmask=result[1].stdout.substring(startIndex+'Mask:'.length,endIndex);
+					    console.log('Available['+available+'] IP['+ip+'] Netmask['+netmask+']');
+					} else {
+					    console.log('Failed to retrieve IP address information!');
+					}
 			    } else {
-				console.log('Failed to execute IP address command!');
+					console.log('Failed to execute IP address command!');
 			    }
+			    
 			    ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
 			};
 			/*
@@ -155,6 +161,7 @@
 				noop: function () {},
 				ready: ready,
 				getMAC: getMAC,
+				getSystem: getSystem,
 				setMACResult: setMACResult,
 				getRxTx: getRxTx,
 				setRxTxResult: setRxTxResult,
