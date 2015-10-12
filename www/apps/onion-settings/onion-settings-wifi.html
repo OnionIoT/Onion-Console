@@ -99,24 +99,25 @@
 		'use strict';
 
 		(function () {
-			var onionWifisetup = null;
+			var onionSettingsWifi = null;
+
 			var ready = function () {
-				onionWifisetup = this;
-				onionWifisetup.networks 	= [];
-				onionWifisetup.networkId	= -1;
+				onionSettingsWifi = this;
+				onionSettingsWifi.networks 	= [];
+				onionSettingsWifi.networkId	= -1;
 
 				this.hideScanMessage();
 
 				//this.scanWifiNetwork();
 				
 				onionConsole.getService("onion-session-provider", function (sessionProvider) {
-                    onionWifisetup.sessionProvider = sessionProvider;
+                    onionSettingsWifi.sessionProvider = sessionProvider;
                 });
 				
-                if(onionWifisetup.sessionProvider.isAlive()===true)
+                if(onionSettingsWifi.sessionProvider.isAlive()===true)
 				{
                     onionConsole.getService("onion-wifi-provider", function (wifiProvider) {
-                        onionWifisetup.wifiProvider=wifiProvider;
+                        onionSettingsWifi.wifiProvider=wifiProvider;
 					});
                 };
 			};
@@ -149,17 +150,17 @@
 			};
 
 			var showScanMessage = function (message) {
-				this.wifiScanMsgEn = true;
+				this.set('wifiScanMsgEn', true);
 				this.wifiScanMsg = message;
 			};
 
 			var hideScanMessage = function () {
-				this.wifiScanMsgEn = false;
+				this.set('wifiScanMsgEn', false);
 				console.log('Hide scan message!');
 			};
 
 			var scanWifiNetwork = function () {
-				onionWifisetup.showScanMessage("Scanning...");
+				onionSettingsWifi.showScanMessage("Scanning...");
 
 				// get the ubus service
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
@@ -179,10 +180,12 @@
 								}
 
 								// add newly detected networks to array
-								onionSettingsWifi.hideScanMessage();
+								onionSettingsWifi.showScanMessage('Select Wi-Fi Network:');
+
 								var detectedNetworks = data[1].results;
+
 								for (let i = 0; i < detectedNetworks.length; i++) {
-									onionSettingsWifi.push('networks', detectedNetworks[i] );
+									onionSettingsWifi.push('networks', detectedNetworks[i]);
 								}
 
 								console.log('wifi-scan data:');
@@ -220,20 +223,20 @@
 			};
 		
 		    var setupWifi = function () {
-			    onionWifisetup.wifiMessage="";
-			    var verifyResult=onionWifisetup.wifiProvider.verifyKey(onionWifisetup.networkPassword, onionWifisetup.networkAuth);
+			    onionSettingsWifi.wifiMessage="";
+			    var verifyResult=onionSettingsWifi.wifiProvider.verifyKey(onionSettingsWifi.networkPassword, onionSettingsWifi.networkAuth);
 				if(verifyResult=="OK") {
-                    if(onionWifisetup.sessionProvider.isAlive()===true) {   
-				        onionWifisetup.wifiProvider.wifiSetup(onionWifisetup.networkSsid, onionWifisetup.networkPassword, onionWifisetup.networkAuth, function (data) {
+                    if(onionSettingsWifi.sessionProvider.isAlive()===true) {   
+				        onionSettingsWifi.wifiProvider.wifiSetup(onionSettingsWifi.networkSsid, onionSettingsWifi.networkPassword, onionSettingsWifi.networkAuth, function (data) {
 					        if(data.wifiSetup===false) {
-						        onionWifisetup.wifiMessage="WiFi setup failed!";
+						        onionSettingsWifi.wifiMessage="WiFi setup failed!";
 						    } else {
-						        onionWifisetup.wifiMessage="WiFi setup successfully!";
+						        onionSettingsWifi.wifiMessage="WiFi setup successfully!";
 						    }
 					    });
 				    }
 				} else {
-				    onionWifisetup.wifiMessage=verifyResult;
+				    onionSettingsWifi.wifiMessage=verifyResult;
 				}
 			};
 

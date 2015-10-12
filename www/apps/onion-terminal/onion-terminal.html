@@ -1,8 +1,4 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
-<link rel="import" href="/lib/file-list/file-list.html">
-<link rel="import" href="/lib/iron-icon/iron-icon.html">
-<link rel="import" href="/lib/paper-dialog/paper-dialog.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 
 <dom-module id="onion-terminal">
@@ -31,7 +27,7 @@
 		
 	</style>
 	<template>
-		<onion-app app-name="Terminal">
+		<onion-app app-name="Terminal" toolbar-background="#505050">
 			<onion-app-body>
 				<iframe id="shellinabox" src="{{sourceIP}}"></iframe>
 			</onion-app-body>
