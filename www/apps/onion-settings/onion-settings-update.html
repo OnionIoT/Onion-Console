@@ -45,7 +45,7 @@
 					</tbody>
 				</table>
 
-				<button class="btn btn-success">Upgrade</button>
+				<button class="btn btn-success" on-click="upgradeFirmware">Upgrade</button>
 			</div>
 
 			<br />
@@ -169,6 +169,7 @@
 			// use ubus to initiate the firmware upgrade
 			var upgradeFirmware = function () {
 				var onionSettingUpdate 	= this;
+				console.log('calling oupgrade ubus service...');
 
 				// get the ubus service
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
