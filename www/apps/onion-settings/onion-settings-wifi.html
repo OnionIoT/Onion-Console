@@ -1,4 +1,5 @@
 <link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-icons/iron-icons.html">
 
 <dom-module id="onion-settings-wifi">
@@ -22,6 +23,57 @@
 			.card form > .form-group:last-child {
 				margin-bottom: 0;
 			}
+
+		.loading{
+			height: 20px;
+			width: 20px;
+			margin-left: 15px; 
+			-webkit-animation: rotation 1s infinite linear;
+			-moz-animation: rotation 1s infinite linear;
+			-o-animation: rotation 1s infinite linear;
+			animation: rotation 1s infinite linear;
+			border-left: 3px solid #EAF1FF;
+			border-right: 3px solid #EAF1FF;
+			border-bottom: 3px solid #EAF1FF;
+			border-top: 3px solid #2450AD;
+			border-radius: 100%
+		}
+
+		@-webkit-keyframes rotation {
+			from{
+				-webkit-transform: rotate(0deg)
+			}
+			to{
+				-webkit-transform: rotate(359deg)
+			}
+		}
+
+		@-moz-keyframes rotation {
+			from{
+				-moz-transform: rotate(0deg)
+			}
+			to{
+				-moz-transform: rotate(359deg)
+			}
+		}
+
+		@-o-keyframes rotation {
+			from{
+				-o-transform: rotate(0deg)
+			}
+			to{
+				-o-transform: rotate(359deg)
+			}
+		}
+
+		@keyframes rotation {
+			from{
+				transform: rotate(0deg)
+			}
+			to{
+				transform: rotate(359deg)
+			}
+		}
 	</style>
 
 	<template>
@@ -86,8 +138,11 @@
 
 					<div class="form-group row">
 						<!-- start wifi-config -->
-						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
-						<button id="wifi-config-button" type="button" class="btn btn-success btn-block" on-click="setupWifi">Configure Wi-Fi</button>
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
+							<div class="layout horizontal center">
+								<button id="wifi-config-button" type="button" class="btn btn-success" on-click="setupWifi">Configure Wi-Fi</button>
+								<div id="configureLoading" class="loading" hidden></div>
+							</div>
 						</div>
 					</div>
 				</form>
@@ -223,20 +278,28 @@
 			};
 		
 		    var setupWifi = function () {
-			    onionSettingsWifi.wifiMessage="";
-			    var verifyResult=onionSettingsWifi.wifiProvider.verifyKey(onionSettingsWifi.networkPassword, onionSettingsWifi.networkAuth);
-				if(verifyResult=="OK") {
-                    if(onionSettingsWifi.sessionProvider.isAlive()===true) {   
+		    	onionSettingsWifi.$.configureLoading.hidden = false;
+		    	setTimeout(function () {
+		    		onionSettingsWifi.$.configureLoading.hidden = true;
+		    	}, 10000);
+
+			    onionSettingsWifi.wifiMessage = '';
+
+			    var verifyResult = onionSettingsWifi.wifiProvider.verifyKey(onionSettingsWifi.networkPassword, onionSettingsWifi.networkAuth);
+
+				if (verifyResult === 'OK') {
+                    if (onionSettingsWifi.sessionProvider.isAlive() === true) {   
 				        onionSettingsWifi.wifiProvider.wifiSetup(onionSettingsWifi.networkSsid, onionSettingsWifi.networkPassword, onionSettingsWifi.networkAuth, function (data) {
-					        if(data.wifiSetup===false) {
-						        onionSettingsWifi.wifiMessage="WiFi setup failed!";
+
+					        if (data.wifiSetup === false) {
+						        onionSettingsWifi.wifiMessage = 'WiFi setup failed!';
 						    } else {
-						        onionSettingsWifi.wifiMessage="WiFi setup successfully!";
+						        onionSettingsWifi.wifiMessage = 'WiFi setup successfully!';
 						    }
 					    });
 				    }
 				} else {
-				    onionSettingsWifi.wifiMessage=verifyResult;
+				    onionSettingsWifi.wifiMessage = verifyResult;
 				}
 			};
 
