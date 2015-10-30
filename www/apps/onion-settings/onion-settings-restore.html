@@ -1,0 +1,130 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/elements/bootstrap-alert/bootstrap-alert.html">
+
+<dom-module id="onion-settings-restore">
+	<style>
+		.container {
+			width: 600px;
+			margin: 0 auto;
+		}
+
+		.card {
+			margin-top: 15px;
+			background-color: #fff;
+		}
+
+		#upgradeButtonContainer {
+			margin-bottom: 15px;
+		}
+
+		.loading{
+			height: 20px;
+			width: 20px;
+			margin-left: 15px; 
+			-webkit-animation: rotation 1s infinite linear;
+			-moz-animation: rotation 1s infinite linear;
+			-o-animation: rotation 1s infinite linear;
+			animation: rotation 1s infinite linear;
+			border-left: 3px solid #EAF1FF;
+			border-right: 3px solid #EAF1FF;
+			border-bottom: 3px solid #EAF1FF;
+			border-top: 3px solid #2450AD;
+			border-radius: 100%
+		}
+
+		@-webkit-keyframes rotation {
+			from{
+				-webkit-transform: rotate(0deg)
+			}
+			to{
+				-webkit-transform: rotate(359deg)
+			}
+		}
+
+		@-moz-keyframes rotation {
+			from{
+				-moz-transform: rotate(0deg)
+			}
+			to{
+				-moz-transform: rotate(359deg)
+			}
+		}
+
+		@-o-keyframes rotation {
+			from{
+				-o-transform: rotate(0deg)
+			}
+			to{
+				-o-transform: rotate(359deg)
+			}
+		}
+
+		@keyframes rotation {
+			from{
+				transform: rotate(0deg)
+			}
+			to{
+				transform: rotate(359deg)
+			}
+		}
+	</style>
+
+	<template>
+
+		<div class="container">
+			<h4>Factory Reset</h4>
+			<div class="card card-block">
+				<bootstrap-alert danger no-close>
+					<h6>Attention!</h6>
+					<p>This will erase everything on the Omega and reset the device to factory default settings. Please backup any custom files on the device before proceeding.</p>
+				</bootstrap-alert>
+				<button class="btn btn-warning" on-click="resetFactorySettings">Factory Reset</button>
+			</div>
+		</div>
+
+
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var ready = function () {
+				this.model 		= 'Onion Omega';
+			};
+
+			// use ubus to reset to factory settings
+			var resetFactorySettings = function () {
+				var onionSettingUpdate 	= this;
+				console.log('starting factory reset');
+
+				// get the ubus service
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					var params = {
+						command: '/usr/sbin/factory-reset',
+						params: ['-f']
+					};
+
+					// make the ubus call
+					ubus.request('file', 'exec', params, function (data) {
+						if (data) {
+							var returnCode = data[0];
+							console.log('return code: ', returnCode);
+						}
+					});
+				});
+			};
+
+			Polymer({
+				is: 'onion-settings-restore',
+				ready: ready,
+				resetFactorySettings: resetFactorySettings,
+				properties: {
+					settings: Array
+				}
+			});
+        })();
+	</script>
+
+</dom-module>
