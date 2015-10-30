@@ -56,4 +56,5 @@ Possible Keys:
   * Value should be null string, ""
 
 #Copyright and license
-Code and documentation copyright 2014-2015 Onion Corporation. Code released under the GNU Public License Version 3. Documentations are released under Creative Commons.
+Code and documentation copyright 2014-2015 Onion Corporation. 
+Code released under the GNU Public License Version 3. Documentation is released under Creative Commons.
