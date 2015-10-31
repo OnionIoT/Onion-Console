@@ -77,19 +77,24 @@
 				<h4>Security Settings</h4>
 				<div class="card card-block">
 					<!-- check current root password -->
-					<!-- TO DO: add this -->
+					<div class="form-group row">
+						<label for="password-current" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Current Password</label>
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+							<input type="password" class="form-control" id="password-current" autocomplete="off" value="{{passwordCurrent::input}}" />
+						</div>
+					</div>
 					<!-- new root password -->
 					<div class="form-group row">
-						<label for="password" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Root Password</label>
+						<label for="password-new" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">New Password</label>
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<input type="password" class="form-control" id="password" autocomplete="off" value="{{password::input}}" />
+							<input type="password" class="form-control" id="password-new" autocomplete="off" value="{{passwordNew::input}}" />
 						</div>
 					</div>
 					<!-- verify  password -->
 					<div class="form-group row">
-						<label for="password-2" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Verify Password</label>
+						<label for="password-new-verify" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Verify Password</label>
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<input type="password" class="form-control" id="password-2" autocomplete="off" value="{{password2::input}}" />
+							<input type="password" class="form-control" id="password-new-verify" autocomplete="off" value="{{passwordNewVerify::input}}" />
 						</div>
 					</div>
 				</div>
