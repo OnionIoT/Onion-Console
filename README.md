@@ -26,7 +26,24 @@ Takes no arguments
 
 ##### Return Data
 Returns an array of all installed console apps, information includes everything in the app.json file of each app
-
+```
+{
+	"apps": [
+		{
+			"id": "onion-editor",
+			"name": "Editor",
+			"icon": true
+		},
+		.....
+		{
+			"id": "onion-terminal",
+			"name": "Terminal",
+			"icon": true
+		}
+	],
+	"exists": true
+}
+```
 
 ### shellinabox
 ##### Functionality
@@ -55,6 +72,24 @@ Possible Keys:
   * This will restart the shellinabox daemon
   * Value should be null string, ""
 
-#Copyright and license
+
+### wifi-info
+#### Functionality
+Returns all wifi network data for a specified network type (access-point or client mode)
+
+#### Usage
+Takes argument in following format `{"params":{"key":"value"}}`
+
+Possible Keys:
+* type
+  * should be either sta or ap
+
+#### Return Value
+Returns a json object with the following keys:
+* ssid
+* encryption
+* password
+
+#Copyright and License
 Code and documentation copyright 2014-2015 Onion Corporation. 
 Code released under the GNU Public License Version 3. Documentation is released under Creative Commons.

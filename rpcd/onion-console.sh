@@ -2,7 +2,9 @@
 
 # include the Onion sh lib
 . /usr/lib/onion/lib.sh
-
+bLogEnabled=1
+# include wifisetup lib
+. /usr/bin/wifisetup -noop
 
 # function to return an array of all apps and if the app has an icon there
 # 	argument 1: directory to check
@@ -123,6 +125,57 @@ ShellinaboxCtrl () {
 	json_dump
 }
 
+# function to find wifi info and return it all in one go
+GetWifiInfo () {
+	# parse the arguments object
+	local argumentString=$(_ParseArgumentsObject)
+	Log "argument string: $argumentString"
+	
+	# read the network type
+	bRead=0
+	for argument in $argumentString
+	do
+		if [ "$argument" == "-type" ]
+		then
+			bRead=1
+			continue
+		fi
+		if [ $bRead -eq 1 ]
+		then
+			networkType="$argument"
+			bRead=0
+		fi
+	done
+
+	if 	[ "$networkType" == "ap" ] ||
+		[ "$networkType" == "sta" ];
+	then
+		# find the intf id's
+		intfAp=-1
+		intfSta=-1
+		intfId=-1
+		CheckCurrentUciWifi
+
+		if [ "$networkType" == "ap" ]; then
+			intfId=$intfAp
+		elif [ "$networkType" == "sta" ]; then
+			intfId=$intfSta
+		fi
+
+		# fetch all of the wifi network data for that id
+		json_init
+
+		local iface=$(uci -q get wireless.\@wifi-iface[$intfId])
+		if [ "$iface" == "wifi-iface" ]; then 
+			json_add_string "ssid" $(uci -q get wireless.\@wifi-iface[$intfId].ssid)
+			json_add_string "encryption" $(uci -q get wireless.\@wifi-iface[$intfId].encryption)
+			json_add_string "password" $(uci -q get wireless.\@wifi-iface[$intfId].key)
+
+			json_dump
+		fi
+	fi
+}
+
 
 ########################
 ##### Main Program #####
@@ -131,16 +184,18 @@ appLocation="/www/apps"
 
 cmdAppList="app-list"
 cmdShellinabox="shellinabox"
+cmdWifiInfo="wifi-info"
 cmdStatus="status"
 
 jsonAppList='"'"$cmdAppList"'": { }'
 jsonShellinabox='"'"$cmdShellinabox"'": { "params": { "key": "value" } }'
+jsonWifiInfo='"'"$cmdWifiInfo"'": { "params": { "key": "value" } }'
 jsonStatus='"'"$cmdStatus"'": { }'
 
 
 case "$1" in
     list)
-		echo "{ $jsonAppList, $jsonShellinabox, $jsonStatus }"
+		echo "{ $jsonAppList, $jsonShellinabox, $jsonWifiInfo, $jsonStatus }"
     ;;
     call)
 		Log "Function: call, Method: $2"
@@ -158,8 +213,19 @@ case "$1" in
 				# parse the json
 				json_load "$input"
 
-				# parse the json and run wifisetup
+				# parse the json and run the function
 				ShellinaboxCtrl
+			;;
+			$cmdWifiInfo)
+				# read the json arguments
+				read input;
+				Log "Json argument: $input"
+
+				# parse the json
+				json_load "$input"
+
+				# parse the json and run the function
+				GetWifiInfo
 			;;
 			$cmdStatus)
 				# dummy call for now
