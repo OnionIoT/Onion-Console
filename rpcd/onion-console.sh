@@ -168,16 +168,25 @@ GetWifiInfo () {
 		# fetch all of the wifi network data for that id
 		json_init
 
-		local iface=$(uci -q get wireless.\@wifi-iface[$intfId])
-		if [ "$iface" == "wifi-iface" ]; then 
-			json_add_string "ssid" $(uci -q get wireless.\@wifi-iface[$intfId].ssid)
-			json_add_string "encryption" $(uci -q get wireless.\@wifi-iface[$intfId].encryption)
-			json_add_string "password" $(uci -q get wireless.\@wifi-iface[$intfId].key)
-			json_add_string "ip" $(uci -q get network.$intfType.ipaddr)
-			json_add_string "netmask" $(uci -q get network.$intfType.netmask)
-
-			json_dump
+		if [ $intfId -ge 0 ]
+		then
+			local iface=$(uci -q get wireless.\@wifi-iface[$intfId])
+			if [ "$iface" == "wifi-iface" ]; then 
+				json_add_string "ssid" $(uci -q get wireless.\@wifi-iface[$intfId].ssid)
+				json_add_string "encryption" $(uci -q get wireless.\@wifi-iface[$intfId].encryption)
+				json_add_string "password" $(uci -q get wireless.\@wifi-iface[$intfId].key)
+				json_add_string "mode" $(uci -q get wireless.\@wifi-iface[$intfId].mode)
+				json_add_string "ip" $(uci -q get network.$intfType.ipaddr)
+				json_add_string "netmask" $(uci -q get network.$intfType.netmask)
+				json_add_boolean "enabled" 1
+			fi
+		else
+			json_add_boolean "enabled" 0
+			json_add_string "mode" "$networkType"
 		fi
+
+		# output the json
+		json_dump
 	fi
 }
 
