@@ -112,6 +112,12 @@
 		'use strict';
 
 		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var _computeClass = function (success, info, warning, danger) {
 				var elementClass = 'alert';
 
@@ -129,11 +135,12 @@
 			};
 
 			var _close = function () {
-				this.remove();
+				self.remove();
 			};
 
 			Polymer({
 	    		is: 'bootstrap-alert',
+	    		created: created,
 	    		properties: {
 	    			success: {
 		    			notify: true,

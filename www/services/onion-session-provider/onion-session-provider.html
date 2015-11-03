@@ -5,20 +5,24 @@
 		'use strict';
 
 		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var loginReturn = null;
-			var sessionProvider = null;
 
 			var ready = function () {
-				sessionProvider = this;
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
-					sessionProvider.ubus = ubus;
+					self.ubus = ubus;
 
 					checkToken(function (hasToken) {
 						if (hasToken) {
-							sessionProvider.ubus.token = sessionStorage.getItem('_omega_session_token');
-							sessionProvider.ubus.isAlive = true;
+							self.ubus.token = sessionStorage.getItem('_omega_session_token');
+							self.ubus.isAlive = true;
 						} else {
-							sessionProvider.ubus.isAlive = false;
+							self.ubus.isAlive = false;
 						}
 					});
 				});
@@ -31,13 +35,13 @@
 				};
 				
 				loginReturn = callback || function () {};
-				this.ubus.request('session', 'login', params, setToken);
+				self.ubus.request('session', 'login', params, setToken);
 			};
 
 			var setToken = function (result) {
 				if (result !== null && result[0] !== null) {
 				    if ('error' in result) {
-				        sessionProvider.ubus.isAlive = false;
+				        self.ubus.isAlive = false;
 					    loginReturn({success: false});
 					    return;
 				    }
@@ -48,18 +52,18 @@
 	                    console.log('session token: ' + token);
 
 	                    sessionStorage.setItem('_omega_session_token', token);
-					    sessionProvider.ubus.token = token;
-					    sessionProvider.ubus.isAlive = true;
+					    self.ubus.token = token;
+					    self.ubus.isAlive = true;
 					    startHeartbeat(10000);
 					    loginReturn({success: true});
 
 				    } else {
 				        console.log('Login failed!');
-					    sessionProvider.ubus.isAlive = false;
+					    self.ubus.isAlive = false;
 				        loginReturn({success: false});
 				    }
 				} else {
-			        sessionProvider.ubus.isAlive = false;
+			        self.ubus.isAlive = false;
 					loginReturn({success: false});
 					return;
 			    }
@@ -67,37 +71,37 @@
 		 
 			var heartbeat = function () {
 			    if (isAlive() === true) {
-					sessionProvider.ubus.request('session', 'access', {}, setAlive);
+					self.ubus.request('session', 'access', {}, setAlive);
 				} else {
                     logout();   
 				}				
 			};  
 				  
 			var startHeartbeat = function (interval) {
-			    sessionProvider.heartbeatInterval = setInterval(function () {  
+			    self.heartbeatInterval = setInterval(function () {  
 			    	heartbeat()
 			    }, interval);
 			};
 			
 			var stopHeartbeat = function () {
-			    clearInterval(sessionProvider.heartbeatInterval);
-				delete sessionProvider.heartbeatInterval;
-				sessionProvider.ubus.isAlive = false;
-                sessionProvider.ubus.token = '00000000000000000000000000000000';
+			    clearInterval(self.heartbeatInterval);
+				delete self.heartbeatInterval;
+				self.ubus.isAlive = false;
+                self.ubus.token = '00000000000000000000000000000000';
 			};
 
 			var setAlive = function (result) {
 				if (result !== null && result[0] === 0) {
-				    sessionProvider.ubus.isAlive = true;   
+				    self.ubus.isAlive = true;   
                     console.log('Alive');					
 				} else {
-				    sessionProvider.ubus.isAlive = false;
+				    self.ubus.isAlive = false;
 				    logout();
 				}   
 		    }; 
 			
 			var isAlive = function () {
-			    return 	sessionProvider.ubus.isAlive;
+			    return 	self.ubus.isAlive;
 			};
 
 			var checkToken = function (callback) {
@@ -106,7 +110,7 @@
 			};
 			
 			var logout = function () {
-				if (sessionProvider.heartbeatInterval !== null) {
+				if (self.heartbeatInterval !== null) {
 				    console.log('logout');
 				    sessionStorage.removeItem('_omega_session_token');
 					stopHeartbeat();	
@@ -116,6 +120,7 @@
 			
 			Polymer({
 				is: 'onion-session-provider',
+				created: created,
 				ready: ready,
 	            login: login,
 				logout: logout,

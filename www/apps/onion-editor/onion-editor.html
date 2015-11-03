@@ -114,13 +114,17 @@
 		'use strict';
 
 		(function () {
-			var onionEditor = null,
-				folderFileInfo = null,
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
+			var folderFileInfo = null,
 				backsplash = null,
 				extSymbol = null;
 
 			var ready = function () {
-				onionEditor = this;	
 				backsplash = '/';
 				extSymbol = '.';
 				
@@ -132,25 +136,25 @@
 				};
 
 				onionConsole.getService('onion-session-provider', function (sessionProvider) {
-					onionEditor.sessionProvider = sessionProvider;
+					self.sessionProvider = sessionProvider;
 
 					if (sessionProvider.isAlive() === true) {   
 						onionConsole.getService('onion-file-provider', function (fileProvider) {
-							onionEditor.fileProvider = fileProvider;
+							self.fileProvider = fileProvider;
 
 							//Get file list
 							fileProvider.getFileList(folderFileInfo.folder, function (result) {
 								if (result.fileList !== '') {
-								    onionEditor.currentFolder = folderFileInfo.folder
+								    self.currentFolder = folderFileInfo.folder
 									folderFileInfo.list = result.fileList;
-	                                onionEditor.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));			
-								    onionEditor.$.fileList.addEventListener('click', function (e) {
+	                                self.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));			
+								    self.$.fileList.addEventListener('click', function (e) {
 										if (typeof e.target.icon === 'undefined') {
 					                        openFolder(e.target.textContent);
 										} else {
 										    console.log('Click add icon');
 											if (e.target.icon === 'add') {
-												onionEditor.$.newDialog.open();
+												self.$.newDialog.open();
 											} else if(e.target.icon === 'save') {
 											    saveFile();
 											}
@@ -164,198 +168,206 @@
 			};
 			 
 			var findTypeById = function (sourceList, name) {
-			    var result='';
+			    var result = '';
+
 				for (var i = 0; i < sourceList.length; i++) {
 					if (sourceList[i].name === name) {
 					    result = sourceList[i].type;
 					}
 				}
+
 				return result;
-			}
+			};
 			 
-			var isFileChanged = function() {
-			    var changed=false;
-			    if(folderFileInfo.fileInEdit!=="" &&				
-	               onionEditor.currentCode!==onionEditor.$.fileEditor.editor.session.getValue()) {
-				    changed=true;
-				} 
+			var isFileChanged = function () {
+			    var changed = false;
+
+			    if (folderFileInfo.fileInEdit !== '' &&	self.currentCode !== self.$.fileEditor.editor.session.getValue()) {
+				    changed = true;
+				}
+
 				return changed;
-			}
+			};
 			
-			var getFileExtension = function() {
-			    var extension='';
-			    if(folderFileInfo.file!=='') {
-			        extension=folderFileInfo.file.substring(folderFileInfo.file.lastIndexOf(extSymbol)+1,folderFileInfo.file.length);
+			var getFileExtension = function () {
+			    var extension = '';
+
+			    if (folderFileInfo.file !== '') {
+			        extension = folderFileInfo.file.substring(folderFileInfo.file.lastIndexOf(extSymbol) + 1, folderFileInfo.file.length);
 			    }
+
 				return extension;
-			}
+			};
 			
-			var openFolder = function(path) {
-                if(onionEditor.sessionProvider.isAlive() === true) {
-			        var currentFile="";
-					var changed=true;
+			var openFolder = function (path) {
+                if (self.sessionProvider.isAlive() === true) {
+			        var currentFile = '';
+					var changed = true;
+
 				    onionConsole.getService('onion-file-provider', function (fileProvider) {
-				 	    onionEditor.fileProvider=fileProvider;
-						if(path.match(/\r?\n|\r/g)!==null)
-						{
-						    console.log("multiple selection, do nothing");
+				 	    self.fileProvider = fileProvider;
+						if (path.match(/\r?\n|\r/g) !== null) {
+						    console.log('multiple selection, do nothing');
 							return;
-						}
-					    else if(path==="..")	{
-						    if(folderFileInfo.folder===backsplash||folderFileInfo.folder.lastIndexOf(backsplash)===0) {
-							    path=backsplash;
+						} else if (path === '..') {
+						    if (folderFileInfo.folder === backsplash || folderFileInfo.folder.lastIndexOf(backsplash) === 0) {
+							    path = backsplash;
 						    } else {
-							    path=folderFileInfo.folder.substring(0,folderFileInfo.folder.lastIndexOf(backsplash));
+							    path = folderFileInfo.folder.substring(0, folderFileInfo.folder.lastIndexOf(backsplash));
                             }
 					    } else {
-						    if(path===folderFileInfo.folder) {
-				                changed=false;   
-							} else if(findTypeById(folderFileInfo.list,path)==="directory") {
-							    if(folderFileInfo.folder===backsplash) {
-								    path=folderFileInfo.folder+path;
+						    if (path === folderFileInfo.folder) {
+				                changed = false;   
+							} else if (findTypeById(folderFileInfo.list,path) === 'directory') {
+							    if (folderFileInfo.folder === backsplash) {
+								    path = folderFileInfo.folder + path;
 							    } else {
-								    path=folderFileInfo.folder+backsplash+path;
+								    path = folderFileInfo.folder + backsplash + path;
 							    }
 						    } else {
-							    if(folderFileInfo.folder===backsplash) {
-							        currentFile=path;
+							    if (folderFileInfo.folder === backsplash) {
+							        currentFile = path;
 								} else {
-								    currentFile=backsplash+path;
+								    currentFile = backsplash + path;
 								}
 						    }
 					    }
 
-					    if(changed==false||currentFile==="") {
-						    folderFileInfo.folder=path;
+					    if (changed ===false || currentFile === '') {
+						    folderFileInfo.folder = path;
                             //Get file list					
-                            fileProvider.getFileList(folderFileInfo.folder,function(result) {
-							    onionEditor.currentFolder=folderFileInfo.folder;	
-							    folderFileInfo.list=result.fileList;
-							    onionEditor.$.fileList.setAttribute("files", JSON.stringify(folderFileInfo.list));	 
+                            fileProvider.getFileList(folderFileInfo.folder, function (result) {
+							    self.currentFolder = folderFileInfo.folder;	
+							    folderFileInfo.list = result.fileList;
+							    self.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));	 
 						    });
 					    } else {
-					        folderFileInfo.file=currentFile;
-						    console.log("It's a file["+folderFileInfo.folder+folderFileInfo.file+"]");
+					        folderFileInfo.file = currentFile;
+						    console.log('It\'s a file[' + folderFileInfo.folder + folderFileInfo.file + ']');
 							openFile();
 					    }
 				    });
 				}
-			}
+			};
 			
-			var openFile = function() {
+			var openFile = function () {
 			    closeFile();
-			    if(onionEditor.sessionProvider.isAlive()===true && folderFileInfo.file!=='') {
+
+			    if (self.sessionProvider.isAlive() === true && folderFileInfo.file !== '') {
                     /*
 					if(isFileChanged())	{
 					    if(confirm('Do you want to save the file?')) {
 						    saveFile();
 						}
 				    } 
-                    */					
-				    var ext=getFileExtension();
-					onionEditor.$.fileEditor.editor.session.setMode('ace/mode/'+ext);
+                    */
+
+				    var ext = getFileExtension();
+					self.$.fileEditor.editor.session.setMode('ace/mode/' + ext);
                     onionConsole.getService('onion-file-provider', function (fileProvider) {
-					    onionEditor.fileProvider=fileProvider;
+					    self.fileProvider = fileProvider;
 					    //Get file list
-					    fileProvider.getFileContent(folderFileInfo.folder+folderFileInfo.file,function(result) {
-						    if(result.fileContent!=null) {
-						        onionEditor.currentCode=result.fileContent;
-								folderFileInfo.fileInEdit=folderFileInfo.folder+folderFileInfo.file;
+					    fileProvider.getFileContent(folderFileInfo.folder + folderFileInfo.file, function (result) {
+						    if (result.fileContent !== null) {
+						        self.currentCode = result.fileContent;
+								folderFileInfo.fileInEdit = folderFileInfo.folder + folderFileInfo.file;
 							} else {    
-							    alert('Failed to open \"'+folderFileInfo.folder+folderFileInfo.file+'\"');
+							    alert('Failed to open \"' + folderFileInfo.folder + folderFileInfo.file + '\"');
 							}
 					    });
 				    });
 				}
-            }
+            };
 			
-			var closeFile = function() {
-			    if(onionEditor.sessionProvider.isAlive()===true && folderFileInfo.file!=='') {
-			        if(isFileChanged())	{
-					    if(confirm('Do you want to save \"'+folderFileInfo.fileInEdit+'\" ?')) {
-						    if(typeof saveFile() === "boolean") {
-							    onionEditor.currentCode="";
-					            folderFileInfo.fileInEdit="";
+			var closeFile = function () {
+			    if (self.sessionProvider.isAlive() === true && folderFileInfo.file !== '') {
+			        if (isFileChanged()) {
+					    if (confirm('Do you want to save \"' + folderFileInfo.fileInEdit + '\" ?')) {
+						    if (typeof saveFile() === 'boolean') {
+							    self.currentCode = '';
+					            folderFileInfo.fileInEdit = '';
 							}
 						}
 				    } else {
-					    onionEditor.currentCode="";
-					    folderFileInfo.fileInEdit="";
+					    self.currentCode = '';
+					    folderFileInfo.fileInEdit = '';
 					}
 			    }
-			}
+			};
 			
-			var saveFile = function() {
+			var saveFile = function () {
 			    //var saveResult=true;
-				if(onionEditor.sessionProvider.isAlive()===true && folderFileInfo.fileInEdit!=='') {	
+				if (self.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
 				    onionConsole.getService('onion-file-provider', function (fileProvider) {
-					    onionEditor.fileProvider=fileProvider;
+					    self.fileProvider = fileProvider;
 					    //Get file list
-						var codeInEdit=onionEditor.$.fileEditor.editor.session.getValue();
-					    fileProvider.saveFileContent(folderFileInfo.fileInEdit,codeInEdit,function(result) {
-						    if(result.saveResult===true) {
-							    onionEditor.currentCode=codeInEdit;
-						        alert('\"'+folderFileInfo.fileInEdit+'\" saved successfully!!');
+						var codeInEdit = self.$.fileEditor.editor.session.getValue();
+					    fileProvider.saveFileContent(folderFileInfo.fileInEdit, codeInEdit, function (result) {
+						    if (result.saveResult === true) {
+							    self.currentCode = codeInEdit;
+						        alert('\"' + folderFileInfo.fileInEdit + '\" saved successfully!!');
 							} else {    
-							    alert('Failed to save \"'+folderFileInfo.fileInEdit+'\"');
+							    alert('Failed to save \"' + folderFileInfo.fileInEdit + '\"');
 								//saveResult=false;
 							}
 					    });
 				    });
 				}
 				//return saveResult;
-			}
+			};
 			
-			var newFolderDialog = function() {
-				var folderName = prompt("Please enter new folder name");
-				if(folderName!==null) {
-				    createFile("folder",folderName);
+			var newFolderDialog = function () {
+				var folderName = prompt('Please enter new folder name');
+				
+				if (folderName !== null) {
+				    createFile('folder', folderName);
 				}
-			}
+			};
 			
-			var newFileDialog = function() {
-				var fileName=prompt("Please enter new file name");
-				if(fileName!==null) {
-				    createFile("file",fileName);
+			var newFileDialog = function () {
+				var fileName = prompt('Please enter new file name');
+
+				if (fileName !== null) {
+				    createFile('file', fileName);
 				}
-			}
+			};
 			
-			var createFile = function(type,filename) {
-			    if(filename==="")
-				{
-				    alert("Invalid "+type+" name!!");
+			var createFile = function (type, filename) {
+			    if (filename === '') {
+				    alert('Invalid ' + type + ' name!!');
 					return;
 				}
 				
-			    if(onionEditor.sessionProvider.isAlive()===true ) {
+			    if (self.sessionProvider.isAlive() === true ) {
 				    onionConsole.getService('onion-file-provider', function (fileProvider) {
-					    onionEditor.fileProvider=fileProvider;
-						var newFilename=filename;
-						if(folderFileInfo.folder===backsplash) {
-						    newFilename=folderFileInfo.folder+newFilename;
+					    self.fileProvider = fileProvider;
+						var newFilename = filename;
+
+						if (folderFileInfo.folder === backsplash) {
+						    newFilename = folderFileInfo.folder + newFilename;
 						} else {
-							newFilename=folderFileInfo.folder+backsplash+newFilename;
+							newFilename = folderFileInfo.folder + backsplash + newFilename;
 					    }
 						
-						if(type==='folder') {
-							fileProvider.execCommand('mkdir',[newFilename],function(result) {
-								if(result.execResult===true) {
+						if (type === 'folder') {
+							fileProvider.execCommand('mkdir', [newFilename], function (result) {
+								if (result.execResult === true) {
 							        openFolder(folderFileInfo.folder);
 							    } else {    
-							        alert('Failed to create \"'+newFilename+'\"');
+							        alert('Failed to create \"' + newFilename + '\"');
 							    }
 							});
 						} else {
-						    if(findTypeById(folderFileInfo.list,filename)==='') {
-							    fileProvider.execCommand('touch',[newFilename],function(result) {
-						            if(result.execResult===true) {
+						    if (findTypeById(folderFileInfo.list,filename) === '') {
+							    fileProvider.execCommand('touch', [newFilename], function (result) {
+						            if (result.execResult === true) {
 							            openFolder(folderFileInfo.folder);
 							        } else {    
-							            alert('Failed to create \"'+newFilename+'\"');
+							            alert('Failed to create \"' + newFilename + '\"');
 							        }	
 					            });
 							} else {
-							   alert('\"'+newFilename+'\" already exist!');
+							   alert('\"' + newFilename + '\" already exist!');
 							}
 						}
 				    });
@@ -366,6 +378,7 @@
 			
 			Polymer({
 				is: 'onion-editor',
+				created: created,
 				ready: ready,
 				behaviors: [Onion.AppBehavior],
 				openFolder: openFolder,
@@ -377,7 +390,7 @@
 				getFileExtension: getFileExtension,
 				createFile: createFile,
 				newFolderDialog: newFolderDialog,
-				newFileDialog: newFileDialog,
+				newFileDialog: newFileDialog
 			});
         })();
 	</script>

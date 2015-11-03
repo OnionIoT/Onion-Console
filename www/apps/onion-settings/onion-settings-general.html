@@ -117,13 +117,14 @@
 		'use strict';
 
 		(function () {
-			var onionSettingsGeneral = null,
-				hostnameCopy,
-				timezoneCopy;
+			var self = null;
 
-			var ready = function () {
-				onionSettingsGeneral = this;
+			var created = function () {
+				self = this;
 			};
+
+			var hostnameCopy,
+				timezoneCopy;
 
 			var init = function () {
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
@@ -134,7 +135,7 @@
 					}, function (result) {
 						if (result[0] === 0) {
 							hostnameCopy = result[1].value;
-							onionSettingsGeneral.hostname = result[1].value;
+							self.hostname = result[1].value;
 						}
 					});
 
@@ -145,7 +146,7 @@
 					}, function (result) {
 						if (result[0] === 0) {
 							timezoneCopy = result[1].value;
-							onionSettingsGeneral.timezone = result[1].value;
+							self.timezone = result[1].value;
 						}
 					});
 	            });
@@ -153,7 +154,7 @@
 
 			Polymer({
 				is: 'onion-settings-general',
-				ready: ready,
+				created: created,
 				init: init
 			});
         })();

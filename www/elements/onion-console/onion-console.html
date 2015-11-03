@@ -30,15 +30,22 @@
 		'use strict';
 
 		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+				window.onionConsole = this;
+			};
+
 			var services = {};
 
 			var launchService = function (serviceId, callback) {
-				callback = callback || this.noop;
+				callback = callback || self.noop;
 
 				if (!services[serviceId]) {
-					this.importHref(['/services/' + serviceId + '/' + serviceId+ '.html'], function () {
+					self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html'], function () {
 						var serviceElement = document.createElement(serviceId);
-						Polymer.dom(this.$.serviceContainer).appendChild(serviceElement);
+						Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
 
 						services[serviceId] = serviceElement;
 
@@ -48,44 +55,40 @@
 			};
 
 			var launchApp = function (appId, relaunch) {
-				if (this.$.appContainer.querySelector(appId)) {
-					onionConsole.$.appContainer.querySelector(appId).fg();
-					this.currentApp = appId;
+				if (self.$.appContainer.querySelector(appId)) {
+					self.$.appContainer.querySelector(appId).fg();
+					self.currentApp = appId;
 
 					if (relaunch) {
-						onionConsole.$.appContainer.querySelector(appId).start();
+						self.$.appContainer.querySelector(appId).start();
 					}
 				} else {
-					this.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
+					self.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
 						var appElement = document.createElement(appId);
 						appElement.setAttribute('id', appId);
-						Polymer.dom(this.$.appContainer).appendChild(appElement); 
+						Polymer.dom(self.$.appContainer).appendChild(appElement); 
 
-						this.currentApp = appId;
+						self.currentApp = appId;
 					});
 				}
 			};
 
-			var ready = function () {
-				window.onionConsole = this;
-			};
-
 			var attached = function () {
-				this.launchApp('onion-login');
+				self.launchApp('onion-login');
 			};
 
 			var getService = function (serviceId, callback) {
 				if (serviceId in services) {
 					callback(services[serviceId]);
 				} else {
-					this.launchService(serviceId,callback);
+					self.launchService(serviceId,callback);
 				}
 			};
 
 			Polymer({
 				is: 'onion-console',
 				noop: function () {},
-				ready: ready,
+				created: created,
 				attached: attached,
 				launchApp: launchApp,
 				launchService: launchService,

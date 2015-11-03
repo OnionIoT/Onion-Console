@@ -82,12 +82,18 @@
 		'use strict';
 
 		(function () {
-			var ready = function () {
-				this.$.appContainer.style.color = this.color;
-				this.$.appContainer.style.background = this.background;
+			var self = null;
 
-				this.$.appToolbar.style.color = this.toolbarColor;
-				this.$.appToolbar.style.background = this.toolbarBackground;
+			var created = function () {
+				self = this;
+			};
+
+			var ready = function () {
+				self.$.appContainer.style.color = self.color;
+				self.$.appContainer.style.background = self.background;
+
+				self.$.appToolbar.style.color = self.toolbarColor;
+				self.$.appToolbar.style.background = self.toolbarBackground;
 			};
 
 			var onLauncher = function (e) {
@@ -101,6 +107,7 @@
 
 			Polymer({
 				is: 'onion-app',
+				created: created,
 				ready: ready,
 	            onLauncher: onLauncher,
 	            appContainerClass: appContainerClass,
@@ -132,28 +139,34 @@
         (function () {
         	var Onion = window.Onion = window.Onion || {};
 
+        	var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
         	var attached = function () {
-        		this.start();
+        		self.start();
         	};
 
         	var ready = function () {
-        		this.appName = this.$$('onion-app').appName || this.appName;
+        		self.appName = self.$$('onion-app').appName || self.appName;
         	};
 
         	var start = function () {
-        		console.log('Starting ' + this.appName);
+        		console.log('Starting ' + self.appName);
         	};
 
         	var fg = function () {
-        		console.log('Moving ' + this.appName + ' to the foreground');
+        		console.log('Moving ' + self.appName + ' to the foreground');
         	};
 
         	var bg = function () {
-        		console.log('Moving ' + this.appName + ' to the background');
+        		console.log('Moving ' + self.appName + ' to the background');
         	};
 
         	var quit = function () {
-        		console.log('Quitting ' + this.appName);
+        		console.log('Quitting ' + self.appName);
         	};
 
         	Onion.AppBehavior = {
@@ -163,6 +176,7 @@
         				value: 'Unnamed App'
         			}
         		},
+        		created: created,
         		attached: attached,
         		ready: ready,
         		start: start,

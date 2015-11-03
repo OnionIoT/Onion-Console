@@ -82,16 +82,18 @@
 		'use strict';
 
 		(function () {
-			var ready = function () {
-				
+			var self = null;
+
+			var created = function () {
+				self = this;
 			};
 
 			var open = function () {
-				this.$.dropdown.open();
+				self.$.dropdown.open();
 			};
 
 			var close = function () {
-				this.$.dropdown.close();
+				self.$.dropdown.close();
 			};
 
 			Polymer({
@@ -99,7 +101,7 @@
 				properties: {
 					
 				},
-				ready: ready,
+				created: created,
 				open: open,
 				close: close
 			});

@@ -10,6 +10,12 @@
 		'use strict';
 
 		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var openRequests = {};
 			var requestCounter = 1;
 
@@ -20,14 +26,14 @@
 					jsonrpc: '2.0',
 					id: requestCounter,
 					method: 'call',
-					params: [this.token, pkg, funct, params]
+					params: [self.token, pkg, funct, params]
 				};
 
 				openRequests[requestCounter] = callback;
 				requestCounter += 1;
 				
-				this.$.ajax.body = JSON.stringify(body); 
-				this.$.ajax.generateRequest();
+				self.$.ajax.body = JSON.stringify(body); 
+				self.$.ajax.generateRequest();
 			};
 
 			var handelResponse = function (request) {
@@ -50,14 +56,15 @@
 				    
 				    delete openRequests[response.id];
 				} else {
-				    this.isAlive = false;
-					this.token = '00000000000000000000000000000000';
+				    self.isAlive = false;
+					self.token = '00000000000000000000000000000000';
 				}
 			};
 
 
 			Polymer({
 				is: 'onion-ubus-provider',
+				created: created,
 	            properties: {
 	            	token: {
 	            		type: String,

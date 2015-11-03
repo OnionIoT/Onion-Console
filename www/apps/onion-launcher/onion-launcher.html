@@ -126,23 +126,23 @@
 		'use strict';
 
 		(function () {
-			var onionLauncher,
-				initialized = false;
+			var self = null;
 
-			var ready = function () {
-				// this.apps = onionConsole.apps;
-				onionLauncher = this;
+			var created = function () {
+				self = this;
 			};
+
+			var initialized = false;
 
 			var start = function () {
 				onionConsole.getService('onion-apps-provider', function (appsProvider) {
-					onionLauncher.appsProvider = appsProvider;
+					self.appsProvider = appsProvider;
 					appsProvider.reload();
 
 					var appsInterval = setInterval(function () {
 						if (appsProvider.apps.length) {
 							clearInterval(appsInterval);
-							onionLauncher.set('apps', appsProvider.apps);
+							self.set('apps', appsProvider.apps);
 						}
 					}, 0);
 				});
@@ -156,7 +156,7 @@
 
 					ubus.request('uci', 'get', params, function (result) {
 						if (result[0] === 0) {
-							onionLauncher.hostname = result[1].value;
+							self.hostname = result[1].value;
 						}
 					});
 				});
@@ -164,7 +164,7 @@
 
 			var attached = function () {
 				var setAppsContainerWidth = function () {
-					onionLauncher.$.appsContainer.style.width = Math.floor(window.innerWidth / 250) * 250 + 'px';
+					self.$.appsContainer.style.width = Math.floor(window.innerWidth / 250) * 250 + 'px';
 				};
 
 				window.addEventListener('resize', setAppsContainerWidth, true);
@@ -187,8 +187,8 @@
 
 			var filterEscapeWatcher = function (e) {
 				if (e.which === 27) {
-					this.set('filterString', '');
-					this.$['search-bar'].blur();
+					self.set('filterString', '');
+					self.$['search-bar'].blur();
 				}
 			};
 
@@ -200,7 +200,7 @@
 
 			Polymer({
 				is: 'onion-launcher',
-				ready: ready,
+				created: created,
 				start: start,
 				attached: attached,
 				apps: [],

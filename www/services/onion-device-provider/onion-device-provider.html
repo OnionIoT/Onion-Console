@@ -5,15 +5,19 @@
 		'use strict';
 
 		(function () {
-			var deviceProvider = null;
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var macResult = null;
 			var ipResult = null;
 			var rxtxResult = null;
 
 			var ready = function (){
-				deviceProvider = this;
-				onionConsole.getService('onion-ubus-provider', function(ubus){
-					deviceProvider.ubus=ubus;
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					self.ubus = ubus;
 				});			
 			};
 
@@ -21,8 +25,8 @@
 				var params = {
 					device: 'wlan0'
 				};
-				macResult = callback || this.noop;
-				this.ubus.request('iwinfo', 'assoclist', params, setMACResult);
+				macResult = callback || self.noop;
+				self.ubus.request('iwinfo', 'assoclist', params, setMACResult);
 			};
 
 			var setMACResult = function (result) {
@@ -49,13 +53,13 @@
 			};
 
 			var getSystem = function (callback) {
-				deviceProvider.ubus.request('system', 'info', {}, callback);
+				self.ubus.request('system', 'info', {}, callback);
 			};
 
 			var getRxTx = function (callback) {
 				var params =  {};
-				rxtxResult = callback || this.noop;
-				this.ubus.request('network.device', 'status', params, setRxTxResult);
+				rxtxResult = callback || self.noop;
+				self.ubus.request('network.device', 'status', params, setRxTxResult);
 			};
 
 			var setRxTxResult = function (result) {
@@ -65,21 +69,23 @@
 				
 				if (returnCode === 0) {  
 				    var rx = result[1].wlan0.statistics.rx_bytes;
-                                    receivedkB = parseInt(rx);
-                                    if(receivedkB > 0) {
-                                        receivedkB = (receivedkB / 1000).toFixed(0);
-                                    }
-                                    var tx = result[1].wlan0.statistics.tx_bytes;
-                                    transmittedkB = parseInt(tx);
-                                    if(transmittedkB > 0) {
-                                        transmittedkB = (transmittedkB / 1000).toFixed(0);
-                                    }
+
+                    receivedkB = parseInt(rx);
+                    if (receivedkB > 0) {
+                        receivedkB = (receivedkB / 1000).toFixed(0);
+                    }
+                    var tx = result[1].wlan0.statistics.tx_bytes;
+                    transmittedkB = parseInt(tx);
+                    if (transmittedkB > 0) {
+                        transmittedkB = (transmittedkB / 1000).toFixed(0);
+                    }
+
 				    console.log('receivedkB[' + receivedkB + ']');
 				    console.log('transmittedkB[' + transmittedkB + ']');
-	                            rxtxResult([{received: receivedkB},{transmitted: transmittedkB}]);
+	                rxtxResult([{received: receivedkB}, {transmitted: transmittedkB}]);
 				} else {
 				    console.log('Failed to get received bytes and transmitted bytes!');
-                                    rxtxResult([{received: ''},{transmitted:''}]);
+                    rxtxResult([{received: ''}, {transmitted: ''}]);
 				}
 			};
 			
@@ -87,8 +93,8 @@
 				var params =  {
 				    command: 'ifconfig'
 				};
-				ipResult = callback || this.noop;
-				this.ubus.request('file', 'exec', params, setIPResult);
+				ipResult = callback || self.noop;
+				self.ubus.request('file', 'exec', params, setIPResult);
 			};
 			
 			var setIPResult = function (result) {
@@ -99,16 +105,15 @@
                 
                 if (result[0] === 0 && result[1].code === 0) { 
 					var wlanIndex = result[1].stdout.indexOf('wlan0');
-					if(wlanIndex>0)
-					{
-					    available=true;
-					    var startIndex=result[1].stdout.indexOf('inet addr:',wlanIndex);
-					    var endIndex=result[1].stdout.indexOf('  Bcast',startIndex);
-					    ip=result[1].stdout.substring(startIndex+'inet addr:'.length,endIndex);
-					    startIndex=result[1].stdout.lastIndexOf('Mask:');
-					    endIndex=result[1].stdout.indexOf('\n',startIndex);
-					    netmask=result[1].stdout.substring(startIndex+'Mask:'.length,endIndex);
-					    console.log('Available['+available+'] IP['+ip+'] Netmask['+netmask+']');
+					if (wlanIndex > 0) {
+					    available = true;
+					    var startIndex = result[1].stdout.indexOf('inet addr:', wlanIndex);
+					    var endIndex = result[1].stdout.indexOf('  Bcast', startIndex);
+					    ip = result[1].stdout.substring(startIndex + 'inet addr:'.length, endIndex);
+					    startIndex = result[1].stdout.lastIndexOf('Mask:');
+					    endIndex = result[1].stdout.indexOf('\n', startIndex);
+					    netmask = result[1].stdout.substring(startIndex + 'Mask:'.length, endIndex);
+					    console.log('Available[' + available + '] IP[' + ip + '] Netmask[' + netmask + ']');
 					} else {
 					    console.log('Failed to retrieve IP address information!');
 					}
@@ -118,11 +123,11 @@
 			    
 			    ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
 			};
+			
 			/*
 			var update = function () {
-
-				params =  {};
-				this.ubus.request("network.device", "status", params, function(result){
+				params = {};
+				self.ubus.request('network.device', 'status', params, function (result) {
 					console.log(result);
 				});
 			};
@@ -130,7 +135,6 @@
 			var setToken = function (result) {
 
 				var returnCode = result[0];
-
 
 				if (returnCode === 0) { 
 					var token = result[1].ubus_rpc_session;
@@ -154,8 +158,10 @@
 				}
 			};
 			*/
+
 			Polymer({
 				is: 'onion-device-provider',
+				created: created,
 				ready: ready,
 				//update: update,
 				noop: function () {},

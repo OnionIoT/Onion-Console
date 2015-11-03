@@ -37,23 +37,26 @@
 		'use strict';
 			
 		(function () {
-			var onionTerminal = null;
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
 			
 			var ready = function() {
-				onionTerminal = this;
-				onionTerminal.title = 'Onion Terminal';
+				self.title = 'Onion Terminal';
 				
 				onionConsole.getService('onion-session-provider', function (sessionProvider) {
-					onionTerminal.sessionProvider = sessionProvider;
+					self.sessionProvider = sessionProvider;
 
-					if (onionTerminal.sessionProvider.isAlive() === true) {
+					if (self.sessionProvider.isAlive() === true) {
 						onionConsole.getService('onion-device-provider', function (deviceProvider) {
-							onionTerminal.deviceProvider = deviceProvider;
+							self.deviceProvider = deviceProvider;
 							
 							//Get IP Address, NetMask
 							deviceProvider.getIP(function (result) {
 								if (result[0].available === true) {
-									onionTerminal.sourceIP = '//' + result[1].ip + ':4200';
+									self.sourceIP = '//' + result[1].ip + ':4200';
 								};
 							});
 						});
@@ -63,6 +66,7 @@
 			
 			Polymer({
 				is: 'onion-terminal',
+				created: created,
 				ready: ready,
 				behaviors: [Onion.AppBehavior],
 			});

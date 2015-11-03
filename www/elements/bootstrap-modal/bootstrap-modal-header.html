@@ -41,13 +41,20 @@
 		'use strict';
 
 		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var ready = function () {
-				var parent = Polymer.dom(this).parentNode;
-				this.closeButton = parent.closeButton;
+				var parent = Polymer.dom(self).parentNode;
+				self.closeButton = parent.closeButton;
 			};
 
 			Polymer({
 				is: 'bootstrap-modal-header',
+				created: created,
 				ready: ready,
 				properties: {
 					

@@ -6,9 +6,12 @@
 		'use strict';
 
 		(function () {
-            var wifiProvider = null;
-            var wifiScanResult = null;
-            var wifiSetupResult = null;
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
             var apSetupResult = null;
 		    var wpaKeyMinLength = 8;
 			var wepKeyMinLength = 10;
@@ -16,21 +19,22 @@
 			var regEx = new RegExp(/^[0-9A-Fa-f]+$/);
 
             var ready = function () {
-                wifiProvider = this;
                 onionConsole.getService('onion-ubus-provider', function (ubus) {
-                	wifiProvider.ubus = ubus;
+                	self.ubus = ubus;
 				});			
             };
 
             var getConfig = function (type) {
             	var promise = new Promise(function (resolve, reject) {
-            		wifiProvider.ubus.request('onion-console', 'wifi-info', {
+            		self.ubus.request('onion-console', 'wifi-info', {
             			params: {
             				type: type
             			}
             		}, function (data) {
-            			if (data.length === 2 && data[0] === 0) {
-            				resolve(data[1]);
+            			if (data) {
+            				if (data.length === 2 && data[0] === 0) {
+	            				resolve(data[1]);
+	            			}
             			}
             		})
             	});
@@ -38,61 +42,57 @@
             	return promise;
             };
 
-            var wifiScan = function (callback) {
-                var params = {
-                    device: 'wlan0'
-                };
-                wifiScanResult = callback || this.noop;
-                this.ubus.request('onion', 'wifi-scan', params, setWifiScanResult);
+            var wifiScan = function () {
+                var promise = new Promise(function (resolve, reject) {
+                	self.ubus.request('onion', 'wifi-scan', {
+	                    device: 'wlan0'
+	                }, function (data) {
+	                	if (data) {
+            				if (data.length === 2 && data[0] === 0) {
+            					if (data[1] !== null && data[1].results !== null) {
+	            					resolve(data[1]);
+	            				} else {
+	            					reject(Error('No available WiFi AP around.'));
+	            				}
+	            			} else {
+	            				reject(Error('Wi-Fi scan failed!'));
+	            			}
+            			} else {
+            				reject(Error('Wi-Fi scan failed!'));
+            			}
+					});
+                });
+
+	            return promise;
             };
 
-            var setWifiScanResult = function (data) {
-                if (data) {
-                    var returnCode = data[0];
-				    if (returnCode === 0) { 
-				        if (data[1] !== null && data[1].results !== null) {
-				            wifiScanResult({ wifiScan: data[1].results});
-					    } else {
-					        console.log('No available WiFi AP around');
-					        wifiScanResult({ wifiScan: []});
-					    }
-				    } else {
-				        console.log('WiFi scan failed!')
-					    wifiScanResult({ wifiScan: []});
-				    }
-				} else {
-				    console.log('WiFi scan failed!')
-					wifiScanResult({ wifiScan: []});
-				}
-			};
+			var wifiSetup = function (networkSsid, networkPassword, networkAuth) {
+				var promise = new Promise(function (resolve, reject) {
+					self.ubus.request('onion', 'wifi-setup', {
+						params: {
+							ssid: networkSsid,
+							password: networkPassword,
+							auth: networkAuth
+						}
+					}, function (data) {
+		                if (data[0] !== null) {
+						    var returnCode = data[0];
+							if (returnCode === 0) {
+						        console.log('WiFi Setup successfully!');
+							    callback({wifiSetup: true});
+							} else {
+							    console.log('WiFi Setup failed, response: ' + data[0]);
+							    callback({wifiSetup: false});
+							}
+		                } else {
+						    console.log('WiFi Setup failed!');
+							callback({wifiSetup: false});
+						}
+		            });
+				});
 
-			var wifiSetup = function (networkSsid, networkPassword, networkAuth, callback) {
-				var params = {
-					params: {
-						ssid: networkSsid,
-						password: networkPassword,
-						auth: networkAuth
-					}
-				};
-				wifiSetupResult = callback || this.noop;
-				this.ubus.request('onion', 'wifi-setup', params, setWifiSetupResult);
+				return promise;
 			};
-
-			var setWifiSetupResult = function (data) {
-                if (data[0] !== null) {
-				    var returnCode = data[0];
-					if (returnCode === 0) {
-				        console.log('WiFi Setup successfully!');
-					    wifiSetupResult({wifiSetup: true});
-					} else {
-					    console.log('WiFi Setup failed, response: ' + data[0]);
-					    wifiSetupResult({wifiSetup: false});
-					}
-                } else {
-				    console.log('WiFi Setup failed!');
-					wifiSetupResult({wifiSetup: false});
-				}
-            };
 			
 			var apSetup = function (networkSsid, networkPassword, networkAuth, callback) {
 				var params = {
@@ -103,27 +103,27 @@
 						accesspoint: ''
 					}
 				};
-				apSetupResult = callback || this.noop;
-				this.ubus.request('onion', 'wifi-setup', params, setApSetupResult);
-			};
-			
-			var setApSetupResult = function (data) {
-                if (data[0] !== null) {
-				    var returnCode = data[0];
-					if (returnCode === 0 && data[1].connecting === 'true') {
-					    console.log('AP Setup successfully!');
-						apSetupResult({apSetup: true});
-					} else {
-				        console.log('AP Setup failed, response: '+ data[0]);
-					    apSetupResult({apSetup: false});
+
+				callback = callback || self.noop;
+
+				self.ubus.request('onion', 'wifi-setup', params, function (data) {
+	                if (data[0] !== null) {
+					    var returnCode = data[0];
+						if (returnCode === 0 && data[1].connecting === 'true') {
+						    console.log('AP Setup successfully!');
+							callback({apSetup: true});
+						} else {
+					        console.log('AP Setup failed, response: '+ data[0]);
+						    callback({apSetup: false});
+						}
+	                } else {
+					    console.log('AP Setup failed!');
+						callback({apSetup: false});
 					}
-                } else {
-				    console.log('AP Setup failed!');
-					apSetupResult({apSetup: false});
-				}
+				});
 			};
-			
-			var verifyKey = function(key, authType) {
+						
+			var verifyKey = function (key, authType) {
 			    var verfyResult = 'OK';
 				var length = key.length;
 
@@ -131,7 +131,7 @@
 				    if (length < wpaKeyMinLength) {
 						verfyResult = 'WPA/WPA2 key should be at least eight (8) characters long';
 					}
-				} else if (authType ==='wep') {
+				} else if (authType === 'wep') {
 				    if (length !== wepKeyMinLength && length !== wepKeyMaxLength) {
 					    verfyResult = 'WEP key should be ten (10) or twenty-six (26) characters long';
 					} else {
@@ -142,20 +142,18 @@
 				}
 
 			    return verfyResult;
-			}
+			};
 			
 			Polymer({
 				is: 'onion-wifi-provider',
+				created: created,
 				ready: ready,
 				noop: function () {},
 				ready: ready,
 				getConfig: getConfig,
 				wifiScan: wifiScan,
-				setWifiScanResult: setWifiScanResult,
 				wifiSetup: wifiSetup,
-				setWifiSetupResult: setWifiSetupResult,
 				apSetup: apSetup,
-				setApSetupResult: setApSetupResult,
 				verifyKey: verifyKey
 			});
         })();

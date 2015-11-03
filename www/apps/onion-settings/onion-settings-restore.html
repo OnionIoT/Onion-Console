@@ -90,13 +90,18 @@
 		'use strict';
 
 		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var ready = function () {
-				this.model 		= 'Onion Omega';
+				self.model = 'Onion Omega';
 			};
 
 			// use ubus to reset to factory settings
 			var resetFactorySettings = function () {
-				var onionSettingUpdate 	= this;
 				console.log('starting factory reset');
 
 				// get the ubus service
@@ -118,6 +123,7 @@
 
 			Polymer({
 				is: 'onion-settings-restore',
+				created: created,
 				ready: ready,
 				resetFactorySettings: resetFactorySettings,
 				properties: {

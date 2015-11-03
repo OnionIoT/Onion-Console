@@ -74,13 +74,16 @@
 		'use strict';
 
 		(function () {
-			var onionSettings;
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
 
 			var ready = function () {
-				onionSettings = this;
+				self.title = 'Omega Settings';
 
-				this.title = 'Omega Settings';
-				this.subApps = [
+				self.subApps = [
 					{
 						name: 'General Settings',
 						icon: 'icons:settings',
@@ -111,8 +114,8 @@
 
 			var _currentTabChanged = function (e) {
 				setTimeout(function () {
-					if (onionSettings.$[onionSettings.subApps[e.detail.value].page].init) {
-						onionSettings.$[onionSettings.subApps[e.detail.value].page].init();
+					if (self.$[self.subApps[e.detail.value].page].init) {
+						self.$[self.subApps[e.detail.value].page].init();
 					}
 				}, 100);
 			};
@@ -123,6 +126,7 @@
 
 			Polymer({
 				is: 'onion-settings',
+				created: created,
 				ready: ready,
 				currentSetting: currentSetting,
 				_currentTabChanged: _currentTabChanged,

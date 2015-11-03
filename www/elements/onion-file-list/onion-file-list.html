@@ -70,177 +70,181 @@
 		</template>
 	</template>
 
-</dom-module>
+	<script>
+		'use strict';
 
-<script>
-	'use strict';
+		(function () {
+			var self = null;
 
-	var ready = function () {
-		
-	};
+			var created = function () {
+				self = this;
+			};
 
-	var _filesChanged = function () {
-		this._sortOnChanged();
-	};
+			var _filesChanged = function () {
+				self._sortOnChanged();
+			};
 
-	var _sortOnChanged = function () {
-		var sortFields ={
-			dateModified: true,
-			name: true,
-			preview: true,
-			type: true
-		};
-		if (!sortFields.hasOwnProperty(this.sortOn)) {
-			this.sortOn = 'name';
-		}
-		this.files = this.files.sort(this._comparator.bind(this));
-		this._updateFileList();
-	};
-
-	var _updateFileList = function () {
-		this._files = this.files.slice(0);
-		this.filter(this._keyword || "");
-	};
-
-	var reverseSort = function () {
-		this._reversed = !this._reversed;
-		this.files.reverse();
-		this._updateFileList();
-	};
-
-	var filter = function (keyword) {
-		keyword = keyword.trim().toLowerCase() || "";
-		this._keyword = keyword;
-		this._files = this.files.filter(function(item){
-			return !item.name.toLowerCase().indexOf(keyword) || !item.type.toLowerCase().indexOf(keyword);
-		});
-	};
-
-	var open = function(e) {
-		this.fire('open', e.model.__data__.item)
-	};
-
-	var saveRename = function(e) {
-		if (e.keyCode && e.keyCode != 27 && e.keyCode != 13) {
-			return;
-		}
-		var display, edit, row = this._getParentRow(e.target);
-		for (var i = 0; i < row.childElementCount; i++) {
-				if (this._hasClass(row.children[i], 'nameDisplay')) {
-					display = row.children[i];
-					i++;
+			var _sortOnChanged = function () {
+				var sortFields ={
+					dateModified: true,
+					name: true,
+					preview: true,
+					type: true
+				};
+				if (!sortFields.hasOwnProperty(self.sortOn)) {
+					self.sortOn = 'name';
 				}
-				if (this._hasClass(row.children[i], 'nameEdit')) {
-					edit = row.children[i];
-				}
-				if (edit && display) {
-					break;
-				}
-		}
-		display.style.display = '';
-		edit.style.display = '';
-		if (e.keyCode && e.keyCode == 27) {
-			edit.children[0].value = display.textContent;
-			return;
-		}
-		var newName = edit.children[0].value.trim();
-		if (newName && newName != display.textContent.trim()){
-			for(i=0; i < this.files.length; i++) {
-				if(this.files[i].name == display.textContent) {
-					e.model.set('item.name', newName);
-					this.files[i].name = newName;
-					this._updateFileList();
-					break;
-				}
-			}
-			this._sortOnChanged();
-			if (this._reversed) {
-				this.reverseSort();
-			}
-			this.fire("rename", e.model.__data__.item)
-		}
-	};
+				self.files = self.files.sort(self._comparator.bind(self));
+				self._updateFileList();
+			};
 
-	var rename = function(e) {
-		var display, edit, row = this._getParentRow(e.target);
-		for (var i = 0; i < row.childElementCount; i++) {
-				if (this._hasClass(row.children[i], 'nameDisplay')) {
-					display = row.children[i];
-					i++;
+			var _updateFileList = function () {
+				self._files = self.files.slice(0);
+				self.filter(self._keyword || "");
+			};
+
+			var reverseSort = function () {
+				self._reversed = !self._reversed;
+				self.files.reverse();
+				self._updateFileList();
+			};
+
+			var filter = function (keyword) {
+				keyword = keyword.trim().toLowerCase() || "";
+				self._keyword = keyword;
+				self._files = self.files.filter(function(item){
+					return !item.name.toLowerCase().indexOf(keyword) || !item.type.toLowerCase().indexOf(keyword);
+				});
+			};
+
+			var open = function(e) {
+				self.fire('open', e.model.__data__.item)
+			};
+
+			var saveRename = function(e) {
+				if (e.keyCode && e.keyCode != 27 && e.keyCode != 13) {
+					return;
 				}
-				if (this._hasClass(row.children[i], 'nameEdit')) {
-					edit = row.children[i];
+				var display, edit, row = self._getParentRow(e.target);
+				for (var i = 0; i < row.childElementCount; i++) {
+						if (self._hasClass(row.children[i], 'nameDisplay')) {
+							display = row.children[i];
+							i++;
+						}
+						if (self._hasClass(row.children[i], 'nameEdit')) {
+							edit = row.children[i];
+						}
+						if (edit && display) {
+							break;
+						}
 				}
-				if (edit && display) {
-					break;
+				display.style.display = '';
+				edit.style.display = '';
+				if (e.keyCode && e.keyCode == 27) {
+					edit.children[0].value = display.textContent;
+					return;
 				}
-		}
-		display.style.display = 'none';
-		edit.style.display = 'inline';
-		edit.children[0].value = display.textContent;
-		edit.children[0].focus();
-		edit.children[0].select();
-	};
+				var newName = edit.children[0].value.trim();
+				if (newName && newName != display.textContent.trim()) {
+					for (i = 0; i < self.files.length; i++) {
+						if (self.files[i].name == display.textContent) {
+							e.model.set('item.name', newName);
+							self.files[i].name = newName;
+							self._updateFileList();
+							break;
+						}
+					}
+					self._sortOnChanged();
+					if (self._reversed) {
+						self.reverseSort();
+					}
+					self.fire('rename', e.model.__data__.item)
+				}
+			};
 
-	var _hasClass = function (element, className) {
-		return (' ' + element.className + ' ').indexOf(' ' + className + ' ') > -1;
-	};
+			var rename = function (e) {
+				var display, edit, row = self._getParentRow(e.target);
+				for (var i = 0; i < row.childElementCount; i++) {
+						if (self._hasClass(row.children[i], 'nameDisplay')) {
+							display = row.children[i];
+							i++;
+						}
+						if (self._hasClass(row.children[i], 'nameEdit')) {
+							edit = row.children[i];
+						}
+						if (edit && display) {
+							break;
+						}
+				}
+				display.style.display = 'none';
+				edit.style.display = 'inline';
+				edit.children[0].value = display.textContent;
+				edit.children[0].focus();
+				edit.children[0].select();
+			};
 
-	var _getParentRow = function (node) {
-		while(node.parentNode && !this._hasClass(node, 'file-row')){
-			node = node.parentNode;
-		}
-		return node;
-	};
+			var _hasClass = function (element, className) {
+				return (' ' + element.className + ' ').indexOf(' ' + className + ' ') > -1;
+			};
 
-	var _hasElements = function (arr) {
-		return arr.length !== 0;
-	};
+			var _getParentRow = function (node) {
+				while (node.parentNode && !self._hasClass(node, 'file-row')) {
+					node = node.parentNode;
+				}
+				return node;
+			};
 
-	var _comparator = function (a, b) {
-		if (a[this.sortOn].toLowerCase() < b[this.sortOn].toLowerCase()) {
-			return -1;
-		} else if(b[this.sortOn].toLowerCase() < a[this.sortOn].toLowerCase()) {
-			return 1;
-		} else {
-			return 0;
-		}
-	};
+			var _hasElements = function (arr) {
+				return arr.length !== 0;
+			};
 
-	Polymer({
-		is: 'onion-file-list',
-		properties: {
-			files: {
-				type: Array,
-				notify: true,
-				value: function() {
-					return [];
+			var _comparator = function (a, b) {
+				if (a[self.sortOn].toLowerCase() < b[self.sortOn].toLowerCase()) {
+					return -1;
+				} else if(b[self.sortOn].toLowerCase() < a[self.sortOn].toLowerCase()) {
+					return 1;
+				} else {
+					return 0;
+				}
+			};
+
+			Polymer({
+				is: 'onion-file-list',
+				properties: {
+					files: {
+						type: Array,
+						notify: true,
+						value: function() {
+							return [];
+						},
+						observer: '_filesChanged'
+					},
+					sortOn: {
+						type: String,
+						notify: true,
+						value: 'name',
+						observer: '_sortOnChanged'
+					},
+					_reversed: {
+						type: Boolean,
+						value: false
+					}
 				},
-				observer: '_filesChanged'
-			},
-			sortOn: {
-				type: String,
-				notify: true,
-				value: 'name',
-				observer: '_sortOnChanged'
-			},
-			_reversed: {
-				type: Boolean,
-				value: false
-			}
-		},
-		ready: ready,
-		_filesChanged: _filesChanged,
-		_sortOnChanged: _sortOnChanged,
-		_updateFileList: _updateFileList,
-		reverseSort: reverseSort,
-		filter: filter,
-		open: open,
-		saveRename: saveRename,
-		rename: rename,
-		_hasClass: _hasClass,
-		_getParentRow: _getParentRow,
-		_hasElements: _hasElements,
-		_comparator: _comparator 
-	});
-</script>
+				created: created,
+				_filesChanged: _filesChanged,
+				_sortOnChanged: _sortOnChanged,
+				_updateFileList: _updateFileList,
+				reverseSort: reverseSort,
+				filter: filter,
+				open: open,
+				saveRename: saveRename,
+				rename: rename,
+				_hasClass: _hasClass,
+				_getParentRow: _getParentRow,
+				_hasElements: _hasElements,
+				_comparator: _comparator 
+			});
+		})();
+	</script>
+
+</dom-module>

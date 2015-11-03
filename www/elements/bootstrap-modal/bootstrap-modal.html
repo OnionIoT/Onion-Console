@@ -42,23 +42,29 @@
 		'use strict';
 
 		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var _updateClosingReasonConfirmed = function (confirmed) {
-				this.closingReason = this.closingReason || {};
-				this.closingReason.confirmed = confirmed;
+				self.closingReason = self.closingReason || {};
+				self.closingReason.confirmed = confirmed;
 			};
 
 			var _onDialogClick = function (event) {
 				var target = event.target;
 
-				while (target && target !== this) {
+				while (target && target !== self) {
 					if (target.hasAttribute) {
 						if (target.hasAttribute('dialog-dismiss')) {
-							this._updateClosingReasonConfirmed(false);
-							this.close();
+							self._updateClosingReasonConfirmed(false);
+							self.close();
 							break;
 						} else if (target.hasAttribute('dialog-confirm')) {
-							this._updateClosingReasonConfirmed(true);
-							this.close();
+							self._updateClosingReasonConfirmed(true);
+							self.close();
 							break;
 						}
 					}
@@ -68,50 +74,51 @@
 			};
 
 			var _onIronOverlayOpened = function () {
-				if (this.modal) {
-					document.body.addEventListener('focus', this._boundOnFocus, true);
-					this.backdropElement.addEventListener('click', this._boundOnBackdropClick);
+				if (self.modal) {
+					document.body.addEventListener('focus', self._boundOnFocus, true);
+					self.backdropElement.addEventListener('click', self._boundOnBackdropClick);
 				}
 			};
 
 			var _onIronOverlayClosed = function () {
-				document.body.removeEventListener('focus', this._boundOnFocus, true);
-				this.backdropElement.removeEventListener('click', this._boundOnBackdropClick);
+				document.body.removeEventListener('focus', self._boundOnFocus, true);
+				self.backdropElement.removeEventListener('click', self._boundOnBackdropClick);
 			};
 
 			var _onFocus = function (event) {
-				if (this.modal) {
+				if (self.modal) {
 					var target = event.target;
-					while (target && target !== this && target !== document.body) {
+					while (target && target !== self && target !== document.body) {
 						target = target.parentNode;
 					}
 
 					if (target) {
 						if (target === document.body) {
-							if (this._lastFocusedElement) {
-								this._lastFocusedElement.focus();
+							if (self._lastFocusedElement) {
+								self._lastFocusedElement.focus();
 							} else {
-								this._focusNode.focus();
+								self._focusNode.focus();
 							}
 						} else {
-							this._lastFocusedElement = event.target;
+							self._lastFocusedElement = event.target;
 						}
 					}
 				}
 			};
 
 			var _onBackdropClick = function () {
-				if (this.modal) {
-					if (this._lastFocusedElement) {
-						this._lastFocusedElement.focus();
+				if (self.modal) {
+					if (self._lastFocusedElement) {
+						self._lastFocusedElement.focus();
 					} else {
-						this._focusNode.focus();
+						self._focusNode.focus();
 					}
 				}
 			};
 
 			Polymer({
 				is: 'bootstrap-modal',
+				created: created,
 				behaviors: [Polymer.IronOverlayBehavior],
 				hostAttributes: {
 					role: 'dialog',
@@ -132,13 +139,13 @@
 					_boundOnFocus: {
 						type: Function,
 						value: function () {
-							return this._onFocus.bind(this);
+							return self._onFocus.bind(self);
 						}
 					},
 					_boundOnBackdropClick: {
 						type: Function,
 						value: function () {
-							return this._onBackdropClick.bind(this);
+							return self._onBackdropClick.bind(self);
 						}
 					}
 				},

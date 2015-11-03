@@ -43,17 +43,20 @@
 		'use strict';
 
 		(function () {
-			var onionLogin = null;
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
 
 			var ready = function () {
-				onionLogin = this;
 				onionConsole.getService('onion-session-provider', function (session) {
-	            	onionLogin.session = session;
+	            	self.session = session;
 
-	            	onionLogin.session.checkToken(function (hasToken) {
+	            	self.session.checkToken(function (hasToken) {
 	            		if (hasToken) {
 		            		onionConsole.launchApp('onion-launcher');
-		            		onionLogin.quit();
+		            		self.quit();
 		            	}
 	            	});
 	            });
@@ -62,40 +65,40 @@
 			var checkUsernameKey = function (e) {
 				if (e.which === 13) {
 					e.preventDefault();
-					this.$.password.focus();
+					self.$.password.focus();
 				}
 			};
 
 			var start = function () {
 				setTimeout(function () {
-					onionLogin.$.loginDialog.open();
+					self.$.loginDialog.open();
 				}, 1000);
 			};
 
 			var quit = function () {
 				setTimeout(function () {
-					onionLogin.$.loginDialog.close();
+					self.$.loginDialog.close();
 				}, 1000);
 			};
 
 			var login = function (e) {
 				e.preventDefault();
 
-				var username = this.$.username.value;
-				var password = this.$.password.value;
+				var username = self.$.username.value;
+				var password = self.$.password.value;
 
-				this.session.login(username, password, function (result) {
+				self.session.login(username, password, function (result) {
 					if (result.success) {
-						onionLogin.$.username.value = '';
-						onionLogin.$.password.value = '';
+						self.$.username.value = '';
+						self.$.password.value = '';
 						onionConsole.launchApp('onion-launcher', true);
-						onionLogin.quit();
+						self.quit();
 					} else {
 						var alertElement = document.createElement('bootstrap-alert');
 						alertElement.setAttribute('warning', true);
 						Polymer.dom(alertElement).innerHTML = 'Login failed.';
 
-						Polymer.dom(onionLogin.$.messageContainer).appendChild(alertElement);
+						Polymer.dom(self.$.messageContainer).appendChild(alertElement);
 						Polymer.dom.flush();
 					}
 				});
@@ -104,6 +107,7 @@
 			Polymer({
 				is: 'onion-login',
 				behaviors: [Onion.AppBehavior],
+				created: created,
 				ready: ready,
 	            login: login,
 	            attached: start,

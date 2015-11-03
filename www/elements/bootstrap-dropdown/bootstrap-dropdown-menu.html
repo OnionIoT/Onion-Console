@@ -46,10 +46,6 @@
 				return right ? 'dropdown-menu dropdown-menu-right' : 'dropdown-menu dropdown-menu-left';
 			};
 
-			var ready = function () {
-				
-			};
-
 			Polymer({
 				is: 'bootstrap-dropdown-menu',
 				properties: {
@@ -58,7 +54,6 @@
 				        value: false
 					}
 				},
-				ready: ready,
 				_computeMenuClass: _computeMenuClass
 			});
         })();

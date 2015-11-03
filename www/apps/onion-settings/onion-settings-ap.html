@@ -83,56 +83,61 @@
 		'use strict';
 
 		(function () {
-			var onionAPsetup = null;
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
 			
-			var ready = function () {
-				onionAPsetup = this;
-				
+			var ready = function () {				
 				onionConsole.getService('onion-session-provider', function (sessionProvider) {
-                    onionAPsetup.sessionProvider = sessionProvider;
+                    self.sessionProvider = sessionProvider;
                 });
 				
-                if (onionAPsetup.sessionProvider.isAlive() === true) {
+                if (self.sessionProvider.isAlive() === true) {
                     onionConsole.getService('onion-wifi-provider', function (wifiProvider) {
-                        onionAPsetup.wifiProvider = wifiProvider;
+                        self.wifiProvider = wifiProvider;
 					});
                 };
 			};
 
 			var init = function () {
-				var wifiConfigPromise = onionAPsetup.wifiProvider.getConfig('ap');
+				var wifiConfigPromise = self.wifiProvider.getConfig('ap');
 
                 wifiConfigPromise.then(function (result) {
-                	onionAPsetup.set('networkSsid', result.ssid);
-                	onionAPsetup.set('networkAuth', result.encryption);
-                	onionAPsetup.set('networkPassword', result.password);
+                	self.set('networkSsid', result.ssid);
+                	self.set('networkAuth', result.encryption);
+                	self.set('networkPassword', result.password);
                 });
 			};
 
 			var onAppIcon = function (e) {
-				this.onionConsole.launchApp(e.target);
+				self.onionConsole.launchApp(e.target);
 			};
 
 			var setupAP = function () {
-			    onionAPsetup.apMessage = ''; 
-				var verifyResult = onionAPsetup.wifiProvider.verifyKey(onionAPsetup.$.apKey.value, onionAPsetup.$.apEncryption.value);
+			    self.apMessage = ''; 
+
+				var verifyResult = self.wifiProvider.verifyKey(self.$.apKey.value, self.$.apEncryption.value);
+				
 				if (verifyResult === 'OK') {
-			        if (onionAPsetup.sessionProvider.isAlive() === true) {   
-				        onionAPsetup.wifiProvider.apSetup(onionAPsetup.$.apSsid.value, onionAPsetup.$.apKey.value, onionAPsetup.$.apEncryption.value, function (data) {
+			        if (self.sessionProvider.isAlive() === true) {   
+				        self.wifiProvider.apSetup(self.$.apSsid.value, self.$.apKey.value, self.$.apEncryption.value, function (data) {
 						    if (data.apSetup === false) {
-						        onionAPsetup.apMessage = 'AP setup failed!'; 
+						        self.apMessage = 'AP setup failed!'; 
 						    } else {
-						        onionAPsetup.apMessage = 'AP setup successfully!';
+						        self.apMessage = 'AP setup successfully!';
 						    }
 					    });
 				    }
 				} else {
-				    onionAPsetup.apMessage = verifyResult;
+				    self.apMessage = verifyResult;
 				}
 			}
 
 			Polymer({
 				is: 'onion-settings-ap',
+				created: created,
 				ready: ready,
 				init: init,
 				setupAP: setupAP,

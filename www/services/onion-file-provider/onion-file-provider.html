@@ -5,16 +5,20 @@
 		'use strict';
 		
 		(function () {
-			var fileProvider = null;
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var fileListResult = null;
 			var fileContentResult = null;
 			var fileSaveResult = null;
 			var execCommandResult = null;
 
-			var ready = function (){
-				fileProvider = this;
-				onionConsole.getService('onion-ubus-provider', function(ubus){
-					fileProvider.ubus = ubus;
+			var ready = function () {
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					self.ubus = ubus;
 				});			
 			};
 
@@ -22,53 +26,65 @@
 			var params = {
 					path: filepath
 				};
-				fileListResult = callback || this.noop;
-				this.ubus.request('file', 'list', params, setFileList);
+				fileListResult = callback || self.noop;
+				self.ubus.request('file', 'list', params, setFileList);
 			};
 			
-			var getFileContent = function(fullFilename, callback) {
+			var getFileContent = function (fullFilename, callback) {
 			    var params = {
 				    path: fullFilename
 				};
-				fileContentResult = callback || this.noop;
-				this.ubus.request('file', 'read', params, setFileContent);
-			}
+
+				fileContentResult = callback || self.noop;
+				self.ubus.request('file', 'read', params, setFileContent);
+			};
                 
-			var saveFileContent = function(fullFilename, data, callback) {
+			var saveFileContent = function (fullFilename, data, callback) {
 			    var params = {
 				    path: fullFilename,
 					data: data
 				};
-				fileSaveResult = callback || this.noop;
-				this.ubus.request('file', 'write', params, setSaveFileContentResult);
-			}
+
+				fileSaveResult = callback || self.noop;
+				self.ubus.request('file', 'write', params, setSaveFileContentResult);
+			};
 			
-			var execCommand = function(command, parameters, callback) {
+			var execCommand = function (command, parameters, callback) {
 			    var params = {
 				    command: command,
 				    params: parameters
 				};
-				execCommandResult = callback || this.noop;
-				this.ubus.request('file', 'exec', params, setExecCommandResult);
-			}
+				execCommandResult = callback || self.noop;
+				self.ubus.request('file', 'exec', params, setExecCommandResult);
+			};
 			
 			var setFileList = function (result) {
 				var returnCode = result[0];
 				if (returnCode === 0) { 
 				    if (result[1] !== null) {
-                                        var filelist=[{"name":"..","type":"directory","preview":"folder"}];
-                                                for (var i = 0; i < result[1].entries.length; i++) {
-						    var newEntry={"name":"","type":"","preview":"description"};
-							newEntry.name=result[1].entries[i].name;
-							newEntry.type=result[1].entries[i].type;
-							if(result[1].entries[i].type==="directory")
-							{
-							    newEntry.preview="folder";
+                        var filelist = [
+                        	{
+                        		name: '..',
+                        		type: 'directory',
+                        		preview: 'folder'
+                        	}
+                        ];
+                            
+                        for (var i = 0; i < result[1].entries.length; i++) {
+						    var newEntry = {
+						    	name: '',
+						    	type: '',
+						    	preview: 'description'
+						    };
+
+							newEntry.name = result[1].entries[i].name;
+							newEntry.type = result[1].entries[i].type;
+							if (result[1].entries[i].type === 'directory') {
+							    newEntry.preview = 'folder';
+							} else if (result[1].entries[i].type === 'symlink') {
+							    newEntry.preview = 'link';
 							}
-							else if(result[1].entries[i].type==="symlink")
-							{
-							    newEntry.preview="link";
-							}
+
 							filelist.push(newEntry);
 						}
 						//console.log('FileListResult[' + JSON.stringify(result[1]) + ']');
@@ -89,10 +105,9 @@
 				}
 			};
 			
-			var setFileContent = function(result)
-			{
+			var setFileContent = function (result) {
 				var returnCode = result[0];
-				//console.log("setFileContent resultcode["+returnCode+"]");
+				//console.log('setFileContent resultcode[' + returnCode + ']');
 				if (returnCode === 0) { 
 					if (result[1] !== null) {
 					    fileContentResult({
@@ -110,10 +125,9 @@
 					    fileContent: null
 					});
 				}
-			}
+			};
 
-			var setSaveFileContentResult = function(result)
-			{
+			var setSaveFileContentResult = function (result) {
 			    var returnCode = result[0];
 				if (returnCode === 0) { 
 					fileSaveResult({
@@ -125,11 +139,10 @@
 					    saveResult: false
 					});
 				}
-			}
+			};
 			
-			var setExecCommandResult = function(result)
-			{
-				if (result[0] === 0 && result[1].code===0) { 
+			var setExecCommandResult = function (result) {
+				if (result[0] === 0 && result[1].code === 0) { 
 					execCommandResult({
 					    execResult: true
 					});
@@ -139,10 +152,11 @@
 					    execResult: false
 					});
 				}
-			}
+			};
 			
 			Polymer({
 				is: 'onion-file-provider',
+				created: created,
 				ready: ready,
 				noop: function () {},
 				getFileList: getFileList,

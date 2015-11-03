@@ -154,137 +154,130 @@
 		'use strict';
 
 		(function () {
-			var onionSettingsWifi = null;
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
 
 			var attached = function () {
-				onionSettingsWifi = this;
-				onionSettingsWifi.networks 	= [];
-				onionSettingsWifi.networkId	= -1;
+				self.networks 	= [];
+				self.networkId	= -1;
 
-				this.hideScanMessage();
+				self.hideScanMessage();
 				
 				onionConsole.getService('onion-session-provider', function (sessionProvider) {
-                    onionSettingsWifi.sessionProvider = sessionProvider;
+                    self.sessionProvider = sessionProvider;
                 });
 				
-                if (onionSettingsWifi.sessionProvider.isAlive() === true) {
+                if (self.sessionProvider.isAlive() === true) {
                     onionConsole.getService('onion-wifi-provider', function (wifiProvider) {
-                        onionSettingsWifi.wifiProvider = wifiProvider;
+                        self.wifiProvider = wifiProvider;
 					});
                 };
 			};
 
 			var init = function () {
-				this.scanWifiNetwork();
+				self.scanWifiNetwork();
 
-				var wifiConfigPromise = onionSettingsWifi.wifiProvider.getConfig('sta');
+				var wifiConfigPromise = self.wifiProvider.getConfig('sta');
 
                 wifiConfigPromise.then(function (result) {
-                	onionSettingsWifi.set('networkSsid', result.ssid);
-                	onionSettingsWifi.set('networkAuth', result.encryption);
-                	onionSettingsWifi.set('networkPassword', result.password);
+                	self.set('networkSsid', result.ssid);
+                	self.set('networkAuth', result.encryption);
+                	self.set('networkPassword', result.password);
                 });
 			};
 
 			var showScanMessage = function (message) {
-				this.set('wifiScanMsgEn', true);
-				this.wifiScanMsg = message;
+				self.set('wifiScanMsgEn', true);
+				self.wifiScanMsg = message;
 			};
 
 			var hideScanMessage = function () {
-				this.set('wifiScanMsgEn', false);
+				self.set('wifiScanMsgEn', false);
 				console.log('Hide scan message!');
 			};
 
 			var scanWifiNetwork = function () {
-				onionSettingsWifi.showScanMessage('Scanning...');
+				self.showScanMessage('Scanning...');
 
-				// get the ubus service
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
-					// do ubus wifi-scan
-					ubus.request('onion', 'wifi-scan', {
-						device: 'wlan0'
-					}, function (data) {
-						if (data) {
-							var returnCode = data[0];
-							console.log('scan return code: ', returnCode);
+				var wifiScanPromise = self.wifiProvider.wifiScan();
 
-							if (returnCode === 0) {
-								//// successful scan
-								// clear out old networks
-								while (onionSettingsWifi.networks.length > 0) {
-									onionSettingsWifi.pop('networks');
-								}
+				wifiScanPromise.then(function (result) {
+					while (self.networks.length > 0) {
+						self.pop('networks');
+					}
 
-								// add newly detected networks to array
-								onionSettingsWifi.showScanMessage('Select Wi-Fi Network:');
+					// add newly detected networks to array
+					self.showScanMessage('Select Wi-Fi Network:');
 
-								var detectedNetworks = data[1].results;
+					var detectedNetworks = result.results;
 
-								for (let i = 0; i < detectedNetworks.length; i++) {
-									onionSettingsWifi.push('networks', detectedNetworks[i]);
-								}
-							} else {
-								console.log('scan error');
-							}
+					for (let i = 0; i < detectedNetworks.length; i++) {
+						if (detectedNetworks[i].ssid !== '') {
+							self.push('networks', detectedNetworks[i]);
 						}
-					});
+					}
+				}, function (result) {
+					console.error(result);
 				});
 			};
 
 			var selectSsid = function (event) {
-				this.networkId = event.target.value;
+				self.networkId = event.target.value;
 
 				// find the selected network in the list
-				var selectedNetwork = this.networks[this.networkId];
+				var selectedNetwork = self.networks[self.networkId];
 				console.log('Selected network: ');
 				console.log(selectedNetwork);
 
 				// find the ssid
-				this.networkSsid = selectedNetwork.ssid;
+				self.networkSsid = selectedNetwork.ssid;
 
 				// translate the authentication type
 				if (selectedNetwork.encryption === 'none') {
-					this.networkAuth = 'none';
+					self.networkAuth = 'none';
 				} else if (selectedNetwork.encryption.indexOf('WPA2') !== -1) {
-					this.networkAuth = 'psk2';
+					self.networkAuth = 'psk2';
 				} else if (selectedNetwork.encryption.indexOf('WPA') !== -1) {
-					this.networkAuth = 'psk';
+					self.networkAuth = 'psk';
 				} else if (selectedNetwork.encryption.indexOf('WEP') !== -1) {
-					this.networkAuth = 'wep';
+					self.networkAuth = 'wep';
 				}
 
-				console.log('Auth: ', this.networkAuth);
+				console.log('Auth: ', self.networkAuth);
 			};
 		
 		    var setupWifi = function () {
-		    	onionSettingsWifi.$.configureLoading.hidden = false;
+		    	self.$.configureLoading.hidden = false;
 		    	setTimeout(function () {
-		    		onionSettingsWifi.$.configureLoading.hidden = true;
+		    		self.$.configureLoading.hidden = true;
 		    	}, 10000);
 
-			    onionSettingsWifi.wifiMessage = '';
+			    self.wifiMessage = '';
 
-			    var verifyResult = onionSettingsWifi.wifiProvider.verifyKey(onionSettingsWifi.networkPassword, onionSettingsWifi.networkAuth);
+			    var verifyResult = self.wifiProvider.verifyKey(self.networkPassword, self.networkAuth);
 
 				if (verifyResult === 'OK') {
-                    if (onionSettingsWifi.sessionProvider.isAlive() === true) {   
-				        onionSettingsWifi.wifiProvider.wifiSetup(onionSettingsWifi.networkSsid, onionSettingsWifi.networkPassword, onionSettingsWifi.networkAuth, function (data) {
+                    if (self.sessionProvider.isAlive() === true) {   
+				        self.wifiProvider.wifiSetup(self.networkSsid, self.networkPassword, self.networkAuth, function (data) {
 
 					        if (data.wifiSetup === false) {
-						        onionSettingsWifi.wifiMessage = 'WiFi setup failed!';
+						        self.wifiMessage = 'WiFi setup failed!';
 						    } else {
-						        onionSettingsWifi.wifiMessage = 'WiFi setup successfully!';
+						        self.wifiMessage = 'WiFi setup successfully!';
 						    }
 					    });
 				    }
 				} else {
-				    onionSettingsWifi.wifiMessage = verifyResult;
+				    self.wifiMessage = verifyResult;
 				}
 			};
 
 			Polymer({
 				is: 'onion-settings-wifi',
+				created: created,
 				attached: attached,
 				init: init,
 				showScanMessage: showScanMessage,
@@ -308,12 +301,7 @@
 					networkPassword: {
 						type: String,
 						notify: true
-					},
-					test: {
-						type: String,
-						notify: true,
-						value: "test"
-					},
+					}
 				}
 			});
 		})();

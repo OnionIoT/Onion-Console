@@ -174,49 +174,53 @@
 		'use strict';
 
 		(function () {
-			var onionStatus = null;
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var refreshRxTxInterval = null;
 			var refreshStatusInterval = null;
 			var locked = false;
 
 			var ready = function() {
-				this.title = 'Device Status';
-	            onionStatus = this;
+				self.title = 'Device Status';
 				
 				onionConsole.getService('onion-session-provider', function (sessionProvider) {
-					onionStatus.sessionProvider = sessionProvider;
+					self.sessionProvider = sessionProvider;
 				});
 				
-				if (onionStatus.sessionProvider.isAlive() === true) {
+				if (self.sessionProvider.isAlive() === true) {
 					onionConsole.getService('onion-device-provider', function (deviceProvider) {
 						setInterval(function () {
 							deviceProvider.getSystem(function (result) {
 								console.log(result);
-								onionStatus.uptime = new Date(result[1].uptime * 1000).toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, '$1');
-								onionStatus.memory = (result[1].memory.total - result[1].memory.free) + ' / ' + result[1].memory.total;
-								onionStatus.load = result[1].load[0] + ' ' + result[1].load[1] + ' ' + result[1].load[2];
+								self.uptime = new Date(result[1].uptime * 1000).toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, '$1');
+								self.memory = (result[1].memory.total - result[1].memory.free) + ' / ' + result[1].memory.total;
+								self.load = result[1].load[0] + ' ' + result[1].load[1] + ' ' + result[1].load[2];
 							});
 						}, 1000);
 
-						onionStatus.deviceProvider = deviceProvider;
+						self.deviceProvider = deviceProvider;
 
 						//Get MAC Address
 						deviceProvider.getMAC(function (result) {
-						    onionStatus.mac = result.mac;
+						    self.mac = result.mac;
 						});
 
 						//Get IP Address, NetMask
 						deviceProvider.getIP(function (result) {
 							if (result[0].available === true) {
-								onionStatus.$.online.style.display = 'block';
-								onionStatus.$.offline.style.display = 'none';
+								self.$.online.style.display = 'block';
+								self.$.offline.style.display = 'none';
 							} else {
-								onionStatus.$.online.style.display = 'none';
-								onionStatus.$.offline.style.display = 'block';
+								self.$.online.style.display = 'none';
+								self.$.offline.style.display = 'block';
 							}
 
-							onionStatus.ip = result[1].ip;
-							onionStatus.netmask = result[2].netmask;
+							self.ip = result[1].ip;
+							self.netmask = result[2].netmask;
 						});
 
 						//Get received and transmitted bytes
@@ -228,7 +232,7 @@
 
 			var attached = function () {
 				var setCardsContainerWidth = function () {
-					onionStatus.$.cardsContainer.style.width = Math.floor(window.innerWidth / 310) * 310 + 'px';
+					self.$.cardsContainer.style.width = Math.floor(window.innerWidth / 310) * 310 + 'px';
 				};
 
 				window.addEventListener('resize', setCardsContainerWidth, true);
@@ -242,17 +246,17 @@
 			};
 			
 			var stopRefreshRxTx = function () { 
-			    clearInterval(onionStatus.refreshRxTxInterval);
-				delete onionStatus.refreshRxTxInterval;
+			    clearInterval(self.refreshRxTxInterval);
+				delete self.refreshRxTxInterval;
 			};
 			
 			var updateRxTx = function () {
-			    if (onionStatus.sessionProvider.isAlive() === true) {
-					onionStatus.deviceProvider.getRxTx(function (result) {
+			    if (self.sessionProvider.isAlive() === true) {
+					self.deviceProvider.getRxTx(function (result) {
 						//console.log('rxResult[' + result[0].received + ']');
 						//console.log('txResult[' + result[1].transmitted + ']'); 
-						onionStatus.received = result[0].received;
-						onionStatus.transmitted = result[1].transmitted;							
+						self.received = result[0].received;
+						self.transmitted = result[1].transmitted;							
 					});
 				} else {
 				    stopRefreshRxTx();
@@ -269,19 +273,20 @@
 			var updateStatus = function () {
 			  	ipProvider.getIP(function (result) {
 					if(result[0].available === true) {
-					    onionStatus.$.online.style.visibility = 'visible';
-						onionStatus.$.offline.style.visibility = 'hidden';
+					    self.$.online.style.visibility = 'visible';
+						self.$.offline.style.visibility = 'hidden';
 					} else {
-					    onionStatus.$.online.style.visibility = 'hidden';
-					    onionStatus.$.offline.style.visibility = 'visible';
+					    self.$.online.style.visibility = 'hidden';
+					    self.$.offline.style.visibility = 'visible';
 				    }
-					onionStatus.ip = result[1].ip;
+					self.ip = result[1].ip;
 				});
 			};
 			*/
 
 			Polymer({
 				is: 'onion-status',
+				created: created,
 				ready: ready,
 				attached: attached,
 				behaviors: [Onion.AppBehavior],

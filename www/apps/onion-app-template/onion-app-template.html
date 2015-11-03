@@ -46,16 +46,23 @@
 		'use strict';
 
 		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var onAppIcon = function (e) {
-				this.onionConsole.launchApp(e.target);
+				self.onionConsole.launchApp(e.target);
 			};
 
 			var openModal = function () {
-				this.$.test.open();
+				self.$.test.open();
 			};
 
 			Polymer({
 				is: 'onion-app-template',
+				created: created,
 				ready: function () {},
 				behaviors: [Onion.AppBehavior],
 				openModal: openModal,

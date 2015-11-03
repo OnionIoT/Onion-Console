@@ -6,21 +6,25 @@ import shared service
         'use strict';
 
         (function () {
-            var appProvider = null,
-                apps = [];
+            var self = null;
+
+            var created = function () {
+                self = this;
+            };
+
+            var apps = [];
 
             var ready = function () {
-                appProvider = this;
-                this.reload();
+                self.reload();
             };
 
             var reload = function () {
                 onionConsole.getService('onion-ubus-provider', function (ubus) {
                     ubus.request('onion-console', 'app-list', {}, function (result) {
                         if (result.length === 2 && result[1].exists) {
-                            appProvider.apps = [];                     
+                            self.apps = [];                     
                             for (let i = 0; i < result[1].apps.length; i++) {
-                                appProvider.apps.push(result[1].apps[i]);
+                                self.apps.push(result[1].apps[i]);
                             }
                         }
                     });
@@ -29,6 +33,7 @@ import shared service
 
             Polymer({
                 is: 'onion-apps-provider',
+                created: created,
                 apps: apps,
                 ready: ready,
                 reload: reload

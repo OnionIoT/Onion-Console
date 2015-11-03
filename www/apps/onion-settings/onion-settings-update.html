@@ -117,21 +117,25 @@
 		'use strict';
 
 		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var ready = function () {
-				this.model 		= 'Onion Omega';
-				this.modelRev 	= 'R1';
-				this.dataReady	= 0;
+				self.model 		= 'Onion Omega';
+				self.modelRev 	= 'R1';
+				self.dataReady	= 0;
 			};
 
 			var init = function () {
-				this.getFirmwareInfo();
-				this.checkFirmwareInfo();
+				self.getFirmwareInfo();
+				self.checkFirmwareInfo();
 			};
 
 			// use ubus to get the firmware info data
 			var getFirmwareInfo = function () {
-				var onionSettingUpdate 	= this;
-
 				// get the ubus service
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
 					var params = {
@@ -147,11 +151,11 @@
 							console.log('oupgrade check return code: ', returnCode);
 
 							if (returnCode === 0) {
-								onionSettingUpdate.data = data[1];
-								console.log(onionSettingUpdate.data);	// get rid of this when app is done
+								self.data = data[1];
+								console.log(self.data);	// get rid of this when app is done
 
 								// denote that data has be received
-								onionSettingUpdate.dataReady = 1;
+								self.dataReady = 1;
 							}
 							else {
 								console.log('oupgrade check error');
@@ -163,47 +167,45 @@
 
 			// make sense of the firmware info data
 			var checkFirmwareInfo = function () {
-				var onionSettingUpdate 	= this;
-
 				var checkDataReadyInterval = setInterval(function () {
-					if (onionSettingUpdate.dataReady === 1) {
+					if (self.dataReady === 1) {
 						// stop the loop after this code
 						clearInterval(checkDataReadyInterval);
 
 
 						// current omega firmware:
-						//	onionSettingUpdate.data.device.version
-						//	onionSettingUpdate.data.device.major
-						//	onionSettingUpdate.data.device.minor
-						//	onionSettingUpdate.data.device.revision
-						//	onionSettingUpdate.data.device.build
+						//	self.data.device.version
+						//	self.data.device.major
+						//	self.data.device.minor
+						//	self.data.device.revision
+						//	self.data.device.build
 
-						onionSettingUpdate.data.device.string 	= onionSettingUpdate.data.device.version + " (b" + onionSettingUpdate.data.device.build + ")";
-						onionSettingUpdate.currentVersion 		= onionSettingUpdate.data.device.string;
+						self.data.device.string 	= self.data.device.version + ' (b' + self.data.device.build + ')';
+						self.currentVersion 		= self.data.device.string;
 						
 
 						// latest omega firmware:
-						//	onionSettingUpdate.data.repo.version
-						//	onionSettingUpdate.data.repo.major
-						//	onionSettingUpdate.data.repo.minor
-						//	onionSettingUpdate.data.repo.revision
-						//	onionSettingUpdate.data.repo.build
+						//	self.data.repo.version
+						//	self.data.repo.major
+						//	self.data.repo.minor
+						//	self.data.repo.revision
+						//	self.data.repo.build
 
-						onionSettingUpdate.data.repo.string 	= onionSettingUpdate.data.repo.version + " (b" + onionSettingUpdate.data.repo.build + ")";
-						onionSettingUpdate.latestVersion 		= onionSettingUpdate.data.repo.string;
+						self.data.repo.string 	= self.data.repo.version + ' (b' + self.data.repo.build + ')';
+						self.latestVersion 		= self.data.repo.string;
 
 
 						// info on binary file:
-						//	binary name: 	onionSettingUpdate.data.image.binary
-						//	path on Omega: 	onionSettingUpdate.data.image.local
-						//	URL (not needed): 	onionSettingUpdate.data.image.url;
+						//	binary name: 	self.data.image.binary
+						//	path on Omega: 	self.data.image.local
+						//	URL (not needed): 	self.data.image.url;
 
 
 						// info on upgrade:
-						//	onionSettingUpdate.data.upgrade
+						//	self.data.upgrade
 						//		true: 	upgrade required, version numbers do not match
 						// 		false: 	upgrade not required, version numbers match
-						// 	onionSettingUpdate.data.build_mismatch
+						// 	self.data.build_mismatch
 						//		true: 	upgrade possible, version numbers match but build numbers do not
 						// 		false: 	upgrade not required, version numbers AND build numbers match
 						// upgrade table
@@ -218,16 +220,15 @@
 
 			// use ubus to initiate the firmware upgrade
 			var upgradeFirmware = function () {
-				var onionSettingUpdate 	= this;
 				console.log('calling oupgrade ubus service...');
 
-				onionSettingUpdate.$.upgradeLoading.hidden = false;
+				self.$.upgradeLoading.hidden = false;
 
 				var alertElement = document.createElement('bootstrap-alert');
 				alertElement.setAttribute('warning', true);
 				Polymer.dom(alertElement).innerHTML = '<p>Firmware upgrade has started! Please be patient, this might take a little while. When the Omega has rebooted, the firmware upgrade will be complete.</p><p>Do NOT unplug the Omega during this process.</p>';
 
-				Polymer.dom(onionSettingUpdate.$.upgradeAlerts).appendChild(alertElement);
+				Polymer.dom(self.$.upgradeAlerts).appendChild(alertElement);
 				Polymer.dom.flush();
 
 				// get the ubus service
@@ -257,6 +258,7 @@
 
 			Polymer({
 				is: 'onion-settings-update',
+				created: created,
 				ready: ready,
 				init: init,
 				getFirmwareInfo: getFirmwareInfo,
