@@ -10,11 +10,13 @@
 			var fileContentResult = null;
 			var fileSaveResult = null;
 			var execCommandResult = null;
+			var backsplash = null;
 
 			var ready = function (){
+				backsplash = '/';
 				fileProvider = this;
 				onionConsole.getService('onion-ubus-provider', function(ubus){
-					fileProvider.ubus = ubus;
+					fileProvider.ubus=ubus;
 				});			
 			};
 
@@ -32,7 +34,7 @@
 				};
 				fileContentResult = callback || this.noop;
 				this.ubus.request('file', 'read', params, setFileContent);
-			}
+			};
                 
 			var saveFileContent = function(fullFilename, data, callback) {
 			    var params = {
@@ -41,7 +43,7 @@
 				};
 				fileSaveResult = callback || this.noop;
 				this.ubus.request('file', 'write', params, setSaveFileContentResult);
-			}
+			};
 			
 			var execCommand = function(command, parameters, callback) {
 			    var params = {
@@ -50,7 +52,7 @@
 				};
 				execCommandResult = callback || this.noop;
 				this.ubus.request('file', 'exec', params, setExecCommandResult);
-			}
+			};
 			
 			var setFileList = function (result) {
 				var returnCode = result[0];
@@ -110,7 +112,7 @@
 					    fileContent: null
 					});
 				}
-			}
+			};
 
 			var setSaveFileContentResult = function(result)
 			{
@@ -125,7 +127,7 @@
 					    saveResult: false
 					});
 				}
-			}
+			};
 			
 			var setExecCommandResult = function(result)
 			{
@@ -139,7 +141,23 @@
 					    execResult: false
 					});
 				}
-			}
+			};
+			
+			var getFolderPath = function(folderAndFilename)
+			{   
+			    var folderPath='';
+			    if(folderAndFilename.lastIndexOf(backsplash)===0) {
+				    folderPath='';
+				} else {
+				    folderPath=folderAndFilename.substring(0,folderAndFilename.lastIndexOf(backsplash));
+				}
+				return folderPath;
+			};
+			
+			var getFilename = function(folderAndFilename)
+			{
+			    return folderAndFilename.substring(folderAndFilename.lastIndexOf(backsplash)+1,folderAndFilename.length);
+			};
 			
 			Polymer({
 				is: 'onion-file-provider',
@@ -148,6 +166,8 @@
 				getFileList: getFileList,
 				getFileContent: getFileContent,
 				saveFileContent: saveFileContent,
+				getFolderPath: getFolderPath,
+				getFilename: getFilename,
 				execCommand: execCommand,
 			    setFileList: setFileList,
 				setFileContent: setFileContent,
