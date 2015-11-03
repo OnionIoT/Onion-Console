@@ -15,8 +15,10 @@
 			var fileContentResult = null;
 			var fileSaveResult = null;
 			var execCommandResult = null;
+			var backsplash = null;
 
 			var ready = function () {
+				backsplash = '/';
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
 					self.ubus = ubus;
 				});			
@@ -54,6 +56,7 @@
 				    command: command,
 				    params: parameters
 				};
+
 				execCommandResult = callback || self.noop;
 				self.ubus.request('file', 'exec', params, setExecCommandResult);
 			};
@@ -154,6 +157,22 @@
 				}
 			};
 			
+			var getFolderPath = function (folderAndFilename) {   
+			    var folderPath = '';
+
+			    if (folderAndFilename.lastIndexOf(backsplash) === 0) {
+				    folderPath = '';
+				} else {
+				    folderPath = folderAndFilename.substring(0, folderAndFilename.lastIndexOf(backsplash));
+				}
+
+				return folderPath;
+			};
+			
+			var getFilename = function (folderAndFilename) {
+			    return folderAndFilename.substring(folderAndFilename.lastIndexOf(backsplash) + 1, folderAndFilename.length);
+			};
+			
 			Polymer({
 				is: 'onion-file-provider',
 				created: created,
@@ -162,6 +181,8 @@
 				getFileList: getFileList,
 				getFileContent: getFileContent,
 				saveFileContent: saveFileContent,
+				getFolderPath: getFolderPath,
+				getFilename: getFilename,
 				execCommand: execCommand,
 			    setFileList: setFileList,
 				setFileContent: setFileContent,
