@@ -39,14 +39,14 @@
 						<!-- ssid -->
 						<label for="ap-ssid" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">AP Network (SSID)</label>
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<input type="text" class="form-control" id="apSsid" autocomplete="off" value=""/>
+							<input type="text" class="form-control" id="apSsid" autocomplete="off" value="{{networkSsid::input}}" />
 						</div>
 					</div>
 					<div class="form-group row">
 						<!-- encryption select -->
 						<label for="ap-encryption" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Security</label>
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<select class="form-control c-select" id="apEncryption" autocomplete="off" value="None">
+							<select class="form-control c-select" id="apEncryption" autocomplete="off" value="{{networkAuth::input}}">
 								<option value="none" selected>None</option>
 								<option value="wep">WEP</option>
 								<option value="psk">WPA</option>
@@ -58,7 +58,7 @@
 						<!-- password -->
 						<label for="ap-key" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">AP Password</label>
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<input type="password" class="form-control" id="apKey" autocomplete="off" value=""/>
+							<input type="password" class="form-control" id="apKey" autocomplete="off" value="{{networkPassword::input}}" />
 						</div>
 					</div>
 
@@ -88,16 +88,25 @@
 			var ready = function () {
 				onionAPsetup = this;
 				
-				onionConsole.getService("onion-session-provider", function (sessionProvider) {
+				onionConsole.getService('onion-session-provider', function (sessionProvider) {
                     onionAPsetup.sessionProvider = sessionProvider;
                 });
 				
-                if(onionAPsetup.sessionProvider.isAlive()===true)
-				{
-                    onionConsole.getService("onion-wifi-provider", function (wifiProvider) {
-                        onionAPsetup.wifiProvider=wifiProvider;
+                if (onionAPsetup.sessionProvider.isAlive() === true) {
+                    onionConsole.getService('onion-wifi-provider', function (wifiProvider) {
+                        onionAPsetup.wifiProvider = wifiProvider;
 					});
                 };
+			};
+
+			var init = function () {
+				var wifiConfigPromise = onionAPsetup.wifiProvider.getConfig('ap');
+
+                wifiConfigPromise.then(function (result) {
+                	onionAPsetup.set('networkSsid', result.ssid);
+                	onionAPsetup.set('networkAuth', result.encryption);
+                	onionAPsetup.set('networkPassword', result.password);
+                });
 			};
 
 			var onAppIcon = function (e) {
@@ -105,27 +114,27 @@
 			};
 
 			var setupAP = function () {
-			    onionAPsetup.apMessage=""; 
-				var verifyResult=onionAPsetup.wifiProvider.verifyKey(onionAPsetup.$.apKey.value, onionAPsetup.$.apEncryption.value);
-				if(verifyResult=="OK") {
-			        if(onionAPsetup.sessionProvider.isAlive()===true)
-                    {   
+			    onionAPsetup.apMessage = ''; 
+				var verifyResult = onionAPsetup.wifiProvider.verifyKey(onionAPsetup.$.apKey.value, onionAPsetup.$.apEncryption.value);
+				if (verifyResult === 'OK') {
+			        if (onionAPsetup.sessionProvider.isAlive() === true) {   
 				        onionAPsetup.wifiProvider.apSetup(onionAPsetup.$.apSsid.value, onionAPsetup.$.apKey.value, onionAPsetup.$.apEncryption.value, function (data) {
-						    if(data.apSetup===false) {
-						        onionAPsetup.apMessage="AP setup failed!"; 
+						    if (data.apSetup === false) {
+						        onionAPsetup.apMessage = 'AP setup failed!'; 
 						    } else {
-						        onionAPsetup.apMessage="AP setup successfully!";
+						        onionAPsetup.apMessage = 'AP setup successfully!';
 						    }
 					    });
 				    }
 				} else {
-				    onionAPsetup.apMessage=verifyResult;
+				    onionAPsetup.apMessage = verifyResult;
 				}
 			}
 
 			Polymer({
 				is: 'onion-settings-ap',
 				ready: ready,
+				init: init,
 				setupAP: setupAP,
 				properties: {
 					networkSsid: {

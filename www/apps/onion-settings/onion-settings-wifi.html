@@ -156,52 +156,34 @@
 		(function () {
 			var onionSettingsWifi = null;
 
-			var ready = function () {
+			var attached = function () {
 				onionSettingsWifi = this;
 				onionSettingsWifi.networks 	= [];
 				onionSettingsWifi.networkId	= -1;
 
 				this.hideScanMessage();
-
-				//this.scanWifiNetwork();
 				
-				onionConsole.getService("onion-session-provider", function (sessionProvider) {
+				onionConsole.getService('onion-session-provider', function (sessionProvider) {
                     onionSettingsWifi.sessionProvider = sessionProvider;
                 });
 				
-                if(onionSettingsWifi.sessionProvider.isAlive()===true)
-				{
-                    onionConsole.getService("onion-wifi-provider", function (wifiProvider) {
-                        onionSettingsWifi.wifiProvider=wifiProvider;
+                if (onionSettingsWifi.sessionProvider.isAlive() === true) {
+                    onionConsole.getService('onion-wifi-provider', function (wifiProvider) {
+                        onionSettingsWifi.wifiProvider = wifiProvider;
 					});
                 };
 			};
 
 			var init = function () {
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
-					ubus.request('network.interface', 'dump', {
-						// config: 'system',
-						// section: '@wifi-iface[0]',
-						// option: '*'
-					}, function (result) {
-						console.log(result);
-						if (result[0] === 0) {
-							// hostnameCopy = result[1].value;
-							// onionSettingsGeneral.hostname = result[1].value;
-						}
-					});
+				this.scanWifiNetwork();
 
-					// ubus.request('uci', 'get', {
-					// 	config: 'system',
-					// 	section: '@system[0]',
-					// 	option: 'timezone'
-					// }, function (result) {
-					// 	if (result[0] === 0) {
-					// 		timezoneCopy = result[1].value;
-					// 		onionSettingsGeneral.timezone = result[1].value;
-					// 	}
-					// });
-	            });
+				var wifiConfigPromise = onionSettingsWifi.wifiProvider.getConfig('sta');
+
+                wifiConfigPromise.then(function (result) {
+                	onionSettingsWifi.set('networkSsid', result.ssid);
+                	onionSettingsWifi.set('networkAuth', result.encryption);
+                	onionSettingsWifi.set('networkPassword', result.password);
+                });
 			};
 
 			var showScanMessage = function (message) {
@@ -215,7 +197,7 @@
 			};
 
 			var scanWifiNetwork = function () {
-				onionSettingsWifi.showScanMessage("Scanning...");
+				onionSettingsWifi.showScanMessage('Scanning...');
 
 				// get the ubus service
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
@@ -242,9 +224,6 @@
 								for (let i = 0; i < detectedNetworks.length; i++) {
 									onionSettingsWifi.push('networks', detectedNetworks[i]);
 								}
-
-								console.log('wifi-scan data:');
-								console.log(onionSettingsWifi.networks);
 							} else {
 								console.log('scan error');
 							}
@@ -266,14 +245,15 @@
 
 				// translate the authentication type
 				if (selectedNetwork.encryption === 'none') {
-					this.networkAuth = "none";
+					this.networkAuth = 'none';
 				} else if (selectedNetwork.encryption.indexOf('WPA2') !== -1) {
-					this.networkAuth = "psk2";
+					this.networkAuth = 'psk2';
 				} else if (selectedNetwork.encryption.indexOf('WPA') !== -1) {
-					this.networkAuth = "psk";
+					this.networkAuth = 'psk';
 				} else if (selectedNetwork.encryption.indexOf('WEP') !== -1) {
-					this.networkAuth = "wep";
+					this.networkAuth = 'wep';
 				}
+
 				console.log('Auth: ', this.networkAuth);
 			};
 		
@@ -305,7 +285,7 @@
 
 			Polymer({
 				is: 'onion-settings-wifi',
-				ready: ready,
+				attached: attached,
 				init: init,
 				showScanMessage: showScanMessage,
 				hideScanMessage: hideScanMessage,

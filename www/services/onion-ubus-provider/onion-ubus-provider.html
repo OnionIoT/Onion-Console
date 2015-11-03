@@ -34,7 +34,7 @@
 				var response = request.detail.response;
 
                 if (response !== null) {
- 				    if ('error' in response){
+ 				    if ('error' in response) {
 					    openRequests[response.id]({error: response.error});
 					    console.log(response.error);
 
@@ -47,6 +47,7 @@
 				    } else {
 					    openRequests[response.id](response.result);
 				    }
+				    
 				    delete openRequests[response.id];
 				} else {
 				    this.isAlive = false;

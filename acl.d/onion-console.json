@@ -16,7 +16,8 @@
                                         "wifi-setup"
                                 ],
                                 "onion-console": [
-                                        "app-list"
+                                        "app-list",
+										"wifi-info"
                                 ],
                                 "system": [
                                         "info",
