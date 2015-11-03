@@ -2,7 +2,7 @@
 
 # include the Onion sh lib
 . /usr/lib/onion/lib.sh
-bLogEnabled=1
+
 # include wifisetup lib
 . /usr/bin/wifisetup -noop
 
@@ -154,12 +154,15 @@ GetWifiInfo () {
 		intfAp=-1
 		intfSta=-1
 		intfId=-1
+		intfType=""
 		CheckCurrentUciWifi
 
 		if [ "$networkType" == "ap" ]; then
 			intfId=$intfAp
+			intfType="wlan"
 		elif [ "$networkType" == "sta" ]; then
 			intfId=$intfSta
+			intfType="wwan"
 		fi
 
 		# fetch all of the wifi network data for that id
@@ -170,6 +173,7 @@ GetWifiInfo () {
 			json_add_string "ssid" $(uci -q get wireless.\@wifi-iface[$intfId].ssid)
 			json_add_string "encryption" $(uci -q get wireless.\@wifi-iface[$intfId].encryption)
 			json_add_string "password" $(uci -q get wireless.\@wifi-iface[$intfId].key)
+			json_add_string "ip" $(uci -q get network.$intfType.ipaddr)
 
 			json_dump
 		fi
