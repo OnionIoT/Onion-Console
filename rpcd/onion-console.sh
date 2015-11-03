@@ -238,3 +238,6 @@ case "$1" in
 		esac
     ;;
 esac
+
+# take care of the log file
+#CloseLog
