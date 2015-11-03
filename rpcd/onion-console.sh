@@ -174,6 +174,7 @@ GetWifiInfo () {
 			json_add_string "encryption" $(uci -q get wireless.\@wifi-iface[$intfId].encryption)
 			json_add_string "password" $(uci -q get wireless.\@wifi-iface[$intfId].key)
 			json_add_string "ip" $(uci -q get network.$intfType.ipaddr)
+			json_add_string "netmask" $(uci -q get network.$intfType.netmask)
 
 			json_dump
 		fi
