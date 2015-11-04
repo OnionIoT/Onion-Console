@@ -24,7 +24,7 @@ ShutDownSequence () {
 	sleep 1
 
 	# turn off the Omega's LED
-	#implement this!
+	fast-gpio set 27 1 >& /dev/null
 
 	# perform the shutdown
 	poweroff -d 5
