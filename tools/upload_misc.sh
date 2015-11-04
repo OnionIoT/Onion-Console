@@ -19,3 +19,6 @@ echo "Omega IP: $ipAddr"
 rsync --progress -rv ./acl.d/* root@$ipAddr:/usr/share/rpcd/acl.d
 rsync --progress -rv ./rpcd/onion-console.sh root@$ipAddr:/usr/libexec/rpcd/onion-console
 rsync --progress -rv ./bin/factory-reset.sh root@$ipAddr:/usr/sbin/factory-reset
+rsync --progress -rv ./bin/power-down.sh root@$ipAddr:/usr/sbin/power-down
+rsync --progress -rv ./bin/change-password.sh root@$ipAddr:/usr/sbin/change-password
+
