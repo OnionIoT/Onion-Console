@@ -49,7 +49,7 @@
 	                }, function (data) {
 	                	if (data) {
             				if (data.length === 2 && data[0] === 0) {
-            					if (data[1] !== null && data[1].results !== null) {
+            					if (data[1] && data[1].results !== null) {
 	            					resolve(data[1]);
 	            				} else {
 	            					reject(Error('No available WiFi AP around.'));
@@ -66,27 +66,25 @@
 	            return promise;
             };
 
-			var wifiSetup = function (networkSsid, networkPassword, networkAuth) {
+			var wifiSetup = function (enableWifi, networkSsid, networkPassword, networkAuth) {
+				var params = enableWifi ? {
+					params: {
+						ssid: networkSsid,
+						password: networkPassword,
+						auth: networkAuth
+					}
+				} : {
+					params: {
+						killsta: ''
+					}
+				};
+				
 				var promise = new Promise(function (resolve, reject) {
-					self.ubus.request('onion', 'wifi-setup', {
-						params: {
-							ssid: networkSsid,
-							password: networkPassword,
-							auth: networkAuth
-						}
-					}, function (data) {
-		                if (data[0] !== null) {
-						    var returnCode = data[0];
-							if (returnCode === 0) {
-						        console.log('WiFi Setup successfully!');
-							    callback({wifiSetup: true});
-							} else {
-							    console.log('WiFi Setup failed, response: ' + data[0]);
-							    callback({wifiSetup: false});
-							}
-		                } else {
-						    console.log('WiFi Setup failed!');
-							callback({wifiSetup: false});
+					self.ubus.request('onion', 'wifi-setup', params, function (data) {
+						if (data.length === 2 && data[0] === 0) {
+							resolve();
+						} else {
+							reject(Error('Unable to connect to Wi-Fi.'));
 						}
 		            });
 				});
@@ -94,33 +92,36 @@
 				return promise;
 			};
 			
-			var apSetup = function (networkSsid, networkPassword, networkAuth, callback) {
-				var params = {
+			var apSetup = function (enabledAP, apSsid, apPassword, apAuth, apIp) {
+				var params = enabledAP ? {
 					params: {
-						ssid: networkSsid,
-						password: networkPassword,
-						auth: networkAuth,
+						ssid: apSsid,
+						password: apPassword,
+						auth: apAuth,
+						ip: apIp,
 						accesspoint: ''
+					}
+				} : {
+					params: {
+						killap: ''
 					}
 				};
 
-				callback = callback || self.noop;
-
-				self.ubus.request('onion', 'wifi-setup', params, function (data) {
-	                if (data[0] !== null) {
-					    var returnCode = data[0];
-						if (returnCode === 0 && data[1].connecting === 'true') {
-						    console.log('AP Setup successfully!');
-							callback({apSetup: true});
+				var promise = new Promise(function (resolve, reject) {
+					self.ubus.request('onion', 'wifi-setup', params, function (data) {
+						if (data) {
+							if (data.length === 2 && data[0] === 0) {
+								resolve();
+							} else {
+								reject(Error('Unable to setup Access Point.'));
+							}
 						} else {
-					        console.log('AP Setup failed, response: '+ data[0]);
-						    callback({apSetup: false});
+							reject(Error('Unable to setup Access Point.'));
 						}
-	                } else {
-					    console.log('AP Setup failed!');
-						callback({apSetup: false});
-					}
+					});
 				});
+
+				return promise;
 			};
 						
 			var verifyKey = function (key, authType) {

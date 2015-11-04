@@ -82,59 +82,75 @@
 			<div class="card card-block">
 				<form id="wifi-form">
 					<div class="form-group row">
-						<!-- Detected networks -->
-						<label for="wifi-select" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Detected Networks</label>
-						<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-							<select class="form-control c-select" id="wifi-select" autocomplete="off" on-change="selectSsid" selected=0>
-								<!-- optional message on menu -->
-								<template is="dom-if" if="{{wifiScanMsgEn}}">
-									<option value="" disabled selected>{{wifiScanMsg}}</option>
-								</template>
-								<!-- list out the wifi networks -->
-								<template is="dom-repeat" items="{{networks}}">
-									<option value="{{index}}">{{item.ssid}}</option>
-								</template>
-							</select>
-						</div>
-						<!-- Scan Button -->
-						<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-							<button id="wifi-scan-btn" type="button" class="btn btn-block btn-primary" on-click="scanWifiNetwork">
-								<iron-icon icon="icons:refresh"></iron-icon>
-							</button>
-						</div>
-					</div>
-					<div class="form-group row">
-						<!-- ssid -->
-						<label for="wifi-ssid" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Wi-Fi Network (SSID)</label>
+						<!-- enabled -->
+						<label for="enableWifi" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Enable Wi-Fi</label>
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<input type="text" class="form-control" id="wifi-ssid" autocomplete="off" value="{{networkSsid::input}}"/>
-						</div>
-					</div>
-					<div class="form-group row">
-						<!-- encryption select -->
-						<label for="wifi-encryption" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Security</label>
-						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<select class="form-control c-select" id="wifi-encryption" autocomplete="off" value="{{networkAuth::input}}">
-								<option value="none" selected>None</option>
-								<option value="wep">WEP</option>
-								<option value="psk">WPA</option>
-								<option value="psk2">WPA2</option>
-							</select>
-						</div>
-					</div>
-					<div class="form-group row">
-						<!-- password -->
-						<label for="wifi-key" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Wi-Fi Password</label>
-						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<input type="password" class="form-control" id="wifi-key" autocomplete="off" value="{{networkPassword::input}}"/>
+							<input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" />
 						</div>
 					</div>
 
-					<div class="row">
-						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
-							<div id="wifi-message">{{wifiMessage}}</div>
+					<fieldset disabled="{{!enableWifi}}">
+						<div class="form-group row">
+							<!-- Detected networks -->
+							<label for="wifi-select" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Detected Networks</label>
+							<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+								<select class="form-control c-select" id="wifi-select" autocomplete="off" on-change="selectSsid" selected=0>
+									<!-- optional message on menu -->
+									<template is="dom-if" if="{{wifiScanMsgEn}}">
+										<option value="" disabled selected>{{wifiScanMsg}}</option>
+									</template>
+									<!-- list out the wifi networks -->
+									<template is="dom-repeat" items="{{networks}}">
+										<option value="{{index}}">{{item.ssid}}</option>
+									</template>
+								</select>
+							</div>
+							<!-- Scan Button -->
+							<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+								<button id="wifi-scan-btn" type="button" class="btn btn-block btn-primary" on-click="scanWifiNetwork">
+									<iron-icon icon="icons:refresh"></iron-icon>
+								</button>
+							</div>
 						</div>
-					</div>
+						<div class="form-group row">
+							<!-- ssid -->
+							<label for="wifi-ssid" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Wi-Fi Network (SSID)</label>
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+								<input type="text" class="form-control" id="wifi-ssid" autocomplete="off" value="{{networkSsid::input}}"/>
+							</div>
+						</div>
+						<div class="form-group row">
+							<!-- encryption select -->
+							<label for="wifi-encryption" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Security</label>
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+								<select class="form-control c-select" id="wifi-encryption" autocomplete="off" value="{{networkAuth::input}}">
+									<option value="none" selected>None</option>
+									<option value="wep">WEP</option>
+									<option value="psk">WPA</option>
+									<option value="psk2">WPA2</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group row">
+							<!-- password -->
+							<label for="wifi-key" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Wi-Fi Password</label>
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+								<input type$="[[_computeShowPassword(showPassword)]]" class="form-control" id="wifi-key" autocomplete="off" value="{{networkPassword::input}}"/>
+							</div>
+						</div>
+						<div class="form-group row">
+							<!-- show password -->
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
+								<input type="checkbox" id="showPassword" checked="{{showPassword::change}}" autocomplete="off" />&nbsp;<label for="showPassword">Show Password</label>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
+								<div id="wifi-message">{{wifiMessage}}</div>
+							</div>
+						</div>
+					</fieldset>
 
 					<div class="form-group row">
 						<!-- start wifi-config -->
@@ -183,6 +199,7 @@
 				var wifiConfigPromise = self.wifiProvider.getConfig('sta');
 
                 wifiConfigPromise.then(function (result) {
+                	self.set('enableWifi', result.enabled);
                 	self.set('networkSsid', result.ssid);
                 	self.set('networkAuth', result.encryption);
                 	self.set('networkPassword', result.password);
@@ -260,19 +277,22 @@
 			    var verifyResult = self.wifiProvider.verifyKey(self.networkPassword, self.networkAuth);
 
 				if (verifyResult === 'OK') {
-                    if (self.sessionProvider.isAlive() === true) {   
-				        self.wifiProvider.wifiSetup(self.networkSsid, self.networkPassword, self.networkAuth, function (data) {
+                    if (self.sessionProvider.isAlive() === true) {
+                    	var wifiSetupPromise = self.wifiProvider.wifiSetup(self.enableWifi, self.networkSsid, self.networkPassword, self.networkAuth, self.networkIp, self.networkNetmask);
 
-					        if (data.wifiSetup === false) {
-						        self.wifiMessage = 'WiFi setup failed!';
-						    } else {
-						        self.wifiMessage = 'WiFi setup successfully!';
-						    }
-					    });
+                    	wifiSetupPromise.then(function () {
+
+                    	}, function (err) {
+                    		console.error(err);
+                    	});
 				    }
 				} else {
 				    self.wifiMessage = verifyResult;
 				}
+			};
+
+			var _computeShowPassword = function (showPassword) {
+				return showPassword ? 'text' : 'password';
 			};
 
 			Polymer({
@@ -285,7 +305,12 @@
 				scanWifiNetwork: scanWifiNetwork,
 				selectSsid: selectSsid,
 				setupWifi: setupWifi,
+				_computeShowPassword: _computeShowPassword,
 				properties: {
+					enableWifi: {
+						type: Boolean,
+						notify: true
+					},
 					networks: {
 						type: Array,
 						notify: true
@@ -301,7 +326,12 @@
 					networkPassword: {
 						type: String,
 						notify: true
-					}
+					},
+					showPassword: {
+		    			notify: true,
+				        type: Boolean,
+				        value: false
+		    		}
 				}
 			});
 		})();

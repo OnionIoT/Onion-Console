@@ -36,31 +36,54 @@
 			<div class="card card-block">
 				<form id="ap-form">
 					<div class="form-group row">
-						<!-- ssid -->
-						<label for="ap-ssid" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">AP Network (SSID)</label>
+						<!-- enabled -->
+						<label for="ap-enabled" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Enable AP Mode</label>
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<input type="text" class="form-control" id="apSsid" autocomplete="off" value="{{networkSsid::input}}" />
+							<input type="checkbox" id="enableAP" checked="{{enableAP::change}}" autocomplete="off" />
 						</div>
 					</div>
-					<div class="form-group row">
-						<!-- encryption select -->
-						<label for="ap-encryption" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Security</label>
-						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<select class="form-control c-select" id="apEncryption" autocomplete="off" value="{{networkAuth::input}}">
-								<option value="none" selected>None</option>
-								<option value="wep">WEP</option>
-								<option value="psk">WPA</option>
-								<option value="psk2">WPA2</option>
-							</select>
+
+					<fieldset disabled="{{!enableAP}}">
+						<div class="form-group row">
+							<!-- ssid -->
+							<label for="ap-ssid" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">AP Network (SSID)</label>
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+								<input type="text" class="form-control" id="apSsid" autocomplete="off" value="{{apSsid::input}}" />
+							</div>
 						</div>
-					</div>
-					<div class="form-group row">
-						<!-- password -->
-						<label for="ap-key" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">AP Password</label>
-						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<input type="password" class="form-control" id="apKey" autocomplete="off" value="{{networkPassword::input}}" />
+						<div class="form-group row">
+							<!-- encryption select -->
+							<label for="ap-encryption" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Security</label>
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+								<select class="form-control c-select" id="apEncryption" autocomplete="off" value="{{apAuth::input}}">
+									<option value="none" selected>None</option>
+									<option value="wep">WEP</option>
+									<option value="psk">WPA</option>
+									<option value="psk2">WPA2</option>
+								</select>
+							</div>
 						</div>
-					</div>
+						<div class="form-group row">
+							<!-- password -->
+							<label for="ap-key" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">AP Password</label>
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+								<input type$="[[_computeShowPassword(showPassword)]]" class="form-control" id="apKey" autocomplete="off" value="{{apPassword::input}}" />
+							</div>
+						</div>
+						<div class="form-group row">
+							<!-- show password -->
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
+								<input type="checkbox" id="showPassword" checked="{{showPassword::change}}" autocomplete="off" />&nbsp;<label for="showPassword">Show Password</label>
+							</div>
+						</div>
+						<div class="form-group row">
+							<!-- ip address -->
+							<label for="ap-key" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">IP Address</label>
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+								<input type="text" class="form-control" id="apIp" autocomplete="off" value="{{apIp::input}}" />
+							</div>
+						</div>
+					</fieldset>
 
 					<div class="row">
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
@@ -105,9 +128,15 @@
 				var wifiConfigPromise = self.wifiProvider.getConfig('ap');
 
                 wifiConfigPromise.then(function (result) {
-                	self.set('networkSsid', result.ssid);
-                	self.set('networkAuth', result.encryption);
-                	self.set('networkPassword', result.password);
+                	console.log(result);
+                	self.set('enableAP', result.enabled);
+
+                	if (result.enabled) {
+                		self.set('apSsid', result.ssid);
+	                	self.set('apAuth', result.encryption);
+	                	self.set('apPassword', result.password);
+	                	self.set('apIp', result.ip);
+                	}
                 });
 			};
 
@@ -116,24 +145,26 @@
 			};
 
 			var setupAP = function () {
-			    self.apMessage = ''; 
+			    self.apMessage = '';
 
-				var verifyResult = self.wifiProvider.verifyKey(self.$.apKey.value, self.$.apEncryption.value);
+			    var verifyResult = self.wifiProvider.verifyKey(self.apPassword, self.apAuth);
 				
 				if (verifyResult === 'OK') {
-			        if (self.sessionProvider.isAlive() === true) {   
-				        self.wifiProvider.apSetup(self.$.apSsid.value, self.$.apKey.value, self.$.apEncryption.value, function (data) {
-						    if (data.apSetup === false) {
-						        self.apMessage = 'AP setup failed!'; 
-						    } else {
-						        self.apMessage = 'AP setup successfully!';
-						    }
-					    });
+			        if (self.sessionProvider.isAlive() === true) {
+			        	var apSetupPromise = self.wifiProvider.apSetup(self.enableAP, self.apSsid, self.apPassword, self.apAuth, self.apIp);
+
+			        	apSetupPromise.then(function () {}, function (err) {
+			        		console.error(err);
+			        	});
 				    }
 				} else {
 				    self.apMessage = verifyResult;
 				}
-			}
+			};
+
+			var _computeShowPassword = function (showPassword) {
+				return showPassword ? 'text' : 'password';
+			};
 
 			Polymer({
 				is: 'onion-settings-ap',
@@ -141,24 +172,34 @@
 				ready: ready,
 				init: init,
 				setupAP: setupAP,
+				_computeShowPassword: _computeShowPassword,
 				properties: {
-					networkSsid: {
+					enableAP: {
+						type: Boolean,
+						notify: true
+					},
+					apkSsid: {
 						type: String,
 						notify: true
 					},
-					networkAuth: {
+					apAuth: {
 						type: String,
 						notify: true
 					},
-					networkPassword: {
-						type: String,
-						notify: true
-					},
-					test: {
+					apPassword: {
 						type: String,
 						notify: true,
-						value: "test"
+						value: ''
 					},
+					apIp: {
+						type: String,
+						notify: true
+					},
+					showPassword: {
+		    			notify: true,
+				        type: Boolean,
+				        value: false
+		    		}
 				}
 			});
 		})();

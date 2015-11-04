@@ -3,7 +3,7 @@
 
 <dom-module id="onion-ubus-provider">
 	<template>
-		<iron-ajax id="ajax" url="{{serverUrl}}" method="POST" content-type="application/json" on-response="handelResponse" handle-as="json"></iron-ajax> 
+		<iron-ajax id="ajax" url="{{serverUrl}}" method="POST" content-type="application/json" on-response="_handelResponse" handle-as="json"></iron-ajax> 
 	</template>
 
 	<script>
@@ -16,45 +16,55 @@
 				self = this;
 			};
 
-			var openRequests = {};
+			var pendingRequests = {};
 			var requestCounter = 1;
 
-			var request = function (pkg, funct, params, callback) {
-				callback = callback || function () {};
+			var request = function (pkg, fn, params, callback) {
+				var requestId = requestCounter++;
+
+				pendingRequests[requestId] = {};
+				pendingRequests[requestId].callback = callback || function () {};
+
+				var promise = new Promise(function (resolve, reject) {
+					pendingRequests[requestId].resolve = resolve;
+					pendingRequests[requestId].reject = reject;
+				});
 
 				var body = {
 					jsonrpc: '2.0',
-					id: requestCounter,
+					id: requestId,
 					method: 'call',
-					params: [self.token, pkg, funct, params]
+					params: [self.token, pkg, fn, params]
 				};
-
-				openRequests[requestCounter] = callback;
-				requestCounter += 1;
 				
 				self.$.ajax.body = JSON.stringify(body); 
 				self.$.ajax.generateRequest();
+
+				return promise;
 			};
 
-			var handelResponse = function (request) {
+			var _handelResponse = function (request) {
 				var response = request.detail.response;
 
                 if (response !== null) {
  				    if ('error' in response) {
-					    openRequests[response.id]({error: response.error});
+ 				    	pendingRequests[response.id].reject(response.error);
+					    pendingRequests[response.id].callback({error: response.error});
 					    console.log(response.error);
 
 					    // If access denied, log out
 					    if (response.error.code === -32002) {
+					    	pendingRequests[response.id].reject(Error('Permission denied.'));
 					    	onionConsole.getService('onion-session-provider', function (sessionProvider) {
 								sessionProvider.logout();
 							});
 					    } 
 				    } else {
-					    openRequests[response.id](response.result);
+				    	pendingRequests[response.id].resolve(response.result);
+					    pendingRequests[response.id].callback(response.result);
 				    }
-				    
-				    delete openRequests[response.id];
+
+				    delete pendingRequests[response.id];
 				} else {
 				    self.isAlive = false;
 					self.token = '00000000000000000000000000000000';
@@ -82,7 +92,7 @@
 					}
 	            },
 	            request: request,
-	            handelResponse: handelResponse
+	            _handelResponse: _handelResponse
 			});
         })();
 	</script>
