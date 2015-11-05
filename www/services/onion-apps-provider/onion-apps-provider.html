@@ -23,7 +23,7 @@ import shared service
                     ubus.request('onion-console', 'app-list', {}, function (result) {
                         if (result.length === 2 && result[1].exists) {
                             self.apps = [];                     
-                            for (let i = 0; i < result[1].apps.length; i++) {
+                            for (var i = 0; i < result[1].apps.length; i++) {
                                 self.apps.push(result[1].apps[i]);
                             }
                         }
