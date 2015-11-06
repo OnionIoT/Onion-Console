@@ -1,4 +1,5 @@
 <link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/bootstrap-alert/bootstrap-alert-container.html">
 
 <dom-module id="onion-settings-general">
 	<style>
@@ -33,45 +34,16 @@
 						<label for="timezone" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Timezone</label>
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
 							<select class="form-control c-select" id="timezone" autocomplete="off" value="{{timezone::input}}">
-								<option value="GMT-12">GMT-12:00</option>
-								<option value="GMT-11">GMT-11:00</option>
-								<option value="GMT-10">GMT-10:00</option>
-								<option value="GMT-9">GMT-09:00</option>
-								<option value="GMT-8">GMT-08:00</option>
-								<option value="GMT-8">GMT-08:00</option>
-								<option value="GMT-7">GMT-07:00</option>
-								<option value="GMT-6">GMT-06:00</option>
-								<option value="GMT-5">GMT-05:00</option>
-								<option value="GMT-4">GMT-04:00</option>
-								<option value="GMT-3.5">GMT-03:30</option>
-								<option value="GMT-3">GMT-03:00</option>
-								<option value="GMT-2">GMT-02:00</option>
-								<option value="GMT-1">GMT-01:00</option>
-								<option value="GMT0">GMT+00:00</option>
-								<option value="GMT+1">GMT+01:00</option>
-								<option value="GMT+2">GMT+02:00</option>
-								<option value="GMT+3">GMT+03:00</option>
-								<option value="GMT+3.5">GMT+03:30</option>
-								<option value="GMT+4">GMT+04:00</option>
-								<option value="GMT+4.5">GMT+04:30</option>
-								<option value="GMT+5">GMT+05:00</option>
-								<option value="GMT+5.5">GMT+05:30</option>
-								<option value="GMT+5.75">GMT+05:45</option>
-								<option value="GMT+6">GMT+06:00</option>
-								<option value="GMT+6.5">GMT+06:30</option>
-								<option value="GMT+7">GMT+07:00</option>
-								<option value="GMT+8">GMT+08:00</option>
-								<option value="GMT+9">GMT+09:00</option>
-								<option value="GMT+9.5">GMT+09:30</option>
-								<option value="GMT+10">GMT+10:00</option>
-								<option value="GMT+11">GMT+11:00</option>
-								<option value="GMT+12">GMT+12:00</option>
-								<option value="GMT+13">GMT+13:00</option>
+								<option value="UTC" disabled selected>Select your timezone</option>
+								<template is="dom-repeat" items="{{timezones}}">
+									<option value="{{_calculateTimezoneValue(index)}}">{{_calculateTimezoneLabel(index)}}</option>
+								</template>
 							</select>
 						</div>
 					</div>
 				</div>
 
+				<bootstrap-alert-container id="basicMessages"></bootstrap-alert-container>
 				<br />
 
 				<h4>Security Settings</h4>
@@ -99,17 +71,18 @@
 					</div>
 				</div>
 
+				<bootstrap-alert-container id="securityMessages"></bootstrap-alert-container>
+
 				<br />
 
 				<div class="form-group row">
 					<!-- save settings -->
 					<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-					<button id="wifi-config-button" type="button" class="btn btn-success btn-block" on-click="setupWifi">Save Settings</button>
+						<button id="wifi-config-button" type="button" class="btn btn-success btn-block" on-tap="saveSettings">Save Settings</button>
 					</div>
 				</div>
 			</form>
 		</div>
-
 
 	</template>
 
@@ -117,45 +90,197 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			var timezones = [
+				{name: 'International Date Line West', offset: '-12:00', tz: 'IDLW12'},
+				{name: 'Midway Island, Samoa', offset: '-11:00', tz: 'SST11'},
+				{name: 'Hawaii', offset: '-10:00', tz: 'HST10'},
+				{name: 'Alaska', offset: '-9:00', tz: 'AKST9AKDT,M3.2.0,M11.1.0'},
+				{name: 'Pacific Time (US & Canada)', offset: '-8:00', tz: 'PST8PDT,M3.2.0,M11.1.0'},
+				{name: 'Tijuana, Baja California', offset: '-8:00', tz: 'PST8PDT,M3.2.0,M11.1.0'},
+				{name: 'Arizona', offset: '-7:00', tz: 'MST7'},
+				{name: 'Chihuahua, La Paz, Mazatlan', offset: '-7:00', tz: 'MST7MDT,M4.1.0,M10.5.0'},
+				{name: 'Mountain Time (US & Canada)', offset: '-7:00', tz: 'MST7MDT,M3.2.0,M11.1.0'},
+				{name: 'Central America', offset: '-6:00', tz: 'CST6'},
+				{name: 'Central Time (US & Canada)', offset: '-6:00', tz: 'CST6CDT,M3.2.0,M11.1.0'},
+				{name: 'Guadalajara, Mexico City, Monterrey', offset: '-6:00', tz: 'CST6CDT,M4.1.0,M10.5.0'},
+				{name: 'Saskatchewan', offset: '-6:00', tz: 'CST6CDT,M3.2.0,M11.1.0'},
+				{name: 'Bogota, Lima, Quito, Rio Branco', offset: '-5:00', tz: 'COT5'},
+				{name: 'Eastern Time (US & Canada)', offset: '-5:00', tz: 'EST5EDT,M3.2.0,M11.1.0'},
+				{name: 'Indiana (East)', offset: '-5:00', tz: 'EST5EDT,M3.2.0,M11.1.0'},
+				{name: 'Caracas', offset: '-4:30', tz: 'VET4:30'},
+				{name: 'Atlantic Time (Canada)', offset: '-4:00', tz: 'AST4ADT,M3.2.0,M11.1.0'},
+				{name: 'La Paz', offset: '-4:00', tz: 'BOT4'},
+				{name: 'Manaus', offset: '-4:00', tz: 'AMT4'},
+				{name: 'Newfoundland', offset: '-3:30', tz: 'NST3:30NDT,M3.2.0,M11.1.0'},
+				{name: 'Santiago', offset: '-3:00', tz: 'CLT3'},
+				{name: 'Brasilia', offset: '-3:00', tz: 'BRT3BRST,M10.3.0/0,M2.3.0/0'},
+				{name: 'Buenos Aires, Georgetown', offset: '-3:00', tz: 'ART3'},
+				{name: 'Greenland', offset: '-3:00', tz: 'WGT3WGST,M3.5.0/-2,M10.5.0/-1'},
+				{name: 'Miquelon', offset: '-3:00', tz: 'PMST3PMDT,M3.2.0,M11.1.0'},
+				{name: 'Montevideo', offset: '-3:00', tz: 'UYT3'},
+				{name: 'Mid-Atlantic', offset: '-2:00', tz: 'GST2'},
+				{name: 'Cape Verde Is.', offset: '-1:00', tz: 'CVT1'},
+				{name: 'Azores', offset: '-1:00', tz: 'AZOT1AZOST,M3.5.0/0,M10.5.0/1'},
+				{name: 'Casablanca, Monrovia, Reykjavik', offset: '+0:00', tz: 'WET0WEST,M3.5.0,M10.5.0/3'},
+				{name: 'Greenwich Mean Time: Edinburgh, Lisbon, London', offset: '+0:00', tz: 'GMT0BST,M3.5.0/1,M10.5.0'},
+				{name: 'Greenwich Mean Time: Dublin', offset: '+0:00', tz: 'GMT0IST,M3.5.0/1,M10.5.0'},
+				{name: 'Lisbon', offset: '+0:00', tz: 'WET0WEST,M3.5.0/1,M10.5.0'},
+				{name: 'Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna', offset: '+1:00', tz: 'CET-1CEST,M3.5.0,M10.5.0/3'},
+				{name: 'Belgrade, Bratislava, Budapest, Ljubljana, Prague', offset: '+1:00', tz: 'CET-1CEST,M3.5.0,M10.5.0/3'},
+				{name: 'Brussels, Copenhagen, Madrid, Paris', offset: '+1:00', tz: 'CET-1CEST,M3.5.0,M10.5.0/3'},
+				{name: 'Sarajevo, Skopje, Warsaw, Zagreb', offset: '+1:00', tz: 'CET-1CEST,M3.5.0,M10.5.0/3'},
+				{name: 'West Central Africa', offset: '+1:00', tz: 'WAT-1'},
+				{name: 'Windhoek', offset: '+1:00', tz: 'WAT-1WAST,M9.1.0,M4.1.0'},
+				{name: 'Amman', offset: '+2:00', tz: 'EET-2EEST,M3.5.4/24,M10.5.5/1'},
+				{name: 'Athens, Bucharest, Istanbul', offset: '+2:00', tz: 'EET-2EEST,M3.5.0/3,M10.5.0/4'},
+				{name: 'Beirut', offset: '+2:00', tz: 'EET-2EEST,M3.5.0/0,M10.5.0/0'},
+				{name: 'Cairo', offset: '+2:00', tz: 'EET-2'},
+				{name: 'Harare, Pretoria', offset: '+2:00', tz: 'CAT-2'},
+				{name: 'Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius', offset: '+2:00', tz: 'EET-2EEST,M3.5.0/3,M10.5.0/4'},
+				{name: 'Jerusalem', offset: '+2:00', tz: 'IST-2IDT,M3.4.4/26,M10.5.0'},
+				{name: 'Minsk', offset: '+3:00', tz: 'MSK-3'},
+				{name: 'Kuwait, Riyadh, Baghdad', offset: '+3:00', tz: 'AST-3'},
+				{name: 'Moscow, St. Petersburg, Volgograd', offset: '+3:00', tz: 'MSK-3'},
+				{name: 'Nairobi', offset: '+3:00', tz: 'EAT-3'},
+				{name: 'Tbilisi', offset: '+3:00', tz: 'GET-4'},
+				{name: 'Tehran', offset: '+3:30', tz: 'IRST-3:30IRDT,80/0,264/0'},
+				{name: 'Abu Dhabi, Muscat', offset: '+4:00', tz: 'GST-4'},
+				{name: 'Baku', offset: '+4:00', tz: 'AZT-4AZST,M3.5.0/4,M10.5.0/5'},
+				{name: 'Yerevan', offset: '+4:00', tz: 'AMT-4'},
+				{name: 'Kabul', offset: '+4:30', tz: 'AFT-4:30'},
+				{name: 'Yekaterinburg', offset: '+5:00', tz: 'YEKT-5'},
+				{name: 'Islamabad, Karachi, Tashkent', offset: '+5:00', tz: 'PKT-5'},
+				{name: 'Sri Jayawardenapura', offset: '+5:30', tz: 'SLST-5:30'},
+				{name: 'Chennai, Kolkata, Mumbai, New Delhi', offset: '+5:30', tz: 'IST-5:30'},
+				{name: 'Kathmandu', offset: '+5:45', tz: 'NPT-5:45'},
+				{name: 'Almaty, Novosibirsk', offset: '+6:00', tz: 'ALMT-6'},
+				{name: 'Astana, Dhaka', offset: '+6:00', tz: 'BDT-6'},
+				{name: 'Yangon (Rangoon)', offset: '+6.5:00', tz: 'MMT-6:30'},
+				{name: 'Bangkok, Hanoi, Jakarta', offset: '+7:00', tz: 'ICT-7'},
+				{name: 'Krasnoyarsk', offset: '+7:00', tz: 'KRAT-7'},
+				{name: 'Beijing, Chongqing, Hong Kong, Urumqi', offset: '+8:00', tz: 'CST-8'},
+				{name: 'Kuala Lumpur', offset: '+8:00', tz: 'MYT-8'},
+				{name: 'Singapore', offset: '+8:00', tz: 'SGT-8'},
+				{name: 'Irkutsk, Ulaan Bataar', offset: '+8:00', tz: 'IRKT-8'},
+				{name: 'Perth', offset: '+8:00', tz: 'AWST-8'},
+				{name: 'Taipei', offset: '+8:00', tz: 'CST-8'},
+				{name: 'Osaka, Sapporo, Tokyo', offset: '+9:00', tz: 'JST-9'},
+				{name: 'Seoul', offset: '+9:00', tz: 'KST-9'},
+				{name: 'Yakutsk', offset: '+9:00', tz: 'YAKT-9'},
+				{name: 'Adelaide', offset: '+9:30', tz: 'ACST-9:30ACDT,M10.1.0,M4.1.0/3'},
+				{name: 'Darwin', offset: '+9:30', tz: 'ACST-9:30'},
+				{name: 'Brisbane', offset: '+10:00', tz: 'AEST-10'},
+				{name: 'Canberra, Melbourne, Sydney', offset: '+10:00', tz: 'AEST-10AEDT,M10.1.0,M4.1.0/3'},
+				{name: 'Hobart', offset: '+10:00', tz: 'AEST-10AEDT,M10.1.0,M4.1.0/3'},
+				{name: 'Guam', offset: '+10:00', tz: 'ChST-10'},
+				{name: 'Port Moresby', offset: '+10:00', tz: 'PGT-10'},
+				{name: 'Vladivostok', offset: '+10:00', tz: 'VLAT-10'},
+				{name: 'Magadan, Solomon Is., New Caledonia', offset: '+11:00', tz: 'MAGT-10'},
+				{name: 'Auckland, Wellington', offset: '+12:00', tz: 'NZST-12NZDT,M9.5.0,M4.1.0/3'},
+				{name: 'Fiji, Kamchatka, Marshall Is.', offset: '+12:00', tz: 'FJT-12FJST,M11.1.0,M1.3.0/3'},
+				{name: 'Nuku\'alofa', offset: '+13:00', tz: 'TOT-13'}
+			];
 
-			var created = function () {
-				self = this;
+			var ready = function () {
+				this.timezones = timezones;
 			};
 
-			var hostnameCopy,
-				timezoneCopy;
+			var _calculateTimezoneLabel = function (index) {
+				return '(GMT ' + this.timezones[index].offset + ') ' + this.timezones[index].name;
+			};
+
+			var _calculateTimezoneValue = function (index) {
+				return this.timezones[index].tz;
+			};
 
 			var init = function () {
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
 					ubus.request('uci', 'get', {
 						config: 'system',
 						section: '@system[0]',
 						option: 'hostname'
-					}, function (result) {
-						if (result[0] === 0) {
-							hostnameCopy = result[1].value;
-							self.hostname = result[1].value;
+					}, (function (result) {
+						if (result.length === 2 && result[0] === 0) {
+							this.hostnameCopy = result[1].value;
+							this.hostname = result[1].value;
 						}
-					});
+					}).bind(this));
 
 					ubus.request('uci', 'get', {
 						config: 'system',
 						section: '@system[0]',
 						option: 'timezone'
-					}, function (result) {
-						if (result[0] === 0) {
-							timezoneCopy = result[1].value;
-							self.timezone = result[1].value;
+					}, (function (result) {
+						if (result.length === 2 && result[0] === 0) {
+							this.timezoneCopy = result[1].value;
+							this.timezone = result[1].value;
 						}
-					});
-	            });
+					}).bind(this));
+	            }).bind(this));
+			};
+
+			var saveSettings = function () {
+				// If user wants to change password, change it
+				if (this.passwordCurrent && this.passwordNew && this.passwordNewVerify) {
+					onionConsole.getService('onion-device-provider', (function (device) {
+						device.changePassword(this.passwordCurrent, this.passwordNew, this.passwordNewVerify)
+						.then((function (message) {
+							this.$.securityMessages.insertAlert('success', message);
+							this.set('passwordCurrent', '');
+							this.set('passwordNew', '');
+							this.set('passwordNewVerify', '');
+						}).bind(this), (function (err) {
+							this.$.securityMessages.insertAlert('danger', '<strong>Error:</strong> ' + err.message);
+						}).bind(this));
+					}).bind(this));
+				}
+
+				// Change hostname
+				if (this.hostname !== this.hostnameCopy) {
+					this.hostnameCopy = this.hostname;
+
+					onionConsole.getService('onion-device-provider', (function (device) {
+						device.changeHostname(this.hostname)
+						.then((function (message) {
+							this.$.basicMessages.insertAlert('success', message);
+						}).bind(this),
+						(function (err) {
+							this.$.basicMessages.insertAlert('danger', '<strong>Error:</strong> ' + err.message);
+						}).bind(this));
+					}).bind(this));
+				}
+
+				// Change timezone
+				if (this.timezone !== this.timezoneCopy) {
+					this.timezoneCopy = this.timezone;
+
+					var zonename;
+
+					for (var i = 0; i < this.timezones.length; i++) {
+						if (this.timezones[i].tz === this.timezone) {
+							zonename = this.timezones[i].name;
+							break;
+						}
+					}
+
+					onionConsole.getService('onion-device-provider', (function (device) {
+						device.changeTimezone(this.timezone, zonename)
+						.then((function (message) {
+							this.$.basicMessages.insertAlert('success', message);
+						}).bind(this), (function (err) {
+							this.$.basicMessages.insertAlert('danger', '<strong>Error:</strong> ' + err.message);
+						}).bind(this));
+					}).bind(this));
+				}
 			};
 
 			Polymer({
 				is: 'onion-settings-general',
-				created: created,
-				init: init
+				init: init,
+				ready: ready,
+				saveSettings: saveSettings,
+				_calculateTimezoneLabel: _calculateTimezoneLabel,
+				_calculateTimezoneValue: _calculateTimezoneValue
 			});
         })();
 	</script>

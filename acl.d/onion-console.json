@@ -17,7 +17,7 @@
                                 ],
                                 "onion-console": [
                                         "app-list",
-										"wifi-info"
+					"wifi-info"
                                 ],
                                 "system": [
                                         "info",
@@ -59,9 +59,16 @@
                                         "write",
                                         "stat"
                                 ],
+                                "system": [
+                                        "info",
+                                        "hostname"
+                                ]
                         },
                         "uci": [
+                                "system",
                                 "get",
+                                "set",
+                                "commit",
                                 "rpcd"
                         ]
                 }

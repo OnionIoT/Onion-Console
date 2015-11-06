@@ -11,8 +11,6 @@
 				self = this;
 			};
 
-			var loginReturn = null;
-
 			var ready = function () {
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
 					self.ubus = ubus;
@@ -28,45 +26,58 @@
 				});
 			};
 
-			var login = function (username, password, callback) {
-				var params =  {
+			var login = function (username, password, callback) {				
+				callback = callback || function () {};
+
+				self.ubus.request('session', 'login', {
 					username: username,
 					password: password
-				};
-				
-				loginReturn = callback || function () {};
-				self.ubus.request('session', 'login', params, setToken);
+				}, function (result) {
+					if (result !== null && result[0] !== null) {
+					    if ('error' in result) {
+					        self.ubus.isAlive = false;
+						    callback({success: false});
+						    return;
+					    }
+
+					    var returnCode = result[0];
+					    if (returnCode === 0) { 
+						    var token = result[1].ubus_rpc_session;
+		                    console.log('session token: ' + token);
+
+		                    sessionStorage.setItem('_omega_session_token', token);
+						    self.ubus.token = token;
+						    self.ubus.isAlive = true;
+						    startHeartbeat(10000);
+						    callback({success: true});
+
+					    } else {
+					        console.log('Login failed!');
+						    self.ubus.isAlive = false;
+					        callback({success: false});
+					    }
+					} else {
+				        self.ubus.isAlive = false;
+						callback({success: false});
+				    }
+				});
 			};
 
-			var setToken = function (result) {
-				if (result !== null && result[0] !== null) {
-				    if ('error' in result) {
-				        self.ubus.isAlive = false;
-					    loginReturn({success: false});
-					    return;
-				    }
+			var checkLogin = function (password) {
+				var promise = new Promise(function (resolve, reject) {
+					self.ubus.request('session', 'login', {
+						username: 'root',
+						password: password
+					}, function (data) {
+						if (data.length === 2 && data[0] === 0) {
+							resolve();
+						} else {
+							reject(Error('Incorrect current password.'));
+						}
+					});
+				});
 
-				    var returnCode = result[0];
-				    if (returnCode === 0) { 
-					    var token = result[1].ubus_rpc_session;
-	                    console.log('session token: ' + token);
-
-	                    sessionStorage.setItem('_omega_session_token', token);
-					    self.ubus.token = token;
-					    self.ubus.isAlive = true;
-					    startHeartbeat(10000);
-					    loginReturn({success: true});
-
-				    } else {
-				        console.log('Login failed!');
-					    self.ubus.isAlive = false;
-				        loginReturn({success: false});
-				    }
-				} else {
-			        self.ubus.isAlive = false;
-					loginReturn({success: false});
-					return;
-			    }
+				return promise;
 			};
 		 
 			var heartbeat = function () {
@@ -79,7 +90,7 @@
 				  
 			var startHeartbeat = function (interval) {
 			    self.heartbeatInterval = setInterval(function () {  
-			    	heartbeat()
+			    	heartbeat();
 			    }, interval);
 			};
 			
@@ -124,7 +135,7 @@
 				ready: ready,
 	            login: login,
 				logout: logout,
-				setToken: setToken,
+				checkLogin: checkLogin,
 				setAlive: setAlive,
 				heartbeat: heartbeat,
 				startHeartbeat: startHeartbeat,

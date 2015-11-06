@@ -119,6 +119,28 @@
 					</div>
 				</div>
 			</onion-app-body>
+
+			<bootstrap-modal id="loginDialog" no-cancel-on-esc-key no-cancel-on-outside-click>
+				<bootstrap-modal-header>
+					<h5>Login</h5>
+				</bootstrap-modal-header>
+
+				<bootstrap-modal-body>
+					<form on-submit="login">
+						<fieldset class="form-group">
+							<label for="username">Username</label>
+							<input type="text" class="form-control" id="username" on-keydown="checkUsernameKey" autofocus>
+						</fieldset>
+						<fieldset class="form-group">
+							<label for="password">Password</label>
+							<input type="password" class="form-control" id="password">
+						</fieldset>
+						<div id="messageContainer"></div> 
+						
+						<button type="submit" class="btn btn-success">Login</button>
+					</form>
+				</bootstrap-modal-body>
+			</bootstrap-modal>
 		</onion-app>
 	</template>
 

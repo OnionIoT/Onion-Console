@@ -31,6 +31,10 @@
 			padding-right: 35px;
 		}
 
+		.alert .close {
+			line-height: 0.75;
+		}
+
 		.alert-dismissible .close {
 			position: relative;
 			top: -2px;
@@ -112,12 +116,6 @@
 		'use strict';
 
 		(function () {
-			var self = null;
-
-			var created = function () {
-				self = this;
-			};
-
 			var _computeClass = function (success, info, warning, danger) {
 				var elementClass = 'alert';
 
@@ -135,12 +133,11 @@
 			};
 
 			var _close = function () {
-				self.remove();
+				this.remove();
 			};
 
 			Polymer({
 	    		is: 'bootstrap-alert',
-	    		created: created,
 	    		properties: {
 	    			success: {
 		    			notify: true,

@@ -50,11 +50,9 @@
  				    if ('error' in response) {
  				    	pendingRequests[response.id].reject(response.error);
 					    pendingRequests[response.id].callback({error: response.error});
-					    console.log(response.error);
 
 					    // If access denied, log out
 					    if (response.error.code === -32002) {
-					    	pendingRequests[response.id].reject(Error('Permission denied.'));
 					    	onionConsole.getService('onion-session-provider', function (sessionProvider) {
 								sessionProvider.logout();
 							});

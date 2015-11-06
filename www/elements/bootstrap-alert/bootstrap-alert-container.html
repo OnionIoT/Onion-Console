@@ -1,0 +1,37 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/bootstrap-alert/bootstrap-alert.html">
+
+<dom-module id="bootstrap-alert-container">
+	<style>
+		
+	</style>
+	
+	<template>
+		<div id="insertionPoint"></div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var insertAlert = function (theme, html) {
+				var alertElement = document.createElement('bootstrap-alert');
+				alertElement.setAttribute(theme, true);
+				Polymer.dom(alertElement).innerHTML = html;
+
+				Polymer.dom(this.$.insertionPoint).appendChild(alertElement);
+				Polymer.dom.flush();
+			};
+
+			var clear = function () {
+
+			};
+
+			Polymer({
+	    		is: 'bootstrap-alert-container',
+	    		insertAlert: insertAlert,
+	    		clear: clear
+	    	});
+        })();
+	</script>
+</dom-module>
