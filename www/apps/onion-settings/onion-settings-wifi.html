@@ -233,7 +233,7 @@
 
 					var detectedNetworks = result.results;
 
-					for (let i = 0; i < detectedNetworks.length; i++) {
+					for (var i = 0; i < detectedNetworks.length; i++) {
 						if (detectedNetworks[i].ssid !== '') {
 							self.push('networks', detectedNetworks[i]);
 						}
