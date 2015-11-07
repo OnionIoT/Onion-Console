@@ -21,13 +21,12 @@ Usage () {
 ShutDownSequence () {
 	echo "Shutting down..."
 	echo "See you later!"
-	sleep 1
 
 	# turn off the Omega's LED
 	fast-gpio set 27 1 >& /dev/null
 
 	# perform the shutdown
-	poweroff -d 5
+	poweroff -d 5 >& /dev/null &
 }
 
 

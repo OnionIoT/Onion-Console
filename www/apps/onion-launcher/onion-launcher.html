@@ -99,9 +99,9 @@
 								<span id="status">&bull;</span><span>{{hostname}}</span>
 							</bootstrap-dropdown-toggle>
 							<bootstrap-dropdown-menu right>
-								<bootstrap-dropdown-item on-tap="onLogout">Log Out</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item>Shutdown</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item>Restart</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_onLogout">Log Out</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_onShutdown">Shutdown</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_onRestart">Restart</bootstrap-dropdown-item>
 							</bootstrap-dropdown-menu>
 						</bootstrap-dropdown>
 					</div>
@@ -214,10 +214,38 @@
 				}
 			};
 
-			var onLogout = function () {
-				onionConsole.getService('onion-session-provider', function (sessionProvider) {
-					sessionProvider.logout();
-				});
+			var _onLogout = function () {
+				if (confirm('Are you sure you want to log out of your Omega?')) {
+					onionConsole.getService('onion-session-provider', function (session) {
+						session.logout();
+					});
+				}
+			};
+
+			var _onShutdown = function () {
+				if (confirm('Are you sure you want to shutdown your Omega?')) {
+					onionConsole.getService('onion-device-provider', function (device) {
+						device.shutdown()
+						.then(function () {
+							onionConsole.getService('onion-session-provider', function (session) {
+								session.logout();
+							});
+						});
+					});
+				}
+			};
+
+			var _onRestart = function () {
+				if (confirm('Are you sure you want to restart your Omega?')) {
+					onionConsole.getService('onion-device-provider', function (device) {
+						device.reboot()
+						.then(function () {
+							onionConsole.getService('onion-session-provider', function (session) {
+								session.logout();
+							});
+						});
+					});
+				}
 			};
 
 			Polymer({
@@ -235,7 +263,9 @@
 					hostname: String,
 					filterString: String
 				},
-				onLogout: onLogout
+				_onLogout: _onLogout,
+				_onShutdown: _onShutdown,
+				_onRestart: _onRestart
 			});
         })();
 	</script>

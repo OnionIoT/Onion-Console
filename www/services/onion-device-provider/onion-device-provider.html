@@ -28,8 +28,7 @@
 				if (returnCode === 0) { 
 				    if (result[1] !== null && result[1].results[0] !== null && result[1].results[0].mac !== null) {
 				        var mac = result[1].results[0].mac;
-				        console.log('MAC[' + mac + ']');
-						
+
 						macResult({
 							mac: mac
 						});
@@ -74,8 +73,6 @@
                         transmittedkB = (transmittedkB / 1000).toFixed(0);
                     }
 
-				    console.log('receivedkB[' + receivedkB + ']');
-				    console.log('transmittedkB[' + transmittedkB + ']');
 	                rxtxResult([{received: receivedkB}, {transmitted: transmittedkB}]);
 				} else {
 				    console.log('Failed to get received bytes and transmitted bytes!');
@@ -107,7 +104,6 @@
 					    startIndex = result[1].stdout.lastIndexOf('Mask:');
 					    endIndex = result[1].stdout.indexOf('\n', startIndex);
 					    netmask = result[1].stdout.substring(startIndex + 'Mask:'.length, endIndex);
-					    console.log('Available[' + available + '] IP[' + ip + '] Netmask[' + netmask + ']');
 					} else {
 					    console.log('Failed to retrieve IP address information!');
 					}
@@ -240,11 +236,49 @@
 			};
 			
 			var shutdown = function () {
+				var shutdownPromise = new Promise(function (resolve, reject) {
+					onionConsole.getService('onion-ubus-provider', function (ubus) {
+						ubus.request('file', 'exec', {
+							command: 'power-down', 
+							params: [
+								'-f'
+							]
+						}, function (result) {
+							console.log(result);
+							if (result[0] === 0) {
+								resolve();
+							} else {
+								reject();
+							}
+						});
+					});
+				});
 
+				return shutdownPromise;
 			};
 
 			var reboot = function () {
+				var rebootPromise = new Promise(function (resolve, reject) {
+					onionConsole.getService('onion-ubus-provider', function (ubus) {
+						ubus.request('file', 'exec', {
+							command: 'reboot', 
+							params: [
+								'-d', 
+								'5',
+								'&'
+							]
+						}, function (result) {
+							console.log(result);
+							if (result[0] === 0) {
+								resolve();
+							} else {
+								reject();
+							}
+						});
+					});
+				});
 
+				return rebootPromise;
 			};
 
 			Polymer({

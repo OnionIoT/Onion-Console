@@ -83,7 +83,7 @@
 				<table class="table">
 					<tbody>
 						<tr>
-							<th scope="row">Name</th>
+							<th scope="row">Codename</th>
 							<td>{{name}}</td>
 						</tr>
 						<tr>
@@ -102,7 +102,7 @@
 				</table>
 
 				<div class="layout horizontal center" id="upgradeButtonContainer">
-					<button class="btn btn-success" on-click="upgradeFirmware">Upgrade</button>
+					<button class$="{{_calculateButtonClass(upgradeButtonTheme)}}" on-click="upgradeFirmware" disabled="{{upgradeButtonDisabled}}">{{upgradeButtonLabel}}</button>
 					<div id="upgradeLoading" class="loading" hidden></div>
 				</div>
 
@@ -117,27 +117,22 @@
 		'use strict';
 
 		(function () {
-			var self = null;
-
-			var created = function () {
-				self = this;
-			};
-
 			var ready = function () {
-				self.model 		= 'Onion Omega';
-				self.modelRev 	= 'R1';
-				self.dataReady	= 0;
+				this.name = 'Ando';
+				this.model = 'Onion Omega';
+				this.modelRev = 'R1';
+				this.dataReady = 0;
 			};
 
 			var init = function () {
-				self.getFirmwareInfo();
-				self.checkFirmwareInfo();
+				this.getFirmwareInfo();
+				this.checkFirmwareInfo();
 			};
 
 			// use ubus to get the firmware info data
 			var getFirmwareInfo = function () {
 				// get the ubus service
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
 					var params = {
 						params: {
 							check: ''
@@ -145,67 +140,62 @@
 					};
 
 					// do ubus oupgrade check
-					ubus.request('onion', 'oupgrade', params, function (data) {
+					ubus.request('onion', 'oupgrade', params, (function (data) {
 						if (data) {
 							var returnCode = data[0];
 							console.log('oupgrade check return code: ', returnCode);
 
 							if (returnCode === 0) {
-								self.data = data[1];
-								console.log(self.data);	// get rid of this when app is done
+								this.data = data[1];
+								console.log(this.data);	// get rid of this when app is done
 
 								// denote that data has be received
-								self.dataReady = 1;
-							}
-							else {
+								this.dataReady = 1;
+							} else {
 								console.log('oupgrade check error');
 							}
 						}
-					});
-				});
+					}).bind(this));
+				}).bind(this));
 			};
 
 			// make sense of the firmware info data
 			var checkFirmwareInfo = function () {
-				var checkDataReadyInterval = setInterval(function () {
-					if (self.dataReady === 1) {
+				var checkDataReadyInterval = setInterval((function () {
+					if (this.dataReady === 1) {
 						// stop the loop after this code
 						clearInterval(checkDataReadyInterval);
 
-
 						// current omega firmware:
-						//	self.data.device.version
-						//	self.data.device.major
-						//	self.data.device.minor
-						//	self.data.device.revision
-						//	self.data.device.build
+						//	this.data.device.version
+						//	this.data.device.major
+						//	this.data.device.minor
+						//	this.data.device.revision
+						//	this.data.device.build
 
-						self.data.device.string 	= self.data.device.version + ' (b' + self.data.device.build + ')';
-						self.currentVersion 		= self.data.device.string;
-						
+						this.data.device.string 	= this.data.device.version + ' (b' + this.data.device.build + ')';
+						this.currentVersion 		= this.data.device.string;
 
 						// latest omega firmware:
-						//	self.data.repo.version
-						//	self.data.repo.major
-						//	self.data.repo.minor
-						//	self.data.repo.revision
-						//	self.data.repo.build
+						//	this.data.repo.version
+						//	this.data.repo.major
+						//	this.data.repo.minor
+						//	this.data.repo.revision
+						//	this.data.repo.build
 
-						self.data.repo.string 	= self.data.repo.version + ' (b' + self.data.repo.build + ')';
-						self.latestVersion 		= self.data.repo.string;
-
+						this.data.repo.string 	= this.data.repo.version + ' (b' + this.data.repo.build + ')';
+						this.latestVersion 		= this.data.repo.string;
 
 						// info on binary file:
-						//	binary name: 	self.data.image.binary
-						//	path on Omega: 	self.data.image.local
-						//	URL (not needed): 	self.data.image.url;
-
+						//	binary name: 	this.data.image.binary
+						//	path on Omega: 	this.data.image.local
+						//	URL (not needed): 	this.data.image.url;
 
 						// info on upgrade:
-						//	self.data.upgrade
+						//	this.data.upgrade
 						//		true: 	upgrade required, version numbers do not match
 						// 		false: 	upgrade not required, version numbers match
-						// 	self.data.build_mismatch
+						// 	this.data.build_mismatch
 						//		true: 	upgrade possible, version numbers match but build numbers do not
 						// 		false: 	upgrade not required, version numbers AND build numbers match
 						// upgrade table
@@ -213,22 +203,41 @@
 						//	1 		true 		false			yes - version number mismatch
 						//	2 		false 		true			yes, but optional - build number mismatch
 						// 	3		false		false			no  - same version and build numbers
-						
+
+						this.data.upgrade = JSON.parse(this.data.upgrade);
+						this.data.build_mismatch = Boolean(this.data.build_mismatch);
+
+						if (this.data.upgrade) {
+							console.log('show major version upgrade');
+							this.upgradeButtonDisabled = false;
+							this.set('upgradeButtonTheme', 'warning');
+							this.upgradeButtonLabel = 'Upgrade Major Version';
+						} else {
+							if (this.data.build_mismatch) {
+								console.log('show minor version upgrade');
+								this.upgradeButtonDisabled = false;
+								this.set('upgradeButtonTheme', 'success');
+								this.upgradeButtonLabel = 'Upgrade Minor Version';
+							} else {
+								console.log('do not upgrade');
+								this.upgradeButtonLabel = 'No Upgrade Required';
+							}
+						}
 					}
-				}, 1000);
+				}).bind(this), 500);
 			};
 
 			// use ubus to initiate the firmware upgrade
 			var upgradeFirmware = function () {
 				console.log('calling oupgrade ubus service...');
 
-				self.$.upgradeLoading.hidden = false;
+				this.$.upgradeLoading.hidden = false;
 
 				var alertElement = document.createElement('bootstrap-alert');
 				alertElement.setAttribute('warning', true);
 				Polymer.dom(alertElement).innerHTML = '<p>Firmware upgrade has started! Please be patient, this might take a little while. When the Omega has rebooted, the firmware upgrade will be complete.</p><p>Do NOT unplug the Omega during this process.</p>';
 
-				Polymer.dom(self.$.upgradeAlerts).appendChild(alertElement);
+				Polymer.dom(this.$.upgradeAlerts).appendChild(alertElement);
 				Polymer.dom.flush();
 
 				// get the ubus service
@@ -256,16 +265,35 @@
 				});
 			};
 
+			var _calculateButtonClass = function (upgradeButtonTheme) {
+				return 'btn btn-' + upgradeButtonTheme;
+			};
+
 			Polymer({
 				is: 'onion-settings-update',
-				created: created,
 				ready: ready,
 				init: init,
 				getFirmwareInfo: getFirmwareInfo,
 				checkFirmwareInfo: checkFirmwareInfo,
 				upgradeFirmware: upgradeFirmware,
+				_calculateButtonClass: _calculateButtonClass,
 				properties: {
-					settings: Array
+					settings: Array,
+					upgradeButtonTheme: {
+						type: String,
+						notify: true,
+						value: 'secondary'
+					},
+					upgradeButtonLabel: {
+						type: String,
+						notify: true,
+						value: 'Checking Update...'
+					},
+					upgradeButtonDisabled: {
+						type: Boolean,
+						notify: true,
+						value: true
+					}
 				}
 			});
         })();

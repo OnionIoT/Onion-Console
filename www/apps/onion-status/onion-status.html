@@ -123,6 +123,16 @@
 					<div id="cardsContainer" class="horizontal layout wrap">
 						<div class="card status">
 							<div class="card-block status-heading">
+								<h4 class="card-title" id="online">Onion Console</h4>
+								<h6 class="card-subtitle text-muted">Codename Ando</h6>
+							</div>
+							<div class="card-block">
+								
+							</div>
+						</div>
+
+						<div class="card status">
+							<div class="card-block status-heading">
 								<h4 class="card-title" id="online">Online</h4>
 								<h4 class="card-title" id="offline">Offline</h4>
 								<h6 class="card-subtitle text-muted">Device Status</h6>
@@ -195,7 +205,6 @@
 					onionConsole.getService('onion-device-provider', function (deviceProvider) {
 						setInterval(function () {
 							deviceProvider.getSystem(function (result) {
-								console.log(result);
 								self.uptime = new Date(result[1].uptime * 1000).toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, '$1');
 								self.memory = (result[1].memory.total - result[1].memory.free) + ' / ' + result[1].memory.total;
 								self.load = result[1].load[0] + ' ' + result[1].load[1] + ' ' + result[1].load[2];
