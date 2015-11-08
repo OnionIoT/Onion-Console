@@ -1,0 +1,73 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
+
+<dom-module id="onion-gpio">
+	<style>
+	    :host {
+				display: block;
+				height: 100%;
+				width: 100%;
+		}
+
+		onion-app-body > div {
+			height: 100%;
+			width: 100%;
+			overflow: scroll;
+			padding: 15px;
+			background-color: #f2f2f2;
+		}
+
+	</style>
+	<template>
+		<onion-app app-name="GPIO Tool" toolbar-background="gray">
+			<onion-app-body>
+				<table>
+					<tr>
+						<th>GPIO</th>
+						<th>Direction</th>
+						<th>Value</th>
+					</tr>
+
+					<template is="dom-repeat" items="{{pins}}">
+					<tr>
+						<td>{{item.id}}</td>
+						<td>{{item.direction}}</td>
+						<td>{{item.value}}</td>
+					</tr>
+					</template>
+					
+				</table>
+			</onion-app-body>
+		</onion-app>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+
+			var ready = function() {
+				this.title = 'GPIO Tool';
+				return;
+	                }			
+
+			Polymer({
+				is: 'onion-gpio',
+				ready: ready,
+				properties: {
+					pins:{
+						type: Object,
+						value: [
+							{id:0, direction: 'OUT', value: 'LOW'},
+							{id:1, direction: 'IN', value: 'LOW'},
+							{id:13, direction: 'IN', value: 'HIGH'},
+							{id:16, direction: 'OUT', value: 'LOW'},
+						]
+
+					}
+				}
+			});
+        })();
+	</script>
+</dom-module>
