@@ -138,9 +138,9 @@
 								<h6 class="card-subtitle text-muted">Device Status</h6>
 							</div>
 							<div class="card-block">
-								<p><strong>Uptime</strong>:&nbsp;<span>{{uptime}}</span></p>
-								<p><strong>Memory</strong>:&nbsp;<span>{{memory}}</span></p>
-								<p><strong>Load</strong>:&nbsp;<span>{{load}}</span></p>
+								<p><span>{{uptime}}</span><br><strong>Uptime</strong></p>
+								<p><span>{{memory}}</span><br><strong>Memory</strong></p>
+								<p><span>{{load}}</span><br><strong>Load</strong></p>
 							</div>
 						</div>
 
@@ -150,8 +150,8 @@
 								<h6 class="card-subtitle text-muted">Wi-Fi Network</h6>
 							</div>
 							<div class="card-block">
-								<p><strong>Netmask</strong>:&nbsp;<span>{{netmask}}</span></p>
-								<p><strong>MAC Address</strong>:&nbsp;<span>{{mac}}</span></p>
+								<p><span>{{netmask}}</span><br><strong>Netmask</strong></p>
+								<p><span>{{mac}}</span><br><strong>MAC Address</strong></p>
 							</div>
 						</div>
 
@@ -194,6 +194,41 @@
 			var refreshStatusInterval = null;
 			var locked = false;
 
+			// add zero padding to integers
+			function zeroPad(num, places) {
+				var zero = places - num.toString().length + 1;
+				return Array(+(zero > 0 && zero)).join("0") + num;
+			}
+
+			// convert milliseconds to 
+			function millisecondsToStr (milliseconds) {
+				var 	ret 	= '';
+
+				function numberEnding (number) {
+					return (number > 1) ? 's' : '';
+				}
+
+				var temp = Math.floor(milliseconds / 1000);
+				var years = Math.floor(temp / 31536000);
+				if (years) {
+					ret = years + ' year' + numberEnding(years);
+				}
+				var days = Math.floor((temp %= 31536000) / 86400);
+				if (days) {
+					ret = ret + days + ' day' + numberEnding(days) + ' ';
+				}
+				var hours = Math.floor((temp %= 86400) / 3600);
+				ret = ret +  hours + ':';
+
+				var minutes = Math.floor((temp %= 3600) / 60);
+				ret = ret +  zeroPad(minutes, 2) + ':';
+				
+				var seconds = temp % 60;
+				ret = ret +  zeroPad(seconds, 2);
+
+				return ret;
+			}
+
 			var ready = function() {
 				self.title = 'Device Status';
 				
@@ -205,9 +240,12 @@
 					onionConsole.getService('onion-device-provider', function (deviceProvider) {
 						setInterval(function () {
 							deviceProvider.getSystem(function (result) {
-								self.uptime = new Date(result[1].uptime * 1000).toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, '$1');
-								self.memory = (result[1].memory.total - result[1].memory.free) + ' / ' + result[1].memory.total;
-								self.load = result[1].load[0] + ' ' + result[1].load[1] + ' ' + result[1].load[2];
+								//self.uptime = new Date(result[1].uptime * 1000).toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, '$1');
+								self.uptime = millisecondsToStr ( result[1].uptime * 1000 );
+								self.memoryFree		= (result[1].memory.total / 1024000 - result[1].memory.free / 1024000).toFixed(3);
+								self.memoryTotal	= (result[1].memory.total / 1024000).toFixed(3);
+								self.memory = (self.memoryFree) + ' MB / ' + (self.memoryTotal) + ' MB';
+								self.load = (result[1].load[0] / 100000).toFixed(4) + ' ' + (result[1].load[1] / 100000).toFixed(4) + ' ' + (result[1].load[2] / 100000).toFixed(4);
 							});
 						}, 1000);
 
