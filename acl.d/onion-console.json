@@ -32,6 +32,12 @@
                                 "network.interface": [
                                         "dump"
                                 ],
+                                "gpio": [
+                                        "get",
+                                        "get_activelow",
+                                        "get_direction",
+                                        "status"
+                                ],
                                 "uci": [
                                         "*"
                                 ]
@@ -58,6 +64,11 @@
                                         "exec",
                                         "write",
                                         "stat"
+                                ],
+                                "gpio": [
+                                        "set_pin",
+                                        "set_activelow",
+                                        "set_direction"
                                 ],
                                 "system": [
                                         "info",

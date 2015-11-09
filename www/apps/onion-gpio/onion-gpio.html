@@ -22,6 +22,7 @@
 	<template>
 		<onion-app app-name="GPIO Tool" toolbar-background="gray">
 			<onion-app-body>
+
 				<table>
 					<tr>
 						<th>GPIO</th>
@@ -29,15 +30,36 @@
 						<th>Value</th>
 					</tr>
 
-					<template is="dom-repeat" items="{{pins}}">
+					<template is="dom-repeat" items="{{gpioArr}}">
 					<tr>
 						<td>{{item.id}}</td>
-						<td>{{item.direction}}</td>
-						<td>{{item.value}}</td>
+						<!-- select pin direction -->
+						<td>
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+								<select class="form-control c-select" id="item-direction" autocomplete="off" value="{{item.direction::input}}">
+									<option value="input">Input</option>
+									<option value="output">Output</option>
+								</select>
+							</div>
+						</td>
+						<!-- select pin value -->
+						<td>
+							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+								<!--<input type="text" class="form-control" id="item-value" autocomplete="off" value="{{item.value::input}}"/>-->
+								<select class="form-control c-select" id="item-value" autocomplete="off" value="{{item.value::input}}">
+									<option value=0>0</option>
+									<option value=1>1</option>
+								</select>
+							</div>
+						</td>
 					</tr>
 					</template>
 					
 				</table>
+
+				<!--<div class="layout vertical left">-->
+					<button id="apply-gpio-button" type="button" class="btn btn-success" on-click="applyAllGpioSettings">Sync</button>
+				<!--</div>-->
 			</onion-app-body>
 		</onion-app>
 	</template>
@@ -46,23 +68,182 @@
 		'use strict';
 
 		(function () {
-
 			var ready = function() {
-				this.title = 'GPIO Tool';
+				this.title 			= 'GPIO Tool';
+				this.gpioArr 		= [];
+				this.gpioPins 		= [];
+				this.initGpioArray();
+
+				// populate the info for all pins 
+				this.readAllGpioStatus();
+
 				return;
-	                }			
+            };
+
+            // initialize the gpio array
+			var initGpioArray 	= function() {
+				// define array of valid pins
+				this.gpioPins 		= [0, 1, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18, 19, 23, 26];
+
+
+				// set defaults for all pins
+				for (var i = 0; i < this.gpioPins.length; i++) {
+					var pin 	= this.gpioPins[i];
+					var item 	= {id:pin, direction: 'input', activelow: false, value:0};
+					this.push('gpioArr', item);
+				}
+				return;
+			};	
+
+			// populate the array with info for all GPIO pins
+            var readAllGpioStatus = function () {
+            	var top 	= this;
+
+				// get the ubus service
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					top.gpioArr.forEach( function(element, index) {
+						ubus.request('gpio', 'status', {pin: element.id}, function (data) {
+							if (data) {
+								var returnCode = data[0];
+								if (returnCode === 0) {
+									// data[1] contains the following:
+									//	{pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
+
+									//console.log('gpio', element.id, ' status:', data[1]);
+									top.set('gpioArr.' + index + '.direction', data[1].direction);
+									top.set('gpioArr.' + index + '.activelow', data[1].activelow);
+									top.set('gpioArr.' + index + '.value', data[1].value);
+								}
+								else {
+									console.log('gpio status error');
+								}
+							}
+						});
+					});
+				});
+			};
+
+			// apply form settings to all pins
+			var applyAllGpioSettings = function () {
+				var top 	= this;
+
+				// get the ubus service
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					top.gpioArr.forEach( function(element, index) {
+						if (top.gpioArr[index].direction === 'input') {
+							// set direction to input
+							top.setGpioDirection(ubus, index, element.id, element.direction, function(data) {
+								if (data == 0) {
+									// read the value
+									top.readGpioValue		(ubus, index, element.id);
+								}
+							});
+						}
+						else if (top.gpioArr[index].direction === 'output') {
+							// write the value (ubus will set the pin to output)
+							top.setGpioValue		(ubus, index, element.id, element.value);
+						}
+					});
+				});
+			};
+
+			// set a single GPIO's direction
+			var setGpioDirection = function (ubus, index, pinId, dirSetting, callback) {
+				callback 	= callback || function () {};
+				var top 	= this;
+
+				ubus.request('gpio', 'set_direction', {pin:pinId, direction:dirSetting}, function (data) {
+					if (data) {	
+						var returnCode = data[0];
+						if (returnCode === 0) {
+							//console.log('gpio', index, ' set-direction:: pin', pinId, 'value:', dirSetting);
+							callback(0);
+						}
+						else {
+							console.log('gpio' + pinId + ' set_direction error');
+							callback(1);
+						}
+					}
+				});
+			};
+
+			// read a GPIO pin's value
+			var readGpioValue = function (ubus, index, pinId, callback) {
+				callback 	= callback || function () {};
+
+				var top 	= this;
+				var status 	= 0;
+
+				ubus.request('gpio', 'get', {pin:pinId}, function (data) {
+					if (data) {
+						var returnCode = data[0];
+						if (returnCode === 0) {
+							//console.log('gpio', index, ' read:: pin', pinId, 'value:', data[1]);
+							top.set('gpioArr.' + index + '.value', data[1].value);
+							callback(0);
+						}
+						else {
+							console.log('gpio' + pinId + ' get error');
+							callback(1);
+						}
+					}
+				});
+			};
+
+			// set the value of a GPIO pin
+			var setGpioValue = function (ubus, index, pinId, setVal, callback) {
+				callback 	= callback || function () {};
+
+				var top 	= this;
+				var status 	= 0;
+
+				ubus.request('gpio', 'set_pin', {pin:pinId, value:setVal}, function (data) {
+					if (data) {
+						var returnCode = data[0];
+						if (returnCode === 0) {
+							//console.log('gpio', index, ' set:: setting pin', pinId,  'worked');
+							callback(0);
+						}
+						else {
+							console.log('gpio' + pinId + ' set_pin error');
+							callback(1);
+						}
+					}
+				});
+			};
+
 
 			Polymer({
 				is: 'onion-gpio',
 				ready: ready,
+				initGpioArray: initGpioArray,
+				readAllGpioStatus: readAllGpioStatus,
+				setGpioDirection: setGpioDirection,
+				readGpioValue: readGpioValue,
+				setGpioValue: setGpioValue,
+				applyAllGpioSettings: applyAllGpioSettings,
 				properties: {
-					pins:{
+					gpioArr:{
 						type: Object,
+						//value: []
+						notify: true,
 						value: [
-							{id:0, direction: 'OUT', value: 'LOW'},
-							{id:1, direction: 'IN', value: 'LOW'},
-							{id:13, direction: 'IN', value: 'HIGH'},
-							{id:16, direction: 'OUT', value: 'LOW'},
+							{id:0, direction: 'input', value: 0},
+							{id:1, direction: 'input', value: 0},
+							{id:2, direction: 'input', value: 0},
+							{id:3, direction: 'input', value: 0},
+							{id:4, direction: 'input', value: 0},
+							{id:5, direction: 'input', value: 0},
+							{id:6, direction: 'input', value: 0},
+							{id:7, direction: 'input', value: 0},
+							{id:8, direction: 'input', value: 0},
+							{id:9, direction: 'input', value: 0},
+							{id:10, direction: 'input', value: 0},
+							{id:11, direction: 'input', value: 0},
+							{id:12, direction: 'input', value: 0},
+							{id:13, direction: 'input', value: 0},
+							{id:14, direction: 'input', value: 0}
+							// confirm total number
 						]
 
 					}
