@@ -145,6 +145,17 @@
 
 						<div class="card status">
 							<div class="card-block status-heading">
+								<h4 class="card-title" id="online">Storage</h4>
+								<h6 class="card-subtitle text-muted">&nbsp;</h6>
+							</div>
+							<div class="card-block">
+								<p><span>NEED PROGRESS HERE</span><br><strong>LAZAR TO DO</strong></p>
+								<progress class="progress progress-warning" value="50" max="100">50%</progress>
+							</div>
+						</div>
+
+						<div class="card status">
+							<div class="card-block status-heading">
 								<h4 class="card-title" id="online">Online</h4>
 								<h4 class="card-title" id="offline">Offline</h4>
 								<h6 class="card-subtitle text-muted">Device Status</h6>
@@ -250,9 +261,9 @@
 				
 				if (self.sessionProvider.isAlive() === true) {
 					onionConsole.getService('onion-device-provider', function (deviceProvider) {
+						// Format the uptime, memory, and load
 						setInterval(function () {
 							deviceProvider.getSystem(function (result) {
-								//self.uptime = new Date(result[1].uptime * 1000).toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, '$1');
 								self.uptime = millisecondsToStr ( result[1].uptime * 1000 );
 								self.memoryFree		= (result[1].memory.total / 1024000 - result[1].memory.free / 1024000).toFixed(3);
 								self.memoryTotal	= (result[1].memory.total / 1024000).toFixed(3);
