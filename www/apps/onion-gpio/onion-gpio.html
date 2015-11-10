@@ -5,9 +5,9 @@
 <dom-module id="onion-gpio">
 	<style>
 	    :host {
-				display: block;
-				height: 100%;
-				width: 100%;
+			display: block;
+			height: 100%;
+			width: 100%;
 		}
 
 		onion-app-body > div {
@@ -15,51 +15,92 @@
 			width: 100%;
 			overflow: scroll;
 			padding: 15px;
-			background-color: #f2f2f2;
 		}
 
+		#pin-map {
+			height: 600px;
+			width: auto;
+		}
+
+		button.pin {
+			border-radius: 5px;
+			display: block;
+			border: 1px solid #f2f2f2;
+			font-size: 12px;
+			padding: 3px 5px;
+			background-color: #7f8c8d;
+			color: #fff;
+
+		}
+
+		button.pin.gpio {
+			background-color: #2ecc71;
+		}
+
+		#left-pins {
+			margin-right: 10px;
+		}
+
+		#right-pins {
+			margin-left: 10px;
+		}
+
+		#gpio-control {
+			height: 415px;
+			width: 300px;
+			background: #fff;
+			border-radius: 5px;
+			margin-left: 25px;
+		}
+
+		#no-pin {
+			color: #ccc;
+		}
 	</style>
 	<template>
-		<onion-app app-name="GPIO Tool" toolbar-background="gray">
+		<onion-app app-name="GPIO Tool" toolbar-background="#c0392b" background="#f2f2f2">
 			<onion-app-body>
+				<div class="horizontal center-justified layout center">
+					<div class="vertical end-justified layout" id="left-pins">
+						<template is="dom-repeat" items="{{leftPins}}">
+							<button class$="{{_calculatePinClass(item.gpio)}}" on-tap="_onPin">{{item.label}}</button>
+						</template>
+					</div>
 
-				<table>
-					<tr>
-						<th>GPIO</th>
-						<th>Direction</th>
-						<th>Value</th>
-					</tr>
+					<img id="pin-map" src="./omega.png" />
 
-					<template is="dom-repeat" items="{{gpioArr}}">
-					<tr>
-						<td>{{item.id}}</td>
-						<!-- select pin direction -->
-						<td>
-							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-								<select class="form-control c-select" id="item-direction" autocomplete="off" value="{{item.direction::input}}">
-									<option value="input">Input</option>
-									<option value="output">Output</option>
-								</select>
+					<div class="vertical end-justified layout" id="right-pins">
+						<template is="dom-repeat" items="{{rightPins}}">
+							<button class$="{{_calculatePinClass(item.gpio)}}" on-tap="_onPin">{{item.label}}</button>
+						</template>
+					</div>
+
+					<div id="gpio-control" class="horizontal center-justified layout center">
+						<template is="dom-if" if="{{!pinSelected}}">
+							<div id="no-pin">Please select a GPIO Pin</div>
+						</template>
+						<template is="dom-if" if="{{pinSelected}}">
+							<div class="row">
+								<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+									<label for="direction">Direction</label>
+								</div>
+								<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+									<select id="direction" class="c-select">
+										<option selected>Open this select menu</option>
+										<option value="1">One</option>
+										<option value="2">Two</option>
+										<option value="3">Three</option>
+									</select>
+								</div>
 							</div>
-						</td>
-						<!-- select pin value -->
-						<td>
-							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-								<!--<input type="text" class="form-control" id="item-value" autocomplete="off" value="{{item.value::input}}"/>-->
-								<select class="form-control c-select" id="item-value" autocomplete="off" value="{{item.value::input}}">
-									<option value=0>0</option>
-									<option value=1>1</option>
-								</select>
-							</div>
-						</td>
-					</tr>
-					</template>
-					
-				</table>
 
-				<!--<div class="layout vertical left">-->
-					<button id="apply-gpio-button" type="button" class="btn btn-success" on-click="applyAllGpioSettings">Sync</button>
-				<!--</div>-->
+	                        
+						</template>
+					</div>
+					<!--<div class="layout vertical left">-->
+						<!-- <button id="apply-gpio-button" type="button" class="btn btn-success" on-click="applyAllGpioSettings">Sync</button> -->
+					<!--</div>-->
+				</div>
 			</onion-app-body>
 		</onion-app>
 	</template>
@@ -69,10 +110,7 @@
 
 		(function () {
 			var ready = function() {
-				this.title 			= 'GPIO Tool';
-				this.gpioArr 		= [];
-				this.gpioPins 		= [];
-				this.initGpioArray();
+				this.title = 'GPIO Tool';
 
 				// populate the info for all pins 
 				this.readAllGpioStatus();
@@ -80,47 +118,28 @@
 				return;
             };
 
-            // initialize the gpio array
-			var initGpioArray 	= function() {
-				// define array of valid pins
-				this.gpioPins 		= [0, 1, 6, 7, 8, 12, 13, 14, 15, 16, 17, 18, 19, 23, 26];
-
-
-				// set defaults for all pins
-				for (var i = 0; i < this.gpioPins.length; i++) {
-					var pin 	= this.gpioPins[i];
-					var item 	= {id:pin, direction: 'input', activelow: false, value:0};
-					this.push('gpioArr', item);
-				}
-				return;
-			};	
-
 			// populate the array with info for all GPIO pins
             var readAllGpioStatus = function () {
-            	var top 	= this;
-
 				// get the ubus service
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
-					top.gpioArr.forEach( function(element, index) {
-						ubus.request('gpio', 'status', {pin: element.id}, function (data) {
-							if (data) {
-								var returnCode = data[0];
-								if (returnCode === 0) {
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					for (var index in this.gpios) {
+						if (this.gpios.hasOwnProperty(index)) {
+							ubus.request('gpio', 'status', {
+								pin: index
+							}, (function (data) {
+								if (data.length === 2 && data[0] === 0) {
+									this.set('gpios.' + data[1].pin + '.direction', data[1].direction);
+									this.set('gpios.' + data[1].pin + '.activelow', data[1].activelow);
+									this.set('gpios.' + data[1].pin + '.value', data[1].value);
 									// data[1] contains the following:
-									//	{pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
-
-									//console.log('gpio', element.id, ' status:', data[1]);
-									top.set('gpioArr.' + index + '.direction', data[1].direction);
-									top.set('gpioArr.' + index + '.activelow', data[1].activelow);
-									top.set('gpioArr.' + index + '.value', data[1].value);
-								}
-								else {
+									// {pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
+								} else {
 									console.log('gpio status error');
 								}
-							}
-						});
-					});
-				});
+							}).bind(this));
+						}
+					}
+				}).bind(this));
 			};
 
 			// apply form settings to all pins
@@ -212,40 +231,106 @@
 				});
 			};
 
+			var _calculatePinClass = function (gpio) {
+				return 'pin' + (gpio !== false ? ' gpio' : '');
+			};
+
+			var _onPin = function (e) {
+				var pin = e.model.item.gpio;
+
+				if (pin !== false) {
+					this.set('currentPin', pin);
+					this.set('pinSelected', true);
+				} else {
+					this.set('currentPin', undefined);
+					this.set('pinSelected', false);
+				}
+			};
 
 			Polymer({
 				is: 'onion-gpio',
 				ready: ready,
-				initGpioArray: initGpioArray,
+				behaviors: [Onion.AppBehavior],
+				_calculatePinClass: _calculatePinClass,
+				_onPin: _onPin,
 				readAllGpioStatus: readAllGpioStatus,
 				setGpioDirection: setGpioDirection,
 				readGpioValue: readGpioValue,
 				setGpioValue: setGpioValue,
 				applyAllGpioSettings: applyAllGpioSettings,
 				properties: {
-					gpioArr:{
-						type: Object,
-						//value: []
+					currentPin: {
+						type: Number,
 						notify: true,
+						value: undefined
+					},
+					pinSelected: {
+						type: Boolean,
+						notify: true,
+						value: false
+					},
+					leftPins: {
+						type: Array,
 						value: [
-							{id:0, direction: 'input', value: 0},
-							{id:1, direction: 'input', value: 0},
-							{id:2, direction: 'input', value: 0},
-							{id:3, direction: 'input', value: 0},
-							{id:4, direction: 'input', value: 0},
-							{id:5, direction: 'input', value: 0},
-							{id:6, direction: 'input', value: 0},
-							{id:7, direction: 'input', value: 0},
-							{id:8, direction: 'input', value: 0},
-							{id:9, direction: 'input', value: 0},
-							{id:10, direction: 'input', value: 0},
-							{id:11, direction: 'input', value: 0},
-							{id:12, direction: 'input', value: 0},
-							{id:13, direction: 'input', value: 0},
-							{id:14, direction: 'input', value: 0}
-							// confirm total number
+							{label: 'GND', gpio: false},
+							{label: '2.8V', gpio: false},
+							{label: 'GPIO 26', gpio: 26},
+							{label: 'GPIO 23', gpio: 23},
+							{label: 'GPIO 17', gpio: 17},
+							{label: 'GPIO 16', gpio: 16},
+							{label: 'GPIO 15', gpio: 15},
+							{label: 'GPIO 14', gpio: 14},
+							{label: 'GPIO 13', gpio: 13},
+							{label: 'GPIO 12', gpio: 12},
+							{label: 'GPIO 8', gpio: 8},
+							{label: 'GPIO 7', gpio: 7},
+							{label: 'GPIO 6', gpio: 6},
+							{label: 'GPIO 1', gpio: 1},
+							{label: 'GPIO 0', gpio: 0},
+							{label: 'RESET', gpio: false}
 						]
-
+					},
+					rightPins: {
+						type: Array,
+						value: [
+							{label: 'GND', gpio: false},
+							{label: '3.3V', gpio: false},
+							{label: 'USB D+', gpio: false},
+							{label: 'USB D-', gpio: false},
+							{label: 'TX', gpio: false},
+							{label: 'RX', gpio: false},
+							{label: 'FW RST', gpio: false},
+							{label: '2.0V', gpio: false},
+							{label: 'ETH TX-', gpio: false},
+							{label: 'ETH TX+', gpio: false},
+							{label: 'ETH RX-', gpio: false},
+							{label: 'ETH RX+', gpio: false},
+							{label: 'GPIO 18', gpio: 18},
+							{label: 'GPIO 19', gpio: 19},
+							{label: 'I2C SCL', gpio: false},
+							{label: 'I2C SDA', gpio: false}
+						]
+					},
+					gpios:{
+						type: Array,
+						notify: true,
+						value: {
+							0: {direction: 'input', value: 0},
+							1: {direction: 'input', value: 0},
+							6: {direction: 'input', value: 0},
+							7: {direction: 'input', value: 0},
+							8: {direction: 'input', value: 0},
+							12: {direction: 'input', value: 0},
+							13: {direction: 'input', value: 0},
+							14: {direction: 'input', value: 0},
+							15: {direction: 'input', value: 0},
+							16: {direction: 'input', value: 0},
+							17: {direction: 'input', value: 0},
+							18: {direction: 'input', value: 0},
+							19: {direction: 'input', value: 0},
+							23: {direction: 'input', value: 0},
+							26: {direction: 'input', value: 0}
+						}
 					}
 				}
 			});
