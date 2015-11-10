@@ -102,7 +102,7 @@
 								<div class="form-group row">
 									<label for="value" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Value</label>
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-										<select id="value" class="c-select" value="{{valueBuffer::input}}" disabled="{{_calculateDirection(currentPin, directionBuffer)}}">
+										<select id="value" class="c-select" value="{{valueBuffer::input}}" disabled="{{_calculateDirection(currentPin, updateDirection)}}">
 											<option value="0">0</option>
 											<option value="1">1</option>
 										</select>
@@ -129,11 +129,11 @@
 				this.title = 'GPIO Tool';
 
 				// populate the info for all pins 
-				this.readAllGpioStatus();
+				this._syncAll();
             };
 
 			// populate the array with info for all GPIO pins
-            var readAllGpioStatus = function () {
+            var _syncAll = function () {
 				// get the ubus service
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
 					for (var index in this.gpios) {
@@ -154,95 +154,6 @@
 						}
 					}
 				}).bind(this));
-			};
-
-			// apply form settings to all pins
-			var applyAllGpioSettings = function () {
-				var top 	= this;
-
-				// get the ubus service
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
-					top.gpioArr.forEach( function(element, index) {
-						if (top.gpioArr[index].direction === 'input') {
-							// set direction to input
-							top.setGpioDirection(ubus, index, element.id, element.direction, function(data) {
-								if (data == 0) {
-									// read the value
-									top.readGpioValue		(ubus, index, element.id);
-								}
-							});
-						}
-						else if (top.gpioArr[index].direction === 'output') {
-							// write the value (ubus will set the pin to output)
-							top.setGpioValue		(ubus, index, element.id, element.value);
-						}
-					});
-				});
-			};
-
-			// set a single GPIO's direction
-			var setGpioDirection = function (ubus, index, pinId, dirSetting, callback) {
-				callback 	= callback || function () {};
-				var top 	= this;
-
-				ubus.request('gpio', 'set_direction', {pin:pinId, direction:dirSetting}, function (data) {
-					if (data) {	
-						var returnCode = data[0];
-						if (returnCode === 0) {
-							//console.log('gpio', index, ' set-direction:: pin', pinId, 'value:', dirSetting);
-							callback(0);
-						}
-						else {
-							console.log('gpio' + pinId + ' set_direction error');
-							callback(1);
-						}
-					}
-				});
-			};
-
-			// read a GPIO pin's value
-			var readGpioValue = function (ubus, index, pinId, callback) {
-				callback 	= callback || function () {};
-
-				var top 	= this;
-				var status 	= 0;
-
-				ubus.request('gpio', 'get', {pin:pinId}, function (data) {
-					if (data) {
-						var returnCode = data[0];
-						if (returnCode === 0) {
-							//console.log('gpio', index, ' read:: pin', pinId, 'value:', data[1]);
-							top.set('gpioArr.' + index + '.value', data[1].value);
-							callback(0);
-						}
-						else {
-							console.log('gpio' + pinId + ' get error');
-							callback(1);
-						}
-					}
-				});
-			};
-
-			// set the value of a GPIO pin
-			var setGpioValue = function (ubus, index, pinId, setVal, callback) {
-				callback 	= callback || function () {};
-
-				var top 	= this;
-				var status 	= 0;
-
-				ubus.request('gpio', 'set_pin', {pin:pinId, value:setVal}, function (data) {
-					if (data) {
-						var returnCode = data[0];
-						if (returnCode === 0) {
-							//console.log('gpio', index, ' set:: setting pin', pinId,  'worked');
-							callback(0);
-						}
-						else {
-							console.log('gpio' + pinId + ' set_pin error');
-							callback(1);
-						}
-					}
-				});
 			};
 
 			var _calculatePinClass = function (gpio) {
@@ -274,7 +185,6 @@
 								direction: this.directionBuffer
 							}, (function (data) {
 								if (data.length === 2 && data[0] === 0) {
-									console.log(data[1]);
 									this.set('gpios.' + this.currentPin + '.direction', this.directionBuffer);
 									this.set('gpios.' + this.currentPin + '.value', this.valueBuffer);
 								} else {
@@ -311,8 +221,6 @@
 								pin: this.currentPin
 							}, (function (data) {
 								if (data.length === 2 && data[0] === 0) {
-									this.set('gpios.' + data[1].pin + '.direction', data[1].direction);
-									this.set('gpios.' + data[1].pin + '.activelow', data[1].activelow);
 									this.set('gpios.' + data[1].pin + '.value', data[1].value);
 									
 									// Update UI
@@ -340,7 +248,7 @@
 				}
 			};
 
-			var _calculateDirection = function (currentPin, directionBuffer) {
+			var _calculateDirection = function (currentPin, updateDirection) {
 				return (this.gpios[currentPin].direction === 'input');
 			};
 
@@ -357,11 +265,7 @@
 				_sync: _sync,
 				_calculateDirection: _calculateDirection,
 				_directionChanged: _directionChanged,
-				readAllGpioStatus: readAllGpioStatus,
-				setGpioDirection: setGpioDirection,
-				readGpioValue: readGpioValue,
-				setGpioValue: setGpioValue,
-				applyAllGpioSettings: applyAllGpioSettings,
+				_syncAll: _syncAll,
 				properties: {
 					directionBuffer: {
 						type: String,
