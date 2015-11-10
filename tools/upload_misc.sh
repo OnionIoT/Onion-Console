@@ -21,4 +21,5 @@ rsync --progress -rv ./rpcd/onion-console.sh root@$ipAddr:/usr/libexec/rpcd/onio
 rsync --progress -rv ./bin/factory-reset.sh root@$ipAddr:/usr/sbin/factory-reset
 rsync --progress -rv ./bin/power-down.sh root@$ipAddr:/usr/sbin/power-down
 rsync --progress -rv ./bin/change-password.sh root@$ipAddr:/usr/sbin/change-password
+rsync --progress -rv ./bin/disk-space.sh root@$ipAddr:/usr/sbin/disk-space
 

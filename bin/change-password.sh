@@ -1,7 +1,6 @@
 #!/bin/sh
 
-### calling this will shutdown the Omega
-### only if called with -f option
+### change the password of the specified user
 
 bUsage=1
 
