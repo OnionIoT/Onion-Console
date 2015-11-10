@@ -51,10 +51,17 @@
 			background: #fff;
 			border-radius: 5px;
 			margin-left: 25px;
+			padding: 25px;
 		}
+			#gpio-pin-number {
+				text-align: center;
+				margin-bottom: 25px;
+			}
 
 		#no-pin {
 			color: #ccc;
+			height: 100%;
+			width: 100%;
 		}
 	</style>
 	<template>
@@ -75,31 +82,40 @@
 						</template>
 					</div>
 
-					<div id="gpio-control" class="horizontal center-justified layout center">
+					<div id="gpio-control">
 						<template is="dom-if" if="{{!pinSelected}}">
-							<div id="no-pin">Please select a GPIO Pin</div>
+							<div id="no-pin" class="horizontal center-justified layout center">Please select a GPIO Pin</div>
 						</template>
 						<template is="dom-if" if="{{pinSelected}}">
-							<div class="row">
-								<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-									<label for="direction">Direction</label>
+							<div>
+								<h5 id="gpio-pin-number">GPIO <span>{{currentPin}}</span></h5>
+
+								<div class="form-group row">
+									<label for="direction" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Direction</label>
+									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+										<select id="direction" class="c-select" on-change="_directionChanged" value="{{directionBuffer::input}}">
+											<option value="input">Input</option>
+											<option value="output">Output</option>
+										</select>
+									</div>
 								</div>
-								<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-									<select id="direction" class="c-select">
-										<option selected>Open this select menu</option>
-										<option value="1">One</option>
-										<option value="2">Two</option>
-										<option value="3">Three</option>
-									</select>
+								<div class="form-group row">
+									<label for="value" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Value</label>
+									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+										<select id="value" class="c-select" value="{{valueBuffer::input}}" disabled="{{_calculateDirection(currentPin, directionBuffer)}}">
+											<option value="0">0</option>
+											<option value="1">1</option>
+										</select>
+									</div>
+								</div>
+								<div class="form-group row">
+									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
+										<button class="btn btn-success" on-tap="_sync">Sync</button>
+									</div>
 								</div>
 							</div>
-
-	                        
 						</template>
 					</div>
-					<!--<div class="layout vertical left">-->
-						<!-- <button id="apply-gpio-button" type="button" class="btn btn-success" on-click="applyAllGpioSettings">Sync</button> -->
-					<!--</div>-->
 				</div>
 			</onion-app-body>
 		</onion-app>
@@ -114,8 +130,6 @@
 
 				// populate the info for all pins 
 				this.readAllGpioStatus();
-
-				return;
             };
 
 			// populate the array with info for all GPIO pins
@@ -239,6 +253,8 @@
 				var pin = e.model.item.gpio;
 
 				if (pin !== false) {
+					this.set('directionBuffer', this.gpios[pin].direction);
+					this.set('valueBuffer', this.gpios[pin].value);
 					this.set('currentPin', pin);
 					this.set('pinSelected', true);
 				} else {
@@ -247,18 +263,118 @@
 				}
 			};
 
+			var _sync = function () {
+				if (this.updateDirection) {
+					// Direction has just been updated. Input becomes output, and vise versa
+					if (this.directionBuffer === 'input') {
+						// OUTPUT -> INPUT
+						onionConsole.getService('onion-ubus-provider', (function (ubus) {
+							ubus.request('gpio', 'set_direction', {
+								pin: this.currentPin, 
+								direction: this.directionBuffer
+							}, (function (data) {
+								if (data.length === 2 && data[0] === 0) {
+									console.log(data[1]);
+									this.set('gpios.' + this.currentPin + '.direction', this.directionBuffer);
+									this.set('gpios.' + this.currentPin + '.value', this.valueBuffer);
+								} else {
+									console.log('gpio read error');
+								}
+							}).bind(this));
+						}).bind(this));
+
+					} else if (this.directionBuffer === 'output') {
+						// INPUT -> OUTPUT
+						this.set('currentPin', this.currentPin);
+
+						onionConsole.getService('onion-ubus-provider', (function (ubus) {
+							ubus.request('gpio', 'set_direction', {
+								pin: this.currentPin, 
+								direction: this.directionBuffer
+							}, (function (data) {
+								if (data.length === 2 && data[0] === 0) {
+									this.set('gpios.' + this.currentPin + '.direction', this.directionBuffer);
+								} else {
+									console.log('gpio read error');
+								}
+							}).bind(this));
+						}).bind(this));
+					}
+
+					this.set('updateDirection', false);
+				} else {
+					// Direction has not changed
+					if (this.directionBuffer === 'input') {
+						// Just need to read data
+						onionConsole.getService('onion-ubus-provider', (function (ubus) {
+							ubus.request('gpio', 'status', {
+								pin: this.currentPin
+							}, (function (data) {
+								if (data.length === 2 && data[0] === 0) {
+									this.set('gpios.' + data[1].pin + '.direction', data[1].direction);
+									this.set('gpios.' + data[1].pin + '.activelow', data[1].activelow);
+									this.set('gpios.' + data[1].pin + '.value', data[1].value);
+									
+									// Update UI
+									this.set('directionBuffer', data[1].direction);
+									this.set('valueBuffer', data[1].value);
+								} else {
+									console.log('gpio status error');
+								}
+							}).bind(this));
+						}).bind(this));
+					} else if (this.directionBuffer === 'output') {
+						// Set the GPIO Pin
+						onionConsole.getService('onion-ubus-provider', (function (ubus) {
+							ubus.request('gpio', 'set_pin', {
+								pin: this.currentPin, 
+								value: this.valueBuffer
+							}, (function (data) {
+								if (data.length === 2 && data[0] === 0) {
+									this.set('gpios.' + this.currentPin + '.value', this.valueBuffer);
+								}
+							}).bind(this));
+						}).bind(this));
+					}
+					
+				}
+			};
+
+			var _calculateDirection = function (currentPin, directionBuffer) {
+				return (this.gpios[currentPin].direction === 'input');
+			};
+
+			var _directionChanged = function () {
+				this.set('updateDirection', true);
+			};
+
 			Polymer({
 				is: 'onion-gpio',
 				ready: ready,
 				behaviors: [Onion.AppBehavior],
 				_calculatePinClass: _calculatePinClass,
 				_onPin: _onPin,
+				_sync: _sync,
+				_calculateDirection: _calculateDirection,
+				_directionChanged: _directionChanged,
 				readAllGpioStatus: readAllGpioStatus,
 				setGpioDirection: setGpioDirection,
 				readGpioValue: readGpioValue,
 				setGpioValue: setGpioValue,
 				applyAllGpioSettings: applyAllGpioSettings,
 				properties: {
+					directionBuffer: {
+						type: String,
+						notify: true
+					},
+					updateDirection: {
+						type: Boolean,
+						notify: true
+					},
+					valueBuffer: {
+						type: Number,
+						notify: true
+					},
 					currentPin: {
 						type: Number,
 						notify: true,
