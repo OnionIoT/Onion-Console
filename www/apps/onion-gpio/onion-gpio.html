@@ -28,13 +28,21 @@
 			border: 1px solid #f2f2f2;
 			font-size: 12px;
 			padding: 3px 5px;
-			background-color: #7f8c8d;
+			background-color: #E8E8E8;
 			color: #fff;
 
 		}
 
 		button.pin.gpio {
+			background-color: gray;
+		}
+
+		button.pin.gpio.on {
 			background-color: #2ecc71;
+		}
+
+		button.pin.gpio.off {
+			background-color: red;
 		}
 
 		#left-pins {
@@ -69,31 +77,35 @@
 			<onion-app-body>
 				<div class="horizontal center-justified layout center">
 					<div class="vertical end-justified layout" id="left-pins">
-						<template is="dom-repeat" items="{{leftPins}}">
-							<button class$="{{_calculatePinClass(item.gpio)}}" on-tap="_onPin">{{item.label}}</button>
+						<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
+							<template is="dom-if" if="{{item.left}}">
+								<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+							</template>
 						</template>
 					</div>
 
 					<img id="pin-map" src="./omega.png" />
 
 					<div class="vertical end-justified layout" id="right-pins">
-						<template is="dom-repeat" items="{{rightPins}}">
-							<button class$="{{_calculatePinClass(item.gpio)}}" on-tap="_onPin">{{item.label}}</button>
+						<template is="dom-repeat" items="{{pins}}">
+							<template is="dom-if" if="{{!item.left}}">
+								<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+							</template>
 						</template>
 					</div>
 
 					<div id="gpio-control">
-						<template is="dom-if" if="{{!pinSelected}}">
+						<template is="dom-if" if="{{!_isGpio(currentPin)}}">
 							<div id="no-pin" class="horizontal center-justified layout center">Please select a GPIO Pin</div>
 						</template>
-						<template is="dom-if" if="{{pinSelected}}">
+						<template is="dom-if" if="{{_isGpio(currentPin)}}">
 							<div>
-								<h5 id="gpio-pin-number">GPIO <span>{{currentPin}}</span></h5>
+								<h5 id="gpio-pin-number">GPIO <span>{{currentPin.gpio}}</span></h5>
 
 								<div class="form-group row">
 									<label for="direction" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Direction</label>
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-										<select id="direction" class="c-select" on-change="_directionChanged" value="{{directionBuffer::input}}">
+										<select id="direction" class="c-select" on-change="_pinDirectionChanged" value="{{currentPin.direction::input}}">
 											<option value="input">Input</option>
 											<option value="output">Output</option>
 										</select>
@@ -102,7 +114,7 @@
 								<div class="form-group row">
 									<label for="value" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Value</label>
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-										<select id="value" class="c-select" value="{{valueBuffer::input}}" disabled="{{_calculateDirection(currentPin, updateDirection)}}">
+										<select id="value" class="c-select" on-change="_pinValueChanged" value="{{currentPin.value::input}}" disabled="{{_isInput(currentPin)}}">
 											<option value="0">0</option>
 											<option value="1">1</option>
 										</select>
@@ -110,7 +122,7 @@
 								</div>
 								<div class="form-group row">
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
-										<button class="btn btn-success" on-tap="_sync">Sync</button>
+										<button class="btn btn-success" on-tap="_syncOne">Sync</button>
 									</div>
 								</div>
 							</div>
@@ -129,122 +141,74 @@
 				this.title = 'GPIO Tool';
 
 				// populate the info for all pins 
-				this._syncAll();
+				// this._syncAll();
             };
 
 			// populate the array with info for all GPIO pins
             var _syncAll = function () {
 				// get the ubus service
+				// TODO: need a new service to pull all pin data
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
-					for (var index in this.gpios) {
-						if (this.gpios.hasOwnProperty(index)) {
-							ubus.request('gpio', 'status', {
-								pin: index
-							}, (function (data) {
-								if (data.length === 2 && data[0] === 0) {
-									this.set('gpios.' + data[1].pin + '.direction', data[1].direction);
-									this.set('gpios.' + data[1].pin + '.activelow', data[1].activelow);
-									this.set('gpios.' + data[1].pin + '.value', data[1].value);
-									// data[1] contains the following:
-									// {pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
-								} else {
-									console.log('gpio status error');
-								}
-							}).bind(this));
-						}
+					for (var i=0; i< this.pins.length; i++) {
+						var pin = this.pins[i];
+						ubus.request('gpio', 'status', {
+							pin: pin.gpio
+						}, (function (data) {
+							if (data.length === 2 && data[0] === 0) {
+								pin.direction = data[1].direction;
+								pin.value = data[1].value;
+								// data[1] contains the following:
+								// {pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
+								this._refresh();
+							} else {
+								console.log('gpio status error');
+							}
+						}).bind(this));
 					}
 				}).bind(this));
 			};
 
-			var _calculatePinClass = function (gpio) {
-				return 'pin' + (gpio !== false ? ' gpio' : '');
+			var _syncOne = function () {
+				var pin = this.currentPin;
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+						ubus.request('gpio', 'status', {
+							pin: pin.gpio
+						}, (function (data) {
+							if (data.length === 2 && data[0] === 0) {
+								pin.direction = data[1].direction;
+								pin.value = data[1].value;
+								// data[1] contains the following:
+								// {pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
+								this._refresh();
+							} else {
+								console.log('gpio status error');
+							}
+						}).bind(this));
+				}).bind(this));
+			}
+
+			var _calculatePinClass = function (pin) {
+				var result = 'pin';
+				result = result + (pin.gpio >= 0 ? ' gpio' : '');
+				if (pin.direction !== '?'){ //pin initialized
+					result = result + (pin.value > 0 ? ' off' : ' on');
+				}
+				
+				return result;
 			};
+
+			var _isGpio = function(pin){
+				return (pin.gpio>=0)
+			}
+
+			var _isInput = function(pin){
+				return (pin.direction === "input")
+			}
 
 			var _onPin = function (e) {
-				var pin = e.model.item.gpio;
-
-				if (pin !== false) {
-					this.set('directionBuffer', this.gpios[pin].direction);
-					this.set('valueBuffer', this.gpios[pin].value);
-					this.set('currentPin', pin);
-					this.set('pinSelected', true);
-				} else {
-					this.set('currentPin', undefined);
-					this.set('pinSelected', false);
-				}
-			};
-
-			var _sync = function () {
-				if (this.updateDirection) {
-					// Direction has just been updated. Input becomes output, and vise versa
-					if (this.directionBuffer === 'input') {
-						// OUTPUT -> INPUT
-						onionConsole.getService('onion-ubus-provider', (function (ubus) {
-							ubus.request('gpio', 'set_direction', {
-								pin: this.currentPin, 
-								direction: this.directionBuffer
-							}, (function (data) {
-								if (data.length === 2 && data[0] === 0) {
-									this.set('gpios.' + this.currentPin + '.direction', this.directionBuffer);
-									this.set('gpios.' + this.currentPin + '.value', this.valueBuffer);
-								} else {
-									console.log('gpio read error');
-								}
-							}).bind(this));
-						}).bind(this));
-
-					} else if (this.directionBuffer === 'output') {
-						// INPUT -> OUTPUT
-						this.set('currentPin', this.currentPin);
-
-						onionConsole.getService('onion-ubus-provider', (function (ubus) {
-							ubus.request('gpio', 'set_direction', {
-								pin: this.currentPin, 
-								direction: this.directionBuffer
-							}, (function (data) {
-								if (data.length === 2 && data[0] === 0) {
-									this.set('gpios.' + this.currentPin + '.direction', this.directionBuffer);
-								} else {
-									console.log('gpio read error');
-								}
-							}).bind(this));
-						}).bind(this));
-					}
-
-					this.set('updateDirection', false);
-				} else {
-					// Direction has not changed
-					if (this.directionBuffer === 'input') {
-						// Just need to read data
-						onionConsole.getService('onion-ubus-provider', (function (ubus) {
-							ubus.request('gpio', 'status', {
-								pin: this.currentPin
-							}, (function (data) {
-								if (data.length === 2 && data[0] === 0) {
-									this.set('gpios.' + data[1].pin + '.value', data[1].value);
-									
-									// Update UI
-									this.set('directionBuffer', data[1].direction);
-									this.set('valueBuffer', data[1].value);
-								} else {
-									console.log('gpio status error');
-								}
-							}).bind(this));
-						}).bind(this));
-					} else if (this.directionBuffer === 'output') {
-						// Set the GPIO Pin
-						onionConsole.getService('onion-ubus-provider', (function (ubus) {
-							ubus.request('gpio', 'set_pin', {
-								pin: this.currentPin, 
-								value: this.valueBuffer
-							}, (function (data) {
-								if (data.length === 2 && data[0] === 0) {
-									this.set('gpios.' + this.currentPin + '.value', this.valueBuffer);
-								}
-							}).bind(this));
-						}).bind(this));
-					}
-					
+				this.currentPin = e.model.item;
+				if (this.currentPin.gpio >= 0){
+					this._syncOne();
 				}
 			};
 
@@ -252,8 +216,69 @@
 				return (this.gpios[currentPin].direction === 'input');
 			};
 
-			var _directionChanged = function () {
-				this.set('updateDirection', true);
+			var _refresh = function(){
+				// this is an workaround to force update the screen
+				var buffer = [];
+				for (var i = 0; i < this.pins.length; i++) {
+					var p = {};
+					for (var key in this.pins[i]){
+						p[key] = this.pins[i][key];
+					}
+					buffer.push(p);
+				};
+
+				this.pins = buffer;
+				this.currentPin = this._getPin(this.currentPin.gpio);
+			};
+
+			var _getPinStatus = function (pin){
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('gpio', 'status', {
+						pin: this.currentPin.gpio
+					}, (function (data) {
+						if (data.length === 2 && data[0] === 0) {
+							pin.value = data[1].value;
+							this._refresh();
+						} else {
+							console.log('gpio status error');
+						}
+					}).bind(this));
+				}).bind(this));
+			};
+
+			var _pinValueChanged = function () {
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('gpio', 'set_pin', {
+						pin: this.currentPin.gpio, 
+						value: this.currentPin.value
+					}, (function (data) {
+						if (data.length === 2 && data[0] === 0) {
+							// this._getPinStatus(this.currentPin);
+							this._refresh();
+						}
+					}).bind(this));
+				}).bind(this));
+			};
+
+			var _pinDirectionChanged = function () {
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('gpio', 'set_direction', {
+						pin: this.currentPin.gpio, 
+						direction: this.currentPin.direction
+					}, (function (data) {
+						if (data.length === 2 && data[0] === 0) {
+							this._refresh();
+						}
+					}).bind(this));
+				}).bind(this));
+			};
+
+			var _getPin = function(gpio){
+				for (var i = 0; i < this.pins.length; i++) {
+					if (this.pins[i].gpio === gpio){
+						return this.pins[i];
+					}
+				};
 			};
 
 			Polymer({
@@ -262,10 +287,15 @@
 				behaviors: [Onion.AppBehavior],
 				_calculatePinClass: _calculatePinClass,
 				_onPin: _onPin,
-				_sync: _sync,
 				_calculateDirection: _calculateDirection,
-				_directionChanged: _directionChanged,
 				_syncAll: _syncAll,
+				_isGpio: _isGpio,
+				_isInput: _isInput,
+				_refresh: _refresh,
+				_pinValueChanged: _pinValueChanged,
+				_pinDirectionChanged: _pinDirectionChanged,
+				_getPin: _getPin,
+				_syncOne: _syncOne,
 				properties: {
 					directionBuffer: {
 						type: String,
@@ -280,78 +310,49 @@
 						notify: true
 					},
 					currentPin: {
-						type: Number,
+						type: Object,
 						notify: true,
-						value: undefined
 					},
-					pinSelected: {
-						type: Boolean,
+					pins: {
+						type: Array,
+						value: [ // left:true = left side, gpio:-1=not gpio
+							// left side pins
+							{left: true, label: 'GND', gpio: -1, direction: null, value: null},
+							{left: true, label: '2.8V', gpio: -1, direction: null, value: null},
+							{left: true, label: 'GPIO 26', gpio: 26, direction: '?', value: 0},
+							{left: true, label: 'GPIO 23', gpio: 23, direction: '?', value: 0},
+							{left: true, label: 'GPIO 17', gpio: 17, direction: '?', value: 0},
+							{left: true, label: 'GPIO 16', gpio: 16, direction: '?', value: 0},
+							{left: true, label: 'GPIO 15', gpio: 15, direction: '?', value: 0},
+							{left: true, label: 'GPIO 14', gpio: 14, direction: '?', value: 0},
+							{left: true, label: 'GPIO 13', gpio: 13, direction: '?', value: 0},
+							{left: true, label: 'GPIO 12', gpio: 12, direction: '?', value: 0},
+							{left: true, label: 'GPIO 8', gpio: 8, direction: '?', value: 0},
+							{left: true, label: 'GPIO 7', gpio: 7, direction: '?', value: 0},
+							{left: true, label: 'GPIO 6', gpio: 6, direction: '?', value: 0},
+							{left: true, label: 'GPIO 1', gpio: 1, direction: '?', value: 0},
+							{left: true, label: 'GPIO 0', gpio: 0, direction: '?', value: 0},
+							{left: true, label: 'RESET', gpio: -1, direction: null, value: null},
+							// right side pins
+							{left: false, label: 'GND', gpio: -1, direction: null, value: null},
+							{left: false, label: '3.3V', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB D+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB D-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX', gpio: -1, direction: null, value: null},
+							{left: false, label: 'FW RST', gpio: -1, direction: null, value: null},
+							{left: false, label: '2.0V', gpio: -1, direction: null, value: null},
+							{left: false, label: 'ETH TX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'ETH TX+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'ETH RX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'ETH RX+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'GPIO 18', gpio: 18, direction: '?', value: 0},
+							{left: false, label: 'GPIO 19', gpio: 19, direction: '?', value: 0},
+							{left: false, label: 'I2C SCL', gpio: -1, direction: null, value: null},
+							{left: false, label: 'I2C SDA', gpio: -1, direction: null, value: null}
+						],
 						notify: true,
-						value: false
 					},
-					leftPins: {
-						type: Array,
-						value: [
-							{label: 'GND', gpio: false},
-							{label: '2.8V', gpio: false},
-							{label: 'GPIO 26', gpio: 26},
-							{label: 'GPIO 23', gpio: 23},
-							{label: 'GPIO 17', gpio: 17},
-							{label: 'GPIO 16', gpio: 16},
-							{label: 'GPIO 15', gpio: 15},
-							{label: 'GPIO 14', gpio: 14},
-							{label: 'GPIO 13', gpio: 13},
-							{label: 'GPIO 12', gpio: 12},
-							{label: 'GPIO 8', gpio: 8},
-							{label: 'GPIO 7', gpio: 7},
-							{label: 'GPIO 6', gpio: 6},
-							{label: 'GPIO 1', gpio: 1},
-							{label: 'GPIO 0', gpio: 0},
-							{label: 'RESET', gpio: false}
-						]
-					},
-					rightPins: {
-						type: Array,
-						value: [
-							{label: 'GND', gpio: false},
-							{label: '3.3V', gpio: false},
-							{label: 'USB D+', gpio: false},
-							{label: 'USB D-', gpio: false},
-							{label: 'TX', gpio: false},
-							{label: 'RX', gpio: false},
-							{label: 'FW RST', gpio: false},
-							{label: '2.0V', gpio: false},
-							{label: 'ETH TX-', gpio: false},
-							{label: 'ETH TX+', gpio: false},
-							{label: 'ETH RX-', gpio: false},
-							{label: 'ETH RX+', gpio: false},
-							{label: 'GPIO 18', gpio: 18},
-							{label: 'GPIO 19', gpio: 19},
-							{label: 'I2C SCL', gpio: false},
-							{label: 'I2C SDA', gpio: false}
-						]
-					},
-					gpios:{
-						type: Array,
-						notify: true,
-						value: {
-							0: {direction: 'input', value: 0},
-							1: {direction: 'input', value: 0},
-							6: {direction: 'input', value: 0},
-							7: {direction: 'input', value: 0},
-							8: {direction: 'input', value: 0},
-							12: {direction: 'input', value: 0},
-							13: {direction: 'input', value: 0},
-							14: {direction: 'input', value: 0},
-							15: {direction: 'input', value: 0},
-							16: {direction: 'input', value: 0},
-							17: {direction: 'input', value: 0},
-							18: {direction: 'input', value: 0},
-							19: {direction: 'input', value: 0},
-							23: {direction: 'input', value: 0},
-							26: {direction: 'input', value: 0}
-						}
-					}
 				}
 			});
         })();
