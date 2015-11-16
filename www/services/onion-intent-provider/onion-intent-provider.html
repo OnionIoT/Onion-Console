@@ -12,7 +12,7 @@
 			
 			var addListener = function () {
 			    intentProvider.addEventListener('onion_intent_launchapp', function (e) {
-				    console.log('Request to launch app['+e.detail.app+'] file parameter['+e.detail.file+']');
+				    console.log('Receive request to launch app['+e.detail.app+'] file parameter['+e.detail.file+']');
                     onionConsole.launchApp(e.detail.app,e.detail.file);
                 });
 			};

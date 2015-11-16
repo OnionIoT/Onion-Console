@@ -117,7 +117,6 @@
 	</template>
 	<script>
 		'use strict';
-
 		(function () {
 			var self = null;
 
@@ -142,31 +141,19 @@
 
 				onionConsole.getService('onion-session-provider', function (sessionProvider) {
 					self.sessionProvider = sessionProvider;
-
 					if (sessionProvider.isAlive() === true) {   
 						onionConsole.getService('onion-file-provider', function (fileProvider) {
 							self.fileProvider = fileProvider;
-
-							//Get file list
-							fileProvider.getFileList(folderFileInfo.folder, function (result) {
-								if (result.fileList !== '') {
-								    self.currentFolder = folderFileInfo.folder
-									folderFileInfo.list = result.fileList;
-	                                self.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));			
-								    self.$.fileList.addEventListener('click', function (e) {
-										if (typeof e.target.icon === 'undefined') {
-					                        openFolder(e.target.textContent);
-										} else {
-										    console.log('Click add icon');
-											if (e.target.icon === 'add') {
-												self.$.newDialog.open();
-											} else if(e.target.icon === 'save') {
-											    saveFile();
-											}
-										}
-								    });
-								};
+							self.$.fileList.addEventListener('click', function (e) {
+								if (typeof e.target.icon === 'undefined') {
+					                openFolder(e.target.textContent);
+								}
 							});
+							if(self.fileName==='') {
+							    openFolder(backsplash);
+							} else {
+								openFolder(self.fileName);
+							}
 						});
 					}
 				});	
@@ -175,10 +162,12 @@
 			var findTypeById = function (sourceList, name) {
 			    var result = '';
 
-				for (var i = 0; i < sourceList.length; i++) {
-					if (sourceList[i].name === name) {
-					    result = sourceList[i].type;
-					}
+				if (sourceList !== null) {
+				    for (var i = 0; i < sourceList.length; i++) {
+					    if (sourceList[i].name === name) {
+					        result = sourceList[i].type;
+					    }
+				    }
 				}
 
 				return result;
@@ -210,6 +199,26 @@
 					var changed = true;
 				    onionConsole.getService('onion-file-provider', function (fileProvider) {
 				 	    self.fileProvider = fileProvider;
+						
+						//launch app with specified file
+						if(self.fileName!=='') {							
+							var loadFolderName=fileProvider.getFolderPath(self.fileName);
+							var loadFileName=fileProvider.getFilename(self.fileName);
+								console.log('Load folder:'+loadFolderName);
+								console.log('Load file:'+loadFileName);
+								folderFileInfo.folder=loadFolderName;
+							
+							fileProvider.getFileList(folderFileInfo.folder, function (result) {
+								if (result.fileList !== '') {
+								    self.currentFolder = folderFileInfo.folder
+									folderFileInfo.list = result.fileList;
+	                                self.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));										
+								}
+							});
+							path=loadFileName;
+							self.fileName='';
+						}
+						
 						if (path.match(/\r?\n|\r/g) !== null) {
 						    console.log("multiple selection, do nothing");
 							return;
@@ -232,7 +241,7 @@
 							    currentFile = path;
 						    }
 					    }
-
+						
 					    if (changed === false || currentFile === '') {
 						    folderFileInfo.folder = path;
 							if (folderFileInfo.folder !== backsplash) {
@@ -242,7 +251,8 @@
 							    self.$.deleteFolderButton.disabled = true;
 								self.$.renameFolderButton.disabled = true;
 							}
-                            //Get file list					
+                            //Get file list			
+                            console.log('onion-editor open folder:'+folderFileInfo.folder);							
                             fileProvider.getFileList(folderFileInfo.folder, function (result) {
 							    self.currentFolder = folderFileInfo.folder;	
 							    folderFileInfo.list = result.fileList;

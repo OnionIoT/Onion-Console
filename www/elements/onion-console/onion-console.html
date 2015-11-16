@@ -54,13 +54,18 @@
 				}
 			};
 
-			var launchApp = function (appId, relaunch) {
+			var launchApp = function (appId, relaunch, fileName) {
 				if (self.$.appContainer.querySelector(appId)) {
 					self.$.appContainer.querySelector(appId).fg();
 					self.currentApp = appId;
 
 					if (relaunch) {
 						self.$.appContainer.querySelector(appId).start();
+					}
+					
+					if (typeof fileName !== 'undefined') {
+					    self.$.appContainer.querySelector(appId).fileName=fileName;
+					    self.$.appContainer.querySelector(appId).openFolder(fileName);
 					}
 				} else {
 					self.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
@@ -69,12 +74,17 @@
 						Polymer.dom(self.$.appContainer).appendChild(appElement); 
 
 						self.currentApp = appId;
+						
+						if (typeof fileName !== 'undefined') {
+						    appElement.fileName=fileName;
+						}
 					});
 				}
 			};
 
 			var attached = function () {
 				self.launchApp('onion-login');
+				self.getService('onion-intent-provider');
 			};
 
 			var getService = function (serviceId, callback) {
