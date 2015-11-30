@@ -1,7 +1,7 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
-
+<link rel="import" href="/elements/onion-taskbar/onion-taskbar.html">
 <dom-module id="onion-console">
 	<style>
 		:host {
@@ -22,6 +22,7 @@
 	</style>
 
 	<template>
+		<onion-taskbar id="taskbar" running-apps="{{runningApps}}"></onion-taskbar>
 		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
 		<div id="serviceContainer" class="hidden"></div>
 	</template>
@@ -30,11 +31,12 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			var self = {};
 
 			var created = function () {
 				self = this;
 				window.onionConsole = this;
+				// this.runningApps = [];
 			};
 
 			var services = {};
@@ -79,12 +81,18 @@
 						    appElement.fileName=fileName;
 						}
 					});
+
+					if (appId!=="onion-login" && appId!=="onion-launcher"){
+						self.push("runningApps", appId);
+					}
 				}
 			};
 
 			var attached = function () {
 				self.launchApp('onion-login');
 				self.getService('onion-intent-provider');
+
+
 			};
 
 			var getService = function (serviceId, callback) {
@@ -102,7 +110,14 @@
 				attached: attached,
 				launchApp: launchApp,
 				launchService: launchService,
-				getService: getService
+				getService: getService,
+				properties: {
+					runningApps: {
+						type: Array,
+						notify: true,
+						value: []
+					}
+				},
 			});
 		})();
 	</script>

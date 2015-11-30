@@ -1,0 +1,61 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
+
+<dom-module id="onion-taskbar">
+	<style>
+		:host {
+			display: block;
+			height: 30px;
+			width: 100%;
+		}
+
+		.taskbar{
+
+		}
+	</style>
+
+	<template>
+		<div class="layout horizontal center">
+				
+			<template is="dom-repeat" items="{{runningApps}}">
+				<button on-click="launch" data-appId="{{item}}"> <span>{{item}}</span> </button>
+			</template>
+
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			}
+
+			var attached = function(){
+			}
+
+			var launch = function(e){
+				var appId = e.model.item;
+				onionConsole.launchApp(appId);
+			}
+
+			Polymer({
+				is: 'onion-taskbar',
+				created: created,
+				attached: attached,
+				launch: launch,
+				properties: {
+					runningApps: {
+						type: Array,
+						notify: true,
+						value: []
+					}
+				},
+			});
+		})();
+	</script>
+
+</dom-module>

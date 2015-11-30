@@ -159,20 +159,9 @@
 			var start = function () {
 				onionConsole.getService('onion-apps-provider', function (appsProvider) {
 					self.appsProvider = appsProvider;
-
 					appsProvider.getApps(function(err, apps){
-
 						self.apps = apps;
-						console.log(apps);
 					});
-					// appsProvider.reload();
-
-					// var appsInterval = setInterval(function () {
-					// 	if (appsProvider.apps.length) {
-					// 		clearInterval(appsInterval);
-					// 		self.set('apps', appsProvider.apps);
-					// 	}
-					// }, 0);
 				});
 
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
