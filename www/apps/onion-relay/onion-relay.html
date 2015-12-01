@@ -1,0 +1,269 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
+
+<dom-module id="onion-relay">
+	<style>
+		:host * {
+			-webkit-user-select: none;  /* Chrome all / Safari all */
+			-moz-user-select: none;     /* Firefox all */
+			-ms-user-select: none;      /* IE 10+ */
+			user-select: none;          /* Likely future */
+		}
+
+		onion-app-body > div {
+			height: 100%;
+		}
+		#relay-image {
+			position: relative;
+			width: 500px;
+			height: 361px;
+			background-image: url('./img/relay.jpg');
+			background-size: contain;
+			background-repeat: no-repeat;
+		}
+
+		#relay-info {
+			background-color: #fff;
+			margin-left: 15px;
+			border-radius: 3px;
+			overflow: hidden;
+		}
+			#relay-info > table {
+				border-radius: 3px;
+				margin-bottom: 0;
+			}
+			#relay-info > table tr:first-child > * {
+				border-top: none;
+			}
+
+		.relay, .switch {
+			position: absolute;
+			cursor: pointer;
+		}
+
+		.relay {
+			background-color: transparent;
+			height: 74px;
+			width: 124px;
+			border-bottom-left-radius: 3px;
+			border-top-left-radius: 3px;
+			border-top-right-radius: 6px;
+			border-bottom-right-radius: 6px;
+			text-align: center;
+			font-size: 24px;
+			line-height: 74px;
+			color: rgba(0, 0, 0, 0.5);
+			left: 142px;
+		}
+			#r1 {
+				top: 90px;
+			}
+				#r1:after {
+					content: 'R1';
+				}
+
+			#r2 {
+				top: 196px;
+			}
+				#r2:after {
+					content: 'R2';
+				}
+
+		.switch {
+			background-image: url('./img/switch.jpg');
+			background-size: cover;
+			background-position: center top;
+			background-repeat: no-repeat;
+			width: 38px;
+			height: 14px;
+			left: 417px;
+		}
+			.switch.on {
+				background-position: center bottom;
+			}
+			#s1 {
+				top: 130px;
+			}
+			#s2 {
+				top: 100px;
+			}
+			#s3 {
+				top: 70px;
+			}
+
+		.relay-status {
+			font-size: 20px;
+			width: 40px;
+		}
+			.relay-status:after {
+				color: #c0392b;
+				content: 'OFF';
+			}
+			.relay-status.on:after {
+				color: #27ae60;
+				content: 'ON';
+			}
+	</style>
+
+	<template>
+		<onion-app app-name="Relay Control" toolbar-background="#f39c12" background="#f2f2f2">
+			<onion-app-toolbar>
+
+			</onion-app-toolbar>
+
+			<onion-app-body>
+				<div class="horizontal center-justified layout center">
+					<div id="relay-image" usemap="#relay-map">
+						<div id="r1" class="relay" on-tap="_onR1"></div>
+						<div id="r2" class="relay" on-tap="_onR2"></div>
+
+						<div id="s1" class$="{{_computeSwitchClass(s1)}}" on-tap="_onS1"></div>
+						<div id="s2" class$="{{_computeSwitchClass(s2)}}" on-tap="_onS2"></div>
+						<div id="s3" class$="{{_computeSwitchClass(s3)}}" on-tap="_onS3"></div>
+					</div>
+
+					<div id="relay-info">
+						<table class="table">
+							<tr>
+								<th>Relay I2C Address</th>
+								<td>{{_computeI2cAddr(s1, s2, s3)}}</td>
+							</tr>
+							<tr>
+								<th>Relay #1</th>
+								<td><div class$="{{_computeRelayStatusClass(r1)}}"></div></td>
+							</tr>
+							<tr>
+								<th>Relay #2</th>
+								<td><div class$="{{_computeRelayStatusClass(r2)}}"></div></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</onion-app-body>
+		</onion-app>
+
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var self = null;
+
+			var ready = function () {
+				
+			};
+
+			var _onS1 = function () {
+				this.s1 = !this.s1;
+			};
+
+			var _onS2 = function () {
+				this.s2 = !this.s2;
+			};
+
+			var _onS3 = function () {
+				this.s3 = !this.s3;
+			};
+
+			var _onR1 = function () {
+				console.log('r1');
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+						ubus.request('i2c_exp', 'relay-exp', {
+							command: 'set',
+							params: {
+								channel: 0,
+								state: !this.r1,
+								address: (this.s1 ? '0' : '1') + (this.s2 ? '0' : '1') + (this.s3 ? '0' : '1')
+							}
+						}, (function (data) {
+							if (data.length === 2 && data[0] === 0) {
+								this.r1 = data[1].state === '1' ? true : false;
+							} else {
+								console.log('gpio status error');
+							}
+						}).bind(this));
+				}).bind(this));
+			};
+
+			var _onR2 = function () {
+				console.log('r2');
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+						ubus.request('i2c_exp', 'relay-exp', {
+							command: 'set',
+							params: {
+								channel: 1,
+								state: !this.r2,
+								address: (this.s1 ? '0' : '1') + (this.s2 ? '0' : '1') + (this.s3 ? '0' : '1')
+							}
+						}, (function (data) {
+							if (data.length === 2 && data[0] === 0) {
+								this.r2 = data[1].state === '1' ? true : false;
+							} else {
+								console.log('gpio status error');
+							}
+						}).bind(this));
+				}).bind(this));
+			};
+
+			var _computeI2cAddr = function (s1, s2, s3) {
+				return '0x' + (0x20 + (s1 ? 1 : 0) + (s2 ? 2 : 0) + (s3 ? 4 : 0)).toString(16);
+			};
+
+			var _computeSwitchClass = function (s) {
+				return s ? 'switch on' : 'switch';
+			};
+
+			var _computeRelayStatusClass = function (r) {
+				return r ? 'relay-status on' : 'relay-status';
+			};
+
+			Polymer({
+				is: 'onion-relay',
+				_onS1: _onS1,
+				_onS2: _onS2,
+				_onS3: _onS3,
+				_onR1: _onR1,
+				_onR2: _onR2,
+				_computeI2cAddr: _computeI2cAddr,
+				_computeSwitchClass: _computeSwitchClass,
+				_computeRelayStatusClass: _computeRelayStatusClass,
+				ready: ready,
+				behaviors: [Onion.AppBehavior],
+				properties: {
+					apps: {
+						type: Array,
+						value: []
+					},
+					s1: {
+						type: Boolean,
+						value: false,
+						notify: true
+					},
+					s2: {
+						type: Boolean,
+						value: false,
+						notify: true
+					},
+					s3: {
+						type: Boolean,
+						value: false,
+						notify: true
+					},
+					r1: {
+						type: Boolean,
+						value: false,
+						notify: true
+					},
+					r2: {
+						type: Boolean,
+						value: false,
+						notify: true
+					}
+				}
+			});
+		})();
+	</script>
+
+</dom-module>
