@@ -28,12 +28,18 @@
 				height: 100%;
 				width: 100%;
 			}
+
+		.active {
+			background-color: red;
+		}
+
 	</style>
 
 	<template>
+
 		<div class="horizontal center-justified layout center">
 			<template is="dom-repeat" items="{{runningApps}}">
-				<button class="task-icon" on-click="launch" data-appId="{{item}}">
+				<button class$="{{_isActive(item,currentApp)}}" on-click="launch">
 					<iron-image sizing="contain" src$="{{_computeIconUrl(item)}}"></iron-image>
 				</button>
 			</template>
@@ -54,15 +60,31 @@
 				return '../../apps/' + item + '/icon.png';
 			};
 
+			var _isActive = function(item, currentApp){
+				if (item === currentApp){
+					return "task-icon active";
+				}else{
+					return "task-icon";
+				}
+			}
+
+
+
 			Polymer({
 				is: 'onion-taskbar',
 				launch: launch,
+				_isActive: _isActive,
 				_computeIconUrl: _computeIconUrl,
 				properties: {
 					runningApps: {
 						type: Array,
 						notify: true,
 						value: []
+					},
+					currentApp: {
+						type: String,
+						notify: true,
+						value: '',
 					}
 				},
 			});

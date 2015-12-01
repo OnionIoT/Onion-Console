@@ -29,7 +29,10 @@
 	</style>
 
 	<template>
-		<onion-taskbar id="taskbar" running-apps="{{runningApps}}"></onion-taskbar>
+		<template is="dom-if" if="{{_showTaskbar(runningApps, currentApp)}}">
+			<onion-taskbar id="taskbar" running-apps="{{runningApps}}" current-app="{{currentApp}}"></onion-taskbar>
+		</template>
+		
 		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
 		<div id="serviceContainer" class="hidden"></div>
 	</template>
@@ -64,9 +67,13 @@
 			};
 
 			var launchApp = function (appId, relaunch, fileName) {
+				self.set("currentApp", appId);
+
 				if (self.$.appContainer.querySelector(appId)) {
+
 					self.$.appContainer.querySelector(appId).fg();
-					self.currentApp = appId;
+
+					
 
 					if (relaunch) {
 						self.$.appContainer.querySelector(appId).start();
@@ -82,14 +89,13 @@
 						appElement.setAttribute('id', appId);
 						Polymer.dom(self.$.appContainer).appendChild(appElement); 
 
-						self.currentApp = appId;
-						
 						if (typeof fileName !== 'undefined') {
 						    appElement.fileName=fileName;
 						}
 					});
 
 					if (appId!=="onion-login" && appId!=="onion-launcher"){
+						
 						self.push("runningApps", appId);
 					}
 				}
@@ -110,6 +116,14 @@
 				}
 			};
 
+			var _showTaskbar = function (runningApps, currentApp) {
+				if (runningApps.length > 0 && currentApp!=='onion-login'){
+					return true;
+				}else{
+					return false;
+				}
+			}
+
 			Polymer({
 				is: 'onion-console',
 				noop: function () {},
@@ -118,11 +132,17 @@
 				launchApp: launchApp,
 				launchService: launchService,
 				getService: getService,
+				_showTaskbar: _showTaskbar,
 				properties: {
 					runningApps: {
 						type: Array,
 						notify: true,
 						value: []
+					},
+					currentApp: {
+						type: String,
+						notify: true,
+						value: ""
 					}
 				},
 			});
