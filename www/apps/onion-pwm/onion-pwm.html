@@ -1,0 +1,79 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
+
+<dom-module id="onion-pwm">
+	<style>
+	</style>
+
+	<template>
+		<onion-app app-name="PWM Control">
+			<onion-app-toolbar>
+
+			</onion-app-toolbar>
+
+			<onion-app-body>
+				<div>
+					<h1>
+						Body of the App goes here
+					</h1>
+					<button on-tap="openModal">Open</button>
+				</div>
+
+				<bootstrap-modal id="test" close-button>
+					<bootstrap-modal-header>
+						<h4 class="modal-title">Modal title</h4>
+					</bootstrap-modal-header>
+
+					<bootstrap-modal-body>
+						<div>Dialog body</div>
+						<div class="buttons">
+							<button dialog-dismiss>Cancel</button>
+							<button dialog-confirm>Accept</button>
+						</div>
+					</bootstrap-modal-body>
+
+					<bootstrap-modal-footer>
+						<button class="btn-default">Test</button>
+					</bootstrap-modal-footer>
+				</bootstrap-modal>
+			</onion-app-body>
+		</onion-app>
+
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
+			var onAppIcon = function (e) {
+				self.onionConsole.launchApp(e.target);
+			};
+
+			var openModal = function () {
+				self.$.test.open();
+			};
+
+			Polymer({
+				is: 'onion-pwm',
+				created: created,
+				ready: function () {},
+				behaviors: [Onion.AppBehavior],
+				openModal: openModal,
+				properties: {
+					apps: {
+						type: Array,
+						value: []
+					}
+				}
+			});
+		})();
+	</script>
+
+</dom-module>

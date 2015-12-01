@@ -19,10 +19,17 @@
 			width: 100%;
 			height: 100%;
 		}
+
+		#taskbar {
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+			z-index: 1000;
+		}
 	</style>
 
 	<template>
-		<template is="dom-if" if="{{runningApps.length}}">
+		<template is="dom-if" if="{{_showTaskbar(runningApps, currentApp)}}">
 			<onion-taskbar id="taskbar" running-apps="{{runningApps}}" current-app="{{currentApp}}"></onion-taskbar>
 		</template>
 		
@@ -109,6 +116,14 @@
 				}
 			};
 
+			var _showTaskbar = function (runningApps, currentApp) {
+				if (runningApps.length > 0 && currentApp!=='onion-login'){
+					return true;
+				}else{
+					return false;
+				}
+			}
+
 			Polymer({
 				is: 'onion-console',
 				noop: function () {},
@@ -117,6 +132,7 @@
 				launchApp: launchApp,
 				launchService: launchService,
 				getService: getService,
+				_showTaskbar: _showTaskbar,
 				properties: {
 					runningApps: {
 						type: Array,

@@ -55,6 +55,10 @@
                                         "wifi-setup",
                                         "oupgrade"
                                 ],
+                                "i2c_exp": [
+                                        "pwm-exp",
+                                        "relay-exp"
+                                ],
                                 "onion-console": [
                                         "app-list"
                                 ],

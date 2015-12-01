@@ -1,26 +1,40 @@
 <link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-image/iron-image.html">
 <link rel="import" href="/lib/iron-icons/iron-icons.html">
 
 <dom-module id="onion-taskbar">
 	<style>
 		:host {
 			display: block;
-			height: 30px;
+			height: 64px;
 			width: 100%;
 		}
 
-		.selected {
-			color: red;
+		.task-icon {
+			height: 64px;
+			width: 64px;
+			background-color: transparent;
+			border: none;
+			border-radius: 50%;
 		}
+			.task-icon > iron-image {
+				height: 100%;
+				width: 100%;
+			}
+
+		.active {
+			background-color: red;
+		}
+
 	</style>
 
 	<template>
-		<div class="layout horizontal center">
 
-			<template id="tasks" is="dom-repeat" items="{{runningApps}}" observe="{{currentApp}}" hide>
-				<button on-click="launch" data-appId="{{item}}" class$="{{_isActive(item,currentApp)}}"> 
-					<span>{{item}}</span>
-				 </button>
+		<div class="horizontal center-justified layout center">
+			<template is="dom-repeat" items="{{runningApps}}">
+				<button class$="{{_isActive(item,currentApp)}}" on-click="launch">
+					<iron-image sizing="contain" src$="{{_computeIconUrl(item)}}"></iron-image>
+				</button>
 			</template>
 
 		</div>
@@ -30,25 +44,20 @@
 		'use strict';
 
 		(function () {
-			var self = null;
-
-			var created = function () {
-				self = this;
-			}
-
-			var attached = function(){
-			}
-
-			var launch = function(e){
+			var launch = function (e) {
 				var appId = e.model.item;
 				onionConsole.launchApp(appId);
-			}
+			};
+
+			var _computeIconUrl = function (item) {
+				return '../../apps/' + item + '/icon.png';
+			};
 
 			var _isActive = function(item, currentApp){
 				if (item === currentApp){
-					return "selected";
+					return "task-icon active";
 				}else{
-					return "";
+					return "task-icon";
 				}
 			}
 
@@ -56,10 +65,9 @@
 
 			Polymer({
 				is: 'onion-taskbar',
-				created: created,
-				attached: attached,
 				launch: launch,
 				_isActive: _isActive,
+				_computeIconUrl: _computeIconUrl,
 				properties: {
 					runningApps: {
 						type: Array,
