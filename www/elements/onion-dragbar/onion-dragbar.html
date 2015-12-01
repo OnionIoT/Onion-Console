@@ -1,0 +1,54 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+
+<dom-module id="onion-dragbar">
+	<style>
+		#dragbar {
+			
+		}
+	</style>
+	
+	<template>
+		<div id="dragbar-container">
+			<progress class="progress" value="[[val]]" max="[[max]]"></progress>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var _computeClass = function (success, info, warning, danger) {
+				var elementClass = 'alert';
+
+				if (danger) {
+					elementClass += ' alert-danger';
+				} else if (warning) {
+					elementClass += ' alert-warning';
+				} else if (info) {
+					elementClass += ' alert-info';
+				} else if (success) {
+					elementClass += ' alert-success';
+				}
+
+				return elementClass;
+			};
+
+			var _close = function () {
+				this.remove();
+			};
+
+			Polymer({
+	    		is: 'onion-dragbar',
+	    		properties: {
+	    			success: {
+		    			notify: true,
+				        type: Boolean,
+				        value: false
+		    		}
+	    		},
+	    		_computeClass: _computeClass,
+	    		_close: _close
+	    	});
+        })();
+	</script>
+</dom-module>
