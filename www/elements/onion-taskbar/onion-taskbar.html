@@ -9,16 +9,18 @@
 			width: 100%;
 		}
 
-		.taskbar{
-
+		.selected {
+			color: red;
 		}
 	</style>
 
 	<template>
 		<div class="layout horizontal center">
-				
-			<template is="dom-repeat" items="{{runningApps}}">
-				<button on-click="launch" data-appId="{{item}}"> <span>{{item}}</span> </button>
+
+			<template id="tasks" is="dom-repeat" items="{{runningApps}}" observe="{{currentApp}}" hide>
+				<button on-click="launch" data-appId="{{item}}" class$="{{_isActive(item,currentApp)}}"> 
+					<span>{{item}}</span>
+				 </button>
 			</template>
 
 		</div>
@@ -42,16 +44,32 @@
 				onionConsole.launchApp(appId);
 			}
 
+			var _isActive = function(item, currentApp){
+				if (item === currentApp){
+					return "selected";
+				}else{
+					return "";
+				}
+			}
+
+
+
 			Polymer({
 				is: 'onion-taskbar',
 				created: created,
 				attached: attached,
 				launch: launch,
+				_isActive: _isActive,
 				properties: {
 					runningApps: {
 						type: Array,
 						notify: true,
 						value: []
+					},
+					currentApp: {
+						type: String,
+						notify: true,
+						value: '',
 					}
 				},
 			});
