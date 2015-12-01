@@ -1,42 +1,92 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
-<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 
 <dom-module id="onion-pwm">
 	<style>
+		onion-app-body > div {
+			height: 100%;
+		}
+
+		#pwm-image {
+			position: relative;
+			width: 500px;
+			height: 504px;
+			background-image: url('./img/pwm-exp-bg.jpg');
+			background-size: contain;
+			background-repeat: no-repeat;
+		}
+
+		.pins-container {
+			position: absolute;
+			width: 280px;
+			left: 175px;
+			top: 42.5px;
+		}
+
+		.pins {
+			display: inline-block;
+			height: 88.5px;
+			width: 30px;
+			background-image: url('./img/pins.png');
+			background-size: contain;
+			background-repeat: no-repeat;
+			margin-bottom: 11px;
+			cursor: pointer;
+		}
+			.pins.active {
+				border-radius: 7px;
+				box-shadow: 0 0 3px rgba(255, 0, 255, 1) inset, 0 0 5px rgba(255, 0, 255, 1);
+			}
+
+		#pwm-info {
+			background-color: #fff;
+			margin-left: 15px;
+			border-radius: 3px;
+			overflow: hidden;
+		}
+			#pwm-info > table {
+				border-radius: 3px;
+				margin-bottom: 0;
+			}
+			#pwm-info > table tr:first-child > * {
+				border-top: none;
+			}
 	</style>
 
 	<template>
-		<onion-app app-name="PWM Control">
-			<onion-app-toolbar>
-
-			</onion-app-toolbar>
-
+		<onion-app app-name="PWM Control" toolbar-background="#2980b9" background="#f2f2f2">
 			<onion-app-body>
-				<div>
-					<h1>
-						Body of the App goes here
-					</h1>
-					<button on-tap="openModal">Open</button>
-				</div>
-
-				<bootstrap-modal id="test" close-button>
-					<bootstrap-modal-header>
-						<h4 class="modal-title">Modal title</h4>
-					</bootstrap-modal-header>
-
-					<bootstrap-modal-body>
-						<div>Dialog body</div>
-						<div class="buttons">
-							<button dialog-dismiss>Cancel</button>
-							<button dialog-confirm>Accept</button>
+				<div class="horizontal center-justified layout center">
+					<div id="pwm-image">
+						<div class="pins-container">
+							<template is="dom-repeat" items="{{channels}}">
+								<div class$="{{_computePinsClass(activeChannel, index)}}" on-tap="_onPins"></div>
+							</template>
 						</div>
-					</bootstrap-modal-body>
+					</div>
 
-					<bootstrap-modal-footer>
-						<button class="btn-default">Test</button>
-					</bootstrap-modal-footer>
-				</bootstrap-modal>
+					<div id="pwm-info">
+						<table class="table">
+							<tr>
+								<th>PWM Frequency</th>
+								<td><progress class="progress" value="25" max="100"></progress></td>
+							</tr>
+							<tr>
+								<th>PWM Channel</th>
+								<td>{{_computeI2cAddr(s1, s2, s3)}}</td>
+							</tr>
+							<tr>
+								<th>Relay #1</th>
+								<td><div class$="{{_computeRelayStatusClass(r1)}}"></div></td>
+							</tr>
+							<tr>
+								<th>Relay #2</th>
+								<td><div class$="{{_computeRelayStatusClass(r2)}}"></div></td>
+							</tr>
+						</table>
+					</div>
+				</div>
 			</onion-app-body>
 		</onion-app>
 
@@ -46,30 +96,37 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			var ready = function () {
 
-			var created = function () {
-				self = this;
 			};
 
-			var onAppIcon = function (e) {
-				self.onionConsole.launchApp(e.target);
+			var _onPins = function (e) {
+				if (this.activeChannel !== e.model.item) {
+					this.activeChannel = e.model.item;
+				} else {
+					this.activeChannel = null;
+				}
 			};
 
-			var openModal = function () {
-				self.$.test.open();
+			var _computePinsClass = function (activeChannel, index) {
+				return activeChannel === index ? 'pins active' : 'pins';
 			};
 
 			Polymer({
 				is: 'onion-pwm',
-				created: created,
-				ready: function () {},
+				ready: ready,
+				_onPins: _onPins,
+				_computePinsClass: _computePinsClass,
 				behaviors: [Onion.AppBehavior],
-				openModal: openModal,
 				properties: {
-					apps: {
+					channels: {
 						type: Array,
-						value: []
+						value: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+					},
+					activeChannel: {
+						type: Number,
+						value: null,
+						notify: true
 					}
 				}
 			});
