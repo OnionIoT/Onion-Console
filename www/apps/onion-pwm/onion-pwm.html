@@ -1,6 +1,7 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/elements/onion-dragbar/onion-dragbar.html">
 
 <dom-module id="onion-pwm">
 	<style>
@@ -52,6 +53,26 @@
 			#pwm-info > table tr:first-child > * {
 				border-top: none;
 			}
+
+		.active-channel {
+			color: #27ae60;
+			font-weight: bold;
+		}
+
+		#pwm-info .form-control {
+			display: inline-block;
+			width: inherit;
+		}
+
+		#pwm-info onion-dragbar {
+			margin-bottom: 10px;
+			display: block;
+		}
+
+		.note {
+			padding: 15px;
+    		color: #888;
+		}
 	</style>
 
 	<template>
@@ -61,7 +82,7 @@
 					<div id="pwm-image">
 						<div class="pins-container">
 							<template is="dom-repeat" items="{{channels}}">
-								<div class$="{{_computePinsClass(activeChannel, index)}}" on-tap="_onPins"></div>
+								<div class$="{{_computePinsClass(activeChannelId, item.id)}}" on-tap="_onPins"></div>
 							</template>
 						</div>
 					</div>
@@ -70,21 +91,31 @@
 						<table class="table">
 							<tr>
 								<th>PWM Frequency</th>
-								<td><progress class="progress" value="25" max="100"></progress></td>
+								<td>
+									<onion-dragbar min="24" max="1526" value="{{frequency}}"></onion-dragbar>
+									<input class="form-control" type="number" min="24" max="1526" value="{{frequency::input}}" />&nbsp;Hz
+								</td>
 							</tr>
 							<tr>
 								<th>PWM Channel</th>
-								<td>{{_computeI2cAddr(s1, s2, s3)}}</td>
+								<td><span class="active-channel">{{_computePWMChannel(activeChannelId)}}</span></td>
 							</tr>
 							<tr>
-								<th>Relay #1</th>
-								<td><div class$="{{_computeRelayStatusClass(r1)}}"></div></td>
+								<th>Duty Cycle&nbsp;*</th>
+								<td>
+									<onion-dragbar min="0" max="100" step="0.01" value="{{activeChannel.duty}}"></onion-dragbar>
+									<input class="form-control" type="number" min="0" max="100" step="0.01" value="{{activeChannel.duty::input}}" />&nbsp;%
+								</td>
 							</tr>
 							<tr>
-								<th>Relay #2</th>
-								<td><div class$="{{_computeRelayStatusClass(r2)}}"></div></td>
+								<th>Delay</th>
+								<td>
+									<onion-dragbar min="0" max="100" step="0.01" value="{{activeChannel.delay}}"></onion-dragbar>
+									<input class="form-control" type="number" min="0" max="100" step="0.01" value="{{activeChannel.delay::input}}" />&nbsp;%
+								</td>
 							</tr>
 						</table>
+						<div class="note">* Typical duty cycle for servo motor is ~3.5% to 13%</div>
 					</div>
 				</div>
 			</onion-app-body>
@@ -96,20 +127,92 @@
 		'use strict';
 
 		(function () {
-			var ready = function () {
-
-			};
-
-			var _onPins = function (e) {
-				if (this.activeChannel !== e.model.item) {
-					this.activeChannel = e.model.item;
-				} else {
-					this.activeChannel = null;
+			var fg = function () {
+				if (!this.syncInterval) {
+					this.syncInterval = setInterval(this._sync.bind(this), 100);
 				}
 			};
 
-			var _computePinsClass = function (activeChannel, index) {
-				return activeChannel === index ? 'pins active' : 'pins';
+			var bg = function () {
+				if (this.syncInterval) {
+					clearInterval(this.syncInterval);
+					this.syncInterval = null;
+				}
+			};
+
+			var ready = function () {
+				this.fg();
+			};
+
+			var _sync = function () {
+				if (this.valueChanged) {
+					onionConsole.getService('onion-ubus-provider', (function (ubus) {
+							ubus.request('i2c_exp', 'pwm-exp', {
+								command: 'set',
+								params: (this.activeChannelId === null) ? {
+									channel: 'all',
+									duty: this.allDuty.toFixed(2),
+									delay: this.allDelay.toFixed(2)
+								} : {
+									channel: this.activeChannelId,
+									duty: this.channels[this.activeChannelId].duty.toFixed(2),
+									delay: this.channels[this.activeChannelId].delay.toFixed(2)
+								}
+							}, (function (data) {
+								if (data.length === 2 && data[0] === 0) {
+									this.r1 = data[1].state === '1' ? true : false;
+								} else {
+									console.log('gpio status error');
+								}
+							}).bind(this));
+					}).bind(this));
+
+					this.valueChanged = false;
+				}
+			};
+
+			var _onPins = function (e) {
+				if (this.activeChannelId !== e.model.item.id) {
+					this.activeChannelId = e.model.item.id;
+				} else {
+					this.activeChannelId = null;
+				}
+			};
+
+			var _computePinsClass = function (activeChannelId, channelId) {
+				return activeChannelId === channelId ? 'pins active' : 'pins';
+			};
+
+			var _computePWMChannel = function (activeChannelId) {
+				return (activeChannelId === null) ? 'All' : 'S' + activeChannelId;
+			};
+
+			var _activeChannelChanged = function (changeRecord) {
+				if (this.activeChannelId === null) {
+					if (changeRecord.path === 'activeChannel.delay') {
+						this.allDelay = parseFloat(changeRecord.value);
+					} else if (changeRecord.path === 'activeChannel.duty') {
+						this.allDuty = parseFloat(changeRecord.value);
+					}
+				} else {
+					if (changeRecord.path === 'activeChannel.delay') {
+						this.channels[this.activeChannelId].delay = parseFloat(changeRecord.value);
+					} else if (changeRecord.path === 'activeChannel.duty') {
+						this.channels[this.activeChannelId].duty = parseFloat(changeRecord.value);
+					}
+				}
+
+				this.valueChanged = true;
+			};
+
+			var _activeChannelIdChanged = function (changeRecord) {
+				if (changeRecord === null) {
+					this.set('activeChannel.duty', this.allDuty);
+					this.set('activeChannel.delay', this.allDelay);
+				} else {
+					this.set('activeChannel.duty', this.channels[changeRecord].duty);
+					this.set('activeChannel.delay', this.channels[changeRecord].delay);
+				}
 			};
 
 			Polymer({
@@ -117,18 +220,70 @@
 				ready: ready,
 				_onPins: _onPins,
 				_computePinsClass: _computePinsClass,
-				behaviors: [Onion.AppBehavior],
+				observers: [
+					'_activeChannelChanged(activeChannel.*)',
+					'_activeChannelIdChanged(activeChannelId)'
+				],
 				properties: {
+					frequency: {
+						type: Number,
+						value: 50,
+						notify: true
+					},
+					valueChanged: Boolean,
 					channels: {
 						type: Array,
-						value: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+						value: [
+							{ id: 8, duty: 0, delay: 0 },
+							{ id: 9, duty: 0, delay: 0 },
+							{ id: 10, duty: 0, delay: 0 },
+							{ id: 11, duty: 0, delay: 0 },
+							{ id: 12, duty: 0, delay: 0 },
+							{ id: 13, duty: 0, delay: 0 },
+							{ id: 14, duty: 0, delay: 0 },
+							{ id: 15, duty: 0, delay: 0 },
+							{ id: 7, duty: 0, delay: 0 },
+							{ id: 6, duty: 0, delay: 0 },
+							{ id: 5, duty: 0, delay: 0 },
+							{ id: 4, duty: 0, delay: 0 },
+							{ id: 3, duty: 0, delay: 0 },
+							{ id: 2, duty: 0, delay: 0 },
+							{ id: 1, duty: 0, delay: 0 },
+							{ id: 0, duty: 0, delay: 0 }
+						]
 					},
-					activeChannel: {
+					activeChannelId: {
 						type: Number,
 						value: null,
 						notify: true
+					},
+					activeChannel: {
+						type: Object,
+						value: function () {
+							return {
+								duty: 0,
+								delay: 0
+							};
+						},
+						notify: true
+					},
+					allDuty: {
+						type: Number,
+						value: 0,
+						notify: true
+					},
+					allDelay: {
+						type: Number,
+						value: 0,
+						notify: true
 					}
-				}
+				},
+				_computePWMChannel: _computePWMChannel,
+				_activeChannelChanged:_activeChannelChanged,
+				_activeChannelIdChanged: _activeChannelIdChanged,
+				_sync: _sync,
+				fg: fg,
+				bg: bg
 			});
 		})();
 	</script>

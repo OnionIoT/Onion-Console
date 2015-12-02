@@ -24,7 +24,8 @@
     "iron-pages": "PolymerElements/iron-pages#latest",
     "iron-signals": "PolymerElements/iron-signals#latest",
     "juicy-ace-editor": "Juicy/juicy-ace-editor#polymer_1.0",
-    "polymer": "~1.1.1",
-    "iron-menu-behavior": "PolymerElements/iron-menu-behavior#latest"
+    "polymer": "~1.2.1",
+    "iron-menu-behavior": "PolymerElements/iron-menu-behavior#latest",
+    "iron-range-behavior": "PolymerElements/iron-range-behavior#~1.0.4"
   }
 }

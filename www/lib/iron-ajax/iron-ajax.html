@@ -69,8 +69,7 @@ element.
        * The URL target of the request.
        */
       url: {
-        type: String,
-        value: ''
+        type: String
       },
 
       /**
@@ -242,6 +241,8 @@ element.
        *
        * The type of the response is determined by the value of `handleAs` at
        * the time that the request was generated.
+       *
+       * @type {Object}
        */
       lastResponse: {
         type: Object,
@@ -251,6 +252,8 @@ element.
 
       /**
        * lastRequest's error, if any.
+       *
+       * @type {Object}
        */
       lastError: {
         type: Object,
@@ -272,12 +275,26 @@ element.
       },
 
       /**
-       * Length of time in milliseconds to debounce multiple requests.
+       * Length of time in milliseconds to debounce multiple automatically generated requests.
        */
       debounceDuration: {
         type: Number,
         value: 0,
         notify: true
+      },
+
+      /**
+       * Prefix to be stripped from a JSON response before parsing it.
+       *
+       * In order to prevent an attack using CSRF with Array responses
+       * (http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx/)
+       * many backends will mitigate this by prefixing all JSON response bodies
+       * with a string that would be nonsensical to a JavaScript parser.
+       *
+       */
+      jsonPrefix: {
+        type: String,
+        value: ''
       },
 
       _boundHandleResponse: {
@@ -289,8 +306,8 @@ element.
     },
 
     observers: [
-      '_requestOptionsChanged(url, method, params.*, headers,' +
-        'contentType, body, sync, handleAs, withCredentials, timeout, auto)'
+      '_requestOptionsChanged(url, method, params.*, headers, contentType, ' +
+          'body, sync, handleAs, jsonPrefix, withCredentials, timeout, auto)'
     ],
 
     /**
@@ -353,7 +370,7 @@ element.
         contentType = 'application/x-www-form-urlencoded';
       }
       if (contentType) {
-        headers['Content-Type'] = contentType;
+        headers['content-type'] = contentType;
       }
       var header;
 
@@ -377,16 +394,18 @@ element.
      *   body: (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined|Object),
      *   headers: (Object|undefined),
      *   handleAs: (string|undefined),
+     *   jsonPrefix: (string|undefined),
      *   withCredentials: (boolean|undefined)}}
      */
     toRequestOptions: function() {
       return {
-        url: this.requestUrl,
+        url: this.requestUrl || '',
         method: this.method,
         headers: this.requestHeaders,
         body: this.body,
         async: !this.sync,
         handleAs: this.handleAs,
+        jsonPrefix: this.jsonPrefix,
         withCredentials: this.withCredentials,
         timeout: this.timeout
       };
@@ -462,7 +481,7 @@ element.
 
     _requestOptionsChanged: function() {
       this.debounce('generate-request', function() {
-        if (!this.url && this.url !== '') {
+        if (this.url == null) {
           return;
         }
 

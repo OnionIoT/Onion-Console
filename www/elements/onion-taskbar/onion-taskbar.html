@@ -18,19 +18,24 @@
 		}
 
 		.task-icon {
-			height: 64px;
-			width: 64px;
+			height: 48px;
+			width: 48px;
 			background-color: transparent;
 			border: none;
 			border-radius: 50%;
+			opacity: 0.5;
+			filter: alpha(opacity=50);
 		}
 			.task-icon > iron-image {
 				height: 100%;
 				width: 100%;
 			}
 
-		.active {
-			background-color: red;
+		.task-icon.active {
+			height: 64px;
+			width: 64px;
+			opacity: 1;
+			filter: alpha(opacity=100);
 		}
 
 	</style>

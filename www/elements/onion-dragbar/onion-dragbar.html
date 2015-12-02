@@ -1,15 +1,41 @@
 <link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-range-behavior/iron-range-behavior.html">
 
 <dom-module id="onion-dragbar">
 	<style>
-		#dragbar {
-			
+		:host {
+			width: 100%;
+		}
+
+		#dragbar-container {
+			position: relative;
+			height: 20px;
+			width: 100%;
+			min-width: 100px;
+		}
+
+		#dragbar-container > progress {
+			position: absolute;
+			width: 100%;
+			top: 2px;
+		}
+
+		#dragger {
+			position: absolute;
+			height: 20px;
+			width: 10px;
+			border-radius: 3px;
+			margin-left: -5px;
+			background-color: #bdc3c7;
+			z-index: 100;
+			cursor: pointer;
 		}
 	</style>
 	
 	<template>
 		<div id="dragbar-container">
-			<progress class="progress" value="[[val]]" max="[[max]]"></progress>
+			<div id="dragger" style$="{{_computePosition(value, range)}}" on-track="_handleTrack"></div>
+			<progress class="progress" value="[[value]]" min="[[min]]" max="[[max]]" id="dragbar" on-tap="_handleTrack"></progress>
 		</div>
 	</template>
 
@@ -17,8 +43,12 @@
 		'use strict';
 
 		(function () {
+			var ready = function () {
+				this.range = this.max - this.min;
+			};
+
 			var _computeClass = function (success, info, warning, danger) {
-				var elementClass = 'alert';
+				var elementClass = 'progress';
 
 				if (danger) {
 					elementClass += ' alert-danger';
@@ -33,21 +63,48 @@
 				return elementClass;
 			};
 
-			var _close = function () {
-				this.remove();
+			var _computePosition = function (value, range) {
+				return 'left: ' + (value / range * 100).toFixed(2) + '%';
+			};
+
+			var _handleTrack = function (e) {
+				var barStart = this.$.dragbar.getBoundingClientRect().left;
+				var barEnd = this.$.dragbar.getBoundingClientRect().right;
+				var barRange = barEnd - barStart;
+				
+				this.set('value', this.min + (e.detail.x - barStart) / barRange * this.range);
 			};
 
 			Polymer({
+				ready: ready,
 	    		is: 'onion-dragbar',
 	    		properties: {
+	    			range: Number,
+	    			danger: {
+	    				type: Boolean,
+	    				value: false,
+	    				notify: true
+	    			},
+	    			warning: {
+	    				type: Boolean,
+	    				value: false,
+	    				notify: true
+	    			},
+	    			info: {
+	    				type: Boolean,
+	    				value: false,
+	    				notify: true
+	    			},
 	    			success: {
-		    			notify: true,
-				        type: Boolean,
-				        value: false
-		    		}
+	    				type: Boolean,
+	    				value: false,
+	    				notify: true
+	    			}
 	    		},
+	    		behaviors: [Polymer.IronRangeBehavior],
+	    		_computePosition: _computePosition,
 	    		_computeClass: _computeClass,
-	    		_close: _close
+	    		_handleTrack: _handleTrack
 	    	});
         })();
 	</script>
