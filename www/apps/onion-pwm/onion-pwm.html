@@ -70,6 +70,8 @@
 		}
 
 		.note {
+			font-style: italic;
+			font-size: 0.85em;
 			padding: 15px;
     		color: #888;
 		}
@@ -115,7 +117,7 @@
 								</td>
 							</tr>
 						</table>
-						<div class="note">* Typical duty cycle for servo motor is ~3.5% to 13%</div>
+						<div class="note">* Typical duty cycle for servo motor is ~3.5% to 13% @ 50Hz</div>
 					</div>
 				</div>
 			</onion-app-body>
@@ -152,11 +154,13 @@
 								params: (this.activeChannelId === null) ? {
 									channel: 'all',
 									duty: this.allDuty.toFixed(2),
-									delay: this.allDelay.toFixed(2)
+									delay: this.allDelay.toFixed(2),
+									frequency: this.frequency.toString()
 								} : {
 									channel: this.activeChannelId,
 									duty: this.channels[this.activeChannelId].duty.toFixed(2),
-									delay: this.channels[this.activeChannelId].delay.toFixed(2)
+									delay: this.channels[this.activeChannelId].delay.toFixed(2),
+									frequency: this.frequency.toString()
 								}
 							}, (function (data) {
 								if (data.length === 2 && data[0] === 0) {
