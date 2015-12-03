@@ -12,9 +12,11 @@
 		.nav-link {
 			display: block;
 			padding: .5em 1em;
-			border-radius: var(--bootstrap-pill-border-radius, 0.2rem);
+			border-top-left-radius: var(--bootstrap-pill-border-radius, 0.2rem);
+			border-bottom-left-radius: var(--bootstrap-pill-border-radius, 0.2rem);
 			cursor: pointer;
 			color: var(--bootstrap-link-color, #373a3c);
+			background-color: var(--bootstrap-pill-background-color, #f2f2f2);
 		}
 
 		.nav-link:focus,
@@ -29,7 +31,7 @@
 		.nav-item.open .nav-link:focus,
 		.nav-item.open .nav-link:hover {
 			color: var(--bootstrap-pill-color, #fff);
-			background-color: var(--bootstrap-pill-background-color, #0275d8);
+			background-color: var(--bootstrap-active-pill-background-color, #fff);
 		}
 	</style>
 

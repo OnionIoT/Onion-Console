@@ -1,42 +1,154 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
-<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="import" href="/lib/iron-icons/editor-icons.html">
+<link rel="import" href="/lib/iron-pages/iron-pages.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/elements/bootstrap-pills/bootstrap-pills.html">
 
 <dom-module id="onion-oled">
 	<style>
+		:host {
+		    display: block;
+	  	    height: 100%;
+			width: 100%;
+			--bootstrap-pill-border-radius: 3px;
+			--bootstrap-pill-color: #373a3c;
+		}
+
+		onion-app-body > div {
+			height: 100%;
+			width: 100%;
+		}
+
+		#oled-container {
+			width: 800px;
+			height: 525px;
+			background-color: #fff;
+			border-radius: 3px;
+		}
+
+		.diagnal {
+			-ms-transform: rotate(45deg); /* IE 9 */
+			-webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+			transform: rotate(45deg);
+		}
+
+		#side-bar {
+			width: 150px;
+			height: 100%;
+			position: relative;
+			background-color: #f2f2f2;
+		}
+			#side-bar bootstrap-pill iron-icon {
+				margin-right: 5px;
+			}
+
+		#content {
+			padding: 25px;
+		}
+
+		iron-pages {
+			width: 100%;
+			height: 100%;
+		}
+
+		iron-pages > div {
+			padding: 25px;
+		}
+
+		.oled-exp {
+			position: relative;
+			background-image: url('./img/oled-exp-bg.jpg');
+			width: 600px;
+			height: 400px;
+			background-repeat: no-repeat;
+			background-size: contain;
+			background-position: center center;
+			margin: 0 auto 25px auto;
+		}
+
+		#oled-text {
+		    position: absolute;
+			background-color: transparent;
+			border: none;
+			left: 135px;
+			top: 111px;
+			height: 170px;
+			width: 335px;
+			resize: none;
+			color: #fff;
+			font-family: monospace;
+			font-size: 22px;
+			line-height: 19px;
+			letter-spacing: 2px;
+			padding: 7.5px;
+			white-space: -moz-pre !important;  /* Mozilla, since 1999 */
+			white-space: -pre;      /* Opera 4-6 */
+			white-space: -o-pre;    /* Opera 7 */
+			white-space: pre;       /* css-3 */
+			word-wrap: break-word;       /* Internet Explorer 5.5+ */
+			white-space: -webkit-pre; /* Newer versions of Chrome/Safari*/
+			word-break: break-all;
+		}
+
+		#oled-image {
+		    position: absolute;
+			background-color: transparent;
+			border: none;
+			left: 135px;
+			top: 111px;
+			height: 170px;
+			width: 335px;
+		}
 	</style>
 
 	<template>
-		<onion-app app-name="OLED Expansion Control">
+		<onion-app app-name="OLED Expansion Control" toolbar-background="#34495e" background="#f2f2f2">
 			<onion-app-toolbar>
-
+				<div class="layout horizontal">
+					<div class="flex">
+						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" icon="icons:clear"></iron-icon><span>Clear Screen</span></button>
+						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" icon="icons:invert-colors"></iron-icon><span>Invert Screen</span></button>
+						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" icon="icons:swap-horiz"></iron-icon><span>Horizontal Scroll</span></button>
+						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon diagnal" icon="icons:swap-vert"></iron-icon><span>Diagnal Scroll</span></button>
+					</div>
+				</div>
 			</onion-app-toolbar>
 
 			<onion-app-body>
-				<div>
-					<h1>
-						Body of the App goes here
-					</h1>
-					<button on-tap="openModal">Open</button>
-				</div>
-
-				<bootstrap-modal id="test" close-button>
-					<bootstrap-modal-header>
-						<h4 class="modal-title">Modal title</h4>
-					</bootstrap-modal-header>
-
-					<bootstrap-modal-body>
-						<div>Dialog body</div>
-						<div class="buttons">
-							<button dialog-dismiss>Cancel</button>
-							<button dialog-confirm>Accept</button>
+				<div class="horizontal center-justified layout center">
+					<div id="oled-container" class="horizontal layout">
+						<div id="side-bar">
+							<bootstrap-pills stacked selected="{{currentTab}}">
+								<bootstrap-pill><iron-icon icon="icons:font-download"></iron-icon><span>Text</span></bootstrap-pill>
+								<bootstrap-pill><iron-icon icon="editor:insert-photo"></iron-icon><span>Image</span></bootstrap-pill>
+							</bootstrap-pills>
 						</div>
-					</bootstrap-modal-body>
 
-					<bootstrap-modal-footer>
-						<button class="btn-default">Test</button>
-					</bootstrap-modal-footer>
-				</bootstrap-modal>
+						<iron-pages attr-for-selected="id" selected="[[_currentTab(tabs, currentTab)]]">
+							<div id="text">
+								<div class="oled-exp">
+									<textarea id="oled-text" value="{{textValue::input}}"></textarea>
+								</div>
+								<div class="horizontal center-justified layout">
+									<button type="button" class="btn btn-success" on-tap="_syncText">Display on OLED!</button>
+								</div>
+							</div>
+							<div id="image">
+								<div class="oled-exp">
+									<canvas id="oled-image"></canvas>
+								</div>
+								<div class="horizontal center-justified layout">
+									<label class="file">
+										<input type="file" id="image-file" on-change="_loadImage" />
+										<span class="file-custom"></span>
+									</label>
+								</div>
+							</div>
+						</iron-pages>
+					</div>
+				</div>
 			</onion-app-body>
 		</onion-app>
 
@@ -46,32 +158,117 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			var ready = function () {
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+						ubus.request('i2c_exp', 'oled-exp', {
+							command: 'set',
+							option: 'i'
+						}, (function (data) {
+							if (!(data.length === 2 && data[0] === 0)) {
+								throw data[0];
+							}
+						}).bind(this));
+				}).bind(this));
 
-			var created = function () {
-				self = this;
+				this.canvas = this.$['oled-image'];
+				this.canvasContext = this.canvas.getContext('2d');
 			};
 
-			var onAppIcon = function (e) {
-				self.onionConsole.launchApp(e.target);
+			var _currentTab = function (tabs, currentTab) {
+				return tabs[currentTab];
 			};
 
-			var openModal = function () {
-				self.$.test.open();
+			var _textValueChanged = function (newValue, oldValue) {
+				var textArr = newValue.split('\n');
+				var lines = 0;
+
+				for (var i = 0; i < textArr.length; i++) {
+					lines += Math.ceil((textArr[i].length === 0 ? 1 : textArr[i].length) / 21);
+				}
+
+				if (lines > 8) {
+					this.textValue = oldValue;
+				}
+			};
+
+			var _syncText = function () {
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+						ubus.request('i2c_exp', 'oled-exp', {
+							command: 'set',
+							option: 'c',
+							params: {
+								write: this.textValue.replace(/\n/g, '\\\\\n').replace(/'/g, '').replace(/"/g, '')
+							}
+						}, (function (data) {
+							if (!(data.length === 2 && data[0] === 0)) {
+								throw data[0];
+							}
+						}).bind(this));
+				}).bind(this));
+			};
+
+			var _loadImage = function (e) {
+				if (this.$['image-file'].files && this.$['image-file'].files[0]) {
+					var fr = new FileReader();
+
+					fr.onload = (function (e) {
+						var img = new Image();
+
+						img.onload = (function () {
+							// console.log(img.width, img.height);
+
+							// var ratio = img.height / img.width;
+
+							// if (img.height < img.width) {
+							// 	//horizontal image
+							// 	r = w/h;
+							// 	nh = 400,
+							// 	nw = r*400;
+							// 	nx = -(nw-300)/2;
+							// } else {
+							// 	//vertical image
+							// 	nw = 300,
+							// 	nh = r*300;
+							// 	ny = -(nh-400)/2;
+							// }
+
+							this.canvasContext.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+						}).bind(this);
+
+						img.src = e.target.result;
+					}).bind(this);
+
+					fr.readAsDataURL(this.$['image-file'].files[0]);
+				}
 			};
 
 			Polymer({
 				is: 'onion-oled',
-				created: created,
-				ready: function () {},
+				ready: ready,
 				behaviors: [Onion.AppBehavior],
-				openModal: openModal,
 				properties: {
-					apps: {
+					tabs: {
 						type: Array,
-						value: []
+						value: [
+							'text',
+							'image'
+						]
+					},
+					currentTab: {
+						type: String,
+						value: '0',
+						notify: true
+					},
+					textValue: {
+						type: String,
+						value: '',
+						observer: '_textValueChanged'
 					}
-				}
+				},
+				_currentTab: _currentTab,
+				_textValueChanged: _textValueChanged,
+				_syncText: _syncText,
+				_loadImage: _loadImage
 			});
 		})();
 	</script>

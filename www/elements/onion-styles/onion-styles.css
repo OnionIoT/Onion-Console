@@ -15,3 +15,21 @@ button:focus {
 	padding-left: 0;
 	padding-right: 0;
 }
+
+.file-custom {
+	-webkit-box-shadow: none;
+    box-shadow: none; 
+    border: 1px solid #ddd;
+}
+
+.file-custom:before {
+	top: -1px;
+	right: -1px;
+	bottom: -1px;
+	border: 1px solid #ddd;
+}
+
+.file input:focus ~ .file-custom {
+  -webkit-box-shadow: 0 0 1px #0074d9, 0 0 1px #0074d9, 0 0 1px #0074d9;
+          box-shadow: 0 0 1px #0074d9, 0 0 1px #0074d9, 0 0 1px #0074d9;
+}
