@@ -57,7 +57,8 @@
                                 ],
                                 "i2c_exp": [
                                         "pwm-exp",
-                                        "relay-exp"
+                                        "relay-exp",
+                                        "oled-exp"
                                 ],
                                 "onion-console": [
                                         "app-list"
