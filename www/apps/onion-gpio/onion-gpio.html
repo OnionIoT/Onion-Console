@@ -74,25 +74,63 @@
 	</style>
 	<template>
 		<onion-app app-name="GPIO Tool" toolbar-background="#c0392b" background="#f2f2f2">
+
+			<onion-app-toolbar>
+				<div class="layout horizontal">
+					<div class="flex"></div>  <!-- Place Holder -->   
+					<div>
+						<select value="{{layout::input}}">
+						  <option value="omega">Omega</option>
+						  <option value="exp_dock">Expansion Dock</option>
+						</select>
+					</div>
+				</div>
+			</onion-app-toolbar>
+
 			<onion-app-body>
 				<div class="horizontal center-justified layout center">
-					<div class="vertical end-justified layout" id="left-pins">
-						<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
-							<template is="dom-if" if="{{item.left}}">
-								<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
-							</template>
-						</template>
-					</div>
 
-					<img id="pin-map" src="./omega.png" />
-
-					<div class="vertical end-justified layout" id="right-pins">
-						<template is="dom-repeat" items="{{pins}}">
-							<template is="dom-if" if="{{!item.left}}">
-								<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+					<!-- Omega Layout -->
+					<template is="dom-if" if="{{_checkLayout(layout, 'omega')}}">
+						<div class="vertical end-justified layout" id="left-pins">
+							<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
+								<template is="dom-if" if="{{item.left}}">
+									<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+								</template>
 							</template>
-						</template>
-					</div>
+						</div>
+
+						<img id="pin-map" src="./omega.png" />
+
+						<div class="vertical end-justified layout" id="right-pins">
+							<template is="dom-repeat" items="{{pins}}">
+								<template is="dom-if" if="{{!item.left}}">
+									<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+								</template>
+							</template>
+						</div>
+					</template>
+
+					<!-- Expansion Dock Layout -->
+					<template is="dom-if" if="{{_checkLayout(layout, 'exp_dock')}}">
+						<img id="pin-map" src="./exp_dock.png" />
+						<div>
+							<div class="vertical end-justified layout" id="left-pins">
+								<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
+									<template is="dom-if" if="{{item.left}}">
+										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+									</template>
+								</template>
+							</div>
+							<div class="vertical end-justified layout" id="right-pins">
+								<template is="dom-repeat" items="{{pins}}">
+									<template is="dom-if" if="{{!item.left}}">
+										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+									</template>
+								</template>
+							</div>
+						</div>
+					</template>
 
 					<div id="gpio-control">
 						<template is="dom-if" if="{{!_isGpio(currentPin)}}">
@@ -137,11 +175,14 @@
 		'use strict';
 
 		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
 			var ready = function() {
 				this.title = 'GPIO Tool';
-
-				// populate the info for all pins 
-				// this._syncAll();
             };
 
 			// populate the array with info for all GPIO pins
@@ -281,8 +322,27 @@
 				};
 			};
 
+			var _checkLayout = function(layout, compare){
+				console.log('_checkLayout:' +layout + compare)
+				return (layout === compare);
+			};
+
+			var _onLayoutChange = function(newVal) {
+				var layout = newVal;
+
+				if (layout === 'omega'){
+					// self.$['pin-map'].src = 'omega.png';
+
+				}else if(layout === 'exp_dock'){
+					// self.$['pin-map'].src = 'exp_dock.png';
+				}
+
+				console.log("_onLayoutChange: "+ newVal);
+			};
+
 			Polymer({
 				is: 'onion-gpio',
+				created: created,
 				ready: ready,
 				behaviors: [Onion.AppBehavior],
 				_calculatePinClass: _calculatePinClass,
@@ -296,7 +356,15 @@
 				_pinDirectionChanged: _pinDirectionChanged,
 				_getPin: _getPin,
 				_syncOne: _syncOne,
+				_onLayoutChange: _onLayoutChange,
+				_checkLayout: _checkLayout,
 				properties: {
+					layout: {
+						type: String,
+						value: 'omega',
+						notify: true,
+						observer: "_onLayoutChange"
+					},
 					directionBuffer: {
 						type: String,
 						notify: true
