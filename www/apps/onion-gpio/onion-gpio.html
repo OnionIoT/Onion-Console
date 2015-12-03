@@ -22,8 +22,13 @@
 			width: auto;
 		}
 
+		#pin-map-dock {
+			height: auto;
+			width: 600px;
+		}
+
 		button.pin {
-			border-radius: 5px;
+			border-radius: 6px;
 			display: block;
 			border: 1px solid #f2f2f2;
 			font-size: 12px;
@@ -45,6 +50,14 @@
 			background-color: red;
 		}
 
+		button.vertical {
+			-webkit-transform: rotate(270deg);
+		    -moz-transform: rotate(270deg);
+		    -o-transform: rotate(270deg);
+		    -ms-transform: rotate(270deg);
+		    transform: rotate(270deg);
+		}
+
 		#left-pins {
 			margin-right: 10px;
 		}
@@ -52,6 +65,15 @@
 		#right-pins {
 			margin-left: 10px;
 		}
+
+		#top-pins {
+			margin-bottom: 10px;
+		}
+
+		#bottom-pins {
+			margin-top: 10px;
+		}
+
 
 		#gpio-control {
 			height: 415px;
@@ -91,7 +113,7 @@
 				<div class="horizontal center-justified layout center">
 
 					<!-- Omega Layout -->
-					<template is="dom-if" if="{{_checkLayout(layout, 'omega')}}">
+					<template is="dom-if" if="{{_checkValue(layout, 'omega')}}">
 						<div class="vertical end-justified layout" id="left-pins">
 							<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
 								<template is="dom-if" if="{{item.left}}">
@@ -112,26 +134,29 @@
 					</template>
 
 					<!-- Expansion Dock Layout -->
-					<template is="dom-if" if="{{_checkLayout(layout, 'exp_dock')}}">
-						<img id="pin-map" src="./exp_dock.png" />
-						<div>
-							<div class="vertical end-justified layout" id="left-pins">
+					<template is="dom-if" if="{{_checkValue(layout, 'exp_dock')}}">
+						
+						<div class="layout vertical">
+							<img id="pin-map-dock" src="./exp_dock.png" />
+							<div class="horizontal end-justified layout" id="left-pins">
 								<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
 									<template is="dom-if" if="{{item.left}}">
-										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+										<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin">{{item.label}}</button>
 									</template>
 								</template>
 							</div>
-							<div class="vertical end-justified layout" id="right-pins">
+							<div class="horizontal end-justified layout" id="right-pins">
 								<template is="dom-repeat" items="{{pins}}">
 									<template is="dom-if" if="{{!item.left}}">
-										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+										<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin">{{item.label}}</button>
 									</template>
 								</template>
 							</div>
 						</div>
+						
 					</template>
 
+					<!-- GPIO Control -->
 					<div id="gpio-control">
 						<template is="dom-if" if="{{!_isGpio(currentPin)}}">
 							<div id="no-pin" class="horizontal center-justified layout center">Please select a GPIO Pin</div>
@@ -182,7 +207,7 @@
 			};
 
 			var ready = function() {
-				this.title = 'GPIO Tool';
+				this.title = 'Tool';
             };
 
 			// populate the array with info for all GPIO pins
@@ -202,7 +227,7 @@
 								// {pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
 								this._refresh();
 							} else {
-								console.log('gpio status error');
+								console.log('status error');
 							}
 						}).bind(this));
 					}
@@ -222,19 +247,24 @@
 								// {pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
 								this._refresh();
 							} else {
-								console.log('gpio status error');
+								console.log('status error');
 							}
 						}).bind(this));
 				}).bind(this));
 			}
 
-			var _calculatePinClass = function (pin) {
+			var _calculatePinClass = function (pin, layout) {
 				var result = 'pin';
 				result = result + (pin.gpio >= 0 ? ' gpio' : '');
 				if (pin.direction !== '?'){ //pin initialized
 					result = result + (pin.value > 0 ? ' off' : ' on');
 				}
 				
+				if (layout === 'exp_dock'){
+					result = result + ' vertical';
+				}
+
+
 				return result;
 			};
 
@@ -281,7 +311,7 @@
 							pin.value = data[1].value;
 							this._refresh();
 						} else {
-							console.log('gpio status error');
+							console.log('status error');
 						}
 					}).bind(this));
 				}).bind(this));
@@ -322,12 +352,13 @@
 				};
 			};
 
-			var _checkLayout = function(layout, compare){
-				console.log('_checkLayout:' +layout + compare)
+			var _checkValue = function(layout, compare){
+				console.log('_checkValue:' +layout + compare)
 				return (layout === compare);
 			};
 
 			var _onLayoutChange = function(newVal) {
+				
 				var layout = newVal;
 
 				if (layout === 'omega'){
@@ -337,8 +368,36 @@
 					// self.$['pin-map'].src = 'exp_dock.png';
 				}
 
-				console.log("_onLayoutChange: "+ newVal);
+				self._sortPins(layout);
+
 			};
+
+			var _sortPins = function(layout){
+				console.log(self);
+				console.log(self.pins);
+				var pins = [];
+				var order = [];
+				if(layout === 'omega'){
+					order = ['6','7','8'];
+				} else if (layout === 'exp_dock'){
+					order = ['8','7','6'];
+				}
+
+				for (var i = 0; i < order.length; i++) {
+					var label = order[i];
+
+					for (var p = 0; p < self.pins.length; p++) {
+						var pin = self.pins[p];
+						if (label === pin.label){
+							pins.push(pin);
+						}
+					};
+				};
+
+				console.log(pins);
+				console.log(self.pins);
+				self.pins = pins;
+			}
 
 			Polymer({
 				is: 'onion-gpio',
@@ -357,11 +416,12 @@
 				_getPin: _getPin,
 				_syncOne: _syncOne,
 				_onLayoutChange: _onLayoutChange,
-				_checkLayout: _checkLayout,
+				_checkValue: _checkValue,
+				_sortPins: _sortPins,
 				properties: {
 					layout: {
 						type: String,
-						value: 'omega',
+						value: 'exp_dock',
 						notify: true,
 						observer: "_onLayoutChange"
 					},
@@ -387,37 +447,37 @@
 							// left side pins
 							{left: true, label: 'GND', gpio: -1, direction: null, value: null},
 							{left: true, label: '2.8V', gpio: -1, direction: null, value: null},
-							{left: true, label: 'GPIO 26', gpio: 26, direction: '?', value: 0},
-							{left: true, label: 'GPIO 23', gpio: 23, direction: '?', value: 0},
-							{left: true, label: 'GPIO 17', gpio: 17, direction: '?', value: 0},
-							{left: true, label: 'GPIO 16', gpio: 16, direction: '?', value: 0},
-							{left: true, label: 'GPIO 15', gpio: 15, direction: '?', value: 0},
-							{left: true, label: 'GPIO 14', gpio: 14, direction: '?', value: 0},
-							{left: true, label: 'GPIO 13', gpio: 13, direction: '?', value: 0},
-							{left: true, label: 'GPIO 12', gpio: 12, direction: '?', value: 0},
-							{left: true, label: 'GPIO 8', gpio: 8, direction: '?', value: 0},
-							{left: true, label: 'GPIO 7', gpio: 7, direction: '?', value: 0},
-							{left: true, label: 'GPIO 6', gpio: 6, direction: '?', value: 0},
-							{left: true, label: 'GPIO 1', gpio: 1, direction: '?', value: 0},
-							{left: true, label: 'GPIO 0', gpio: 0, direction: '?', value: 0},
-							{left: true, label: 'RESET', gpio: -1, direction: null, value: null},
+							{left: true, label: '26', gpio: 26, direction: '?', value: 0},
+							{left: true, label: '23', gpio: 23, direction: '?', value: 0},
+							{left: true, label: '17', gpio: 17, direction: '?', value: 0},
+							{left: true, label: '16', gpio: 16, direction: '?', value: 0},
+							{left: true, label: '15', gpio: 15, direction: '?', value: 0},
+							{left: true, label: '14', gpio: 14, direction: '?', value: 0},
+							{left: true, label: '13', gpio: 13, direction: '?', value: 0},
+							{left: true, label: '12', gpio: 12, direction: '?', value: 0},
+							{left: true, label: '8', gpio: 8, direction: '?', value: 0},
+							{left: true, label: '7', gpio: 7, direction: '?', value: 0},
+							{left: true, label: '6', gpio: 6, direction: '?', value: 0},
+							{left: true, label: '1', gpio: 1, direction: '?', value: 0},
+							{left: true, label: '0', gpio: 0, direction: '?', value: 0},
+							{left: true, label: 'RST', gpio: -1, direction: null, value: null},
 							// right side pins
 							{left: false, label: 'GND', gpio: -1, direction: null, value: null},
 							{left: false, label: '3.3V', gpio: -1, direction: null, value: null},
-							{left: false, label: 'USB D+', gpio: -1, direction: null, value: null},
-							{left: false, label: 'USB D-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB-', gpio: -1, direction: null, value: null},
 							{left: false, label: 'TX', gpio: -1, direction: null, value: null},
 							{left: false, label: 'RX', gpio: -1, direction: null, value: null},
 							{left: false, label: 'FW RST', gpio: -1, direction: null, value: null},
 							{left: false, label: '2.0V', gpio: -1, direction: null, value: null},
-							{left: false, label: 'ETH TX-', gpio: -1, direction: null, value: null},
-							{left: false, label: 'ETH TX+', gpio: -1, direction: null, value: null},
-							{left: false, label: 'ETH RX-', gpio: -1, direction: null, value: null},
-							{left: false, label: 'ETH RX+', gpio: -1, direction: null, value: null},
-							{left: false, label: 'GPIO 18', gpio: 18, direction: '?', value: 0},
-							{left: false, label: 'GPIO 19', gpio: 19, direction: '?', value: 0},
-							{left: false, label: 'I2C SCL', gpio: -1, direction: null, value: null},
-							{left: false, label: 'I2C SDA', gpio: -1, direction: null, value: null}
+							{left: false, label: 'TX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX+', gpio: -1, direction: null, value: null},
+							{left: false, label: '18', gpio: 18, direction: '?', value: 0},
+							{left: false, label: '19', gpio: 19, direction: '?', value: 0},
+							{left: false, label: 'SCL', gpio: -1, direction: null, value: null},
+							{left: false, label: 'SDA', gpio: -1, direction: null, value: null}
 						],
 						notify: true,
 					},
