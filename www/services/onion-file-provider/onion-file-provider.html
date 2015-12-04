@@ -47,8 +47,18 @@
 					data: data
 				};
 
-				fileSaveResult = callback || self.noop;
+				callback = callback || self.noop;
 				self.ubus.request('file', 'write', params, setSaveFileContentResult);
+			};
+
+			var saveFileContentReturn = function (fullFilename, data, callback) {
+			    var params = {
+				    path: fullFilename,
+					data: data
+				};
+
+				callback = callback || self.noop;
+				self.ubus.request('file', 'write', params, callback);
 			};
 			
 			var execCommand = function (command, parameters, callback) {
@@ -57,8 +67,18 @@
 				    params: parameters
 				};
 
-				execCommandResult = callback || self.noop;
+				callback = callback || self.noop;
 				self.ubus.request('file', 'exec', params, setExecCommandResult);
+			};
+
+			var execCommandReturn = function (command, parameters, callback) {
+				var params = {
+				    command: command,
+				    params: parameters
+				};
+
+				callback = callback || self.noop;
+				self.ubus.request('file', 'exec', params, callback);
 			};
 			
 			var setFileList = function (result) {
@@ -130,6 +150,24 @@
 				}
 			};
 
+			var createTempFile = function (fileData, callback) {
+				this.execCommandReturn('mktemp', {}, function (data) {
+					if (data.length === 2 && data[0] === 0) {
+						var filename = data[1].stdout.trim();
+
+						if (fileData) {
+							saveFileContentReturn(filename, fileData, function (data) {
+								if (data[0] === 0) {
+									callback(filename);
+								}
+							});
+						} else {
+							callback(filename);
+						}
+					}
+				});
+			};
+
 			var setSaveFileContentResult = function (result) {
 			    var returnCode = result[0];
 				if (returnCode === 0) { 
@@ -181,13 +219,16 @@
 				getFileList: getFileList,
 				getFileContent: getFileContent,
 				saveFileContent: saveFileContent,
+				saveFileContentReturn: saveFileContentReturn,
 				getFolderPath: getFolderPath,
 				getFilename: getFilename,
 				execCommand: execCommand,
+				execCommandReturn: execCommandReturn,
 			    setFileList: setFileList,
 				setFileContent: setFileContent,
 				setSaveFileContentResult: setSaveFileContentResult,
 				setExecCommandResult: setExecCommandResult,
+				createTempFile: createTempFile
 			});
         })();
 	</script>

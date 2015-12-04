@@ -2,9 +2,11 @@
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/lib/iron-icons/iron-icons.html">
 <link rel="import" href="/lib/iron-icons/editor-icons.html">
+<link rel="import" href="/lib/iron-icons/device-icons.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/elements/bootstrap-pills/bootstrap-pills.html">
+<link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown.html">
 
 <dom-module id="onion-oled">
 	<style>
@@ -14,6 +16,7 @@
 			width: 100%;
 			--bootstrap-pill-border-radius: 3px;
 			--bootstrap-pill-color: #373a3c;
+			--bootstrap-dropdown-toggle-padding: 0 10px;
 		}
 
 		onion-app-body > div {
@@ -26,12 +29,6 @@
 			height: 525px;
 			background-color: #fff;
 			border-radius: 3px;
-		}
-
-		.diagnal {
-			-ms-transform: rotate(45deg); /* IE 9 */
-			-webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
-			transform: rotate(45deg);
 		}
 
 		#side-bar {
@@ -57,6 +54,14 @@
 			padding: 25px;
 		}
 
+		onion-app-toolbar button {
+			padding: 0 10px;
+			background-color: transparent;
+		}
+			onion-app-toolbar button:hover {
+				background-color: rgba(255, 255, 255, 0.5);
+			}
+
 		.oled-exp {
 			position: relative;
 			background-image: url('./img/oled-exp-bg.jpg');
@@ -68,14 +73,17 @@
 			margin: 0 auto 25px auto;
 		}
 
-		#oled-text {
-		    position: absolute;
+		#oled-text, #oled-image-display {
+			position: absolute;
 			background-color: transparent;
 			border: none;
 			left: 135px;
 			top: 111px;
-			height: 170px;
+			height: 169px;
 			width: 335px;
+		}
+
+		#oled-text {
 			resize: none;
 			color: #fff;
 			font-family: monospace;
@@ -92,28 +100,31 @@
 			word-break: break-all;
 		}
 
-		#oled-image {
-		    position: absolute;
-			background-color: transparent;
-			border: none;
-			left: 135px;
-			top: 111px;
-			height: 170px;
-			width: 335px;
+		#oled-image-data {
+			display: none;
 		}
 	</style>
 
 	<template>
 		<onion-app app-name="OLED Expansion Control" toolbar-background="#34495e" background="#f2f2f2">
 			<onion-app-toolbar>
-				<div class="layout horizontal">
-					<div class="flex">
-						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" icon="icons:clear"></iron-icon><span>Clear Screen</span></button>
-						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" icon="icons:invert-colors"></iron-icon><span>Invert Screen</span></button>
-						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" icon="icons:swap-horiz"></iron-icon><span>Horizontal Scroll</span></button>
-						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon diagnal" icon="icons:swap-vert"></iron-icon><span>Diagnal Scroll</span></button>
+					<div class="layout horizontal">
+						<button on-click="_clearScreen"><iron-icon class="toolbar-icon" icon="icons:clear"></iron-icon><span>Clear Screen</span></button>
+						<button on-click="_invertScreen"><iron-icon class="toolbar-icon" icon="icons:invert-colors"></iron-icon><span>Toggle Invert</span></button>
+						<button on-click="_dimScreen"><iron-icon class="toolbar-icon" icon="device:brightness-medium"></iron-icon><span>Toggle Dim</span></button>
+						<bootstrap-dropdown>
+							<bootstrap-dropdown-toggle theme="onion">
+								<iron-icon class="toolbar-icon" icon="icons:swap-horiz"></iron-icon><span>Scroll</span>
+							</bootstrap-dropdown-toggle>
+							<bootstrap-dropdown-menu right>
+								<bootstrap-dropdown-item on-tap="_scroll" data-args="left">Left Scroll</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_scroll" data-args="right">Right Scroll</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-left">45&deg; Left Scroll</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-right">45&deg; Right Scroll</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_scroll" data-args="stop">Stop Scroll</bootstrap-dropdown-item>
+							</bootstrap-dropdown-menu>
+						</bootstrap-dropdown>
 					</div>
-				</div>
 			</onion-app-toolbar>
 
 			<onion-app-body>
@@ -132,12 +143,13 @@
 									<textarea id="oled-text" value="{{textValue::input}}"></textarea>
 								</div>
 								<div class="horizontal center-justified layout">
-									<button type="button" class="btn btn-success" on-tap="_syncText">Display on OLED!</button>
+									<button type="button" class="btn btn-success" on-tap="_syncText">Display on OLED</button>
 								</div>
 							</div>
 							<div id="image">
 								<div class="oled-exp">
-									<canvas id="oled-image"></canvas>
+									<canvas id="oled-image-display"></canvas>
+									<canvas id="oled-image-data"></canvas>
 								</div>
 								<div class="horizontal center-justified layout">
 									<label class="file">
@@ -160,22 +172,97 @@
 		(function () {
 			var ready = function () {
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
-						ubus.request('i2c_exp', 'oled-exp', {
-							command: 'set',
-							option: 'i'
-						}, (function (data) {
-							if (!(data.length === 2 && data[0] === 0)) {
-								throw data[0];
-							}
-						}).bind(this));
+					ubus.request('i2c_exp', 'oled-exp', {
+						command: 'set',
+						option: 'i'
+					}, (function (data) {
+						if (!(data.length === 2 && data[0] === 0)) {
+							throw data[0];
+						}
+					}).bind(this));
 				}).bind(this));
 
-				this.canvas = this.$['oled-image'];
-				this.canvasContext = this.canvas.getContext('2d');
+				this.displayCanvas = this.$['oled-image-display'];
+				this.displayCanvasContext = this.displayCanvas.getContext('2d');
+
+				this.dataCanvas = this.$['oled-image-data'];
+				this.dataCanvas.height = 64;
+				this.dataCanvas.width = 128;
+				this.dataCanvasContext = this.dataCanvas.getContext('2d');
 			};
 
 			var _currentTab = function (tabs, currentTab) {
 				return tabs[currentTab];
+			};
+
+			var _clearScreen = function () {
+				this.displayCanvasContext.clearRect(0, 0, this.displayCanvas.width, this.displayCanvas.height);
+				this.dataCanvasContext.clearRect(0, 0, this.dataCanvas.width, this.dataCanvas.height);
+
+				this.textValue = '';
+
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('i2c_exp', 'oled-exp', {
+						command: 'set',
+						option: 'c'
+					}, (function (data) {
+						if (!(data.length === 2 && data[0] === 0)) {
+							throw data[0];
+						}
+					}).bind(this));
+				}).bind(this));
+			};
+
+			var _invertScreen = function () {
+				this.invert = !this.invert;
+
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('i2c_exp', 'oled-exp', {
+						command: 'set',
+						params: {
+							invert: this.invert === true ? 'on' : 'off'
+						}
+					}, (function (data) {
+						if (!(data.length === 2 && data[0] === 0)) {
+							throw data[0];
+						}
+					}).bind(this));
+				}).bind(this));
+			};
+
+			var _dimScreen = function () {
+				this.dim = !this.dim;
+
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('i2c_exp', 'oled-exp', {
+						command: 'set',
+						params: {
+							dim: this.dim === true ? 'on' : 'off'
+						}
+					}, (function (data) {
+						if (!(data.length === 2 && data[0] === 0)) {
+							throw data[0];
+						}
+					}).bind(this));
+				}).bind(this));
+			};
+
+			var _scroll = function (e) {
+				var direction = e.target.parentNode.dataset['args'];
+				
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('i2c_exp', 'oled-exp', {
+						command: 'set',
+						params: {
+							scroll: direction
+						}
+					}, (function (data) {
+						this.invert = !this.invert;
+						if (!(data.length === 2 && data[0] === 0)) {
+							throw data[0];
+						}
+					}).bind(this));
+				}).bind(this));
 			};
 
 			var _textValueChanged = function (newValue, oldValue) {
@@ -193,17 +280,17 @@
 
 			var _syncText = function () {
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
-						ubus.request('i2c_exp', 'oled-exp', {
-							command: 'set',
-							option: 'c',
-							params: {
-								write: this.textValue.replace(/\n/g, '\\\\\n').replace(/'/g, '').replace(/"/g, '')
-							}
-						}, (function (data) {
-							if (!(data.length === 2 && data[0] === 0)) {
-								throw data[0];
-							}
-						}).bind(this));
+					ubus.request('i2c_exp', 'oled-exp', {
+						command: 'set',
+						option: 'c',
+						params: {
+							write: this.textValue.replace(/\n/g, '\\\\\n').replace(/'/g, '').replace(/"/g, '')
+						}
+					}, (function (data) {
+						if (!(data.length === 2 && data[0] === 0)) {
+							throw data[0];
+						}
+					}).bind(this));
 				}).bind(this));
 			};
 
@@ -215,24 +302,32 @@
 						var img = new Image();
 
 						img.onload = (function () {
-							// console.log(img.width, img.height);
+							// Display on display canvas
+							_processImage(this.displayCanvas, this.displayCanvasContext, img, true);
 
-							// var ratio = img.height / img.width;
+							// Get imgData from data canvas
+							var imgData = _processImage(this.dataCanvas, this.dataCanvasContext, img, false);
+							var pageArray = _convertToPageArray(imgData);
+							var hexDump = _generateHexDump(pageArray, true);
 
-							// if (img.height < img.width) {
-							// 	//horizontal image
-							// 	r = w/h;
-							// 	nh = 400,
-							// 	nw = r*400;
-							// 	nx = -(nw-300)/2;
-							// } else {
-							// 	//vertical image
-							// 	nw = 300,
-							// 	nh = r*300;
-							// 	ny = -(nh-400)/2;
-							// }
+							onionConsole.getService('onion-file-provider', function (fileProvider) {
+								fileProvider.createTempFile(hexDump, function (filename) {
+									onionConsole.getService('onion-ubus-provider', function (ubus) {
+										ubus.request('i2c_exp', 'oled-exp', {
+											command: 'set',
+											option: 'c',
+											params: {
+												draw: filename
+											}
+										}, function (data) {
+											if (!(data.length === 2 && data[0] === 0)) {
+												throw data[0];
+											}
+										});
+									});
+								});
+						    });
 
-							this.canvasContext.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
 						}).bind(this);
 
 						img.src = e.target.result;
@@ -240,6 +335,100 @@
 
 					fr.readAsDataURL(this.$['image-file'].files[0]);
 				}
+			};
+
+			var _processImage = function (canvas, context, img, bg) {
+				context.clearRect(0, 0, canvas.width, canvas.height);
+
+				var ratio = img.width / img.height, 
+					adjustedWidth, adjustedHeight, originX, originY;
+
+				if (img.height <= img.width / 2) {
+					// Spacer top and bottom
+					adjustedWidth = canvas.width;
+					adjustedHeight = adjustedWidth / ratio;
+					originX = 0;
+					originY = (canvas.height - adjustedHeight) / 2;
+				} else {
+					// Spacer left and right
+					adjustedHeight = canvas.height;
+					adjustedWidth = adjustedHeight * ratio;
+					originX = (canvas.width - adjustedWidth) / 2;
+					originY = 0;
+				}
+
+				context.drawImage(img, originX, originY, adjustedWidth, adjustedHeight);
+
+				var imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+				for (var i = 0; i < imgData.data.length; i += 4) {
+					var grayscale = imgData.data[i] * 0.3 + imgData.data[i + 1] * 0.59 + imgData.data[i + 2] * 0.11;
+
+					if (bg) {
+						imgData.data[i] = grayscale > 127 ? 255 : 37;
+						imgData.data[i + 1] = grayscale > 127 ? 255 : 30;
+						imgData.data[i + 2] = grayscale > 127 ? 255 : 51;
+						imgData.data[i + 3] = 255;
+					} else {
+						imgData.data[i] = imgData.data[i + 1] = imgData.data[i + 2] = grayscale > 127 ? 255 : 0;
+						imgData.data[i + 3] = 255;
+					}
+				}
+
+				context.putImageData(imgData, 0, 0);
+
+				return imgData;
+			};
+
+			var _convertToPageArray = function (imgData) {
+			    var data = imgData.data,
+			    	oledPages = [],
+			    	pageIndex = 0;
+
+			    for (var i = 0; i < imgData.height; i += 8) {
+			    	for (var j = 0; j < imgData.width; j++) {
+			    		pageIndex = (i * imgData.width) / 8 + j;
+
+			    		oledPages[pageIndex] = 0;
+
+			    		for (var k = 0; k < 8; k++) {
+			    			var dataIndex = ((i + k) * imgData.width + j) * 4;
+			    			var pixelValue = data[dataIndex] === 255 ? 1 : 0;
+
+			    			oledPages[pageIndex] = oledPages[pageIndex] | ((pixelValue & 0x01) << k);
+			    		}
+			    	}
+			    }
+
+			    return oledPages;
+			};
+
+			var _dec2hex = function (i) {
+				var result = '00';
+
+			    if (i >= 0 && i <= 15) {
+			    	result = '0' + i.toString(16);
+			    } else if (i >= 16   && i <= 255) {
+			    	result = i.toString(16);
+			    }
+
+			    return result;
+			};
+
+			var _generateHexDump = function (pageArray, minified) {
+			    var hexDump  = '';
+
+			    for (var i = 0; i < pageArray.length; i++) {
+			        if (!minified) {
+			            hexDump  += '0x';
+			            hexDump  += _dec2hex(pageArray[i]);
+			            hexDump  += ",";
+			        } else {
+			            hexDump  += _dec2hex(pageArray[i]);
+			        }
+			    }
+
+			    return hexDump;
 			};
 
 			Polymer({
@@ -263,12 +452,24 @@
 						type: String,
 						value: '',
 						observer: '_textValueChanged'
+					},
+					invert: {
+						type: Boolean,
+						value: false
+					},
+					dim: {
+						type: Boolean,
+						value: false
 					}
 				},
 				_currentTab: _currentTab,
 				_textValueChanged: _textValueChanged,
 				_syncText: _syncText,
-				_loadImage: _loadImage
+				_loadImage: _loadImage,
+				_clearScreen: _clearScreen,
+				_invertScreen: _invertScreen,
+				_dimScreen: _dimScreen,
+				_scroll: _scroll
 			});
 		})();
 	</script>
