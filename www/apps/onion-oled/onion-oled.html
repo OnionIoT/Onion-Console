@@ -118,11 +118,11 @@
 								<iron-icon class="toolbar-icon" icon="icons:swap-horiz"></iron-icon><span>Scroll</span>
 							</bootstrap-dropdown-toggle>
 							<bootstrap-dropdown-menu right>
-								<bootstrap-dropdown-item on-tap="_scroll" data-args="left">Left Scroll</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item on-tap="_scroll" data-args="right">Right Scroll</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-left">45&deg; Left Scroll</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-right">45&deg; Right Scroll</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item on-tap="_scroll" data-args="stop">Stop Scroll</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_scroll" data-args="left">Left</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_scroll" data-args="right">Right</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-left">45&deg; Left</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-right">45&deg; Right</bootstrap-dropdown-item>
+								<bootstrap-dropdown-item on-tap="_scroll" data-args="stop">Stop Scrolling</bootstrap-dropdown-item>
 							</bootstrap-dropdown-menu>
 						</bootstrap-dropdown>
 					</div>
@@ -154,7 +154,7 @@
 								</div>
 								<div class="horizontal center-justified layout">
 									<label class="file">
-										<input type="file" id="image-file" on-change="_loadImage" />
+										<input type="file" id="image-file" accept="image/*" on-change="_loadImage" />
 										<span class="file-custom"></span>
 									</label>
 								</div>
