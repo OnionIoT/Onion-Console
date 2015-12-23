@@ -1,0 +1,87 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-image/iron-image.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="stylesheet" type="text/css" href="animate.css">
+
+<dom-module id="onion-notification">
+	<style>
+		:host * {
+			-webkit-user-select: none;  /* Chrome all / Safari all */
+			-moz-user-select: none;     /* Firefox all */
+			-ms-user-select: none;      /* IE 10+ */
+			user-select: none;          /* Likely future */
+		}
+
+		.notifications {
+		  position: fixed;
+		  top: 10px;
+		  right: 15px;
+		}
+
+		.notifications li {
+		  margin-bottom: 5px;
+		  list-style: none;
+		}
+
+		.notification {
+		  position: relative;
+		  max-width: 600px;
+		  min-width: 250px;
+		  border: 1px solid #eee;
+		  background: white;
+		  z-index: 100;
+		}
+				
+	</style>
+
+	<template>
+		<div class="notifications">
+
+			<template is='dom-repeat' items="{{notificationList}}">
+				<li class="notification animated fadeInRight" id='{{item.id}}'>
+				  <div class="content">
+				    <span class="title">{{item.title}}</span>
+				    <!-- <a href="#" class="close" on-click>&times;</a> -->
+				    <p>{{item.message}}</p>
+				  </div>
+				</li>
+
+			</template>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var created = function () {
+				self = this;
+				self.idCount = 0;
+			};
+
+			var notify = function (n) {
+				n.id = 'notification-'+(self.idCount++);
+				this.push('notificationList', n);
+				setTimeout(function(){
+					var elem = document.getElementById(self.notificationList[0].id);
+					elem.className = elem.className + " fadeOutRight";
+					self.notificationList.shift('notificationList');
+				},5000)
+			}
+
+			Polymer({
+				is: 'onion-notification',
+				created: created,
+				notify: notify,
+				properties: {
+					notificationList: {
+						type: Array,
+						value: [],
+						notify: true
+					}
+				}
+			});
+		})();
+	</script>
+
+</dom-module>

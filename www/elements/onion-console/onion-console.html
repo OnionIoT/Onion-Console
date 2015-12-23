@@ -2,6 +2,7 @@
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
 <link rel="import" href="/elements/onion-taskbar/onion-taskbar.html">
+<link rel="import" href="/elements/onion-notification/onion-notification.html">
 <dom-module id="onion-console">
 	<style>
 		:host {
@@ -35,6 +36,7 @@
 		
 		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
 		<div id="serviceContainer" class="hidden"></div>
+		<onion-notification id='notification'></onion-notification>
 	</template>
 
 	<script>
@@ -124,6 +126,10 @@
 				}
 			}
 
+			var sendNotification = function(n){
+				self.$.notification.notify(n);
+			}
+
 			Polymer({
 				is: 'onion-console',
 				noop: function () {},
@@ -133,6 +139,7 @@
 				launchService: launchService,
 				getService: getService,
 				_showTaskbar: _showTaskbar,
+				sendNotification: sendNotification,
 				properties: {
 					runningApps: {
 						type: Array,
