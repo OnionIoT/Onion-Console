@@ -11,62 +11,65 @@
 <dom-module id="onion-oled">
 	<style>
 		:host {
-		    display: block;
-	  	    height: 100%;
+			display: block;
+			height: 100%;
 			width: 100%;
 			--bootstrap-pill-border-radius: 3px;
 			--bootstrap-pill-color: #373a3c;
 			--bootstrap-dropdown-toggle-padding: 0 10px;
 			--bootstrap-dropdown-toggle-hover-bg: rgba(255, 255, 255, 0.5);
 		}
-
+		
 		onion-app-body > div {
 			height: 100%;
 			width: 100%;
 		}
-
+		
 		#oled-container {
 			width: 800px;
 			height: 525px;
 			background-color: #fff;
 			border-radius: 3px;
 		}
-
+		
 		#side-bar {
 			width: 150px;
 			height: 100%;
 			position: relative;
 			background-color: #f2f2f2;
 		}
-			#side-bar bootstrap-pill iron-icon {
-				margin-right: 5px;
-			}
-
+		
+		#side-bar bootstrap-pill iron-icon {
+			margin-right: 5px;
+		}
+		
 		#content {
 			padding: 25px;
 		}
-
+		
 		iron-pages {
 			width: 100%;
 			height: 100%;
 		}
-
+		
 		iron-pages > div {
 			padding: 25px;
 		}
-
+		
 		onion-app-toolbar button {
 			padding: 0 10px;
 			background-color: transparent;
 		}
-			onion-app-toolbar button:hover {
-				background-color: rgba(255, 255, 255, 0.5);
-			}
+		
+		onion-app-toolbar button:hover {
+			background-color: rgba(255, 255, 255, 0.5);
+		}
+		
 		onion-app-toolbar button iron-icon,
 		onion-app-toolbar bootstrap-dropdown-toggle iron-icon {
 			margin-right: 5px;
 		}
-
+		
 		.oled-exp {
 			position: relative;
 			background-image: url('./img/oled-exp-bg.jpg');
@@ -77,8 +80,9 @@
 			background-position: center center;
 			margin: 0 auto 25px auto;
 		}
-
-		#oled-text, #oled-image-display {
+		
+		#oled-text,
+		#oled-image-display {
 			position: absolute;
 			background-color: transparent;
 			border: none;
@@ -87,7 +91,7 @@
 			height: 169px;
 			width: 335px;
 		}
-
+		
 		#oled-text {
 			resize: none;
 			color: #fff;
@@ -96,15 +100,21 @@
 			line-height: 19px;
 			letter-spacing: 2px;
 			padding: 7.5px;
-			white-space: -moz-pre !important;  /* Mozilla, since 1999 */
-			white-space: -pre;      /* Opera 4-6 */
-			white-space: -o-pre;    /* Opera 7 */
-			white-space: pre;       /* css-3 */
-			word-wrap: break-word;       /* Internet Explorer 5.5+ */
-			white-space: -webkit-pre; /* Newer versions of Chrome/Safari*/
+			white-space: -moz-pre !important;
+			/* Mozilla, since 1999 */
+			white-space: -pre;
+			/* Opera 4-6 */
+			white-space: -o-pre;
+			/* Opera 7 */
+			white-space: pre;
+			/* css-3 */
+			word-wrap: break-word;
+			/* Internet Explorer 5.5+ */
+			white-space: -webkit-pre;
+			/* Newer versions of Chrome/Safari*/
 			word-break: break-all;
 		}
-
+		
 		#oled-image-data {
 			display: none;
 		}
@@ -113,23 +123,26 @@
 	<template>
 		<onion-app app-name="OLED Expansion Control" toolbar-background="#34495e" background="#f2f2f2">
 			<onion-app-toolbar>
-					<div class="layout horizontal">
-						<button on-click="_clearScreen"><iron-icon class="toolbar-icon" icon="icons:clear"></iron-icon><span>Clear Screen</span></button>
-						<button on-click="_invertScreen"><iron-icon class="toolbar-icon" icon="icons:invert-colors"></iron-icon><span>Toggle Invert</span></button>
-						<button on-click="_dimScreen"><iron-icon class="toolbar-icon" icon="device:brightness-medium"></iron-icon><span>Toggle Dim</span></button>
-						<bootstrap-dropdown>
-							<bootstrap-dropdown-toggle theme="onion">
-								<iron-icon class="toolbar-icon" icon="icons:swap-horiz"></iron-icon><span>Scroll</span>
-							</bootstrap-dropdown-toggle>
-							<bootstrap-dropdown-menu right>
-								<bootstrap-dropdown-item on-tap="_scroll" data-args="left">Left</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item on-tap="_scroll" data-args="right">Right</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-left">45&deg; Left</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-right">45&deg; Right</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item on-tap="_scroll" data-args="stop">Stop Scrolling</bootstrap-dropdown-item>
-							</bootstrap-dropdown-menu>
-						</bootstrap-dropdown>
-					</div>
+				<div class="layout horizontal">
+					<button on-click="_clearScreen">
+						<iron-icon class="toolbar-icon" icon="icons:clear"></iron-icon><span>Clear Screen</span></button>
+					<button on-click="_invertScreen">
+						<iron-icon class="toolbar-icon" icon="icons:invert-colors"></iron-icon><span>Toggle Invert</span></button>
+					<button on-click="_dimScreen">
+						<iron-icon class="toolbar-icon" icon="device:brightness-medium"></iron-icon><span>Toggle Dim</span></button>
+					<bootstrap-dropdown>
+						<bootstrap-dropdown-toggle theme="onion">
+							<iron-icon class="toolbar-icon" icon="icons:swap-horiz"></iron-icon><span>Scroll</span>
+						</bootstrap-dropdown-toggle>
+						<bootstrap-dropdown-menu right>
+							<bootstrap-dropdown-item on-tap="_scroll" data-args="left">Left</bootstrap-dropdown-item>
+							<bootstrap-dropdown-item on-tap="_scroll" data-args="right">Right</bootstrap-dropdown-item>
+							<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-left">45&deg; Left</bootstrap-dropdown-item>
+							<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-right">45&deg; Right</bootstrap-dropdown-item>
+							<bootstrap-dropdown-item on-tap="_scroll" data-args="stop">Stop Scrolling</bootstrap-dropdown-item>
+						</bootstrap-dropdown-menu>
+					</bootstrap-dropdown>
+				</div>
 			</onion-app-toolbar>
 
 			<onion-app-body>
@@ -137,8 +150,10 @@
 					<div id="oled-container" class="horizontal layout">
 						<div id="side-bar">
 							<bootstrap-pills stacked selected="{{currentTab}}">
-								<bootstrap-pill><iron-icon icon="icons:font-download"></iron-icon><span>Text</span></bootstrap-pill>
-								<bootstrap-pill><iron-icon icon="editor:insert-photo"></iron-icon><span>Image</span></bootstrap-pill>
+								<bootstrap-pill>
+									<iron-icon icon="icons:font-download"></iron-icon><span>Text</span></bootstrap-pill>
+								<bootstrap-pill>
+									<iron-icon icon="editor:insert-photo"></iron-icon><span>Image</span></bootstrap-pill>
 							</bootstrap-pills>
 						</div>
 
@@ -293,6 +308,10 @@
 						}
 					}, (function (data) {
 						if (!(data.length === 2 && data[0] === 0)) {
+							onionConsole.sendNotification({
+								title: 'Relay Control',
+								message: '[Error]: unable to communicate with OLED Expansion'
+							});
 							throw data[0];
 						}
 					}).bind(this));
@@ -326,6 +345,10 @@
 											}
 										}, function (data) {
 											if (!(data.length === 2 && data[0] === 0)) {
+												onionConsole.sendNotification({
+								title: 'Relay Control',
+								message: '[Error]: unable to communicate with OLED Expansion'
+							});
 												throw data[0];
 											}
 										});
