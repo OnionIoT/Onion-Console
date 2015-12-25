@@ -346,9 +346,9 @@
 										}, function (data) {
 											if (!(data.length === 2 && data[0] === 0)) {
 												onionConsole.sendNotification({
-												title: 'Relay Control',
-												message: '[Error]: unable to communicate with OLED Expansion'
-											});
+													title: 'Relay Control',
+													message: '[Error]: unable to communicate with OLED Expansion'
+												});
 												console.log(data[0]);
 											}
 										});
