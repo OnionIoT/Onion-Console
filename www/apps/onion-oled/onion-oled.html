@@ -312,7 +312,7 @@
 								title: 'Relay Control',
 								message: '[Error]: unable to communicate with OLED Expansion'
 							});
-							throw data[0];
+							console.log(data[0]);
 						}
 					}).bind(this));
 				}).bind(this));
@@ -346,10 +346,10 @@
 										}, function (data) {
 											if (!(data.length === 2 && data[0] === 0)) {
 												onionConsole.sendNotification({
-								title: 'Relay Control',
-								message: '[Error]: unable to communicate with OLED Expansion'
-							});
-												throw data[0];
+												title: 'Relay Control',
+												message: '[Error]: unable to communicate with OLED Expansion'
+											});
+												console.log(data[0]);
 											}
 										});
 									});
