@@ -166,6 +166,10 @@
 								if (data.length === 2 && data[0] === 0) {
 									this.r1 = data[1].state === '1' ? true : false;
 								} else {
+									onionConsole.sendNotification({
+										title: 'Relay Control',
+										message: '[Error]: unable to communicate with Servo Expansion'
+									});
 									console.log('gpio status error');
 								}
 							}).bind(this));
