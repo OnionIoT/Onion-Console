@@ -1,51 +1,9 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-menu-behavior/iron-menu-behavior.html">
+<link rel="import" href="/elements/bootstrap-styles/bootstrap-styles.html">
 <link rel="import" href="./bootstrap-pill.html">
 
 <dom-module id="bootstrap-pills">
-	<style>
-		.nav {
-			padding-left: 0;
-			margin-bottom: 0;
-			list-style: none;
-		}
-
-		.nav-pills ::content bootstrap-pill {
-			float: left;
-		}
-
-		.nav-pills ::content bootstrap-pill + bootstrap-pill {
-			margin-left: .2rem;
-		}
-
-		.nav-pills .nav-link {
-			display: block;
-			padding: .5em 1em;
-			border-radius: .25rem;
-		}
-
-		.nav-pills .nav-link.active,
-		.nav-pills .nav-link.active:focus,
-		.nav-pills .nav-link.active:hover,
-		.nav-pills .nav-item.open .nav-link,
-		.nav-pills .nav-item.open .nav-link:focus,
-		.nav-pills .nav-item.open .nav-link:hover {
-			color: #fff;
-			cursor: default;
-			background-color: #0275d8;
-		}
-
-		.nav-stacked ::content bootstrap-pill {
-			display: block;
-			float: none;
-		}
-
-		.nav-stacked ::content bootstrap-pill + bootstrap-pill {
-			margin-top: .2rem;
-			margin-left: 0;
-		}
-	</style>
-
 	<template>
 		<ul class$="[[_computeClass(stacked)]]">
 			<content></content>

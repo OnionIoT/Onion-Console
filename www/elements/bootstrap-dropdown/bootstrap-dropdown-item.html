@@ -1,60 +1,7 @@
 <link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/bootstrap-styles/bootstrap-styles.html">
 
 <dom-module id="bootstrap-dropdown-item">
-	<style>
-		.dropdown-divider {
-			height: 1px;
-			margin: .5rem 0;
-			overflow: hidden;
-			background-color: #e5e5e5;
-		}
-
-		.dropdown-item {
-			display: block;
-			width: 100%;
-			padding: 3px 20px;
-			clear: both;
-			font-weight: normal;
-			line-height: 1.5;
-			color: #373a3c;
-			text-align: inherit;
-			white-space: nowrap;
-			background: none;
-			border: 0;
-		}
-
-		.dropdown-item:focus,
-		.dropdown-item:hover {
-			color: #2b2d2f;
-			text-decoration: none;
-			background-color: #f5f5f5;
-		}
-
-		.dropdown-item.active,
-		.dropdown-item.active:focus,
-		.dropdown-item.active:hover {
-			color: #fff;
-			text-decoration: none;
-			background-color: #0275d8;
-			outline: 0;
-		}
-
-		.dropdown-item.disabled,
-		.dropdown-item.disabled:focus,
-		.dropdown-item.disabled:hover {
-			color: #818a91;
-		}
-
-		.dropdown-item.disabled:focus,
-		.dropdown-item.disabled:hover {
-			text-decoration: none;
-			cursor: not-allowed;
-			background-color: transparent;
-			background-image: none;
-			filter: "progid:DXImageTransform.Microsoft.gradient(enabled = false)";
-		}
-	</style>
-
 	<template>
 		<a class="dropdown-item" href="#">
 			<content></content>
@@ -71,11 +18,11 @@
 				properties: {
 					right: {
 						notify: true,
-				        type: Boolean,
-				        value: false
+						type: Boolean,
+						value: false
 					}
 				}
 			});
-        })();
+				})();
 	</script>
 </dom-module>
