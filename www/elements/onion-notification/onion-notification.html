@@ -61,7 +61,7 @@
 
 			var notify = function (n) {
 				n.id = 'notification-'+(self.idCount++);
-				this.push('notificationList', n);
+				self.push('notificationList', n);
 				setTimeout(function(){
 					var elem = document.getElementById(self.notificationList[0].id);
 					elem.className = elem.className + " fadeOutRight";
