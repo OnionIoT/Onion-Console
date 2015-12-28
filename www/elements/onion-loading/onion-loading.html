@@ -1,0 +1,55 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-image/iron-image.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
+
+<dom-module id="onion-loading">
+	<style>
+		:host * {
+			-webkit-user-select: none;  /* Chrome all / Safari all */
+			-moz-user-select: none;     /* Firefox all */
+			-ms-user-select: none;      /* IE 10+ */
+			user-select: none;          /* Likely future */
+		}	
+		
+		.loading {
+		  position: fixed;
+		  bottom: 10px;
+		  left: 10px;
+
+
+		  border: 1px solid #eee;
+		  background: red;
+		  z-index: 101;
+		}		
+	</style>
+
+	<template>
+		<template is="dom-if" if="{{isLoading}}">
+			<div class="loading">
+				Loading ...
+			</div>
+		</template>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var created = function () {
+				self = this;
+			};
+			Polymer({
+				is: 'onion-loading',
+				created: created,
+				properties: {
+					isLoading: {
+						type: Boolean,
+						value: false,
+						notify: true
+					}
+				}
+			});
+		})();
+	</script>
+
+</dom-module>
