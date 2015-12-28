@@ -174,7 +174,7 @@
 								address: (this.s1 ? '0' : '1') + (this.s2 ? '0' : '1') + (this.s3 ? '0' : '1')
 							}
 						}, (function (data) {
-							if (data.length === 2 && data[0] === 0) {
+							if (data.length === 2 && data[0] === 0 && data[1].status !== 'failure') {
 								this.r1 = data[1].state === '1' ? true : false;
 							} else {
 								onionConsole.sendNotification({
@@ -198,6 +198,7 @@
 								address: (this.s1 ? '0' : '1') + (this.s2 ? '0' : '1') + (this.s3 ? '0' : '1')
 							}
 						}, (function (data) {
+							console.log(data[1]);
 							if (data.length === 2 && data[0] === 0 && data[1].status !== 'failure') {
 								this.r2 = data[1].state === '1' ? true : false;
 							} else {
