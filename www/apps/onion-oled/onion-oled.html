@@ -307,7 +307,7 @@
 							write: this.textValue.replace(/\n/g, '\\\\\n').replace(/'/g, '').replace(/"/g, '')
 						}
 					}, (function (data) {
-						if (!(data.length === 2 && data[0] === 0)) {
+						if (!(data.length === 2 && data[0] === 0 && data[1].status !== 'failure')) {
 							onionConsole.sendNotification({
 								title: 'Relay Control',
 								message: '[Error]: unable to communicate with OLED Expansion'
@@ -344,7 +344,7 @@
 												draw: filename
 											}
 										}, function (data) {
-											if (!(data.length === 2 && data[0] === 0)) {
+											if (!(data.length === 2 && data[0] === 0 && data[1].status !== 'failure')) {
 												onionConsole.sendNotification({
 													title: 'Relay Control',
 													message: '[Error]: unable to communicate with OLED Expansion'
