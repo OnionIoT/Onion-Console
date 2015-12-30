@@ -1,0 +1,393 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown.html">
+
+<dom-module id="onion-resistor">
+	<style>
+		.c-select + .c-select {
+			margin-left: -1px;
+		}
+
+			.c-select:first-child {
+				border-top-left-radius: 5px;
+				border-bottom-left-radius: 5px;
+			}
+			.c-select.last {
+				border-top-right-radius: 5px;
+				border-bottom-right-radius: 5px;
+			}
+
+		#resistor {
+			background-image: url('./img/resistor-bg.png');
+			background-size: contain;
+			background-position: center center;
+			background-repeat: no-repeat;
+			width: 300px;
+			height: 75px;
+			position: relative;
+			margin-top: 15px;
+			margin-bottom: 15px;
+		}
+			.band {
+				position: absolute;
+				width: 10px;
+				background: rgba(0, 0, 0, 0.25);
+			}
+
+			.band.hidden {
+				display: none;
+			}
+
+			.band.band1, .band.band5, .band.band6 {
+				height: 75px;
+				top: 0;
+			}
+			.band.band2, .band.band3, .band.band4 {
+				height: 61px;
+				top: 7px;
+			}
+
+			.band.band1 {
+				left: 75px;
+			}
+			.band.band2 {
+				left: 125px;
+			}
+			.band.band3 {
+				left: 140px;
+			}
+			.band.band4 {
+				left: 170px;
+			}
+			.band.band5 {
+				left: 215px;
+			}
+			.band.band6 {
+				left: 230px;
+			}
+
+			.band.black {
+				background-color: #000;
+			}
+			.band.brown {
+				background-color: #96281B;
+			}
+			.band.red {
+				background-color: #F22613;
+			}
+			.band.orange {
+				background-color: #F89406;
+			}
+			.band.yellow {
+				background-color: #F7CA18;
+			}
+			.band.green {
+				background-color: #2ECC71;
+			}
+			.band.blue {
+				background-color: #446CB3;
+			}
+			.band.violet {
+				background-color: #8E44AD;
+			}
+			.band.gray {
+				background-color: #BFBFBF;
+			}
+			.band.white {
+				background-color: #fff;
+			}
+			.band.gold {
+				background: #fceabb;
+				background: -moz-linear-gradient(top,  #fceabb 0%, #fccd4d 50%, #f8b500 51%, #fbdf93 100%);
+				background: -webkit-linear-gradient(top,  #fceabb 0%,#fccd4d 50%,#f8b500 51%,#fbdf93 100%);
+				background: linear-gradient(to bottom,  #fceabb 0%,#fccd4d 50%,#f8b500 51%,#fbdf93 100%);
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fceabb', endColorstr='#fbdf93',GradientType=0 );
+			}
+			.band.silver {
+				background: #f2f6f8;
+				background: -moz-linear-gradient(top,  #f2f6f8 0%, #d8e1e7 50%, #b5c6d0 51%, #e0eff9 100%);
+				background: -webkit-linear-gradient(top,  #f2f6f8 0%,#d8e1e7 50%,#b5c6d0 51%,#e0eff9 100%);
+				background: linear-gradient(to bottom,  #f2f6f8 0%,#d8e1e7 50%,#b5c6d0 51%,#e0eff9 100%);
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2f6f8', endColorstr='#e0eff9',GradientType=0 );
+			}
+	</style>
+
+	<template>
+		<div class="horizontal center-justified layout">
+			<div id="resistor">
+				<template is="dom-repeat" items="{{bandValues}}">
+					<div class="band-test" class$="[[_computeBandClass(index, bands, band1, band2, band3, multiplier, tolerance, tcr, bandValues)]]"></div>
+				</template>
+			</div>
+		</div>
+		<div class="horizontal center-justified layout">
+			<select class$="[[_computeSelectClass(1, bands, band1, band2, band3, multiplier, tolerance, tcr, bandValues)]]" value="{{band1::input}}" on-change="_colorsToValues">
+				<option selected disabled value="-1">Color</option>
+				<template is="dom-repeat" items="{{bandValues.0}}">
+					<option value="{{item.value}}">{{item.color}}</option>
+				</template>
+			</select>
+			<select class$="[[_computeSelectClass(2, bands, band1, band2, band3, multiplier, tolerance, tcr, bandValues)]]" value="{{band2::input}}" on-change="_colorsToValues">
+				<option selected disabled value="-1">Color</option>
+				<template is="dom-repeat" items="{{bandValues.1}}">
+					<option value="{{item.value}}">{{item.color}}</option>
+				</template>
+			</select>
+			<select class$="[[_computeSelectClass(3, bands, band1, band2, band3, multiplier, tolerance, tcr, bandValues)]]" hidden$="{{_computeRowHidden(bands, 5)}}" value="{{band3::input}}" on-change="_colorsToValues">
+				<option selected disabled value="-1">Color</option>
+				<template is="dom-repeat" items="{{bandValues.2}}">
+					<option value="{{item.value}}">{{item.color}}</option>
+				</template>
+			</select>
+
+			<!-- Multiplier -->
+			<select class$="[[_computeSelectClass(4, bands, band1, band2, band3, multiplier, tolerance, tcr, bandValues)]]" value="{{multiplier::input}}" on-change="_colorsToValues">
+				<option selected disabled value="-1">Color</option>
+				<template is="dom-repeat" items="{{bandValues.3}}">
+					<option value="{{item.value}}">{{item.color}}</option>
+				</template>
+			</select>
+
+			<!-- Tolerance -->
+			<select class$="[[_computeSelectClass(5, bands, band1, band2, band3, multiplier, tolerance, tcr, bandValues)]]" value="{{tolerance::input}}">
+				<option selected disabled value="-1">Color</option>
+				<template is="dom-repeat" items="{{bandValues.4}}">
+					<option value="{{item.value}}">{{item.color}}</option>
+				</template>
+			</select>
+
+			<!-- TCR -->
+			<select class$="[[_computeSelectClass(6, bands, band1, band2, band3, multiplier, tolerance, tcr, bandValues)]]" hidden$="{{_computeRowHidden(bands, 6)}}" value="{{tcr::input}}">
+				<option selected disabled value="-1">Color</option>
+				<template is="dom-repeat" items="{{bandValues.5}}">
+					<option value="{{item.value}}">{{item.color}}</option>
+				</template>
+			</select>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var _computeRowHidden = function (bands, rowData) {
+				return (bands >= rowData) ? false : true;
+			};
+
+			var _colorsToValues = function () {
+				var baseResistance;
+
+				if (parseFloat(this.multiplier) === -1) {
+					this.resistance = 0;
+					return;
+				}
+
+				if (this.bands === 4) {
+					if (parseInt(this.band1) === -1 || parseInt(this.band2) === -1) return;
+					baseResistance = parseInt(this.band1) * 10 + parseInt(this.band2);
+				} else {
+					if (parseInt(this.band1) === -1 || parseInt(this.band2) === -1 || parseInt(this.band3) === -1) return;
+					baseResistance = parseInt(this.band1) * 100 + parseInt(this.band2) * 10 + parseInt(this.band3);
+				}
+
+				this.resistance = baseResistance * parseFloat(this.multiplier);
+			};
+
+			var _valuesToColors = function () {
+				var baseResistance;
+
+				if (parseFloat(this.resistance) === 0 || isNaN(parseFloat(this.resistance))) {
+					this.resistance = 0;
+					this.band1 = -1;
+					this.band2 = -1;
+					this.band3 = -1;
+					this.multiplier = -1;
+					return;
+
+				} else {
+					this.multiplier = Math.pow(10, Math.floor(Math.log10(this.resistance)) - (this.bands > 4 ? 2 : 1));
+					baseResistance = this.resistance / this.multiplier;
+				}
+
+				if (this.bands === 4) {
+					this.band1 = parseInt(baseResistance.toString()[0]);
+					this.band2 = parseInt(baseResistance.toString()[1]);
+
+				} else if (this.bands === 5 || this.bands === 6) {
+					this.band1 = parseInt(baseResistance.toString()[0]);
+					this.band2 = parseInt(baseResistance.toString()[1]);
+					this.band3 = parseInt(baseResistance.toString()[2]);
+				}
+			};
+
+			var _getBandColor = function (band) {
+				var bandData;
+
+				if 		(band === 1) bandData = parseInt(this.band1);
+				else if (band === 2) bandData = parseInt(this.band2);
+				else if (band === 3) bandData = parseInt(this.band3);
+				else if (band === 4) bandData = parseFloat(this.multiplier);
+				else if (band === 5) bandData = parseFloat(this.tolerance);
+				else if (band === 6) bandData = parseInt(this.tcr);
+
+				for (var i = 0; i < this.bandValues[band - 1].length; i++) {
+					if (this.bandValues[band - 1][i].value === bandData) return this.bandValues[band - 1][i].color;
+				}
+			};
+
+			var _computeBandClass = function (index) {
+				var band = index + 1,
+					classes = ['band', 'band' + band];
+
+				if ((this.bands === 4 && (band === 3 || band === 6)) || (this.bands === 5 && band === 6)) {
+					classes.push('hidden');
+				} else {
+					var color = this._getBandColor(band);
+					if (color) classes.push(color);
+				}
+
+				return classes.join(' ');
+			};
+
+			var _computeSelectClass = function (band) {
+				var classes = ['c-select'];
+
+				if ((this.bands === 4 && (band === 3 || band === 6)) || (this.bands === 5 && band === 6)) {
+					classes.push('hidden');
+				} else {
+					var color = this._getBandColor(band);
+					if (color) classes.push(color);
+				}
+
+				if ((this.bands < 6 && band === 5) || (this.bands === 6 && band === 6)) {
+					classes.push('last');
+				}
+
+				return classes.join(' ');
+			};
+
+			Polymer({
+				is: 'onion-resistor',
+				ready: function () {},
+				_computeRowHidden: _computeRowHidden,
+				_colorsToValues: _colorsToValues,
+				_valuesToColors:_valuesToColors,
+				_computeBandClass: _computeBandClass,
+				_computeSelectClass: _computeSelectClass,
+				_getBandColor: _getBandColor,
+				properties: {
+					bands: {
+						type: Number,
+						value: 4,
+						notify: true,
+						observer: '_valuesToColors'
+					},
+					resistance: {
+						type: Number,
+						notify: true,
+						observer: '_valuesToColors'
+					},
+					band1: {
+						type: Number,
+						notify: true,
+						value: -1
+					},
+					band2: {
+						type: Number,
+						notify: true,
+						value: -1
+					},
+					band3: {
+						type: Number,
+						notify: true,
+						value: -1
+					},
+					multiplier: {
+						type: Number,
+						notify: true,
+						value: -1
+					},
+					tolerance: {
+						type: Number,
+						notify: true,
+						value: -1
+					},
+					tcr: {
+						type: Number,
+						notify: true,
+						value: -1
+					},
+					bandValues: {
+						type: Array,
+						value: [
+							[
+								{ value: 1, color: 'brown' },
+								{ value: 2, color: 'red' },
+								{ value: 3, color: 'orange' },
+								{ value: 4, color: 'yellow' },
+								{ value: 5, color: 'green' },
+								{ value: 6, color: 'blue' },
+								{ value: 7, color: 'violet' },
+								{ value: 8, color: 'gray' },
+								{ value: 9, color: 'white' }
+							],
+							[
+								{ value: 0, color: 'black' },
+								{ value: 1, color: 'brown' },
+								{ value: 2, color: 'red' },
+								{ value: 3, color: 'orange' },
+								{ value: 4, color: 'yellow' },
+								{ value: 5, color: 'green' },
+								{ value: 6, color: 'blue' },
+								{ value: 7, color: 'violet' },
+								{ value: 8, color: 'gray' },
+								{ value: 9, color: 'white' }
+							],
+							[
+								{ value: 0, color: 'black' },
+								{ value: 1, color: 'brown' },
+								{ value: 2, color: 'red' },
+								{ value: 3, color: 'orange' },
+								{ value: 4, color: 'yellow' },
+								{ value: 5, color: 'green' },
+								{ value: 6, color: 'blue' },
+								{ value: 7, color: 'violet' },
+								{ value: 8, color: 'gray' },
+								{ value: 9, color: 'white' }
+							],
+							[
+								{ value: 1, color: 'black' },
+								{ value: 10, color: 'brown' },
+								{ value: 100, color: 'red' },
+								{ value: 1000, color: 'orange' },
+								{ value: 10000, color: 'yellow' },
+								{ value: 100000, color: 'green' },
+								{ value: 1000000, color: 'blue' },
+								{ value: 0.1, color: 'gold' },
+								{ value: 0.01, color: 'silver' }
+							],
+							[
+								{ value: 1, color: 'brown' },
+								{ value: 2, color: 'red' },
+								{ value: 0.5, color: 'green' },
+								{ value: 0.25, color: 'blue' },
+								{ value: 0.1, color: 'violet' },
+								{ value: 0.05, color: 'gray' },
+								{ value: 5, color: 'gold' },
+								{ value: 10, color: 'silver' }
+							],
+							[
+								{ value: 100, color: 'brown' },
+								{ value: 50, color: 'red' },
+								{ value: 15, color: 'orange' },
+								{ value: 25, color: 'yellow' },
+								{ value: 10, color: 'blue' },
+								{ value: 5, color: 'violet' }
+							]
+						]
+					}
+				}
+			});
+		})();
+	</script>
+
+</dom-module>
