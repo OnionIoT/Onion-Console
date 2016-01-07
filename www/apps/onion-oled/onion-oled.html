@@ -196,8 +196,11 @@
 						command: 'set',
 						option: 'i'
 					}, (function (data) {
-						if (!(data.length === 2 && data[0] === 0)) {
-							throw data[0];
+						if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
+							onionConsole.sendNotification({
+								title: 'OLED Control',
+								message: '[Error]: unable to communicate with OLED Expansion'
+							});
 						}
 					}).bind(this));
 				}).bind(this));
@@ -226,8 +229,11 @@
 						command: 'set',
 						option: 'c'
 					}, (function (data) {
-						if (!(data.length === 2 && data[0] === 0)) {
-							throw data[0];
+						if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
+							onionConsole.sendNotification({
+								title: 'OLED Control',
+								message: '[Error]: unable to communicate with OLED Expansion'
+							});
 						}
 					}).bind(this));
 				}).bind(this));
@@ -243,8 +249,11 @@
 							invert: this.invert === true ? 'on' : 'off'
 						}
 					}, (function (data) {
-						if (!(data.length === 2 && data[0] === 0)) {
-							throw data[0];
+						if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
+							onionConsole.sendNotification({
+								title: 'OLED Control',
+								message: '[Error]: unable to communicate with OLED Expansion'
+							});
 						}
 					}).bind(this));
 				}).bind(this));
@@ -260,8 +269,11 @@
 							dim: this.dim === true ? 'on' : 'off'
 						}
 					}, (function (data) {
-						if (!(data.length === 2 && data[0] === 0)) {
-							throw data[0];
+						if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
+							onionConsole.sendNotification({
+								title: 'OLED Control',
+								message: '[Error]: unable to communicate with OLED Expansion'
+							});
 						}
 					}).bind(this));
 				}).bind(this));
@@ -278,8 +290,11 @@
 						}
 					}, (function (data) {
 						this.invert = !this.invert;
-						if (!(data.length === 2 && data[0] === 0)) {
-							throw data[0];
+						if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
+							onionConsole.sendNotification({
+								title: 'OLED Control',
+								message: '[Error]: unable to communicate with OLED Expansion'
+							});
 						}
 					}).bind(this));
 				}).bind(this));
@@ -307,12 +322,11 @@
 							write: this.textValue.replace(/\n/g, '\\\\\n').replace(/'/g, '').replace(/"/g, '')
 						}
 					}, (function (data) {
-						if (!(data.length === 2 && data[0] === 0)) {
+						if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
 							onionConsole.sendNotification({
-								title: 'Relay Control',
+								title: 'OLED Control',
 								message: '[Error]: unable to communicate with OLED Expansion'
 							});
-							console.log(data[0]);
 						}
 					}).bind(this));
 				}).bind(this));
@@ -344,12 +358,11 @@
 												draw: filename
 											}
 										}, function (data) {
-											if (!(data.length === 2 && data[0] === 0)) {
+											if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
 												onionConsole.sendNotification({
-													title: 'Relay Control',
+													title: 'OLED Control',
 													message: '[Error]: unable to communicate with OLED Expansion'
 												});
-												console.log(data[0]);
 											}
 										});
 									});

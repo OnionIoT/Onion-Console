@@ -163,11 +163,11 @@
 									frequency: this.frequency.toString()
 								}
 							}, (function (data) {
-								if (data.length === 2 && data[0] === 0) {
+								if (data.length === 2 && data[0] === 0 && data[1].status !== 'failure') {
 									this.r1 = data[1].state === '1' ? true : false;
 								} else {
 									onionConsole.sendNotification({
-										title: 'Relay Control',
+										title: 'PWM Control',
 										message: '[Error]: unable to communicate with Servo Expansion'
 									});
 									console.log('gpio status error');

@@ -3,7 +3,7 @@
 
 <dom-module id="onion-ubus-provider">
 	<template>
-		<iron-ajax id="ajax" url="{{serverUrl}}" method="POST" content-type="application/json" on-response="_handelResponse" handle-as="json"></iron-ajax> 
+		<iron-ajax id="ajax" url="{{serverUrl}}" method="POST" content-type="application/json" on-response="_handelResponse" handle-as="json" loading="{{loading}}"></iron-ajax> 
 	</template>
 
 	<script>
@@ -86,6 +86,11 @@
 					isAlive: {
 					    type: Boolean,
 						value: false
+					},
+					loading: {
+						type: Boolean,
+						value: false,
+						notify: true
 					}
 	            },
 	            request: request,
