@@ -1,7 +1,8 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown.html">
+<link rel="import" href="/elements/bootstrap-styles/bootstrap-styles.html">
+<link rel="import" href="./onion-resistor.html">
 
 <dom-module id="onion-resistor-calculator">
 	<style>
@@ -23,21 +24,28 @@
 			background-color: #fff;
 		}
 
-		select + select {
-			margin-left: -1px;
-		}
-
-		#resistor {
-			background-image: url('./img/resistor-bg.png');
-			background-size: contain;
-			background-position: center center;
-			background-repeat: no-repeat;
-			width: 300px;
-			height: 75px;
-			position: relative;
-			margin-top: 15px;
+		onion-resistor {
 			margin-bottom: 15px;
 		}
+
+		.c-select {
+			border-radius: 5px;
+		}
+
+		#resistance {
+			width: 100px!important;
+			text-align: right;
+			padding-right: 30px;
+		}
+		#ohm {
+
+		}
+			#ohm:after {
+				content: '\03A9';
+				font-size: 20px;
+				line-height: 38px;
+				margin-left: -25px;
+			}
 	</style>
 
 	<template>
@@ -51,85 +59,37 @@
 					<div id="container">
 						<div class="horizontal center-justified layout">
 							<div class="btn-group" role="group" aria-label="Basic example">
-								<button type="button" class$="{{_computeActiveSwitch(band, 4)}}" on-tap="_selectBand" data-band="4">Four-Band</button>
-								<button type="button" class$="{{_computeActiveSwitch(band, 5)}}" on-tap="_selectBand" data-band="5">Five-Band</button>
-								<button type="button" class$="{{_computeActiveSwitch(band, 6)}}" on-tap="_selectBand" data-band="6">Six-Band</button>
+								<button type="button" class$="{{_computeActiveSwitch(bands, 4)}}" on-tap="_selectBands" data-bands="4">Four-Band</button>
+								<button type="button" class$="{{_computeActiveSwitch(bands, 5)}}" on-tap="_selectBands" data-bands="5">Five-Band</button>
+								<button type="button" class$="{{_computeActiveSwitch(bands, 6)}}" on-tap="_selectBands" data-bands="6">Six-Band</button>
 							</div>
 						</div>
 
 						<div class="horizontal center-justified layout">
-							<div id="resistor">
-
-							</div>
+							<onion-resistor resistance="{{resistance}}" tolerance="{{tolerance}}" bands="{{bands}}" tcr="{{tcr}}"></onion-resistor>
 						</div>
-
 						<div class="horizontal center-justified layout">
-							<select class="c-select">
-								<option selected>Color</option>
-								<option value="1">Brown</option>
-								<option value="2">Red</option>
-								<option value="3">Orange</option>
-								<option value="4">Yellow</option>
-								<option value="5">Green</option>
-								<option value="6">Blue</option>
-								<option value="7">Violet</option>
-								<option value="8">Gray</option>
-								<option value="9">white</option>
-							</select>
-							<select class="c-select">
-								<option selected>Color</option>
-								<option value="0">Black</option>
-								<option value="1">Brown</option>
-								<option value="2">Red</option>
-								<option value="3">Orange</option>
-								<option value="4">Yellow</option>
-								<option value="5">Green</option>
-								<option value="6">Blue</option>
-								<option value="7">Violet</option>
-								<option value="8">Gray</option>
-								<option value="9">white</option>
-							</select>
-							<select class="c-select" hidden$="{{_computeRowHidden(band, 5)}}">
-								<option selected>Color</option>
-								<option value="0">Black</option>
-								<option value="1">Brown</option>
-								<option value="2">Red</option>
-								<option value="3">Orange</option>
-								<option value="4">Yellow</option>
-								<option value="5">Green</option>
-								<option value="6">Blue</option>
-								<option value="7">Violet</option>
-								<option value="8">Gray</option>
-								<option value="9">white</option>
-							</select>
-							<select class="c-select">
-								<option selected>Color</option>
-								<option value="0">Black</option>
-								<option value="1">Brown</option>
-								<option value="2">Red</option>
-								<option value="3">Orange</option>
-								<option value="4">Yellow</option>
-								<option value="5">Green</option>
-								<option value="6">Blue</option>
-								<option value="7">Gold</option>
-								<option value="7">Silver</option>
-							</select>
-							<select class="c-select">
-								<option selected>Color</option>
-								<option value="0">Black</option>
-								<option value="1">Brown</option>
-								<option value="2">Red</option>
-								<option value="3">Orange</option>
-								<option value="4">Yellow</option>
-								<option value="7">Gold</option>
-								<option value="7">Silver</option>
-							</select>
-							<select class="c-select" hidden$="{{_computeRowHidden(band, 6)}}">
-								<option selected>Color</option>
-								<option value="1">Brown</option>
-								<option value="2">Red</option>
-								<option value="7">Gold</option>
-								<option value="7">Silver</option>
+							<input maxlength="7" type="text" class="form-control" value="{{resistanceStr::input}}" on-keyup="_computeResistanceValue" id="resistance" />
+							<div id="ohm"></div>&nbsp;
+							<select class="c-select" value="{{tolerance::input}}">
+								<option value="-1">Tolerance</option>
+								<option value="10">&plusmn;10%</option>
+								<option value="5">&plusmn;5%</option>
+								<option value="2">&plusmn;2%</option>
+								<option value="1">&plusmn;1%</option>
+								<option value="0.5">&plusmn;0.5%</option>
+								<option value="0.25">&plusmn;0.25%</option>
+								<option value="0.1">&plusmn;0.10%</option>
+								<option value="0.05">&plusmn;0.05%</option>
+							</select>&nbsp;
+							<select class="c-select" hidden$="{{_computeRowHidden(bands)}}" value="{{tcr::input}}">
+								<option selected value="-1">TCR</option>
+								<option value="100">100ppm</option>
+								<option value="50">50ppm</option>
+								<option value="15">15ppm</option>
+								<option value="25">25ppm</option>
+								<option value="10">10ppm</option>
+								<option value="5">5ppm</option>
 							</select>
 						</div>
 					</div>
@@ -143,55 +103,120 @@
 		'use strict';
 
 		(function () {
-			var self = null;
-
-			var _selectBand = function (e) {
-				this.band = parseInt(e.target.dataset.band);
+			var _computeRowHidden = function (bands) {
+				return !(bands === 6);
 			};
 
-			var _computeActiveSwitch = function (band, btnData) {
+			var _selectBands = function (e) {
+				this.bands = parseInt(e.target.dataset.bands);
+			};
+
+			var _computeActiveSwitch = function (bands, btnData) {
 				var className = 'btn btn-secondary';
 
-				if (band === btnData) {
+				if (bands === btnData) {
 					className += ' active';
 				}
 
 				return className;
 			};
 
-			var _computeRowHidden = function (band, rowData) {
-				return (band >= rowData) ? false: true;
+			var _numberToSI = function (number) {
+				var si = [
+					{ value: 1E6,  symbol: 'M' },
+					{ value: 1E3,  symbol: 'k' }
+				], i;
+
+				for (i = 0; i < si.length; i++) {
+					if (number >= si[i].value) {
+						return (number / si[i].value).toFixed(2).replace(/\.?0+$/, '') + si[i].symbol;
+					}
+				}
+
+				return number;
+			};
+
+			var _SIToNumber = function (str) {
+				var si = {
+					M: 1E6,
+					k: 1E3
+				};
+
+				if (!str.length) return 0;
+
+				str = str.replace(/\s/ig, '');
+				var value = str.substring(0, str.length - 1);
+				var symbol = str[str.length - 1];
+
+				if (isNaN(symbol) && si[symbol]) {
+					return parseInt(value) * si[symbol];
+				} else {
+					return parseInt(str);
+				}
+			};
+
+			var _computeResistanceValue = function () {
+				if (this.resistance !== _SIToNumber(this.resistanceStr)) {
+					this.updateResistance = false;
+					this.resistance = _SIToNumber(this.resistanceStr);
+				}
+			};
+
+			var _computeResistanceString = function () {
+				if (this.updateResistance) {
+					this.resistanceStr = _numberToSI(this.resistance);
+				} else {
+					this.updateResistance = true;
+					console.log('false');
+				}
 			};
 
 			Polymer({
 				is: 'onion-resistor-calculator',
 				ready: function () {},
 				behaviors: [Onion.AppBehavior],
-				_selectBand: _selectBand,
-				_computeActiveSwitch: _computeActiveSwitch,
 				_computeRowHidden: _computeRowHidden,
+				_selectBands: _selectBands,
+				_computeActiveSwitch: _computeActiveSwitch,
+				_computeResistanceValue: _computeResistanceValue,
+				_computeResistanceString: _computeResistanceString,
 				properties: {
 					apps: {
 						type: Array,
 						value: []
 					},
-					band: {
+					bands: {
 						type: Number,
 						value: 4,
 						notify: true
 					},
-					bands: {
-						type: Array,
-						value: [
-							null, // Hundred
-							null, // Ten
-							null, // One
-							null, // Multipier
-							null, // Tolerance
-							null  // PPM
-						],
+					resistance: {
+						type: Number,
+						value: 0,
+						notify: true,
+						observer: '_computeResistanceString'
+					},
+					tolerance: {
+						type: Number,
+						notify: true,
+						value: -1
+					},
+					tcr: {
+						type: Number,
+						notify: true,
+						value: -1
+					},
+					resistanceStr: {
+						type: String,
+						value: '0',
 						notify: true
+					},
+					updateResistance: {
+						type: Boolean
 					}
+				},
+				listeners: {
+
 				}
 			});
 		})();
