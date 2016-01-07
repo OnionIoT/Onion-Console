@@ -96,7 +96,10 @@
 					<div class="form-group row">
 						<!-- start ap-config -->
 						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
-						<button id="ap-config-button" type="button" class="btn btn-success btn-block" on-click="setupAP">Configure AP</button>
+							<div class="layout horizontal center">
+								<button id="ap-config-button" type="button" class="btn btn-success btn-block" on-click="setupAP">Configure AP</button>
+								<div id="configureLoading" class="loading" hidden></div>
+							</div>
 						</div>
 					</div>
 				</form>
@@ -147,6 +150,14 @@
 			};
 
 			var setupAP = function () {
+				self.$.configureLoading.hidden = false;
+		    	self.$['ap-config-button'].disabled = true;
+
+		    	setTimeout(function () {
+		    		self.$.configureLoading.hidden = true;
+		    		self.$['ap-config-button'].disabled = false;
+		    	}, 10000);
+		    	
 			    self.apMessage = '';
 
 			    var verifyResult = self.wifiProvider.verifyKey(self.apPassword, self.apAuth);

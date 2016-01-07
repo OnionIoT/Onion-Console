@@ -270,8 +270,11 @@
 		
 		    var setupWifi = function () {
 		    	self.$.configureLoading.hidden = false;
+		    	self.$['wifi-config-button'].disabled = true;
+
 		    	setTimeout(function () {
 		    		self.$.configureLoading.hidden = true;
+		    		self.$['wifi-config-button'].disabled = false;
 		    	}, 10000);
 
 			    self.wifiMessage = '';

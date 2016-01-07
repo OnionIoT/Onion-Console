@@ -110,6 +110,11 @@
 					<div id="upgradeLoading" class="loading" hidden></div>
 				</div>
 
+				<div id="download-progress" hidden>
+					<p>Downloading Firmware:</p>
+					<progress class="progress" value="{{downloadProgress}}" max="100"></progress>
+				</div>
+
 				<div id="upgradeAlerts"></div>
 			</div>
 		</div>
@@ -151,7 +156,7 @@
 
 							if (returnCode === 0) {
 								this.data = data[1];
-								console.log(this.data);	// get rid of this when app is done
+								this.binName = data[1].image.local;
 
 								// denote that data has be received
 								this.dataReady = 1;
@@ -223,6 +228,8 @@
 								this.set('upgradeButtonTheme', 'success');
 								this.upgradeButtonLabel = 'Upgrade Minor Version';
 							} else {
+								//////////////////////////
+								this.upgradeButtonDisabled = false;
 								console.log('do not upgrade');
 								this.upgradeButtonLabel = 'No Upgrade Required';
 							}
@@ -233,19 +240,35 @@
 
 			// use ubus to initiate the firmware upgrade
 			var upgradeFirmware = function () {
-				console.log('calling oupgrade ubus service...');
-
 				this.$.upgradeLoading.hidden = false;
-
-				var alertElement = document.createElement('bootstrap-alert');
-				alertElement.setAttribute('warning', true);
-				Polymer.dom(alertElement).innerHTML = '<p>Firmware upgrade has started! Please be patient, this might take a little while. When the Omega has rebooted, the firmware upgrade will be complete.</p><p>Do NOT unplug the Omega during this process.</p>';
-
-				Polymer.dom(this.$.upgradeAlerts).appendChild(alertElement);
-				Polymer.dom.flush();
+				this.$['download-progress'].hidden = false;
+				this.upgradeButtonDisabled = true;
 
 				// get the ubus service
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					var checkDownloadInterval = setInterval((function () {
+						ubus.request('file', 'stat', {
+							path: this.binName
+						}, (function (data) {
+							if (data && data.length === 2) {
+								this.downloadProgress = Math.floor(data[1].size / 16252928 * 100);
+
+								if (data[1].size === 16252928) {
+									clearInterval(checkDownloadInterval);
+									this.upgradeButtonDisabled = true;
+									var alertElement = document.createElement('bootstrap-alert');
+									
+									alertElement.setAttribute('info', true);
+									alertElement.setAttribute('no-close', true);
+									Polymer.dom(alertElement).innerHTML = '<p>Firmware upgrade has started! Please be patient, this can take up to 3 minutes. When the Omega has rebooted, the firmware upgrade will be complete.</p><p><strong>Do NOT unplug the Omega during this process.</strong></p>';
+
+									Polymer.dom(this.$.upgradeAlerts).appendChild(alertElement);
+									Polymer.dom.flush();
+								}
+							}
+						}).bind(this));
+					}).bind(this), 1000);
+
 					var params = {
 						params: {
 							force: ''
@@ -253,7 +276,7 @@
 					};
 
 					// do ubus oupgrade
-					ubus.request('onion', 'oupgrade', params, function (data) {
+					ubus.request('onion', 'oupgrade', params, (function (data) {
 						if (data) {
 							var returnCode = data[0];
 							console.log('oupgrade return code: ', returnCode);
@@ -265,8 +288,8 @@
 								console.log('oupgrade error');
 							}
 						}
-					});
-				});
+					}).bind(this));
+				}).bind(this));
 			};
 
 			var _calculateButtonClass = function (upgradeButtonTheme) {
@@ -281,6 +304,7 @@
 				checkFirmwareInfo: checkFirmwareInfo,
 				upgradeFirmware: upgradeFirmware,
 				_calculateButtonClass: _calculateButtonClass,
+				binName: null,
 				properties: {
 					settings: Array,
 					upgradeButtonTheme: {
@@ -297,6 +321,11 @@
 						type: Boolean,
 						notify: true,
 						value: true
+					},
+					downloadProgress: {
+						type: Number,
+						notify: true,
+						value: 0
 					}
 				}
 			});

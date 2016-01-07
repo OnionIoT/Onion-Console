@@ -13,40 +13,51 @@
 		}
 
 		.notifications {
-		  position: fixed;
-		  top: 10px;
-		  right: 15px;
+			display: block;
+			position: fixed;
+			height: 0;
+			width: 0;
+			top: 10px;
+			right: 15px;
+			overflow: visible;
 		}
 
-		.notifications li {
-		  margin-bottom: 5px;
-		  list-style: none;
+		.notifications-container {
+			position: relative;
+			height: 100%;
+			width: 100%;
 		}
 
 		.notification {
-		  position: relative;
-		  max-width: 600px;
-		  min-width: 250px;
-		  border: 1px solid #eee;
-		  background: white;
-		  z-index: 100;
+			position: relative;
+			width: 250px;
+			border: 1px solid #fff;
+			background: rgba(255, 255, 255, 0.95);
+			border-radius: 3px;
+			padding: 10px;
+			margin-bottom: 5px;
+			z-index: 10000;
+			margin-left: -250px;
+			box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 		}
-				
+
+		.notification p {
+			word-wrap: break-word;
+		}
+			.notification p:last-child {
+				margin-bottom: 0;
+			}
 	</style>
 
 	<template>
 		<div class="notifications">
-
-			<template is='dom-repeat' items="{{notificationList}}">
-				<li class="notification animated fadeInRight" id='{{item.id}}'>
-				  <div class="content">
-				    <span class="title">{{item.title}}</span>
-				    <!-- <a href="#" class="close" on-click>&times;</a> -->
-				    <p>{{item.message}}</p>
-				  </div>
-				</li>
-
-			</template>
+				<template is='dom-repeat' items="{{notificationList}}">
+					<div class="notification animated fadeInRight" id="{{item.id}}">
+						<h6 class="title">{{item.title}}</h6>
+						<!-- <a href="#" class="close" on-click>&times;</a> -->
+						<p>{{item.message}}</p>
+					</div>
+				</template>
 		</div>
 	</template>
 
@@ -54,24 +65,18 @@
 		'use strict';
 
 		(function () {
-			var created = function () {
-				self = this;
-				self.idCount = 0;
-			};
-
 			var notify = function (n) {
-				n.id = 'notification-'+(self.idCount++);
+				n.id = 'notification-' + (this.idCount++);
 				this.push('notificationList', n);
-				setTimeout(function(){
-					var elem = document.getElementById(self.notificationList[0].id);
-					elem.className = elem.className + " fadeOutRight";
-					self.notificationList.shift('notificationList');
-				},5000)
-			}
+				setTimeout((function () {
+					var elem = document.getElementById(this.notificationList[0].id);
+					elem.className = elem.className + ' fadeOutRight';
+					this.notificationList.shift('notificationList');
+				}).bind(this), 5000);
+			};
 
 			Polymer({
 				is: 'onion-notification',
-				created: created,
 				notify: notify,
 				properties: {
 					notificationList: {
