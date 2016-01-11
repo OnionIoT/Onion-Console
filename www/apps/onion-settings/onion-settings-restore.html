@@ -78,12 +78,11 @@
 				<bootstrap-alert danger no-close>
 					<h6>Attention!</h6>
 					<p>This will erase everything on the Omega and reset the device to factory default settings. Please backup any custom files on the device before proceeding.</p>
+					<p><strong>Once the reset is done, your Omega will stop flashing.</strong></p>
 				</bootstrap-alert>
-				<button class="btn btn-warning" on-click="resetFactorySettings">Factory Reset</button>
+				<button class="btn btn-warning" on-click="resetFactorySettings" disabled="{{resetButtonDisabled}}">{{resetButtonLabel}}</button>
 			</div>
 		</div>
-
-
 	</template>
 
 	<script>
@@ -102,22 +101,28 @@
 
 			// use ubus to reset to factory settings
 			var resetFactorySettings = function () {
-				console.log('starting factory reset');
-
+				this.resetButtonLabel = 'Factory Reset Taking Place';
+				this.resetButtonDisabled = true;
+				
 				// get the ubus service
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
 					var params = {
-						command: '/usr/sbin/factory-reset',
-						params: ['-f']
+						set_trigger: 'timer'
 					};
 
-					// make the ubus call
-					ubus.request('file', 'exec', params, function (data) {
+					ubus.request('onion', 'omega-led', params, (function (data) {
 						if (data) {
-							var returnCode = data[0];
-							console.log('return code: ', returnCode);
+							if (data[0] === 0) {
+								var params = {
+									command: '/usr/sbin/factory-reset',
+									params: ['-f']
+								};
+
+								// make the ubus call
+								ubus.request('file', 'exec', params, function (data) {});
+							}
 						}
-					});
+					}).bind(this));
 				});
 			};
 
@@ -127,7 +132,17 @@
 				ready: ready,
 				resetFactorySettings: resetFactorySettings,
 				properties: {
-					settings: Array
+					settings: Array,
+					resetButtonLabel: {
+						type: String,
+						notify: true,
+						value: 'Factory Reset'
+					},
+					resetButtonDisabled: {
+						type: Boolean,
+						notify: true,
+						value: false
+					},
 				}
 			});
         })();

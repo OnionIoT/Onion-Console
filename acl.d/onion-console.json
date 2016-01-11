@@ -13,7 +13,8 @@
                                 "onion": [
                                         "wifi-scan",
                                         "oupgrade",
-                                        "wifi-setup"
+                                        "wifi-setup",
+                                        "omega-led"
                                 ],
                                 "onion-console": [
                                         "app-list",
@@ -53,7 +54,8 @@
                                 "onion": [
                                         "wifi-scan",
                                         "wifi-setup",
-                                        "oupgrade"
+                                        "oupgrade",
+                                        "omega-led"
                                 ],
                                 "i2c_exp": [
                                         "pwm-exp",
