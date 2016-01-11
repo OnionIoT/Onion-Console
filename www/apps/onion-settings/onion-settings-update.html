@@ -260,7 +260,7 @@
 									
 									alertElement.setAttribute('info', true);
 									alertElement.setAttribute('no-close', true);
-									Polymer.dom(alertElement).innerHTML = '<p>Firmware upgrade has started! Please be patient, this can take up to 3 minutes. When the Omega has rebooted, the firmware upgrade will be complete.</p><p><strong>Do NOT unplug the Omega during this process.</strong></p>';
+									Polymer.dom(alertElement).innerHTML = '<p>Firmware upgrade has started! Please be patient, this can take up to 3 minutes. When the Omega has rebooted, the firmware upgrade will be complete.</p><p><strong>Do NOT unplug the Omega during this process.</strong></p><p>Once the update is complete, your Omega will stop flashing.</p>';
 
 									Polymer.dom(this.$.upgradeAlerts).appendChild(alertElement);
 									Polymer.dom.flush();
@@ -270,22 +270,32 @@
 					}).bind(this), 1000);
 
 					var params = {
-						params: {
-							force: ''
-						}
+						set_trigger: 'timer'
 					};
 
-					// do ubus oupgrade
-					ubus.request('onion', 'oupgrade', params, (function (data) {
+					ubus.request('onion', 'omega-led', params, (function (data) {
 						if (data) {
-							var returnCode = data[0];
-							console.log('oupgrade return code: ', returnCode);
+							if (data[0] === 0) {
+								var params = {
+									params: {
+										force: ''
+									}
+								};
 
-							if (returnCode === 0) {
-								console.log('oupgrade started!');
-							}
-							else {
-								console.log('oupgrade error');
+								// do ubus oupgrade
+								ubus.request('onion', 'oupgrade', params, (function (data) {
+									if (data) {
+										var returnCode = data[0];
+										console.log('oupgrade return code: ', returnCode);
+
+										if (returnCode === 0) {
+											console.log('oupgrade started!');
+										}
+										else {
+											console.log('oupgrade error');
+										}
+									}
+								}).bind(this));
 							}
 						}
 					}).bind(this));
