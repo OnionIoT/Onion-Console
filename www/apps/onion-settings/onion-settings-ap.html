@@ -28,6 +28,57 @@
 			.card form > .form-group:last-child {
 				margin-bottom: 0;
 			}
+
+		.loading{
+			height: 20px;
+			width: 20px;
+			margin-left: 15px; 
+			-webkit-animation: rotation 1s infinite linear;
+			-moz-animation: rotation 1s infinite linear;
+			-o-animation: rotation 1s infinite linear;
+			animation: rotation 1s infinite linear;
+			border-left: 3px solid #EAF1FF;
+			border-right: 3px solid #EAF1FF;
+			border-bottom: 3px solid #EAF1FF;
+			border-top: 3px solid #2450AD;
+			border-radius: 100%
+		}
+
+		@-webkit-keyframes rotation {
+			from{
+				-webkit-transform: rotate(0deg)
+			}
+			to{
+				-webkit-transform: rotate(359deg)
+			}
+		}
+
+		@-moz-keyframes rotation {
+			from{
+				-moz-transform: rotate(0deg)
+			}
+			to{
+				-moz-transform: rotate(359deg)
+			}
+		}
+
+		@-o-keyframes rotation {
+			from{
+				-o-transform: rotate(0deg)
+			}
+			to{
+				-o-transform: rotate(359deg)
+			}
+		}
+
+		@keyframes rotation {
+			from{
+				transform: rotate(0deg)
+			}
+			to{
+				transform: rotate(359deg)
+			}
+		}
 	</style>
 
 	<template>
@@ -95,9 +146,9 @@
 
 					<div class="form-group row">
 						<!-- start ap-config -->
-						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
+						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
 							<div class="layout horizontal center">
-								<button id="ap-config-button" type="button" class="btn btn-success btn-block" on-click="setupAP">Configure AP</button>
+								<button id="ap-config-button" type="button" class="btn btn-success" on-click="setupAP">Configure AP</button>
 								<div id="configureLoading" class="loading" hidden></div>
 							</div>
 						</div>
