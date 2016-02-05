@@ -1,0 +1,108 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-input/iron-input.html">
+
+<dom-module id="binary-display">
+	<style>
+		#bit0, #bit4, #bit8, #bit12, #bit16, #bit20, #bit24, #bit28 {
+			margin-right: 5.6px;
+		}
+		.bit {
+			height:15px;
+			width:15px;
+			background: none;
+			display: inline;
+			border: none;
+			text-align: left;
+			margin: -10px -2px;
+			padding-left: 4px;
+		}
+	</style>
+	
+	<template>
+		<template is="dom-repeat" items="{{setup}}">
+			<input
+				type="button"
+				is="iron-input"
+				id="bit{{_getIndex(index)}}"
+				bit-num="{{_getIndex(index)}}"
+				class="bit"
+				style="margin-top:3px; margin-bottom:5px"
+				on-click="updateValue"
+				bind-value="{{_getBits(index, value)}}"
+				>
+			</input>
+		</template>
+	</template>
+
+	<script>
+		var _getIndex = function(index) {
+			return 31-index;
+		};
+
+		var _getBits = function(index, value) {
+			var bit = this.value;
+			var i = 31 - index;
+			var len = bit.length;
+
+			if(len - 1 - i >= 0 && bit.substr(len - 1 - i,1) === "1") {
+				return 1;
+			} else {
+				return 0;
+			}	
+		};
+
+		Polymer({
+			is: "binary-display",
+			_getIndex: _getIndex,
+			_getBits: _getBits,
+			properties: {
+				value:{
+					type: String,
+					value: "",
+					notify: true,
+					reflectToAttribute: true,
+				},
+				setup: {
+					type: Array,
+					value: 
+						[0,0,0,0,0,0,0,0,
+						 0,0,0,0,0,0,0,0,
+						 0,0,0,0,0,0,0,0,
+						 0,0,0,0,0,0,0,0]
+				},
+				done: {
+					type: Boolean,
+					value: false
+				},
+				focus: {
+					type: String,
+					value: "0",
+					notify: true,
+					reflectToAttribute: true
+				}
+			},
+			ready: function() {},
+			updateValue: function(x) {
+				this.value = this.value.toString();
+				var index = this.value.length - 1 - x.target.bitNum;
+				var split1 = this.value.substr(0, index);
+				var split2 = this.value.substr(index + 1);
+
+				this.focus = "1";
+				
+				if(index < 0) {
+					var zero = "";
+					index *= -1;
+					for(var i = 0; i < index - 1; i++) {
+						zero = "" + zero + 0;
+					}					
+					this.value = "" + 1 + zero + split2;
+				} else if(x.target.bindValue == 1) {
+					this.value = split1 + "0" + split2;
+				} else {
+					this.value = split1 + "1" + split2;
+				}
+			}
+		});
+	</script>
+</dom-module>

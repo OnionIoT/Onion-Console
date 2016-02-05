@@ -1,0 +1,69 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="programming-calculator.html">
+
+<dom-module id="onion-calculator">
+	<style>
+		#calculator{
+			width: 320px;
+		}
+		programming-calculator{
+			height:100%;
+			width:100%;
+			padding:15px;
+		}
+	</style>
+
+	<template>
+		<onion-app app-name="Calculator" toolbar-background="orange">
+			<onion-app-toolbar>
+
+			</onion-app-toolbar>
+
+			<onion-app-body>
+				<div class="horizontal center-justified layout center" style="height:100%">
+					<programming-calculator id="calculator" style="font:"></programming-calculator>
+				</div>
+			
+				
+
+			</onion-app-body>
+		</onion-app>
+
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
+			var onAppIcon = function (e) {
+				self.onionConsole.launchApp(e.target);
+			};
+
+			var openModal = function () {
+				self.$.test.open();
+			};
+
+			Polymer({
+				is: 'onion-calculator',
+				created: created,
+				ready: function () {},
+				behaviors: [Onion.AppBehavior],
+				openModal: openModal,
+				properties: {
+					apps: {
+						type: Array,
+						value: []
+					}
+				}
+			});
+		})();
+	</script>
+
+</dom-module>
