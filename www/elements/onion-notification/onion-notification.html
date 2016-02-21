@@ -66,8 +66,6 @@
 
 		(function () {
 			var notify = function (n) {
-/*<<<<<<< HEAD
-// LAZAR: rolling back two commits
 				n.id = 'notification-' + (this.idCount++);
 				this.push('notificationList', n);
 				setTimeout((function () {
@@ -76,15 +74,6 @@
 					this.notificationList.shift('notificationList');
 				}).bind(this), 5000);
 			};
-=======*/
-				n.id = 'notification-'+(self.idCount++);
-				self.push('notificationList', n);
-				setTimeout(function(){
-					var elem = document.getElementById(self.notificationList[0].id);
-					elem.className = elem.className + " fadeOutRight";
-					self.notificationList.shift('notificationList');
-				},5000)
-			}
 
 			Polymer({
 				is: 'onion-notification',
