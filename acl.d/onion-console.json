@@ -46,7 +46,9 @@
                         "uci": [
                                 "system",
                                 "get",
-                                "rpcd"
+                                "delete",
+                                "rpcd",
+                                "mjpg-streamer"
                         ]
                 },
                 "write": {
@@ -87,7 +89,9 @@
                                 "get",
                                 "set",
                                 "commit",
-                                "rpcd"
+                                "delete",
+                                "rpcd",
+                                "mjpg-streamer"
                         ]
                 }
         }
