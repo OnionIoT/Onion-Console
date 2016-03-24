@@ -148,16 +148,16 @@
 				return promise;
 			};
 
-			var changeHostname = function (hostname) {
+			var changeHostname = function (hostnameNew) {
 				var promise = new Promise(function (resolve, reject) {
 					if (hostname !== '') {
 						onionConsole.getService('onion-ubus-provider', function (ubus) {
-							ubus.request('file', 'exec', {
-								command: 'uci', 
-								params: [
-									'set', 
-									'system.@system[0].hostname=' + hostname
-								]
+							ubus.request('uci', 'set', {
+								config: 'system',
+								section: '@system[0]',
+								values: {
+									hostname: hostnameNew
+								}
 							}, function (result) {
 								if (result[0] === 0) {
 									ubus.request('uci', 'commit', {
@@ -180,16 +180,16 @@
 				return promise;
 			};
 
-			var changeTimezone = function (timezone, zonename) {
+			var changeTimezone = function (timezoneNew, zonenameNew) {
 				var promise = new Promise(function (resolve, reject) {
 					onionConsole.getService('onion-ubus-provider', function (ubus) {
 						var timezonePromise = new Promise(function (resolve, reject) {
-							ubus.request('file', 'exec', {
-								command: 'uci', 
-								params: [
-									'set', 
-									'system.@system[0].timezone=' + timezone
-								]
+							ubus.request('uci', 'set', {
+								config: 'system',
+								section: '@system[0]',
+								values: {
+									timezone: timezoneNew
+								}
 							}, function (result) {
 								if (result[0] === 0) {
 									resolve();
@@ -200,12 +200,12 @@
 						});
 
 						var zonenamePromise = new Promise(function (resolve, reject) {
-							ubus.request('file', 'exec', {
-								command: 'uci', 
-								params: [
-									'set', 
-									'system.@system[0].timezone=' + timezone
-								]
+							ubus.request('uci', 'set', {
+								config: 'system',
+								section: '@system[0]',
+								values: {
+									zonename: zonenameNew
+								}
 							}, function (result) {
 								if (result[0] === 0) {
 									resolve();
