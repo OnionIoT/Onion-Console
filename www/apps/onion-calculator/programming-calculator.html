@@ -109,6 +109,10 @@
 					</td>
 				</tr>
 
+				<tr>
+				<td><strong>Binary</strong></td>
+				</tr>
+
 				<tr id="bin" style="padding-left:10px">
 					<td colspan="2" align="right" style="line-height:1.0">
 						<binary-display value="{{binary}}" focus="{{isBinary}}" on-click="_highlight"></binary-display>
@@ -271,13 +275,13 @@
 					this.decimal = x.charCodeAt(0);
 					this.binary = _changeBase(this.decimal, 10, 2);
 					this.octal = _changeBase(this.decimal, 10, 8);
-					this.hexadecimal = _changeBase(this.decimal, 10, 16);
+					this.hexadecimal = '0x'+_changeBase(this.decimal, 10, 16);
 					this.unicode = _getUni(this.decimal);
 				} else {
 					this.decimal = _changeBase(x, base, 10);
 					this.binary = _changeBase(x, base, 2);
 					this.octal = _changeBase(x, base, 8);
-					this.hexadecimal = _changeBase(x, base, 16);
+					this.hexadecimal = '0x'+_changeBase(x, base, 16);
 					this.unicode = _getUni(this.decimal);
 				}
 
@@ -395,7 +399,7 @@
 					}
 				},
 				ready: function() {
-					this.tabIndex = 0;
+					//this.tabIndex = 0;
 				},
 				rand: function(x) {
 					if(isNaN(this.decimal)){return}

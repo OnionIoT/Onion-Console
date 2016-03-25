@@ -3,30 +3,24 @@
 <link rel="import" href="programming-calculator.html">
 
 <dom-module id="onion-calculator">
-	<style>
-		#calculator{
-			width: 320px;
+	<style>	
+		#appBody {
+			height: 100%;
+			widows: 100%
 		}
-		programming-calculator{
-			height:100%;
-			width:100%;
-			padding:15px;
-		}
+
 	</style>
 
 	<template>
-		<onion-app app-name="Calculator" toolbar-background="orange">
+		<onion-app app-name="Calculator" toolbar-background="orange" background＝"#f2f2f2">
 			<onion-app-toolbar>
 
 			</onion-app-toolbar>
 
 			<onion-app-body>
-				<div class="horizontal center-justified layout center" style="height:100%">
+				<div id="appBody" class="layout horizontal center-center">
 					<programming-calculator id="calculator" style="font:"></programming-calculator>
 				</div>
-			
-				
-
 			</onion-app-body>
 		</onion-app>
 
