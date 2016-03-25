@@ -38,9 +38,18 @@
 				padding-top: 0px;
 				margin-top: -2px;
 			}
+			.noselect {
+			  -webkit-touch-callout: none; /* iOS Safari */
+			  -webkit-user-select: none;   /* Chrome/Safari/Opera */
+			  -khtml-user-select: none;    /* Konqueror */
+			  -moz-user-select: none;      /* Firefox */
+			  -ms-user-select: none;       /* IE/Edge */
+			  user-select: none;           /* non-prefixed version, currently
+			                                  not supported by any browser */
+			}
 		</style>
 
-		<div id="container" on-keypress="press" on-keydown="delButton">
+		<div id="container" on-keypress="press" on-keydown="delButton" class="noselect">
 			<table id="display" style="width:100%" border-collapse="collapse">
 				<tr id="decimal" style="">
 					<td><strong>DEC</strong></td>
