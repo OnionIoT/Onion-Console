@@ -183,51 +183,27 @@
 			var changeTimezone = function (timezoneNew, zonenameNew) {
 				var promise = new Promise(function (resolve, reject) {
 					onionConsole.getService('onion-ubus-provider', function (ubus) {
-						var timezonePromise = new Promise(function (resolve, reject) {
-							ubus.request('uci', 'set', {
-								config: 'system',
-								section: '@system[0]',
-								values: {
-									timezone: timezoneNew
-								}
-							}, function (result) {
-								if (result[0] === 0) {
-									resolve();
-								} else {
-									reject();
-								}
-							});
-						});
-
-						var zonenamePromise = new Promise(function (resolve, reject) {
-							ubus.request('uci', 'set', {
-								config: 'system',
-								section: '@system[0]',
-								values: {
-									zonename: zonenameNew
-								}
-							}, function (result) {
-								if (result[0] === 0) {
-									resolve();
-								} else {
-									reject();
-								}
-							});
-						});
-
-						// Once both of them are finished
-						Promise.all([timezonePromise, zonenamePromise]).then(function () {
-							ubus.request('uci', 'commit', {
-								config: 'system'
-							}, function (result) {
-								if (result[0] === 0) {
-									resolve('Timezone changed successfully.');
-								} else {
-									reject(Error('Unable to set the timezone.'));
-								}
-							});
-						}, function () {
-							reject(Error('Unable to set the timezone.'));
+						ubus.request('uci', 'set', {
+							config: 'system',
+							section: '@system[0]',
+							values: {
+								timezone: timezoneNew,
+								zonename: zonenameNew
+							}
+						}, function (result) {
+							if (result[0] === 0) {
+								ubus.request('uci', 'commit', {
+									config: 'system'
+								}, function (result) {
+									if (result[0] === 0) {
+										resolve('Timezone changed successfully.');
+									} else {
+										reject(Error('Unable to set the timezone with UBUS'));
+									}
+								});
+							} else {
+								reject(Error('Unable to set the timezone.'));
+							}
 						});
 					});
 				});
