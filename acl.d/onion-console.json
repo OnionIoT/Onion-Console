@@ -43,6 +43,8 @@
                                 "delete",
                                 "rpcd",
                                 "system",
+                                "wireless",
+                                "network",
                                 "mjpg-streamer"
                         ]
                 },
@@ -82,6 +84,8 @@
                                 "delete",
                                 "rpcd",
                                 "system",
+                                "wireless",
+                                "network",
                                 "mjpg-streamer"
                         ]
                 }
