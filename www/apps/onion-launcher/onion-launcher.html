@@ -93,10 +93,23 @@
 		#launcherBody::-webkit-scrollbar { 
 		    display: none; 
 		}
+
+		#statusDropdown {
+			cursor: pointer;
+		}
  	</style>
 
 	<template>
+		<bootstrap-dropdown for="statusDropdown">
+			<li on-tap="_onLogout">Log Out</li>
+			<li on-tap="_onShutdown">Shutdown</li>
+			<li on-tap="_onRestart">Restart</li>
+		</bootstrap-dropdown>
+
 		<onion-app app-name="Launcher" hide-title hide-launcher background="transparent" toolbar-background="transparent">
+
+			
+
 			<onion-app-toolbar>
 				<div id="header" class="layout horizontal center">
 					<div class="flex-2 layout horizontal"></div>
@@ -106,17 +119,11 @@
 						<input id="search-bar" class="form-control" placeholder="Search" value="{{filterString::input}}" on-keydown="filterEscapeWatcher">
 					</div>
 
-					<div class="flex-2 layout horizontal end-justified">
-						<bootstrap-dropdown>
-							<bootstrap-dropdown-toggle theme="onion">
-								<span id="status">&bull;</span><span>{{hostname}}</span>
-							</bootstrap-dropdown-toggle>
-							<bootstrap-dropdown-menu right>
-								<bootstrap-dropdown-item on-tap="_onLogout">Log Out</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item on-tap="_onShutdown">Shutdown</bootstrap-dropdown-item>
-								<bootstrap-dropdown-item on-tap="_onRestart">Restart</bootstrap-dropdown-item>
-							</bootstrap-dropdown-menu>
-						</bootstrap-dropdown>
+					<div  class="flex-2 layout horizontal center end-justified">
+						<div id="statusDropdown">
+							<span id="status">&bull;</span><span>{{hostname}}</span>
+							<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
+						</div>
 					</div>
 				</div>
 			</onion-app-toolbar>

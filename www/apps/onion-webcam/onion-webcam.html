@@ -1,4 +1,4 @@
-<link rel="import" href="/lib/polymer/polymer.html">
+e<link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-ajax/iron-ajax.html">
@@ -53,29 +53,35 @@
 
 	<template>
 		<onion-app app-name="Webcam" toolbar-background="#2980b9" background="#f2f2f2">
-			<onion-app-toolbar>
-				<div class="layout horizontal">
-					<bootstrap-dropdown>
-						<bootstrap-dropdown-toggle theme="onion">
-							<iron-icon class="toolbar-icon" icon="icons:settings-overscan"></iron-icon><span>Resolution</span>
-						</bootstrap-dropdown-toggle>
-						<bootstrap-dropdown-menu right>
-							<bootstrap-dropdown-item on-tap="_setResolution" data-args="640x480">640x480</bootstrap-dropdown-item>
-							<bootstrap-dropdown-item on-tap="_setResolution" data-args="1280x720">1280x720</bootstrap-dropdown-item>
-							<!--<bootstrap-dropdown-item on-tap="_setResolution" data-args="1920x1080">1920x1080</bootstrap-dropdown-item>-->
-						</bootstrap-dropdown-menu> 
-					</bootstrap-dropdown>
+			
 
-					<!--<bootstrap-dropdown>
-						<bootstrap-dropdown-toggle theme="onion">
-							<iron-icon class="toolbar-icon" icon="icons:view-headline"></iron-icon><span>FPS</span>
-						</bootstrap-dropdown-toggle>
-						<bootstrap-dropdown-menu right>
-							<bootstrap-dropdown-item on-tap="_setFps" data-args="15">15</bootstrap-dropdown-item>
-							<bootstrap-dropdown-item on-tap="_setFps" data-args="30">30</bootstrap-dropdown-item>
-							<bootstrap-dropdown-item on-tap="_setFps" data-args="60">60</bootstrap-dropdown-item>
-						</bootstrap-dropdown-menu>
-					</bootstrap-dropdown>-->
+
+			<onion-app-toolbar>
+				
+
+				<bootstrap-dropdown for="resolutionDropdown">
+					<li on-tap="_setResolution" data-args="640x480">640x480</li>
+					<li on-tap="_setResolution" data-args="1280x720">1280x720</li>
+				</bootstrap-dropdown>
+
+				<bootstrap-dropdown for="fpsDropdown">
+					<li on-tap="_setFps" data-args="15">15</li>
+					<li on-tap="_setFps" data-args="30">30</li>
+					<li on-tap="_setFps" data-args="60">60</li>
+				</bootstrap-dropdown>
+
+				<div class="layout horizontal">
+					<button id="resolutionDropdown">
+						<iron-icon class="toolbar-icon" icon="icons:settings-overscan"></iron-icon><span>Resolution</span>
+						<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
+					</button>
+
+					<button id="fpsDropdown">
+						<iron-icon class="toolbar-icon" icon="icons:view-headline"></iron-icon><span>FPS</span>
+						<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
+					</button>
+					
+					<div class="flex"></div>
 
 					<button on-click="_StreamingSetup">
 						<iron-icon class="toolbar-icon" icon="icons:camera-enhance"></iron-icon><span>Start Stream</span></button>
@@ -88,7 +94,7 @@
 
 			<onion-app-body>
 				<div class="vertical center-justified layout center">
-					 	<img id="stream" src="">	
+					 	<img id="stream" src="" onerror="this.src='/apps/onion-webcam/not_available.jpg'">	
 
 				</div>
 			</onion-app-body>
@@ -125,11 +131,11 @@
 			};
 
 			var _setResolution = function (e) {
-				this.resolution	= e.target.parentNode.dataset['args'];
+				this.resolution	= e.target.dataset['args'];
 			}
 
 			var _setFps = function (e) {
-				this.fps 		= e.target.parentNode.dataset['args'];
+				this.fps 		= e.target.dataset['args'];
 			}
 
 			var _StreamingStart = function () {
@@ -141,7 +147,10 @@
 						top.ipAddr = result[1].ip;
 						console.log('Device ip addr: ' + top.ipAddr);
 
-						top.$.stream.src = "http://" + top.ipAddr + ":8080/?action=stream";
+						setTimeout(function(){
+							top.$.stream.src = "http://" + top.ipAddr + ":8080/?action=stream";
+						},500);
+						
 					});
 				});
 			}
