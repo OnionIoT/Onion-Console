@@ -147,8 +147,26 @@
 
 				return promise;
 			};
+
+			// conditionally add a new wifi-iface to the wireless config
+			var prepareAp = function (uciId) {
+				if (uciId < 0) {
+					console.log("Adding uci section for AP network");
+					var promise = self.addWirelessNetwork();
+				} else {
+					var promise = new Promise(function (resolve, reject) {
+						resolve();
+					});
+				}
+
+				return promise;
+			}
 			
-			var apSetup = function (enabledAP, apSsid, apPassword, apAuth, apIp, uciId) {
+			// change settings of AP network
+			// it either:
+			//	enable and change settings of the ap network
+			// 	disable the AP
+			var setupAp = function (enabledAP, apSsid, apPassword, apAuth, apIp, uciId) {
 				/*var params = enabledAP ? {
 					params: {
 						ssid: apSsid,
@@ -185,36 +203,20 @@
 					console.log('Enable AP');
 
 					var promise = new Promise(function (resolve, reject) {
+						/*var addPromise = new Promise(function (resolve, reject) {
+							if (uciId < 0) {
+								self.addWirelessNetwork();
+							} else {
+								resolve();
+							}
+						};*/
+
 						// generate the UCI set params
 						var params 		= self.genUciNetworkParams(apSsid, apAuth, apPassword, true, true);
-
-
 						console.log('Params for AP network uci set: ', params);
 
 						// set the wireless info
-						var wirelessPromise = new Promise(function (resolve, reject) {
-							self.ubus.request('uci', 'set', {
-								config: 'wireless',
-								section: wifiSectionName,
-								values: params
-							}, function (result) {
-								console.log('uci commit wireless result:', result);
-								if (result[0] === 0) {
-									self.ubus.request('uci', 'commit', {
-											config: 'wireless'
-									}, function (result) {
-										if (result[0] === 0) {
-											resolve();
-										} else {
-											reject(Error('Unable to edit Access Point wireless settings.'));
-										}
-									});
-								} else {
-									reject(Error('Unable to edit Access Point wireless settings.'));
-								}
-							});
-						});
-
+						var wirelessPromise	= self.setWirelessNetwork(wifiSectionName, params);
 						// set the static IP
 						var networkPromise = self.setWlanStaticIp(apIp);
 
@@ -227,27 +229,7 @@
 				else {
 					// disable the AP
 					console.log('Disable AP');
-					var promise = new Promise(function (resolve, reject) {
-						self.ubus.request('uci', 'set', {
-							config: 'wireless',
-							section: wifiSectionName,
-							values: {
-								disabled: '1'
-							}
-						}, function (result) {
-							if (result[0] === 0) {
-								self.ubus.request('uci', 'commit', {
-										config: 'wireless'
-								}, function (result) {
-									if (result[0] === 0) {
-										resolve();
-									}
-								});
-							} else {
-								reject(Error('Unable to disable Access Point.'));
-							}
-						});
-					});
+					var promise = self.setEnableWirelessNetwork(wifiSectionName, false);
 				}
 
 				return promise;
@@ -257,7 +239,11 @@
 			// validate key			
 			var verifyKey = function (key, authType) {
 			    var verfyResult = 'OK';
-				var length = key.length;
+
+			    var length = 0;
+			    if (key != null) {
+					length = key.length;
+				}
 
 				if (authType === 'psk' || authType === 'psk2') {
 				    if (length < wpaKeyMinLength) {
@@ -317,6 +303,95 @@
 				return params;
 			};
 
+			// add a placeholder for a wireless network  
+			var addWirelessNetwork = function () {
+				var promise = new Promise(function (resolve, reject) {
+					self.ubus.request('uci', 'add', {
+						config: 'wireless',
+						type: 'wifi-iface'
+					}, function (result) {
+						console.log('uci add wireless result:', result);
+						if (result[0] === 0) {
+							self.ubus.request('uci', 'commit', {
+									config: 'wireless'
+							}, function (result) {
+								if (result[0] === 0) {
+									resolve();
+								} else {
+									reject(Error('Unable to add wireless network.'));
+								}
+							});
+						} else {
+							reject(Error('Unable to add wireless network.'));
+						}
+					});
+				});
+
+				return promise;
+			};
+
+			// set all of the parameters for a wireless network
+			var setWirelessNetwork = function (sectionName, params) {
+				var promise = new Promise(function (resolve, reject) {
+					self.ubus.request('uci', 'set', {
+						config: 'wireless',
+						section: sectionName,
+						values: params
+					}, function (result) {
+						console.log('uci set wireless result:', result);
+						if (result[0] === 0) {
+							self.ubus.request('uci', 'commit', {
+									config: 'wireless'
+							}, function (result) {
+								if (result[0] === 0) {
+									resolve();
+								} else {
+									reject(Error('Unable to edit wireless network settings.'));
+								}
+							});
+						} else {
+							reject(Error('Unable to edit wireless network settings.'));
+						}
+					});
+				});
+
+				return promise;
+			};
+
+			// enable/disable a network
+			var setEnableWirelessNetwork = function (sectionName, bEnable) {
+				var optionValue = '1';	// disable
+				if (bEnable) {
+					optionValue = '0';	// enable
+				}
+
+				var promise = new Promise(function (resolve, reject) {
+					self.ubus.request('uci', 'set', {
+						config: 'wireless',
+						section: sectionName,
+						values: {
+							disabled: optionValue
+						}
+					}, function (result) {
+						if (result[0] === 0) {
+							self.ubus.request('uci', 'commit', {
+									config: 'wireless'
+							}, function (result) {
+								if (result[0] === 0) {
+									resolve();
+								} else {
+									reject(Error('Unable to change enabled state of wireless network.'));
+								}
+							});
+						} else {
+							reject(Error('Unable to change enabled state of wireless network.'));
+						}
+					});
+				});
+
+				return promise;
+			};
+
 			// set the static IP for the wlan network
 			var setWlanStaticIp = function (ipAddr) {
 				var promise = new Promise(function (resolve, reject) {
@@ -360,9 +435,13 @@
 				parseWirelessSetup: parseWirelessSetup,
 				wifiScan: wifiScan,
 				wifiSetup: wifiSetup,
-				apSetup: apSetup,
+				prepareAp: prepareAp,
+				setupAp: setupAp,
 				verifyKey: verifyKey,
 				genUciNetworkParams: genUciNetworkParams,
+				addWirelessNetwork: addWirelessNetwork,
+				setWirelessNetwork: setWirelessNetwork,
+				setEnableWirelessNetwork: setEnableWirelessNetwork,
 				setWlanStaticIp: setWlanStaticIp
 			});
         })();

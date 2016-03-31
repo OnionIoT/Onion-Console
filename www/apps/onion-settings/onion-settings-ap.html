@@ -226,12 +226,12 @@
 	                	} else {
 	                		self.set('apPassword', 	data.key);
 	                	}
+
+	                	self.uciId 	= data['.index'] - 1;
                 	}
                 	else {
                 		self.set('enableAP', false);
                 	}
-
-                	self.uciId 	= data['.index'] - 1;
 
                 	console.log('uci index is ', self.uciId);
                 });
@@ -267,10 +267,16 @@
 				
 				if (verifyResult === 'OK') {
 			        if (self.sessionProvider.isAlive() === true) {
-			        	var apSetupPromise = self.wifiProvider.apSetup(self.enableAP, self.apSsid, self.apPassword, self.apAuth, self.apIp, self.uciId);
+			        	// if necessary add a uci wireless section for the AP
+			        	var apPreparePromise	= self.wifiProvider.prepareAp(self.uciId);
 
-			        	apSetupPromise.then(function () {}, function (err) {
-			        		console.error(err);
+			        	apPreparePromise.then(function () {
+			        		// populate the AP uci wireless section
+			        		var apSetupPromise = self.wifiProvider.setupAp(self.enableAP, self.apSsid, self.apPassword, self.apAuth, self.apIp, self.uciId);
+
+				        	apSetupPromise.then(function () {}, function (err) {
+				        		console.error(err);
+				        	});
 			        	});
 				    }
 				} else {
