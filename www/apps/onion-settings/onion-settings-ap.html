@@ -223,7 +223,7 @@
 	                	self.set('apAuth', 		data.encryption);
 	                	if (data.encryption === 'wep') {
 	                		self.set('apPassword', 	data.key1);	
-	                	} else {
+	                	} else if (data.encryption === 'psk' || data.encryption === 'psk2') {
 	                		self.set('apPassword', 	data.key);
 	                	}
 
@@ -233,7 +233,7 @@
                 		self.set('enableAP', false);
                 	}
 
-                	console.log('uci index is ', self.uciId);
+                	//console.log('uci index is ', self.uciId);
                 });
 
                 getApStaticIpAddrPromise.then(function (result) {
