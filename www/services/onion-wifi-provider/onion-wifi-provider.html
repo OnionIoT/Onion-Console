@@ -108,7 +108,7 @@
             					if (data[1] && data[1].results !== null) {
 	            					resolve(data[1]);
 	            				} else {
-	            					reject(Error('No available WiFi AP around.'));
+	            					reject(Error('No available WiFi networks found.'));
 	            				}
 	            			} else {
 	            				reject(Error('Wi-Fi scan failed!'));
@@ -148,9 +148,26 @@
 				return promise;
 			};
 
+			// add and setup an new wifi-iface
+			var addWifiNetwork = function (ssid, password, auth) {
+				var uciId 			= -1;
+				var wifiSectionName = '@wifi-iface[' + uciId + ']'
+
+				// add wifi-iface
+				var addNetworkPromise 	= self.addWirelessNetwork();
+
+				addNetworkPromise.then(function (result) {
+					// setup the wifi-iface
+					var params 			= self.genUciNetworkParams(ssid, auth, password, false, false);
+					var wirelessPromise	= self.setWirelessNetwork(wifiSectionName, params);
+				});
+
+				return wirelessPromise;
+			};
+
 			// conditionally add a new wifi-iface to the wireless config
-			var prepareAp = function (uciId) {
-				if (uciId < 0) {
+			var prepareWifiNetwork = function (uciId) {
+				if (uciId < 0 || uciId == null) {
 					console.log("Adding uci section for AP network");
 					var promise = self.addWirelessNetwork();
 				} else {
@@ -167,34 +184,6 @@
 			//	enable and change settings of the ap network
 			// 	disable the AP
 			var setupAp = function (enabledAP, apSsid, apPassword, apAuth, apIp, uciId) {
-				/*var params = enabledAP ? {
-					params: {
-						ssid: apSsid,
-						password: apPassword,
-						auth: apAuth,
-						ip: apIp,
-						accesspoint: ''
-					}
-				} : {
-					params: {
-						killap: ''
-					}
-				};
-
-				var promise = new Promise(function (resolve, reject) {
-					self.ubus.request('onion', 'wifi-setup', params, function (data) {
-						if (data) {
-							if (data.length === 2 && data[0] === 0) {
-								resolve();
-							} else {
-								reject(Error('Unable to setup Access Point.'));
-							}
-						} else {
-							reject(Error('Unable to setup Access Point.'));
-						}
-					});
-				});*/
-				
 				// generate the uci section name
 				var wifiSectionName = '@wifi-iface[' + uciId + ']'
 
@@ -203,14 +192,6 @@
 					console.log('Enable AP');
 
 					var promise = new Promise(function (resolve, reject) {
-						/*var addPromise = new Promise(function (resolve, reject) {
-							if (uciId < 0) {
-								self.addWirelessNetwork();
-							} else {
-								resolve();
-							}
-						};*/
-
 						// generate the UCI set params
 						var params 		= self.genUciNetworkParams(apSsid, apAuth, apPassword, true, true);
 						console.log('Params for AP network uci set: ', params);
@@ -435,7 +416,8 @@
 				parseWirelessSetup: parseWirelessSetup,
 				wifiScan: wifiScan,
 				wifiSetup: wifiSetup,
-				prepareAp: prepareAp,
+				addWifiNetwork: addWifiNetwork,
+				prepareWifiNetwork: prepareWifiNetwork,
 				setupAp: setupAp,
 				verifyKey: verifyKey,
 				genUciNetworkParams: genUciNetworkParams,

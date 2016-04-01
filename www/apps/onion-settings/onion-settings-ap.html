@@ -239,13 +239,7 @@
                 getApStaticIpAddrPromise.then(function (result) {
                 	//console.log('getApStaticIpAddrPromise', result);
                 	self.set('apIp', result);
-                });
-
-				/*Promise.all([getWifiSetupPromise, getApStaticIpAddrPromise]).then(function (result0, result1) {
-					console.log('both promise results:', result0, result1);
-				});*/
-
-				
+                });				
 			};
 
 			var onAppIcon = function (e) {
@@ -268,13 +262,16 @@
 				if (verifyResult === 'OK') {
 			        if (self.sessionProvider.isAlive() === true) {
 			        	// if necessary add a uci wireless section for the AP
-			        	var apPreparePromise	= self.wifiProvider.prepareAp(self.uciId);
+			        	var apPreparePromise	= self.wifiProvider.prepareWifiNetwork(self.uciId);
 
 			        	apPreparePromise.then(function () {
 			        		// populate the AP uci wireless section
 			        		var apSetupPromise = self.wifiProvider.setupAp(self.enableAP, self.apSsid, self.apPassword, self.apAuth, self.apIp, self.uciId);
 
-				        	apSetupPromise.then(function () {}, function (err) {
+				        	apSetupPromise.then(function () {
+				        		self.init();
+				        	}, 
+				        	function (err) {
 				        		console.error(err);
 				        	});
 			        	});
