@@ -153,14 +153,9 @@
 				var uciId 			= -1;
 				var wifiSectionName = '@wifi-iface[' + uciId + ']'
 
-				// add wifi-iface
-				var addNetworkPromise 	= self.addWirelessNetwork();
-
-				addNetworkPromise.then(function (result) {
-					// setup the wifi-iface
-					var params 			= self.genUciNetworkParams(ssid, auth, password, false, false);
-					var wirelessPromise	= self.setWirelessNetwork(wifiSectionName, params);
-				});
+				// setup the wifi-iface
+				var params 			= self.genUciNetworkParams(ssid, auth, password, false, false);
+				var wirelessPromise	= self.setWirelessNetwork(wifiSectionName, params);
 
 				return wirelessPromise;
 			};

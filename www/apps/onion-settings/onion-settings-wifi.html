@@ -283,12 +283,20 @@
 
 				if (verifyResult === 'OK') {
                     if (self.sessionProvider.isAlive() === true) {
-                    	var wifiSetupPromise = self.wifiProvider.wifiSetup(self.enableWifi, self.networkSsid, self.networkPassword, self.networkAuth, self.networkIp, self.networkNetmask);
+                    	//var wifiSetupPromise = self.wifiProvider.wifiSetup(self.enableWifi, self.networkSsid, self.networkPassword, self.networkAuth, self.networkIp, self.networkNetmask);
 
-                    	wifiSetupPromise.then(function () {
+                    	// add a network wifi-iface
+                    	var wifiAddNetworkPromise = self.wifiProvider.prepareWifiNetwork();
 
-                    	}, function (err) {
-                    		console.error(err);
+                    	wifiAddNetworkPromise.then(function() {
+                    		// setup the network
+	                    	var wifiSetupPromise = self.wifiProvider.addWifiNetwork(self.networkSsid, self.networkPassword, self.networkAuth);
+
+	                    	wifiSetupPromise.then(function () {
+
+	                    	}, function (err) {
+	                    		console.error(err);
+	                    	});
                     	});
 				    }
 				} else {
