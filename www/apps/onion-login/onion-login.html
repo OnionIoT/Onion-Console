@@ -2,6 +2,7 @@
 <link rel="import" href="/lib/iron-signals/iron-signals.html">
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="/elements/bootstrap-button/bootstrap-button.html">
 <link rel="import" href="/elements/bootstrap-alert/bootstrap-alert-container.html">
 
 <dom-module id="onion-login">
@@ -14,12 +15,8 @@
 	<template>
 		<onion-app app-name="Login" hide-toolbar background="transparent">
 			<onion-app-body>
-				<bootstrap-modal id="loginDialog" no-cancel-on-esc-key no-cancel-on-outside-click>
-					<bootstrap-modal-header>
-						<h5>Login</h5>
-					</bootstrap-modal-header>
-
-					<bootstrap-modal-body>
+				<bootstrap-modal id="loginDialog" title="Login" close-button="false" >
+					<modal-body>
 						<form on-submit="login">
 							<fieldset class="form-group">
 								<label for="username">Username</label>
@@ -30,10 +27,12 @@
 								<input type="password" class="form-control" id="password">
 							</fieldset>
 							<div id="messageContainer"></div> 
-							
-							<button type="submit" class="btn btn-success">Login</button>
+							<button type="submit" hidden></button>
 						</form>
-					</bootstrap-modal-body>
+					</modal-body>
+					<modal-footer>
+						<bootstrap-button color-scheme="success" on-click="login">Login</bootstrap-button>
+					</modal-footer>
 				</bootstrap-modal>
 			</onion-app-body>
 		</onion-app>

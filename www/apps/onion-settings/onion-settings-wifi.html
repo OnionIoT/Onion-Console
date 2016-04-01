@@ -2,6 +2,9 @@
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-icons/iron-icons.html">
 
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="/elements/bootstrap-button/bootstrap-button.html">
+
 <dom-module id="onion-settings-wifi">
 	<style>
 		.main {
@@ -77,6 +80,13 @@
 	</style>
 
 	<template>
+
+		<bootstrap-modal id="newWifiDlg" title="New WiFi Network">
+			<modal-body>
+				TTT
+			</modal-body>
+		</bootstrap-modal>
+
 		<div class="container">
 			<h4>Wi-Fi Network Setup</h4>
 			<div class="card card-block">
@@ -158,7 +168,12 @@
 						<!-- start wifi-config -->
 						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
 							<div class="layout horizontal center">
+
+
 								<button id="wifi-config-button" type="button" class="btn btn-success" on-click="setupWifi">Configure Wi-Fi</button>
+								<bootstrap-button on-click="newWifi">Add Wi-Fi Network</bootstrap-button>
+
+
 								<div id="configureLoading" class="loading" hidden></div>
 							</div>
 						</div>
@@ -206,6 +221,14 @@
                 	self.set('networkAuth', result.encryption);
                 	self.set('networkPassword', result.password);
                 });
+
+
+
+                var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
+                getWifiSetupPromise.then(function(result){
+                	console.log(result);
+                });
+
 			};
 
 			var showScanMessage = function (message) {
