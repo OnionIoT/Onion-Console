@@ -148,9 +148,11 @@
 				return promise;
 			};
 
-			// add and setup an new wifi-iface
-			var addWifiNetwork = function (ssid, password, auth) {
-				var uciId 			= -1;
+			// populate a wifi network
+			var setupWifiNetwork = function (ssid, password, auth, uciId) {
+				if (uciId == null) {
+					var uciId 			= -1;
+				}
 				var wifiSectionName = '@wifi-iface[' + uciId + ']'
 
 				// setup the wifi-iface
@@ -411,7 +413,7 @@
 				parseWirelessSetup: parseWirelessSetup,
 				wifiScan: wifiScan,
 				wifiSetup: wifiSetup,
-				addWifiNetwork: addWifiNetwork,
+				setupWifiNetwork: setupWifiNetwork,
 				prepareWifiNetwork: prepareWifiNetwork,
 				setupAp: setupAp,
 				verifyKey: verifyKey,

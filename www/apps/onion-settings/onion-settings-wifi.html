@@ -290,7 +290,7 @@
 
                     	wifiAddNetworkPromise.then(function() {
                     		// setup the network
-	                    	var wifiSetupPromise = self.wifiProvider.addWifiNetwork(self.networkSsid, self.networkPassword, self.networkAuth);
+	                    	var wifiSetupPromise = self.wifiProvider.setupWifiNetwork(self.networkSsid, self.networkPassword, self.networkAuth);
 
 	                    	wifiSetupPromise.then(function () {
 
