@@ -2,6 +2,9 @@
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-icons/iron-icons.html">
 
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="/elements/bootstrap-button/bootstrap-button.html">
+
 <dom-module id="onion-settings-wifi">
 	<style>
 		.main {
@@ -77,20 +80,10 @@
 	</style>
 
 	<template>
-		<div class="container">
-			<h4>Wi-Fi Network Setup</h4>
-			<div class="card card-block">
-				<form id="wifi-form">
-					<div class="form-group row">
-						<!-- enabled -->
-						<label for="enableWifi" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Enable Wi-Fi</label>
-						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<div class="checkbox">
-								<label><input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" /></label>
-							</div>
-						</div>
-					</div>
 
+		<bootstrap-modal id="newWifiDlg" title="New WiFi Network">
+			<modal-body>
+				<form id="wifi-form">
 					<fieldset disabled="{{!enableWifi}}">
 						<div class="form-group row">
 							<!-- Detected networks -->
@@ -153,17 +146,28 @@
 							</div>
 						</div>
 					</fieldset>
+				</form>
+			</modal-body>
+			<modal-footer>
+				<bootstrap-button id="wifi-config-button" on-click="setupWifi" color-scheme="success">Add Network</bootstrap-button>
+				<div id="configureLoading" class="loading" hidden></div>
+			</modal-footer>
+		</bootstrap-modal>
 
-					<div class="form-group row">
-						<!-- start wifi-config -->
-						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
-							<div class="layout horizontal center">
-								<button id="wifi-config-button" type="button" class="btn btn-success" on-click="setupWifi">Configure Wi-Fi</button>
-								<div id="configureLoading" class="loading" hidden></div>
-							</div>
+		<div class="container">
+			<div class="card card-block">
+				<div class="form-group row">
+					<!-- enabled -->
+					<label for="enableWifi" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Enable Wi-Fi</label>
+					<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+						<div class="checkbox">
+							<label><input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" /></label>
 						</div>
 					</div>
-				</form>
+				</div>
+
+				<!-- <bootstrap-button on-click="" color-scheme="success">Apply Setting</bootstrap-button> -->
+				<bootstrap-button on-click="newWifiNetwork" color-scheme="primary">Add Wi-Fi Network</bootstrap-button>
 			</div>
 		</div>
 	</template>
@@ -206,6 +210,14 @@
                 	self.set('networkAuth', result.encryption);
                 	self.set('networkPassword', result.password);
                 });
+
+
+
+                var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
+                getWifiSetupPromise.then(function(result){
+                	console.log(result);
+                });
+
 			};
 
 			var showScanMessage = function (message) {
@@ -308,6 +320,10 @@
 				return showPassword ? 'text' : 'password';
 			};
 
+			var newWifiNetwork = function () {
+				this.$.newWifiDlg.open();
+			}
+
 			Polymer({
 				is: 'onion-settings-wifi',
 				created: created,
@@ -319,6 +335,7 @@
 				selectSsid: selectSsid,
 				setupWifi: setupWifi,
 				_computeShowPassword: _computeShowPassword,
+				newWifiNetwork: newWifiNetwork,
 				properties: {
 					enableWifi: {
 						type: Boolean,
