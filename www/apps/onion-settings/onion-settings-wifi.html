@@ -1,6 +1,7 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="import" href="/lib/iron-icons/device-icons.html">
 
 <link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
 <link rel="import" href="/elements/bootstrap-button/bootstrap-button.html">
@@ -77,6 +78,38 @@
 				transform: rotate(359deg)
 			}
 		}
+
+		#networkTable {
+			margin-bottom: 20px;
+			width: 100%;
+			/*text-align: center;*/
+		}
+
+		#networkTable td, th {
+			padding: 0px 10px;
+			width: 100%;
+		}
+
+		#networkTable tr:hover{
+			background-color: #ecf0f1;
+		}
+
+		#globalControl {
+			margin: 10px;
+		}
+
+		#enableWifi {
+			margin-left: 20px;
+		}
+
+		.signal-on {
+			color: #0275d8;
+		}
+
+		.signal-off {
+			opacity: 0.4;
+		}
+
 	</style>
 
 	<template>
@@ -154,18 +187,46 @@
 			</modal-footer>
 		</bootstrap-modal>
 
+
+
+
 		<div class="container">
 			<div class="card card-block">
-				<div class="form-group row">
-					<!-- enabled -->
-					<label for="enableWifi" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Enable Wi-Fi</label>
-					<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-						<div class="checkbox">
-							<label><input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" /></label>
-						</div>
-					</div>
+				<div id="globalControl" class="layout horizontal center">
+				  	<div>Enable Wi-Fi</div>
+					<input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" />
 				</div>
 
+				<table id="networkTable" class="list-group">
+
+					<tr class="list-group-item">
+						<th>SSID</th>
+						<th>Actions</th>
+					</tr>
+
+					<template is="dom-repeat" items="{{savedNetworks}}">
+						<tr class="list-group-item">
+							<td>
+								<span>
+								<template is="dom-if" if="{{item.disabled}}">
+									<iron-icon icon="device:signal-wifi-off" class="signal-off"></iron-icon>
+								</template>
+								<template is="dom-if" if="{{!item.disabled}}">
+									<iron-icon icon="device:signal-wifi-4-bar" class="signal-on"></iron-icon>
+								</template>
+							</span>
+								
+								<span>{{item.ssid}}</span>
+							</td>
+							<td>
+								<div>
+									
+								</div>
+							</td>
+						</tr>
+					</template>
+					
+				</table>
 				<!-- <bootstrap-button on-click="" color-scheme="success">Apply Setting</bootstrap-button> -->
 				<bootstrap-button on-click="newWifiNetwork" color-scheme="primary">Add Wi-Fi Network</bootstrap-button>
 			</div>
@@ -215,10 +276,19 @@
 
                 var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
                 getWifiSetupPromise.then(function(result){
+                	self.savedNetworks = result;
                 	console.log(result);
                 });
 
 			};
+
+			var refreshNetwork = function() {
+				var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
+                getWifiSetupPromise.then(function(result){
+                	self.savedNetworks = result;
+                	console.log(result);
+                });
+			}
 
 			var showScanMessage = function (message) {
 				self.set('wifiScanMsgEn', true);
@@ -336,12 +406,17 @@
 				setupWifi: setupWifi,
 				_computeShowPassword: _computeShowPassword,
 				newWifiNetwork: newWifiNetwork,
+				refreshNetwork: refreshNetwork,
 				properties: {
 					enableWifi: {
 						type: Boolean,
 						notify: true
 					},
 					networks: {
+						type: Array,
+						notify: true
+					},
+					savedNetworks: {
 						type: Array,
 						notify: true
 					},
