@@ -148,20 +148,6 @@
 				return promise;
 			};
 
-			// populate a wifi network
-			var setupWifiNetwork = function (ssid, password, auth, uciId) {
-				if (uciId == null) {
-					var uciId 			= -1;
-				}
-				var wifiSectionName = '@wifi-iface[' + uciId + ']'
-
-				// setup the wifi-iface
-				var params 			= self.genUciNetworkParams(ssid, auth, password, false, false);
-				var wirelessPromise	= self.setWirelessNetwork(wifiSectionName, params);
-
-				return wirelessPromise;
-			};
-
 			// conditionally add a new wifi-iface to the wireless config
 			var prepareWifiNetwork = function (uciId) {
 				if (uciId < 0 || uciId == null) {
@@ -175,6 +161,20 @@
 
 				return promise;
 			}
+
+			// populate a wifi network
+			var setupWifiNetwork = function (ssid, password, auth, uciId) {
+				if (uciId == null) {
+					var uciId 			= -1;
+				}
+				var wifiSectionName = '@wifi-iface[' + uciId + ']'
+
+				// setup the wifi-iface
+				var params 			= self.genUciNetworkParams(ssid, auth, password, false, false);
+				var wirelessPromise	= self.setWirelessNetwork(wifiSectionName, params);
+
+				return wirelessPromise;
+			};			
 			
 			// change settings of AP network
 			// it either:
@@ -213,7 +213,23 @@
 				return promise;
 			};
 
-			//// supporting functions
+			// move a network's priority
+			var changeNetworkOrder = function (networkObj, bMoveUp) {
+				var sectionName 	= networkObj['.name'];
+				var currentIndex	= networkObj['.index'];
+
+				var newIndex 		= currentIndex + 1; 	// default is to move down
+				if (bMoveUp) {
+					newIndex 		= currentIndex - 1;	
+				}
+
+				console.log ('setting section ' + sectionName + ' (' + networkObj.ssid + ') to index' + newIndex);
+				var promise 		= self.reorderWirelessNetwork(sectionName, newIndex);
+
+				return promise;
+			};
+
+			//// supporting functions ////
 			// validate key			
 			var verifyKey = function (key, authType) {
 			    var verfyResult = 'OK';
@@ -370,6 +386,42 @@
 				return promise;
 			};
 
+			// move a wireless section up or down
+			var reorderWirelessNetwork = function (sectionName, newIndex) {
+				var promise = new Promise(function (resolve, reject) {
+					var command 	= 'wireless.' + sectionName + '=' + newIndex;
+					console.log('Running: ', command);
+
+					self.ubus.request('file', 'exec', {
+						command: 'uci',
+						params: [
+							'reorder',
+							command
+						]
+					}, function (data) {
+						if (data.length === 2 && data[0] === 0) {
+							self.ubus.request('file', 'exec', {
+								command: 'uci',
+								params: [
+									'commit',
+									'wireless'
+								]
+							}, function (result) {
+								if (result[0] === 0) {
+									resolve();
+								} else {
+									reject(Error('Failed to change network order.'));
+								}
+							});
+						} else {
+							reject(Error('Failed to change network order.'));
+						}
+					});
+				});
+
+				return promise;
+			};
+
 			// set the static IP for the wlan network
 			var setWlanStaticIp = function (ipAddr) {
 				var promise = new Promise(function (resolve, reject) {
@@ -411,16 +463,21 @@
 				getApStaticIpAddr: getApStaticIpAddr,
 				getWirelessSetup: getWirelessSetup,
 				parseWirelessSetup: parseWirelessSetup,
+
 				wifiScan: wifiScan,
 				wifiSetup: wifiSetup,
+
 				setupWifiNetwork: setupWifiNetwork,
 				prepareWifiNetwork: prepareWifiNetwork,
 				setupAp: setupAp,
+				changeNetworkOrder: changeNetworkOrder,
+
 				verifyKey: verifyKey,
 				genUciNetworkParams: genUciNetworkParams,
 				addWirelessNetwork: addWirelessNetwork,
 				setWirelessNetwork: setWirelessNetwork,
 				setEnableWirelessNetwork: setEnableWirelessNetwork,
+				reorderWirelessNetwork: reorderWirelessNetwork,
 				setWlanStaticIp: setWlanStaticIp
 			});
         })();
