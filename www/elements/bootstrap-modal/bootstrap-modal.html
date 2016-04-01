@@ -17,7 +17,7 @@
 		
 		<div class="modal-content">
 			<div class="modal-header">
-				<template is="dom-if" if="{{closeButton}}">
+				<template is="dom-if" if="{{!noCloseButton}}">
 					<button type="button" class="close" on-click="close">×</button>
 				</template>
 				<h4 class="modal-title">{{title}}</h4>
@@ -71,9 +71,9 @@
 				onClose: onClose,
 				onFooterClick: onFooterClick,
 				properties: {
-					closeButton: {
+					noCloseButton: {
 						type: Boolean,
-						value: true
+						value: false
 					},
 					modal: {
 						type: Boolean,
