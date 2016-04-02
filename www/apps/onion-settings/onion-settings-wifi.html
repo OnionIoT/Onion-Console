@@ -294,6 +294,7 @@
                 var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
                 getWifiSetupPromise.then(function(result){
                 	self.savedNetworks = result;
+                	console.log(result);
 
                 	// check if any networks are enabled
                 	var enabledNetwork 	= self._findEnabledNetwork();
@@ -381,7 +382,7 @@
 
 			var newWifiNetwork = function () {
 				this.$.newWifiDlg.open();
-			}
+			};
 
 			var addNetwork = function () {
 				self.$.configureLoading.hidden = false;
@@ -414,7 +415,7 @@
 				} else {
 				    self.wifiMessage = verifyResult;
 				}
-			}
+			};
 
 			var removeNetwork = function(e) {
 				var network = e.target.network;
@@ -425,32 +426,40 @@
 				wifiRemoveNetworkPromise.then(function () {
 					self.refreshNetwork();		// refresh the list to reflect this delete
 				});
-			}
+			};
 
 			var changeNetwork = function(e) {
 				var network = e.target.network;
 				console.log(network);
 
 				// Lazar: disable current network (if any), enable var network
-			}
+			};
 
 			var moveUp = function(e) {
 				var network = e.target.network;
-				console.log(network);
 				
-				// Lazar: implement this
+				if ( !(self._isTopNetwork(network)) ) {
+					// move the network UP in the list
+					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(network, true);
 
-				// update with: this.refreshNetwork
-			}
+					wifiChangeOrderPromise.then(function () {
+						self.refreshNetwork();		// refresh the list to reflect this reorder
+					});
+				}
+			};
 
 			var moveDown = function(e) {
 				var network = e.target.network;
-				console.log(network);
 				
-				// Lazar: implement this	
+				if ( !(self._isBottomNetwork(network)) ) {
+					// move the network DOWN in the list
+					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(network, false);
 
-				// update with: this.refreshNetwork
-			}
+					wifiChangeOrderPromise.then(function () {
+						self.refreshNetwork();		// refresh the list to reflect this reorder
+					});
+				}
+			};
 
 			var enableWifiChanged = function (newVal) {
 	
@@ -467,11 +476,11 @@
 						// Lazar: turn on wifi
 					}
 				}
-			}
+			};
 
 			var isEnabled = function (network) {
 				return !(network.disabled==='1')
-			} 
+			};
 
 
 			//// functions that use the list of networks ////
@@ -490,7 +499,51 @@
             	}
 
 				return enabledNetwork;
-			}
+			};
+
+			// find the network's index in the network array
+			var _findNetworkIndex = function (targetNetwork) {
+				var	count 	= 0;
+				var index 	= -1;
+
+				// loop through the list and look for this network
+				for (var key in self.savedNetworks) {
+            		var network = self.savedNetworks[key];
+
+            		if (network['.name'] === targetNetwork['.name']) {
+            			index = count;
+            			break;
+            		}
+
+            		count++;
+            	}
+
+            	return index;
+			};
+
+			// check if network as at the top of the list
+			var _isTopNetwork = function (targetNetwork) {
+				var bTop 	= false;
+				var index 	= self._findNetworkIndex(targetNetwork);
+
+				if (index === 0) {
+					bTop = true;
+				}
+
+				return bTop;
+			};
+
+			// check if network as at the bottom of the list
+			var _isBottomNetwork = function (targetNetwork) {
+				var bBottom 	= false;
+				var index 	= self._findNetworkIndex(targetNetwork);
+
+				if (index === (self.savedNetworks.length - 1)) {
+					bBottom = true;
+				}
+				
+				return bBottom;
+			};
 
 
 			Polymer({
@@ -513,6 +566,9 @@
 				moveDown: moveDown,
 				enableWifiChanged: enableWifiChanged,
 				_findEnabledNetwork: _findEnabledNetwork,
+				_findNetworkIndex: _findNetworkIndex,
+				_isTopNetwork: _isTopNetwork,
+				_isBottomNetwork: _isBottomNetwork,
 				properties: {
 					enableWifi: {
 						type: Boolean,
