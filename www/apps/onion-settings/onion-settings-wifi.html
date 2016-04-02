@@ -118,7 +118,7 @@
 
 	<template>
 
-		<bootstrap-modal id="newWifiDlg" title="New WiFi Network">
+		<bootstrap-modal id="newWifiDlg" title="New WiFi Network" modal>
 			<modal-body>
 				<form id="wifi-form">
 					<fieldset disabled="{{!enableWifi}}">
@@ -186,7 +186,7 @@
 				</form>
 			</modal-body>
 			<modal-footer>
-				<bootstrap-button id="wifi-config-button" on-click="setupWifi" color-scheme="success">Add Network</bootstrap-button>
+				<bootstrap-button id="wifi-config-button" on-click="addNetwork" color-scheme="success">Add Network</bootstrap-button>
 				<div id="configureLoading" class="loading" hidden></div>
 			</modal-footer>
 		</bootstrap-modal>
@@ -341,17 +341,6 @@
 				self.bInitComplete	= false;
 				self.scanWifiNetwork();
 
-				/*// Lazar
-				var wifiConfigPromise = self.wifiProvider.getConfig('sta');
-
-                wifiConfigPromise.then((function (result) {
-                	this.set('enableWifi', result.enabled);
-                	// self.set('networkSsid', result.ssid);
-                	// self.set('networkAuth', result.encryption);
-                	// self.set('networkPassword', result.password);
-                }).bind(this));*/
-
-
                 // get list of all STA networks
                 var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
                 getWifiSetupPromise.then(function(result){
@@ -438,9 +427,17 @@
 
 				console.log('Auth: ', self.networkAuth);
 			};
-		
-		    var setupWifi = function () {
-		    	self.$.configureLoading.hidden = false;
+
+			var _computeShowPassword = function (showPassword) {
+				return showPassword ? 'text' : 'password';
+			};
+
+			var newWifiNetwork = function () {
+				this.$.newWifiDlg.open();
+			}
+
+			var addNetwork = function () {
+				self.$.configureLoading.hidden = false;
 		    	self.$['wifi-config-button'].disabled = true;
 
 		    	setTimeout(function () {
@@ -452,40 +449,24 @@
 
 			    var verifyResult = self.wifiProvider.verifyKey(self.networkPassword, self.networkAuth);
 
-				if (verifyResult === 'OK') {
-                    if (self.sessionProvider.isAlive() === true) {
-                    	//var wifiSetupPromise = self.wifiProvider.wifiSetup(self.enableWifi, self.networkSsid, self.networkPassword, self.networkAuth, self.networkIp, self.networkNetmask);
+				if (verifyResult === 'OK' && self.sessionProvider.isAlive() === true) {
+                	// add a network wifi-iface
+                	var wifiAddNetworkPromise = self.wifiProvider.prepareWifiNetwork();
 
-                    	// add a network wifi-iface
-                    	var wifiAddNetworkPromise = self.wifiProvider.prepareWifiNetwork();
+                	wifiAddNetworkPromise.then(function() {
+                		// setup the network
+                    	var wifiSetupPromise = self.wifiProvider.setupWifiNetwork(self.networkSsid, self.networkPassword, self.networkAuth);
 
-                    	wifiAddNetworkPromise.then(function() {
-                    		// setup the network
-	                    	var wifiSetupPromise = self.wifiProvider.setupWifiNetwork(self.networkSsid, self.networkPassword, self.networkAuth);
-
-	                    	wifiSetupPromise.then(function () {
-	                    		self.refreshNetwork();
-
-	                    	}, function (err) {
-	                    		console.error(err);
-	                    	});
+                    	wifiSetupPromise.then(function () {
+                    		self.refreshNetwork();		// refresh the list to include this new network
+                    		self.$.newWifiDlg.close();	// close the dialogue
+                    	}, function (err) {
+                    		console.error(err);
                     	});
-				    }
+                	});
 				} else {
 				    self.wifiMessage = verifyResult;
 				}
-			};
-
-			var _computeShowPassword = function (showPassword) {
-				return showPassword ? 'text' : 'password';
-			};
-
-			var newWifiNetwork = function () {
-				this.$.newWifiDlg.open();
-			}
-
-			var addNetwork = function () {
-				// Lazar: move contents of setupWifi function and link to the button
 			}
 
 			var changeNetwork = function(e) {
@@ -563,7 +544,6 @@
 				hideScanMessage: hideScanMessage,
 				scanWifiNetwork: scanWifiNetwork,
 				selectSsid: selectSsid,
-				setupWifi: setupWifi,
 				isEnabled: isEnabled,
 				_computeShowPassword: _computeShowPassword,
 				newWifiNetwork: newWifiNetwork,
