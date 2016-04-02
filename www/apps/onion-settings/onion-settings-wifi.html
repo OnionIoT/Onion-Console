@@ -416,6 +416,17 @@
 				}
 			}
 
+			var removeNetwork = function(e) {
+				var network = e.target.network;
+				console.log('Removing ', network.ssid);
+
+				var wifiRemoveNetworkPromise = self.wifiProvider.removeWifiNetwork(network);
+
+				wifiRemoveNetworkPromise.then(function () {
+					self.refreshNetwork();		// refresh the list to reflect this delete
+				});
+			}
+
 			var changeNetwork = function(e) {
 				var network = e.target.network;
 				console.log(network);
@@ -497,6 +508,7 @@
 				refreshNetwork: refreshNetwork,
 				changeNetwork: changeNetwork,
 				addNetwork: addNetwork,
+				removeNetwork: removeNetwork,
 				moveUp: moveUp,
 				moveDown: moveDown,
 				enableWifiChanged: enableWifiChanged,
