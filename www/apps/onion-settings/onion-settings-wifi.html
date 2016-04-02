@@ -439,7 +439,20 @@
 				var network = e.target.network;
 				console.log(network);
 
-				// Lazar: disable current network (if any), enable var network
+				// disable all other networks
+				console.log('Disabling all networks');
+				var disablePromise = self._disableAllNetworks();
+
+				disablePromise.then(function () {
+					// enable the specified network
+					console.log('Enabling network: ' + network.ssid);
+					var enablePromise = self.wifiProvider.setEnableWirelessNetwork(network['.name'], true);
+
+					enablePromise.then(function () {
+						self.refreshNetwork();		// refresh the list
+						// Zheng: add loading symbol
+					});
+				});
 			};
 
 			var moveUp = function(e) {
@@ -552,6 +565,30 @@
 				return bBottom;
 			};
 
+			// disable any and all active networks
+			var _disableAllNetworks = function (bCommit) {
+				var promise = new Promise(function (resolve, reject) {
+					// loop through the list and look for enabled networks
+					for (var key in self.savedNetworks) {
+	            		var network = self.savedNetworks[key];
+
+	            		if (network.disabled == null || network.disabled === '0') {
+	            			// disable the network
+	            			var disablePromise = self.wifiProvider.setEnableWirelessNetwork(network['.name'], false, true);
+	            		}
+	            	}
+
+	            	self.refreshNetwork();	// refresh the list to reflect these disables
+
+	            	// Lazar: implement this
+	            	//if (bCommit) {}
+
+	            	resolve();
+            	});
+
+            	return promise;
+			};
+
 
 			Polymer({
 				is: 'onion-settings-wifi',
@@ -576,6 +613,7 @@
 				_findNetworkIndex: _findNetworkIndex,
 				_isTopNetwork: _isTopNetwork,
 				_isBottomNetwork: _isBottomNetwork,
+				_disableAllNetworks: _disableAllNetworks,
 				properties: {
 					enableWifi: {
 						type: Boolean,
