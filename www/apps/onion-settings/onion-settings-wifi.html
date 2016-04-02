@@ -214,10 +214,10 @@
 						<div class="list-group-item layout horizontal end">
 							<div>
 								<span>
-								<template is="dom-if" if="{{item.disabled}}">
+								<template is="dom-if" if="{{!isEnabled(item)}}">
 									<iron-icon icon="device:signal-wifi-off" class="signal-off"></iron-icon>
 								</template>
-								<template is="dom-if" if="{{!item.disabled}}">
+								<template is="dom-if" if="{{isEnabled(item)}}">
 									<iron-icon icon="device:signal-wifi-4-bar" class="signal-on"></iron-icon>
 								</template>
 							</span>
@@ -229,7 +229,7 @@
 
 							<div>
 								<div class="layout horizontal center">
-									<template is="dom-if" if="{{item.disabled}}">
+									<template is="dom-if" if="{{!isEnabled(item)}}">
 										<iron-icon id="changeNetwork{{item.ssid}}" icon="icons:check-circle" class="action-button" 
 											network="{{item}}" on-click="changeNetwork">
 											</iron-icon>
@@ -530,6 +530,10 @@
 				}
 			}
 
+			var isEnabled = function (network) {
+				return !(network.disabled==='1')
+			} 
+
 
 			//// functions that use the list of networks ////
 			// find the enabled network, returns null if none are enabled
@@ -560,6 +564,7 @@
 				scanWifiNetwork: scanWifiNetwork,
 				selectSsid: selectSsid,
 				setupWifi: setupWifi,
+				isEnabled: isEnabled,
 				_computeShowPassword: _computeShowPassword,
 				newWifiNetwork: newWifiNetwork,
 				refreshNetwork: refreshNetwork,
