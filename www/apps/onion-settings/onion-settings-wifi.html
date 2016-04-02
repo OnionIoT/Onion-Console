@@ -114,6 +114,13 @@
 			color: #f39c12;
 		}
 
+		iron-icon[id^=moveUp] {
+			-webkit-transform: rotate(180deg);
+		    -moz-transform: rotate(180deg);
+		    -o-transform: rotate(180deg);
+		    -ms-transform: rotate(180deg);
+		    transform: rotate(180deg);
+		}
 	</style>
 
 	<template>
@@ -236,11 +243,11 @@
 										<bootstrap-tooltip for="changeNetwork{{item.ssid}}">Enable</bootstrap-tooltip>
 									</template>
 
-									<iron-icon icon="icons:add-circle" class="action-button" 
+									<iron-icon icon="icons:arrow-drop-down-circle" class="action-button" 
 										id="moveUp{{item.ssid}}" network="{{item}}" on-click="moveUp"></iron-icon>
 									<bootstrap-tooltip for="moveUp{{item.ssid}}">Move Up</bootstrap-tooltip>
 
-									<iron-icon icon="icons:remove-circle" class="action-button"
+									<iron-icon icon="icons:arrow-drop-down-circle" class="action-button"
 										id="moveDown{{item.ssid}}" network="{{item}}" on-click="moveDown"></iron-icon>
 									<bootstrap-tooltip for="moveDown{{item.ssid}}">Move Down</bootstrap-tooltip>
 
