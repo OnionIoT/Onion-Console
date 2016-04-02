@@ -114,11 +114,18 @@
 			color: #f39c12;
 		}
 
+		iron-icon[id^=moveUp] {
+			-webkit-transform: rotate(180deg);
+		    -moz-transform: rotate(180deg);
+		    -o-transform: rotate(180deg);
+		    -ms-transform: rotate(180deg);
+		    transform: rotate(180deg);
+		}
 	</style>
 
 	<template>
 
-		<bootstrap-modal id="newWifiDlg" title="New WiFi Network">
+		<bootstrap-modal id="newWifiDlg" title="New WiFi Network" modal>
 			<modal-body>
 				<form id="wifi-form">
 					<fieldset disabled="{{!enableWifi}}">
@@ -186,7 +193,12 @@
 				</form>
 			</modal-body>
 			<modal-footer>
+<<<<<<< HEAD
 				<bootstrap-button id="wifi-config-button" on-click="setupWifi" color-scheme="success">Add Network</bootstrap-button>
+=======
+				<bootstrap-button id="wifi-config-button" on-click="addNetwork" color-scheme="success">Add Network</bootstrap-button>
+				<div id="configureLoading" class="loading" hidden></div>
+>>>>>>> origin/onion-m1
 			</modal-footer>
 		</bootstrap-modal>
 
@@ -290,17 +302,6 @@
 				self.bInitComplete	= false;
 				self.scanWifiNetwork();
 
-				/*// Lazar
-				var wifiConfigPromise = self.wifiProvider.getConfig('sta');
-
-                wifiConfigPromise.then((function (result) {
-                	this.set('enableWifi', result.enabled);
-                	// self.set('networkSsid', result.ssid);
-                	// self.set('networkAuth', result.encryption);
-                	// self.set('networkPassword', result.password);
-                }).bind(this));*/
-
-
                 // get list of all STA networks
                 var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
                 getWifiSetupPromise.then(function(result){
@@ -309,6 +310,7 @@
                 	};
                 	console.log(result);
                 	self.savedNetworks = result;
+                	console.log(result);
 
                 	// check if any networks are enabled
                 	var enabledNetwork 	= self._findEnabledNetwork();
@@ -389,36 +391,6 @@
 
 				console.log('Auth: ', self.networkAuth);
 			};
-		
-		    var setupWifi = function () {
-
-			    self.wifiMessage = '';
-
-			    var verifyResult = self.wifiProvider.verifyKey(self.networkPassword, self.networkAuth);
-
-				if (verifyResult === 'OK') {
-                    if (self.sessionProvider.isAlive() === true) {
-                    	//var wifiSetupPromise = self.wifiProvider.wifiSetup(self.enableWifi, self.networkSsid, self.networkPassword, self.networkAuth, self.networkIp, self.networkNetmask);
-
-                    	// add a network wifi-iface
-                    	var wifiAddNetworkPromise = self.wifiProvider.prepareWifiNetwork();
-
-                    	wifiAddNetworkPromise.then(function() {
-                    		// setup the network
-	                    	var wifiSetupPromise = self.wifiProvider.setupWifiNetwork(self.networkSsid, self.networkPassword, self.networkAuth);
-
-	                    	wifiSetupPromise.then(function () {
-	                    		self.refreshNetwork();
-
-	                    	}, function (err) {
-	                    		console.error(err);
-	                    	});
-                    	});
-				    }
-				} else {
-				    self.wifiMessage = verifyResult;
-				}
-			};
 
 			var _computeShowPassword = function (showPassword) {
 				return showPassword ? 'text' : 'password';
@@ -426,63 +398,131 @@
 
 			var newWifiNetwork = function () {
 				this.$.newWifiDlg.open();
-			}
+			};
 
 			var addNetwork = function () {
-				// Lazar: move contents of setupWifi function and link to the button
-			}
+				self.$.configureLoading.hidden = false;
+		    	self.$['wifi-config-button'].disabled = true;
 
-			var changeNetwork = function(e) {
+		    	setTimeout(function () {
+		    		self.$.configureLoading.hidden = true;
+		    		self.$['wifi-config-button'].disabled = false;
+		    	}, 10000);
+
+			    self.wifiMessage = '';
+
+			    var verifyResult = self.wifiProvider.verifyKey(self.networkPassword, self.networkAuth);
+
+				if (verifyResult === 'OK' && self.sessionProvider.isAlive() === true) {
+                	// add a network wifi-iface
+                	var wifiAddNetworkPromise = self.wifiProvider.prepareWifiNetwork();
+
+                	wifiAddNetworkPromise.then(function() {
+                		// setup the network
+                    	var wifiSetupPromise = self.wifiProvider.setupWifiNetwork(self.networkSsid, self.networkPassword, self.networkAuth);
+
+                    	wifiSetupPromise.then(function () {
+                    		self.refreshNetwork();		// refresh the list to include this new network
+                    		self.$.newWifiDlg.close();	// close the dialogue
+                    	}, function (err) {
+                    		console.error(err);
+                    	});
+                	});
+				} else {
+				    self.wifiMessage = verifyResult;
+				}
+			};
+
+			var removeNetwork = function(e) {
 				var network = e.target.network;
-				console.log(network);
+				console.log('Removing ', network.ssid);
 
+				var wifiRemoveNetworkPromise = self.wifiProvider.removeWifiNetwork(network);
+
+				wifiRemoveNetworkPromise.then(function () {
+					self.refreshNetwork();		// refresh the list to reflect this delete
+				});
+			};
+
+			var onLoading = function () {
 				self.$.configureLoading.hidden = false;
 
 		    	setTimeout(function () {
 		    		self.$.configureLoading.hidden = true;
-		    	}, 10000);
-
-				// Lazar: disable current network (if any), enable var network
+		    	}, 5000);
 			}
+
+			var changeNetwork = function(e) {
+				var network = e.target.network;
+
+				// disable all other networks
+				console.log('Disabling all networks');
+				var disablePromise = self._disableAllNetworks();
+
+				disablePromise.then((function () {
+					// enable the specified network
+					console.log('Enabling network: ' + network.ssid);
+					var enablePromise = self.wifiProvider.setEnableWirelessNetwork(network['.name'], true);
+
+					enablePromise.then(function () {
+						self.refreshNetwork();		// refresh the list
+						this.onLoading();
+					});
+				}).bind(this));
+			};
+
 
 			var moveUp = function(e) {
 				var network = e.target.network;
-				console.log(network);
 				
-				// Lazar: implement this
+				if ( !(self._isTopNetwork(network)) ) {
+					// move the network UP in the list
+					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(network, true);
 
-				// update with: this.refreshNetwork
-			}
+					wifiChangeOrderPromise.then(function () {
+						self.refreshNetwork();		// refresh the list to reflect this reorder
+					});
+				}
+			};
 
 			var moveDown = function(e) {
 				var network = e.target.network;
-				console.log(network);
 				
-				// Lazar: implement this	
+				if ( !(self._isBottomNetwork(network)) ) {
+					// move the network DOWN in the list
+					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(network, false);
 
-				// update with: this.refreshNetwork
-			}
+					wifiChangeOrderPromise.then(function () {
+						self.refreshNetwork();		// refresh the list to reflect this reorder
+					});
+				}
+			};
 
 			var enableWifiChanged = function (newVal) {
 	
 				if (self.bInitComplete) {
 					if (newVal === false) {
 						if (confirm('Are you sure you want to turn off the WiFi?\r\nYou may not be able to access your Omega when the WiFi is off.')) {
-							// Lazar: turn off all networks
+							// disable all networks (and commit the change)
+							var disablePromise = self._disableAllNetworks(true);
+
+							disablePromise.then(function () {
+								self.refreshNetwork();		// refresh the list to reflect this change
+								// Zheng: add loading animation and disable the buttons 
+							});
 						}else {
 							this.enableWifi = !newVal;
 						}
-
 					}
 					else {
 						// Lazar: turn on wifi
 					}
 				}
-			}
+			};
 
 			var isEnabled = function (network) {
 				return !(network.disabled==='1')
-			} 
+			};
 
 
 			//// functions that use the list of networks ////
@@ -501,7 +541,80 @@
             	}
 
 				return enabledNetwork;
-			}
+			};
+
+			// find the network's index in the network array
+			var _findNetworkIndex = function (targetNetwork) {
+				var	count 	= 0;
+				var index 	= -1;
+
+				// loop through the list and look for this network
+				for (var key in self.savedNetworks) {
+            		var network = self.savedNetworks[key];
+
+            		if (network['.name'] === targetNetwork['.name']) {
+            			index = count;
+            			break;
+            		}
+
+            		count++;
+            	}
+
+            	return index;
+			};
+
+			// check if network as at the top of the list
+			var _isTopNetwork = function (targetNetwork) {
+				var bTop 	= false;
+				var index 	= self._findNetworkIndex(targetNetwork);
+
+				if (index === 0) {
+					bTop = true;
+				}
+
+				return bTop;
+			};
+
+			// check if network as at the bottom of the list
+			var _isBottomNetwork = function (targetNetwork) {
+				var bBottom 	= false;
+				var index 	= self._findNetworkIndex(targetNetwork);
+
+				if (index === (self.savedNetworks.length - 1)) {
+					bBottom = true;
+				}
+				
+				return bBottom;
+			};
+
+			// disable any and all active networks
+			var _disableAllNetworks = function (bCommit) {
+				var promise = new Promise(function (resolve, reject) {
+					// loop through the list and look for enabled networks
+					for (var key in self.savedNetworks) {
+	            		var network = self.savedNetworks[key];
+
+	            		if (network.disabled == null || network.disabled === '0') {
+	            			// disable the network
+	            			var disablePromise = self.wifiProvider.setEnableWirelessNetwork(network['.name'], false, true);
+	            		}
+	            	}
+
+	            	if (bCommit) {
+	            		// commit the changes
+	            		var commitPromise = self.wifiProvider.commitWirelessChanges();
+	            		// resolve the promise when the commit is done
+	            		commitPromise.then(function () {
+							resolve();
+						});
+
+	            	} else {
+	            		resolve();
+	            	}
+            	});
+
+            	return promise;
+			};
 
 
 			Polymer({
@@ -509,21 +622,26 @@
 				created: created,
 				attached: attached,
 				init: init,
+				onLoading: onLoading,
 				showScanMessage: showScanMessage,
 				hideScanMessage: hideScanMessage,
 				scanWifiNetwork: scanWifiNetwork,
 				selectSsid: selectSsid,
-				setupWifi: setupWifi,
 				isEnabled: isEnabled,
 				_computeShowPassword: _computeShowPassword,
 				newWifiNetwork: newWifiNetwork,
 				refreshNetwork: refreshNetwork,
 				changeNetwork: changeNetwork,
 				addNetwork: addNetwork,
+				removeNetwork: removeNetwork,
 				moveUp: moveUp,
 				moveDown: moveDown,
 				enableWifiChanged: enableWifiChanged,
 				_findEnabledNetwork: _findEnabledNetwork,
+				_findNetworkIndex: _findNetworkIndex,
+				_isTopNetwork: _isTopNetwork,
+				_isBottomNetwork: _isBottomNetwork,
+				_disableAllNetworks: _disableAllNetworks,
 				properties: {
 					enableWifi: {
 						type: Boolean,

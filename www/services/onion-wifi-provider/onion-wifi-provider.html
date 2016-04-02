@@ -24,24 +24,6 @@
 				});			
             };
 
-            var getConfig = function (type) {
-            	var promise = new Promise(function (resolve, reject) {
-            		self.ubus.request('onion-console', 'wifi-info', {
-            			params: {
-            				type: type
-            			}
-            		}, function (data) {
-            			if (data) {
-            				if (data.length === 2 && data[0] === 0) {
-	            				resolve(data[1]);
-	            			}
-            			}
-            		})
-            	});
-
-            	return promise;
-            };
-
             // parse uci get wireless and return an array of either 'ap' or 'sta' networks
             var parseWirelessSetup = function (data, type) {
         		var result 	= [];
@@ -121,32 +103,6 @@
 
 	            return promise;
             };
-
-			var wifiSetup = function (enableWifi, networkSsid, networkPassword, networkAuth) {
-				var params = enableWifi ? {
-					params: {
-						ssid: networkSsid,
-						password: networkPassword,
-						auth: networkAuth
-					}
-				} : {
-					params: {
-						killsta: ''
-					}
-				};
-				
-				var promise = new Promise(function (resolve, reject) {
-					self.ubus.request('onion', 'wifi-setup', params, function (data) {
-						if (data.length === 2 && data[0] === 0) {
-							resolve();
-						} else {
-							reject(Error('Unable to connect to Wi-Fi.'));
-						}
-		            });
-				});
-
-				return promise;
-			};
 
 			// conditionally add a new wifi-iface to the wireless config
 			var prepareWifiNetwork = function (uciId) {
@@ -228,6 +184,14 @@
 
 				return promise;
 			};
+
+			// remove a newtork
+			var removeWifiNetwork  = function (networkObj) {
+				var sectionName 	= networkObj['.name'];
+				var promise 		= self.deleteWirelessNetwork(sectionName);
+
+				return promise;
+			}
 
 			//// supporting functions ////
 			// validate key			
@@ -353,7 +317,8 @@
 			};
 
 			// enable/disable a network
-			var setEnableWirelessNetwork = function (sectionName, bEnable) {
+			//	by default will perform a commit as well, will not commit if bNoCommit is set
+			var setEnableWirelessNetwork = function (sectionName, bEnable, bNoCommit) {
 				var optionValue = '1';	// disable
 				if (bEnable) {
 					optionValue = '0';	// enable
@@ -368,15 +333,22 @@
 						}
 					}, function (result) {
 						if (result[0] === 0) {
-							self.ubus.request('uci', 'commit', {
-									config: 'wireless'
-							}, function (result) {
-								if (result[0] === 0) {
-									resolve();
-								} else {
-									reject(Error('Unable to change enabled state of wireless network.'));
-								}
-							});
+							if (bNoCommit) {
+								// no commit!
+								resolve();
+							}
+							else {
+								// perform commit
+								self.ubus.request('uci', 'commit', {
+										config: 'wireless'
+								}, function (result) {
+									if (result[0] === 0) {
+										resolve();
+									} else {
+										reject(Error('Unable to change enabled state of wireless network.'));
+									}
+								});
+							}
 						} else {
 							reject(Error('Unable to change enabled state of wireless network.'));
 						}
@@ -390,7 +362,6 @@
 			var reorderWirelessNetwork = function (sectionName, newIndex) {
 				var promise = new Promise(function (resolve, reject) {
 					var command 	= 'wireless.' + sectionName + '=' + newIndex;
-					console.log('Running: ', command);
 
 					self.ubus.request('file', 'exec', {
 						command: 'uci',
@@ -415,6 +386,49 @@
 							});
 						} else {
 							reject(Error('Failed to change network order.'));
+						}
+					});
+				});
+
+				return promise;
+			};
+
+			// remove a network
+			var deleteWirelessNetwork = function (sectionName) {
+				var promise = new Promise(function (resolve, reject) {
+					self.ubus.request('uci', 'delete', {
+						config: 'wireless',
+						section: sectionName
+					}, function (result) {
+						if (result[0] === 0) {
+							self.ubus.request('uci', 'commit', {
+									config: 'wireless'
+							}, function (result) {
+								if (result[0] === 0) {
+									resolve();
+								} else {
+									reject(Error('Unable to remove wireless network.'));
+								}
+							});
+						} else {
+							reject(Error('Unable to remove wireless network.'));
+						}
+					});
+				});
+
+				return promise;
+			};
+
+			// commit wireless changes
+			var commitWirelessChanges = function () {
+				var promise = new Promise(function (resolve, reject) {
+					self.ubus.request('uci', 'commit', {
+						config: 'wireless'
+					}, function (result) {
+						if (result[0] === 0) {
+							resolve();
+						} else {
+							reject(Error('Unable to remove commit wireless network changes.'));
 						}
 					});
 				});
@@ -459,25 +473,28 @@
 				ready: ready,
 				noop: function () {},
 				ready: ready,
-				getConfig: getConfig,
 				getApStaticIpAddr: getApStaticIpAddr,
 				getWirelessSetup: getWirelessSetup,
 				parseWirelessSetup: parseWirelessSetup,
 
 				wifiScan: wifiScan,
-				wifiSetup: wifiSetup,
 
 				setupWifiNetwork: setupWifiNetwork,
 				prepareWifiNetwork: prepareWifiNetwork,
 				setupAp: setupAp,
 				changeNetworkOrder: changeNetworkOrder,
+				removeWifiNetwork: removeWifiNetwork,
 
 				verifyKey: verifyKey,
 				genUciNetworkParams: genUciNetworkParams,
+				
 				addWirelessNetwork: addWirelessNetwork,
 				setWirelessNetwork: setWirelessNetwork,
 				setEnableWirelessNetwork: setEnableWirelessNetwork,
 				reorderWirelessNetwork: reorderWirelessNetwork,
+				deleteWirelessNetwork: deleteWirelessNetwork,
+				commitWirelessChanges: commitWirelessChanges,
+
 				setWlanStaticIp: setWlanStaticIp
 			});
         })();

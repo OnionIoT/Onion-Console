@@ -183,23 +183,8 @@
 			};
 
 			var init = function () {
-				/*var wifiConfigPromise = self.wifiProvider.getConfig('ap');
-
-                wifiConfigPromise.then(function (result) {
-                	console.log("wifiConfigPromise", result);
-                	self.set('enableAP', result.enabled);
-
-                	if (result.enabled) {
-                		console.log("AP is enabled");
-                		self.set('apSsid', result.ssid);
-	                	self.set('apAuth', result.encryption);
-	                	self.set('apPassword', result.password);
-	                	self.set('apIp', result.ip);
-                	}
-                });*/
-
+				// grab the required info
                 var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(true);
-
                 var getApStaticIpAddrPromise 	= self.wifiProvider.getApStaticIpAddr();
 
                 getWifiSetupPromise.then(function (result) {
