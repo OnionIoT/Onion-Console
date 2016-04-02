@@ -296,17 +296,18 @@
 
 			var init = function () {
 				self.bInitComplete	= false;
-				self.scanWifiNetwork();
+				self.scanWifiNetwork();		// scan for available networks
+                self.refreshNetwork();		// get the list of currently configured networks
+			};
 
-                // get list of all STA networks
-                var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
+			var refreshNetwork = function() {
+				var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
                 getWifiSetupPromise.then(function(result){
                 	for (var i = 0; i < result.length; i++) {
                 		result[i].index = '_'+result[i]['.index'];
                 	};
                 	console.log(result);
                 	self.savedNetworks = result;
-                	console.log(result);
 
                 	// check if any networks are enabled
                 	var enabledNetwork 	= self._findEnabledNetwork();
@@ -315,16 +316,9 @@
                 		bEnabled 	= true;
                 	}
 
+                	// set the checkbox
                 	self.set('enableWifi', bEnabled);
                 	self.bInitComplete	= true;
-                });
-
-			};
-
-			var refreshNetwork = function() {
-				var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
-                getWifiSetupPromise.then(function(result){
-                	self.savedNetworks = result;
                 });
 			}
 
@@ -341,9 +335,8 @@
 			var scanWifiNetwork = function () {
 				self.showScanMessage('Scanning...');
 
-				var wifiScanPromise = self.wifiProvider.wifiScan();
-
-				wifiScanPromise.then(function (result) {
+				self.wifiProvider.wifiScan()
+				.then(function (result) {
 					while (self.networks.length > 0) {
 						self.pop('networks');
 					}
