@@ -246,7 +246,7 @@
 
 									<iron-icon icon="icons:cancel" class="action-button"
 										id="removeNetwork{{item.ssid}}" network="{{item}}" on-click="removeNetwork"></iron-icon>
-									<bootstrap-tooltip for="removeNetwork{{item.ssid}}">Enable</bootstrap-tooltip>
+									<bootstrap-tooltip for="removeNetwork{{item.ssid}}">Remove</bootstrap-tooltip>
 
 								</div>
 							</div>
@@ -254,57 +254,6 @@
 					</template>
 					
 				</div>
-
-				<!-- <table id="networkTable" class="list-group">
-
-					<tr class="list-group-item">
-						<th>SSID</th>
-						<th>Actions</th>
-					</tr>
-
-					<template is="dom-repeat" items="{{savedNetworks}}">
-
-						<tr class="list-group-item">
-							<td>
-								<span>
-								<template is="dom-if" if="{{item.disabled}}">
-									<iron-icon icon="device:signal-wifi-off" class="signal-off"></iron-icon>
-								</template>
-								<template is="dom-if" if="{{!item.disabled}}">
-									<iron-icon icon="device:signal-wifi-4-bar" class="signal-on"></iron-icon>
-								</template>
-							</span>
-								
-								<span>{{item.ssid}}</span>
-							</td>
-							<td>
-								<div class="layout horizontal center">
-									<template is="dom-if" if="{{item.disabled}}">
-										<iron-icon id="changeNetwork{{item.ssid}}" icon="icons:check-circle" class="action-button" 
-											network="{{item}}" on-click="changeNetwork">
-											</iron-icon>
-										<bootstrap-tooltip for="changeNetwork{{item.ssid}}">Enable</bootstrap-tooltip>
-									</template>
-
-									<iron-icon icon="icons:add-circle" class="action-button" 
-										id="moveUp{{item.ssid}}" network="{{item}}" on-click="moveUp"></iron-icon>
-									<bootstrap-tooltip for="moveUp{{item.ssid}}">Move Up</bootstrap-tooltip>
-
-									<iron-icon icon="icons:remove-circle" class="action-button"
-										id="moveDown{{item.ssid}}" network="{{item}}" on-click="moveDown"></iron-icon>
-									<bootstrap-tooltip for="moveDown{{item.ssid}}">Move Down</bootstrap-tooltip>
-
-									<iron-icon icon="icons:cancel" class="action-button"
-										id="removeNetwork{{item.ssid}}" network="{{item}}" on-click="removeNetwork"></iron-icon>
-									<bootstrap-tooltip for="removeNetwork{{item.ssid}}">Enable</bootstrap-tooltip>
-
-								</div>
-							</td>
-						</tr>
-					</template>
-					
-				</table> -->
-				<!-- <bootstrap-button on-click="" color-scheme="success">Apply Setting</bootstrap-button> -->
 				<bootstrap-button on-click="newWifiNetwork" color-scheme="primary">Add Wi-Fi Network</bootstrap-button>
 			</div>
 		</div>
@@ -356,7 +305,6 @@
                 var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
                 getWifiSetupPromise.then(function(result){
                 	self.savedNetworks = result;
-                	console.log(result);
 
                 	// check if any networks are enabled
                 	var enabledNetwork 	= self._findEnabledNetwork();
@@ -375,7 +323,6 @@
 				var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
                 getWifiSetupPromise.then(function(result){
                 	self.savedNetworks = result;
-                	console.log(result);
                 });
 			}
 
