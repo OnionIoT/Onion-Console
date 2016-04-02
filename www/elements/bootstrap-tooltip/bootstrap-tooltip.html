@@ -117,6 +117,20 @@
 	      	_forChanged: function() {
 		        this._target = this.target;
 		    },
+
+		    cumulativeOffset: function(element) {
+			    var top = 0, left = 0;
+			    do {
+			        top += element.offsetTop  || 0;
+			        left += element.offsetLeft || 0;
+			        element = element.offsetParent;
+			    } while(element);
+
+			    return {
+			        top: top,
+			        left: left
+			    };
+			},
 	      	updatePosition: function() {
 		        if (!this._target || !this.offsetParent) {
 		          	return;
@@ -150,6 +164,8 @@
 			            tooltipTop = targetTop + verticalCenterOffset;
 			            break;
 		        }
+
+
 	          	this.$.tooltip.style.left = tooltipLeft + 'px';
 	          	this.$.tooltip.style.top = tooltipTop + 'px';		        
 	      	}

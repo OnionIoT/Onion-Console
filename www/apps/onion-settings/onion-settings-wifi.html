@@ -231,13 +231,24 @@
 							<td>
 								<div class="layout horizontal center">
 									<template is="dom-if" if="{{item.disabled}}">
-										<iron-icon icon="icons:check-circle" class="action-button" 
-											network="{{item}}" on-click="changeNetwork"></iron-icon>
+										<iron-icon id="changeNetwork{{item.ssid}}" icon="icons:check-circle" class="action-button" 
+											network="{{item}}" on-click="changeNetwork">
+											</iron-icon>
+										<bootstrap-tooltip for="changeNetwork{{item.ssid}}">Enable</bootstrap-tooltip>
 									</template>
+
 									<iron-icon icon="icons:add-circle" class="action-button" 
-										network="{{item}}" on-click="moveUp"></iron-icon>
+										id="moveUp{{item.ssid}}" network="{{item}}" on-click="moveUp"></iron-icon>
+									<bootstrap-tooltip for="moveUp{{item.ssid}}">Move Up</bootstrap-tooltip>
+
 									<iron-icon icon="icons:remove-circle" class="action-button"
-										network="{{item}}" on-click="moveDown"></iron-icon>
+										id="moveDown{{item.ssid}}" network="{{item}}" on-click="moveDown"></iron-icon>
+									<bootstrap-tooltip for="moveDown{{item.ssid}}">Move Down</bootstrap-tooltip>
+
+									<iron-icon icon="icons:cancel" class="action-button"
+										id="removeNetwork{{item.ssid}}" network="{{item}}" on-click="removeNetwork"></iron-icon>
+									<bootstrap-tooltip for="removeNetwork{{item.ssid}}">Enable</bootstrap-tooltip>
+
 								</div>
 							</td>
 						</tr>
@@ -392,6 +403,7 @@
 	                    	var wifiSetupPromise = self.wifiProvider.setupWifiNetwork(self.networkSsid, self.networkPassword, self.networkAuth);
 
 	                    	wifiSetupPromise.then(function () {
+	                    		self.refreshNetwork();
 
 	                    	}, function (err) {
 	                    		console.error(err);
@@ -433,6 +445,18 @@
 				
 			}
 
+			var enableWifiChanged = function (newVal) {
+				var wifiOff
+				
+				if (newVal === false) {
+					if (confirm('Are you sure you want to turn off the WiFi?\r\nYou may not be able to access your Omega when the WiFi is off.')) {
+					}else {
+						this.enableWifi = !newVal;
+					}
+				}
+			}
+
+
 			Polymer({
 				is: 'onion-settings-wifi',
 				created: created,
@@ -450,10 +474,12 @@
 				addNetwork: addNetwork,
 				moveUp: moveUp,
 				moveDown: moveDown,
+				enableWifiChanged: enableWifiChanged,
 				properties: {
 					enableWifi: {
 						type: Boolean,
-						notify: true
+						notify: true,
+						observer: "enableWifiChanged"
 					},
 					networks: {
 						type: Array,
