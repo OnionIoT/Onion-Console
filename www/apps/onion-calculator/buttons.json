@@ -1,0 +1,207 @@
+﻿[
+	{
+		"id": "and",
+		"icon": "AND",
+		"style": "background-color:#4da5ff; border-color:#80bfff; color: white"		
+	},
+	{
+		"id": "or",
+		"icon": "OR",
+		"style": "background-color:#4da5ff; border-color:#80bfff; color: white"		
+	},
+	{
+		"id": "d",
+		"icon": "D",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "e",
+		"icon": "E",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "f",
+		"icon": "F",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "ac",
+		"icon": "AC",
+		"style": "background-color:#8585ad; border-color:#9494b7"		
+	},
+	{
+		"id": "ms",
+		"icon": "MS",
+		"style": "background-color:#8585ad; border-color:#9494b7"		
+	},
+	{
+		"id": "nand",
+		"icon": "NAND",
+		"style": "text-indent:-6px; background-color:#4da5ff; border-color:#80bfff; color: white"		
+	},
+	{
+		"id": "nor",
+		"icon": "NOR",
+		"style": "text-indent:-2px; background-color:#4da5ff; border-color:#80bfff; color: white"		
+	},
+	{
+		"id": "a",
+		"icon": "A",
+		"style": "background-color:white"
+	},
+	{
+		"id": "b",
+		"icon": "B",
+		"style": "background-color:white"
+	},
+	{
+		"id": "c",
+		"icon": "C",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "del",
+		"icon": "DEL",
+		"style": "background-color:#8585ad; border-color:#9494b7"		
+	},
+	{
+		"id": "mr",
+		"icon": "MR",
+		"style": "background-color:#8585ad; border-color:#9494b7"		
+	},
+	{
+		"id": "xnor",
+		"icon": "XNOR",
+		"style": "text-indent: -6px; background-color:#4da5ff; border-color:#80bfff; color: white"		
+	},
+	{
+		"id": "xor",
+		"icon": "XOR",
+		"style": "text-indent: -2px; background-color:#4da5ff; border-color:#80bfff; color: white"		
+	},
+	{
+		"id": "7",
+		"icon": "7",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "8",
+		"icon": "8",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "9",
+		"icon": "9",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "rand",
+		"icon": "?",
+		"style": "background-color:#8585ad; border-color:#9494b7"		
+	},
+	{
+		"id": "m+",
+		"icon": "M+",
+		"style": "background-color:#8585ad; border-color:#9494b7"		
+	},
+	{
+		"id": "x<<y",
+		"icon": "X<<Y",
+		"style": "text-indent:-4px; background-color:#4da5ff; border-color:#80bfff; color: white"		
+	},
+	{
+		"id": "x>>y",
+		"icon": "X>>Y",
+		"style": "text-indent:-4px; background-color:#4da5ff; border-color:#80bfff; color: white"		
+	},
+	{
+		"id": "4",
+		"icon": "4",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "5",
+		"icon": "5",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "6",
+		"icon": "6",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "divide",
+		"icon": "÷",
+		"style": "background-color:#990098; border-color:#b300b1; color:white"
+	},
+	{
+		"id": "minus",
+		"icon": "-",
+		"style": "background-color:#990098; border-color:#b300b1; color:white"		
+	},
+	{
+		"id": "shiftLeft",
+		"icon": "<<",
+		"style": "background-color:#4da5ff; border-color:#80bfff; color: white"		
+	},
+	{
+		"id": "shiftRight",
+		"icon": ">>",
+		"style": "background-color:#4da5ff; border-color:#80bfff; color: white"			
+	},
+	{
+		"id": "1",
+		"icon": "1",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "2",
+		"icon": "2",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "3",
+		"icon": "3",
+		"style": "background-color:white"		
+	},
+	{
+		"id": "multiply",
+		"icon": "x",
+		"style": "background-color:#990098; border-color:#b300b1; color:white"		
+	},
+	{
+		"id": "plus",
+		"icon": "+",
+		"style": "background-color:#990098; border-color:#b300b1; color:white"		
+	},
+	{
+		"id": "not",
+		"icon": "NOT",
+		"style": "background-color:#4da5ff; border-color:#80bfff; color: white"	
+	},
+	{
+		"id": "ff",
+		"icon": "FF",
+		"style": "background-color:white"
+	},
+	{
+		"id": "0",
+		"icon": "0",
+		"style": "background-color:white"
+	},
+	{
+		"id": "00",
+		"icon": "00",
+		"style": "background-color:white"
+	},
+	{
+		"id": "mod",
+		"icon": "%",
+		"style": "text-indent:-2px; background-color:#990098; border-color:#b300b1; color:white"		
+	},
+	{
+		"id": "equals",
+		"icon": "=",
+		"style": "background-color:#990098; border-color:#b300b1; color:white"
+	}
+]

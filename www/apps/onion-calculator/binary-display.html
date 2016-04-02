@@ -1,0 +1,133 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-input/iron-input.html">
+
+<dom-module id="binary-display">
+	<style>
+		.bit {
+			margin: 0;
+			padding: 0;
+			background: none;
+			border: none;
+			/*color: white;*/
+		}
+		.bit-container {
+			margin: 0px 0.2em;
+
+		}
+		.bit-label {
+			font-size: 8px;
+			text-align: center;
+			color: #ecf0f1;
+			opacity: 0;
+		}
+		#binaryDispaly {
+			margin: 5px 5px;
+		}
+
+		#bit4, #bit8, #bit12, #bit20, #bit24, #bit28 {
+			margin-right: 0.35em;
+		}
+
+		#label4, #label8, #label12, #label20, #label24, #label28 {
+			margin-right: 0.35em;
+			/*opacity: 1;*/
+		}
+
+		#label0, #label3, #label7, #label11, #label15, #label16, #label19, #label23, #label27, #label31 {
+			opacity: 1;
+		}
+	</style>
+	
+	<template>
+		<div id="binaryDispaly" class="layout horizontal wrap">
+			<template is="dom-repeat" items="{{setup}}">
+				<div class="bit-container">
+					<input
+						type="button"
+						is="iron-input"
+						id="bit{{_getIndex(index)}}"
+						bit-num="{{_getIndex(index)}}"
+						class="bit"
+						on-click="updateValue"
+						bind-value="{{_getBits(index, value)}}"
+						>
+					</input>
+					<div id="label{{_getIndex(index)}}" class="bit-label">{{_getIndex(index)}}</div>
+				</div>
+
+			</template>
+		</div>
+	</template>
+
+	<script>
+		var _getIndex = function(index) {
+			return 31-index;
+		};
+
+		var _getBits = function(index, value) {
+			var bit = this.value;
+			var i = 31 - index;
+			var len = bit.length;
+
+			if(len - 1 - i >= 0 && bit.substr(len - 1 - i,1) === "1") {
+				return 1;
+			} else {
+				return 0;
+			}	
+		};
+
+		Polymer({
+			is: "binary-display",
+			_getIndex: _getIndex,
+			_getBits: _getBits,
+			properties: {
+				value:{
+					type: String,
+					value: "",
+					notify: true,
+					reflectToAttribute: true,
+				},
+				setup: {
+					type: Array,
+					value: 
+						[0,0,0,0,0,0,0,0,
+						 0,0,0,0,0,0,0,0,
+						 0,0,0,0,0,0,0,0,
+						 0,0,0,0,0,0,0,0]
+				},
+				done: {
+					type: Boolean,
+					value: false
+				},
+				focus: {
+					type: String,
+					value: "0",
+					notify: true,
+					reflectToAttribute: true
+				}
+			},
+			ready: function() {},
+			updateValue: function(x) {
+				this.value = this.value.toString();
+				var index = this.value.length - 1 - x.target.bitNum;
+				var split1 = this.value.substr(0, index);
+				var split2 = this.value.substr(index + 1);
+
+				this.focus = "1";
+				
+				if(index < 0) {
+					var zero = "";
+					index *= -1;
+					for(var i = 0; i < index - 1; i++) {
+						zero = "" + zero + 0;
+					}					
+					this.value = "" + 1 + zero + split2;
+				} else if(x.target.bindValue == 1) {
+					this.value = split1 + "0" + split2;
+				} else {
+					this.value = split1 + "1" + split2;
+				}
+			}
+		});
+	</script>
+</dom-module>

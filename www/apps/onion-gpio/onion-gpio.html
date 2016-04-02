@@ -259,8 +259,11 @@
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
 					for (var i=0; i< this.pins.length; i++) {
 						var pin = this.pins[i];
-						ubus.request('gpio', 'status', {
-							pin: pin.gpio
+						ubus.request('onion', 'gpio', {
+							command:'status',
+							params: {
+								gpio: pin.gpio	
+							}
 						}, (function (data) {
 							if (data.length === 2 && data[0] === 0) {
 								pin.direction = data[1].direction;
@@ -279,15 +282,19 @@
 			var _syncOne = function () {
 				var pin = this.currentPin;
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
-						ubus.request('gpio', 'status', {
-							pin: pin.gpio
+						ubus.request('onion', 'gpio', {
+							command:'status',
+							params: {
+								gpio: pin.gpio	
+							}
 						}, (function (data) {
 							if (data.length === 2 && data[0] === 0) {
 								pin.direction = data[1].direction;
 								pin.value = data[1].value;
 								// data[1] contains the following:
-								// {pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
+								// {pin: int, value: int, direction: "input|output"}
 								this._refresh();
+								//console.log("_syncOne", data);
 							} else {
 								console.log('status error');
 							}
@@ -346,8 +353,11 @@
 
 			var _getPinStatus = function (pin){
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
-					ubus.request('gpio', 'status', {
-						pin: this.currentPin.gpio
+					ubus.request('onion', 'gpio', {
+						command:'status',
+						params: {
+							gpio: this.currentPin.gpio
+						}
 					}, (function (data) {
 						if (data.length === 2 && data[0] === 0) {
 							pin.value = data[1].value;
@@ -361,9 +371,12 @@
 
 			var _pinValueChanged = function () {
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
-					ubus.request('gpio', 'set_pin', {
-						pin: this.currentPin.gpio, 
-						value: this.currentPin.value
+					ubus.request('onion', 'gpio', {
+						command: 'set',
+						params: {
+							gpio: this.currentPin.gpio, 
+							value: this.currentPin.value
+						}
 					}, (function (data) {
 						if (data.length === 2 && data[0] === 0) {
 							// this._getPinStatus(this.currentPin);
@@ -375,11 +388,15 @@
 
 			var _pinDirectionChanged = function () {
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
-					ubus.request('gpio', 'set_direction', {
-						pin: this.currentPin.gpio, 
-						direction: this.currentPin.direction
+					ubus.request('onion', 'gpio', {
+						command: 'set-direction',
+						params: {
+							gpio: this.currentPin.gpio, 
+							value: this.currentPin.direction
+						}
 					}, (function (data) {
 						if (data.length === 2 && data[0] === 0) {
+							//console.log("set-direction", data);
 							this._refresh();
 						}
 					}).bind(this));

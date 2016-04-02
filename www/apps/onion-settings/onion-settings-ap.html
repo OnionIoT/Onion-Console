@@ -178,22 +178,53 @@
                         self.wifiProvider = wifiProvider;
 					});
                 };
+
+                self.uciId 	= -1;
 			};
 
 			var init = function () {
-				var wifiConfigPromise = self.wifiProvider.getConfig('ap');
+				// grab the required info
+                var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(true);
+                var getApStaticIpAddrPromise 	= self.wifiProvider.getApStaticIpAddr();
 
-                wifiConfigPromise.then(function (result) {
-                	console.log(result);
-                	self.set('enableAP', result.enabled);
+                getWifiSetupPromise.then(function (result) {
+                	console.log('getWifiSetupPromise', result);
 
-                	if (result.enabled) {
-                		self.set('apSsid', result.ssid);
-	                	self.set('apAuth', result.encryption);
-	                	self.set('apPassword', result.password);
-	                	self.set('apIp', result.ip);
+                	if (result.length > 0) {
+                		var data 	= result[0];
+
+                		console.log("AP exists");
+                		if (data.disabled === '0') {
+                			self.set('enableAP', true);
+                		}
+                		else if (data.disabled === '1') {
+                			self.set('enableAP', false);
+                		}
+                		else {
+                			self.set('enableAP', true);
+                		}
+
+                		self.set('apSsid', 		data.ssid);
+	                	self.set('apAuth', 		data.encryption);
+	                	if (data.encryption === 'wep') {
+	                		self.set('apPassword', 	data.key1);	
+	                	} else if (data.encryption === 'psk' || data.encryption === 'psk2') {
+	                		self.set('apPassword', 	data.key);
+	                	}
+
+	                	self.uciId 	= data['.index'] - 1;
                 	}
+                	else {
+                		self.set('enableAP', false);
+                	}
+
+                	//console.log('uci index is ', self.uciId);
                 });
+
+                getApStaticIpAddrPromise.then(function (result) {
+                	//console.log('getApStaticIpAddrPromise', result);
+                	self.set('apIp', result);
+                });				
 			};
 
 			var onAppIcon = function (e) {
@@ -215,10 +246,19 @@
 				
 				if (verifyResult === 'OK') {
 			        if (self.sessionProvider.isAlive() === true) {
-			        	var apSetupPromise = self.wifiProvider.apSetup(self.enableAP, self.apSsid, self.apPassword, self.apAuth, self.apIp);
+			        	// if necessary add a uci wireless section for the AP
+			        	var apPreparePromise	= self.wifiProvider.prepareWifiNetwork(self.uciId);
 
-			        	apSetupPromise.then(function () {}, function (err) {
-			        		console.error(err);
+			        	apPreparePromise.then(function () {
+			        		// populate the AP uci wireless section
+			        		var apSetupPromise = self.wifiProvider.setupAp(self.enableAP, self.apSsid, self.apPassword, self.apAuth, self.apIp, self.uciId);
+
+				        	apSetupPromise.then(function () {
+				        		self.init();
+				        	}, 
+				        	function (err) {
+				        		console.error(err);
+				        	});
 			        	});
 				    }
 				} else {

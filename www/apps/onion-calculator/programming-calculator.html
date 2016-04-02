@@ -1,0 +1,770 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-ajax/iron-ajax.html">
+<link rel="import" href="/lib/iron-input/iron-input.html">
+<link rel="import" href="binary-display.html">
+
+<dom-module id="programming-calculator">
+	<template>
+		<style>
+			table{
+				border-collapse: collapse;
+				border: none;
+			}
+			#container{
+				background-color: orange;
+				width: 290px;
+				height: auto;
+				padding: 5px;
+			}
+			#not {
+				width:80px;
+			}			
+			.input{
+				color: black;
+				width: 40px;
+				height: 40px;
+				margin-right: -4.42px;
+				display: inline-block;
+				border-width: 1px;
+				border-color: white;
+				outline: none;
+				font-size:10pt;
+			}
+			.screen{
+				background: none;
+				border: none;
+				width: 100%;
+				height: 100%;
+				padding-top: 0px;
+				margin-top: -2px;
+			}
+			.noselect {
+			  -webkit-touch-callout: none; /* iOS Safari */
+			  -webkit-user-select: none;   /* Chrome/Safari/Opera */
+			  -khtml-user-select: none;    /* Konqueror */
+			  -moz-user-select: none;      /* Firefox */
+			  -ms-user-select: none;       /* IE/Edge */
+			  user-select: none;           /* non-prefixed version, currently
+			                                  not supported by any browser */
+			}
+		</style>
+
+		<div id="container" on-keypress="press" on-keydown="delButton" class="noselect">
+			<table id="display" style="width:100%" border-collapse="collapse">
+				<tr id="decimal" style="">
+					<td><strong>DEC</strong></td>
+					<td style="text-align:right">
+						<input 
+							is="iron-input" 
+							class="screen"
+							id="decimal"
+						    style="text-align:right"
+							bind-value="{{decimal}}"
+							on-focus="_setFocus"
+							maxlength="15"
+							autofocus
+							readonly
+							>
+						</input>
+					</td>
+				</tr>
+
+				<tr id="hexadecimal" style="">
+					<td><strong>HEX</strong></td>
+					<td style="text-align:right">
+						<input 
+							is="iron-input" 
+							class="screen"
+							id="hexadecimal"
+							bind-value="{{hexadecimal}}"
+						    style="text-align:right"
+						    on-focus="_setFocus"
+						    maxlength="12"
+						    readonly
+							>
+						</input>
+					</td>
+				</tr>
+
+				<tr id="octal" style="">
+					<td><strong>OCT</strong></td>
+					<td style="text-align:right">
+						<input 
+							is="iron-input" 
+							class="screen"
+							id="octal"
+							bind-value="{{octal}}"
+							style="text-align:right"
+							on-focus="_setFocus"
+							maxlength="17"
+							readonly
+							>
+						</input>
+					</td>
+				</tr>
+
+				<tr id="unicode">
+					<td><strong>Unicode</strong></td>
+					<td style="text-align:right">
+						<input 
+							is="iron-input" 
+							class="screen"
+							id="unicode"
+							bind-value="{{unicode}}"
+							style="text-align:right"
+							on-focus="_setFocus"
+							>
+						</input>
+					</td>
+				</tr>
+
+				<tr>
+				<td><strong>Binary</strong></td>
+				</tr>
+
+				<tr id="bin" style="padding-left:10px">
+					<td colspan="2" align="right" style="line-height:1.0">
+						<binary-display value="{{binary}}" focus="{{isBinary}}" on-click="_highlight"></binary-display>
+					</td>
+				</tr>
+			</table>			
+
+			<iron-ajax auto url="buttons.json" handle-as"json" last-response="{{buttons}}"></iron-ajax>
+
+			<div id="buttons" style="margin-top:5px">
+				<template is="dom-repeat" items="{{buttons}}">
+					<input
+						type="button" 
+						value="{{item.icon}}"
+						id="{{item.id}}" 
+						class="input" 
+						style$="{{item.style}}"
+						on-click="_getFunct"
+						>
+					</input>
+				</template>
+			</div>
+		</div>
+	</template>
+
+	<script>
+
+		(function () {
+			"use strict";
+
+			var _getFunct = function(x) {
+				//console.log(x.target.id);
+				var id = x.target.id;
+				switch(x.target.id) {
+					case "equals":
+						this.calc(id);
+						break;
+					case "rand":
+						this.rand(id);
+						break;
+					case "and":
+						this.operate(id);
+						break;
+					case "or":
+						this.operate(id);
+						break;
+					case "nor":
+						this.operate(id);
+						break;
+					case "xor":
+						this.operate(id);
+						break;
+					case "shiftLeft":
+						this.bitwise(id);
+						break;
+					case "shiftRight":
+						this.bitwise(id);
+						break;
+					case "x<<y":
+						this.operate(id);
+						break;
+					case "x>>y":
+						this.operate(id);
+						break;
+					case "not":
+						this.bitwise(id);
+						break;
+					case "nand":
+						this.operate(id);
+						break;
+					case "xnor":
+						this.operate(id);
+						break;
+					case "ac":
+						this.clear(id);
+						break;
+					case "ms":
+						this.memFunc(id);
+						break;
+					case "mr":
+						this.memFunc(id);
+						break;
+					case "m+":
+						this.memFunc(id);
+						break;
+					case "del":
+						this.del(id);
+						break;
+					case "mod":
+						this.operate(id);
+						break;12
+					case "plus":
+						this.operate(id);
+						break;
+					case "minus":
+						this.operate(id);
+						break;
+					case "multiply":
+						this.operate(id);
+						break;
+					case "divide":
+						this.operate(id);
+						break;
+					default:
+						this.addDigit(id);
+						break;
+				}
+				return x;
+			};
+
+			var _getUni = function(value) {
+				return String.fromCharCode(parseInt(value));
+			};
+
+			var _changeBase = function(value, oldBase, newBase) {
+				return (parseInt(value, oldBase) >>> 0).toString(newBase).toUpperCase();
+			};
+
+			var _updateDisplay = function(x) {
+				if(this.done) {
+					return;
+				}
+
+				this.repeat = false;
+
+				this.done = true;
+				var base;
+				
+				this.num2 = "";
+				
+				if(this.isBinary === "1") {
+					base = 2;
+				} else {
+					switch(this.baseFocus) {
+						case "decimal":
+							base = 10;
+							break;
+						case "octal":
+							base = 8;
+							break;
+						case "hexadecimal":
+							base = 16
+							break;
+						case "unicode":
+							base = 1;
+							break;
+						default: 
+							base = 2;
+							break;
+					}
+				}
+
+				if(x == "" || x == "NAN") {
+					this.decimal = 0;
+					this.binary = 0;
+					this.octal = 0;
+					this.hexadecimal = 0;
+					this.unicode = "";
+				} else if(base === 1) {
+					this.decimal = x.charCodeAt(0);
+					this.binary = _changeBase(this.decimal, 10, 2);
+					this.octal = _changeBase(this.decimal, 10, 8);
+					this.hexadecimal = '0x'+_changeBase(this.decimal, 10, 16);
+					this.unicode = _getUni(this.decimal);
+				} else {
+					this.decimal = _changeBase(x, base, 10);
+					this.binary = _changeBase(x, base, 2);
+					this.octal = _changeBase(x, base, 8);
+					this.hexadecimal = '0x'+_changeBase(x, base, 16);
+					this.unicode = _getUni(this.decimal);
+				}
+
+				this.done = false;
+			};
+
+			var _setFocus = function(x) {
+				this.isBinary = "0";
+				//console.log(x);
+				if(x === x.toString()) {
+					this.baseFocus = x;
+				} else {
+					this.baseFocus = x.target.id;
+				}
+				this._highlight();
+			};
+
+			var _highlight = function(x) {
+				var list = document.getElementsByTagName("TABLE")[0];
+
+				for(var i = 0; i < 5; i++) {
+					document.getElementsByTagName("TR")[i].style.backgroundColor = "orange";
+				}
+				
+				if(this.isBinary === "0") {
+					document.getElementById(this.baseFocus).style.backgroundColor = "white";
+				} else {
+					// document.getElementById("bin").style.backgroundColor="white";
+				}
+			};
+
+			Polymer({
+				is:"programming-calculator",
+				_getUni: _getUni,
+				_changeBase: _changeBase,
+				_updateDisplay: _updateDisplay,
+				_setFocus: _setFocus,
+				_getFunct: _getFunct,
+				_highlight: _highlight,
+				properties: {
+					operator: {
+						type: String,
+						value: ""
+					},
+					num1: {
+						type: String,
+						value: ""
+					},
+					num2: {
+						type: String,
+						value: "0"
+					},
+					memory: {
+						type: String,
+						value: ""
+					},
+					baseFocus: {
+						type: String,
+						value: "decimal"
+					},
+					done: {
+						type: Boolean,
+						value: false
+					},
+					decimal: {
+						type: String,
+						value: "0",
+						notify: true,
+						observer: "_updateDisplay"
+					},
+					octal: {
+						type: String,
+						value: "0",
+						notify: true,
+						observer: "_updateDisplay"
+					},
+					hexadecimal: {
+						type: String,
+						value: "0",
+						notify: true,
+						observer: "_updateDisplay"
+					},
+					unicode: {
+						type: String,
+						value: "0",
+						notify: true,
+						observer: "_updateDisplay"
+					},
+					binary: {
+						type: String,
+						value: "0",
+						notify: true,
+						observer: "_updateDisplay"
+					},
+					isBinary: {
+						type: String,
+						value: "0",
+						notify: true,
+					},
+					tempDisplay: {
+						type: String,
+						value: "0"
+					},
+					repeat: {
+						type: Boolean,
+						value: false
+					},
+					repeatOp: {
+						type: String,
+						value: ""
+					},
+					repeatVal: {
+						type: String,
+						value: ""
+					}
+				},
+				ready: function() {
+					//this.tabIndex = 0;
+				},
+				rand: function(x) {
+					if(isNaN(this.decimal)){return}
+					this.decimal = Math.floor(Math.random()*(1001));
+				},
+				addDigit: function(x) {
+					if(this.isBinary === "1" || isNaN(this.decimal)) {return}
+					if(this.num2 === "0") {
+						this.num2 = "";
+					}
+					if(this.tempDisplay === "1") {
+						this.decimal = "0";
+						this.tempDisplay = "0";
+						if(this.operator === "") {
+							this.num1 = "";
+						}
+					}
+					
+					var mem = 0;
+
+					switch(this.baseFocus) {
+						case "decimal":
+							mem = this.decimal + "" + x;
+							if(parseInt(mem) <= 4294967295) {
+								this.decimal = mem;
+							}						
+							break;
+						case "octal": 
+							mem = this.octal + "" + x;
+							if(parseInt(parseInt(mem,8).toString(10)) <= 4294967295) {
+								this.octal = mem;
+							}						
+							break;
+						case "hexadecimal":
+							mem = this.hexadecimal + "" + x;
+							if(parseInt(parseInt(mem, 16).toString(10)) <= 4294967295) {
+								this.hexadecimal = mem;
+							}
+							break;						 
+					}
+				},
+				operate: function(x) {
+					//console.log(this.decimal + " " + this.operator);
+					if(isNaN(this.decimal)){return}
+					if(this.num1 === "") {
+						this.num1 = this.decimal;
+						this.tempDisplay = "1";
+					}
+					
+					this.repeat = false;
+					this.isBinary = "0";
+					this._setFocus("decimal");
+					this.num2 = "0";
+
+					switch(x) {
+						case "plus":
+							this.operator = "+";
+							break;
+						case "minus":
+							this.operator = "-";
+							break;
+						case "multiply":
+							this.operator = "x";
+							break;
+						case "divide":
+							this.operator = "/";
+							break;
+						case "mod":
+							this.operator = "%";
+							break;
+						case "and":
+							this.operator = "&";
+							break;
+						case "or":
+							this.operator = "|";
+							break;
+						case "nor":
+							this.operator = "!|";
+							break;
+						case "xor":
+							this.operator = "^";
+							break;
+						case "nand":
+							this.operator = "!&";
+							break;
+						case "xnor":
+							this.operator = "!^";
+							break;
+						case "x<<y":
+							this.operator = "x<<y";
+							break;
+						case "x>>y":
+							this.operator = "x>>y";
+							break;
+					}
+					
+				},
+				bitwise: function(x) {
+					if(isNaN(this.decimal)){return}
+					this.isBinary = "0";
+					this._setFocus("decimal");
+					switch(x) {
+						case "shiftLeft":
+							this.decimal = parseInt(this.decimal) << 1;
+							break;
+						case "shiftRight":
+							this.decimal /= 2;
+							break;
+						case "not":
+							this.decimal = ~this.decimal;
+					}
+				},
+				calc: function(x) {
+
+					if(this.repeat) {
+						this.num2 = this.repeatVal;
+					} else if(this.operator === "" || isNaN(this.decimal)) {
+						return
+					}
+
+					if(this.repeat) {
+						this.operator = this.repeatOp;
+					} else if(this.num1 !== "" && this.num2 === "") {
+						this.num2 = this.decimal;
+					} else {
+						return;
+					}
+
+					this.isBinary = "0";
+					this._setFocus("decimal");
+					var calc = 0;
+
+					switch(this.operator) {
+						case "+": 
+							calc = parseInt(this.num1) + parseInt(this.num2);
+							break;
+						case "-": 
+							calc = parseInt(this.num1) - parseInt(this.num2);
+							break;
+						case "x":
+							calc = parseInt(this.num1) * parseInt(this.num2);
+							break;
+						case "/":
+							if(this.num2 === "0") {
+								this.done=true;
+								this.decimal = "Dividing           ";
+								this.octal = "zero              ";
+								this.hexadecimal = "by               ";
+								var random = Math.floor(Math.random()*(1 + 7))
+								switch(random) {
+									case 0:
+										this.unicode = "ಠ_ಠ              ";
+										break;
+									case 1:
+										this.unicode = "ಠ_ಠ              ";
+										break;
+									case 2:
+										this.unicode = "⊙﹏⊙             ";
+										break;
+									case 3:
+										this.unicode = "◔̯◔               ";
+										break;
+									case 4:
+										this.unicode = "ლ(ಠ益ಠლ)        ";
+										break;
+									case 5:
+										this.unicode = "(╯°□°）╯︵ ┻━┻    ";
+										break;
+									case 6:
+										this.unicode = "☹                ";
+										break;
+									default:
+										this.unicode = "(ノಠ益ಠ)ノ彡┻━┻    ";
+										break;
+								}
+								
+								this.done = false;
+
+								return;
+							} 
+
+							calc = parseInt(this.num1) / parseInt(this.num2);
+							break;
+						case "%": 
+							calc = parseInt(this.num1) % parseInt(this.num2);
+							break;
+						case "&":
+							calc = parseInt(this.num1) & parseInt(this.num2);
+							break;
+						case "|":
+							calc = parseInt(this.num1) | parseInt(this.num2);
+							break;
+						case "^":
+							calc = parseInt(this.num1) ^ parseInt(this.num2);
+							break;
+						case "!&":
+							calc = ~(parseInt(this.num1) & parseInt(this.num2));
+							break;
+						case "!|":
+							calc = ~(parseInt(this.num1) | parseInt(this.num2));
+							break;
+						case "!~":
+							calc = ~(parseInt(this.num1) ^ parseInt(this.num2));
+							break;
+						case "x>>y":
+							calc = parseInt(this.num1) >> parseInt(this.num2);
+							break;
+						case "x<<y":
+							calc = parseInt(this.num1) << parseInt(this.num2);
+							break;
+					}
+
+					var t1 = this.num2;
+					var t2 = this.operator;
+
+					this.clear(0);
+					this.num1 = parseInt(calc);
+					this.decimal = parseInt(calc);
+					this.repeat = true;
+					this.repeatVal = t1;
+					this.repeatOp = t2
+					this.tempDisplay = "1";
+				},
+				clear: function(x) {
+					this._setFocus("decimal");
+					this.isBinary = "0";
+					this.decimal = 0;
+					this.num1 = "";
+					this.operator = "";
+					this.num2 = "";
+					this.repeat = false;
+					this.repeatVal = "";
+					this.repeatOp = "";
+				},
+				memFunc: function(x) {
+					if(isNaN(this.decimal)){return}
+					switch(x) {
+						case "ms":
+							this.memory = parseInt(this.decimal);
+							this.tempDisplay = "1";
+							break;
+						case "m+":
+							if(this.memory === "") {
+								this.memory = parseInt(this.decimal);
+							} else {
+								this.memory = parseInt(this.memory) + parseInt(this.decimal);
+							}
+							break;
+						case "mr":
+							if(this.memory === "") {
+								return;
+							} else {
+								if(this.repeat) {
+									this.clear(0);
+								}
+								this._setFocus("decimal");
+								if(this.isBinary === "1") {
+									this.isBinary = "0";
+									this.decimal = this.memory;
+									this.isBinary = "1";
+								} else {
+									this.decimal = this.memory;
+								}
+							}
+							//console.log(this.decimal + " " + this.operator);
+							break;
+					}
+				},
+				del: function(x) {
+					//console.log("del");
+					if(this.isBinary === "1" || this.repeat || this.decimal == "0" || isNaN(this.decimal)) {
+						return;
+					} else {
+						switch(this.baseFocus) {
+							case "decimal":
+								this.decimal = this.decimal.substring(0, this.decimal.length - 1);
+								break;
+							case "hexadecimal":
+								this.hexadecimal = this.hexadecimal.substring(0, this.hexadecimal.length - 1);
+								break;
+							case "octal":
+								this.octal = this.octal.substring(0, this.octal.length - 1);
+								break;
+							case "unicode":
+								this.decimal = 0;
+								break;
+						}
+						if(isNaN(this.decimal)) {
+							this.decimal = 0;
+						}
+					}
+				},
+				delButton: function(event, detail, sender) {
+					var code = event.keyCode;
+					if(code == 46 || code == 27) {
+						this.clear();
+					} else if(code == 8) {
+						event.preventDefault();
+						this.del();
+					}
+				},
+				press: function(event, detail, sender) {
+					if(this.baseFocus == "unicode") {return}
+					var code = event.keyCode;
+					//console.log(code);
+					switch(code) {
+						case 43: //plus
+							document.getElementById("plus").click();
+							break;
+						case 45: //minus
+							document.getElementById("minus").click();
+							break;
+						case 120:case 88:case 42: //multiply
+							document.getElementById("multiply").click();
+							break;
+						case 47: //divide
+							document.getElementById("divide").click();
+							break;
+						case 37:
+							document.getElementById("mod").click();
+							break;
+						case 61:case 13: //equals
+							document.getElementById("equals").click();
+							break;
+						case 38: //and
+							document.getElementById("and").click();
+							break;
+						case 124: //or
+							document.getElementById("or").click();
+							break;
+						case 33:case 126: //not
+							document.getElementById("not").click();
+							break;
+						case 94:
+							document.getElementById("xor").click();
+							break;
+						case 44:
+							document.getElementById("shiftLeft").click();
+							break;
+						case 46:
+							document.getElementById("shiftRight").click();
+							break;
+						case 60:
+							document.getElementById("x<<y").click();
+							break;
+						case 62:
+							document.getElementById("x>>y").click();
+							break;
+						case 63:
+							document.getElementById("rand").click();
+							break;
+						default:
+							document.getElementById(String.fromCharCode(code)).click();
+					}
+				}
+			});
+		})();
+	</script>
+</dom-module>

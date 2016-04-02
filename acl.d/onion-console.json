@@ -14,7 +14,8 @@
                                         "wifi-scan",
                                         "oupgrade",
                                         "wifi-setup",
-                                        "omega-led"
+                                        "omega-led",
+                                        "gpio"
                                 ],
                                 "onion-console": [
                                         "app-list",
@@ -33,20 +34,18 @@
                                 "network.interface": [
                                         "dump"
                                 ],
-                                "gpio": [
-                                        "get",
-                                        "get_activelow",
-                                        "get_direction",
-                                        "status"
-                                ],
                                 "uci": [
                                         "*"
                                 ]
                         },
                         "uci": [
-                                "system",
                                 "get",
-                                "rpcd"
+                                "delete",
+                                "rpcd",
+                                "system",
+                                "wireless",
+                                "network",
+                                "mjpg-streamer"
                         ]
                 },
                 "write": {
@@ -55,7 +54,8 @@
                                         "wifi-scan",
                                         "wifi-setup",
                                         "oupgrade",
-                                        "omega-led"
+                                        "omega-led",
+                                        "gpio"
                                 ],
                                 "i2c_exp": [
                                         "pwm-exp",
@@ -72,22 +72,21 @@
                                         "write",
                                         "stat"
                                 ],
-                                "gpio": [
-                                        "set_pin",
-                                        "set_activelow",
-                                        "set_direction"
-                                ],
                                 "system": [
                                         "info",
                                         "hostname"
                                 ]
                         },
                         "uci": [
-                                "system",
                                 "get",
                                 "set",
                                 "commit",
-                                "rpcd"
+                                "delete",
+                                "rpcd",
+                                "system",
+                                "wireless",
+                                "network",
+                                "mjpg-streamer"
                         ]
                 }
         }

@@ -1,0 +1,304 @@
+e<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/lib/iron-ajax/iron-ajax.html">
+<link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown.html">
+
+
+<dom-module id="onion-webcam">
+	<style>
+		:host {
+			display: block;
+			height: 100%;
+			width: 100%;
+			--bootstrap-pill-border-radius: 3px;
+			--bootstrap-pill-color: #373a3c;
+			--bootstrap-dropdown-toggle-padding: 0 10px;
+			--bootstrap-dropdown-toggle-hover-bg: rgba(255, 255, 255, 0.5);
+		}
+
+		onion-app-body > div {
+			height: 100%;
+		}
+
+		onion-app-toolbar button {
+			padding: 0 10px;
+			background-color: transparent;
+		}
+		
+		onion-app-toolbar button:hover {
+			background-color: rgba(255, 255, 255, 0.5);
+		}
+		
+		onion-app-toolbar button iron-icon,
+		onion-app-toolbar bootstrap-dropdown-toggle iron-icon {
+			margin-right: 5px;
+		}
+
+		.pins-container {
+			position: absolute;
+			width: 280px;
+			left: 175px;
+			top: 42.5px;
+		}
+
+		.note {
+			font-style: italic;
+			font-size: 0.85em;
+			padding: 15px;
+    		color: #888;
+		}
+
+	</style>
+
+	<template>
+		<onion-app app-name="Webcam" toolbar-background="#2980b9" background="#f2f2f2">
+			
+
+
+			<onion-app-toolbar>
+				
+
+				<bootstrap-dropdown for="resolutionDropdown">
+					<li on-tap="_setResolution" data-args="640x480">640x480</li>
+					<li on-tap="_setResolution" data-args="1280x720">1280x720</li>
+				</bootstrap-dropdown>
+
+				<bootstrap-dropdown for="fpsDropdown">
+					<li on-tap="_setFps" data-args="15">15</li>
+					<li on-tap="_setFps" data-args="30">30</li>
+					<li on-tap="_setFps" data-args="60">60</li>
+				</bootstrap-dropdown>
+
+				<div class="layout horizontal">
+					<button id="resolutionDropdown">
+						<iron-icon class="toolbar-icon" icon="icons:settings-overscan"></iron-icon><span>Resolution</span>
+						<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
+					</button>
+
+					<button id="fpsDropdown">
+						<iron-icon class="toolbar-icon" icon="icons:view-headline"></iron-icon><span>FPS</span>
+						<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
+					</button>
+					
+					<div class="flex"></div>
+
+					<button on-click="_StreamingSetup">
+						<iron-icon class="toolbar-icon" icon="icons:camera-enhance"></iron-icon><span>Start Stream</span></button>
+
+					<button on-click="_StreamingStop">
+						<iron-icon class="toolbar-icon" icon="icons:clear"></iron-icon><span>Stop Stream</span></button>
+					
+				</div>
+			</onion-app-toolbar>
+
+			<onion-app-body>
+				<div class="vertical center-justified layout center">
+					 	<img id="stream" src="" onerror="this.src='/apps/onion-webcam/not_available.jpg'">	
+
+				</div>
+			</onion-app-body>
+
+		</onion-app>
+
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var ready = function () {
+				var 	top 	= this;
+
+				this.resolution 		= '640x480';
+				this.fps 				= '30';		
+
+				this.verbose 			= 0;	
+
+				// check if stream is currently enabled
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('uci', 'get', {
+						config: 'mjpg-streamer',
+						section: 'core',
+						option: 'enabled'
+					}, (function (data) {
+						if (data[1].value === '1') {
+							console.log("stream already going");
+							top._StreamingStart();
+						}
+					}).bind(this));
+				}).bind(this));
+			};
+
+			var _setResolution = function (e) {
+				this.resolution	= e.target.dataset['args'];
+			}
+
+			var _setFps = function (e) {
+				this.fps 		= e.target.dataset['args'];
+			}
+
+			var _StreamingStart = function () {
+				var 	top 	= this;
+
+				// get the device ip address and start the stream
+				onionConsole.getService('onion-device-provider', function (deviceProvider) {
+					deviceProvider.getIP(function (result) {
+						top.ipAddr = result[1].ip;
+						console.log('Device ip addr: ' + top.ipAddr);
+
+						setTimeout(function(){
+							top.$.stream.src = "http://" + top.ipAddr + ":8080/?action=stream";
+						},500);
+						
+					});
+				});
+			}
+
+			var _StreamingStop = function () {
+				var 	top 	= this;
+
+				// disable the streaming
+				this._StreamingSetupEnable(0);
+
+				// commit the changes
+				this._StreamingSetupCommit();
+				this._StreamingSetupGet();	// dbg
+
+				// separate the stream
+				top.$.stream.src = ""
+			}
+
+			var _StreamingSetup = function () {
+				var 	top 	= this;
+
+				this._StreamingSetupGet();	// dbg
+				// get rid of the streaming authentication 
+				this._StreamingSetupDeleteAuth();
+				// set the resolution and fps
+				this._StreamingSetupScreen();
+				// enable the streaming
+				this._StreamingSetupEnable(1);
+				this._StreamingSetupGet();	// dbg
+
+				// commit the changes
+				this._StreamingSetupCommit();
+				this._StreamingSetupGet();	// dbg
+
+				// start the stream
+				setTimeout(function () {
+					top._StreamingStart();
+				}, 300);
+			};
+
+			var _StreamingSetupGet = function () {
+				var		top 	= this;
+
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('uci', 'get', {
+						config: 'mjpg-streamer',
+						section: 'core',
+					}, (function (data) {
+						if (top.verbose === 1 ) {
+							console.log("mjpg-streamer:", data);
+						}
+					}).bind(this));
+				}).bind(this));
+			};
+
+			var _StreamingSetupDeleteAuth = function () {
+				var		top 	= this;
+
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('uci', 'delete', {
+						config: 'mjpg-streamer',
+						section: 'core',
+						options: [
+							'username', 
+							'password'
+						]
+					}, (function (data) {
+						if (top.verbose === 1 ) {
+							console.log("_StreamingSetupDeleteAuth", data);
+						}
+					}).bind(this));
+				}).bind(this));
+			};
+
+			// set the stream resolution and fps
+			var _StreamingSetupScreen = function () {
+				var		top 	= this;
+
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('uci', 'set', {
+						config: 'mjpg-streamer',
+						section: 'core',
+						values: {
+							fps: top.fps, 
+							resolution: top.resolution,
+						}
+					}, (function (data) {
+						if (top.verbose === 1 ) {
+							console.log("_StreamingSetupScreen", data);
+						}
+					}).bind(this));
+				}).bind(this));
+			}
+
+			var _StreamingSetupEnable = function (bEnable) {
+				var		top 	= this;
+
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('uci', 'set', {
+						config: 'mjpg-streamer',
+						section: 'core',
+						values: {
+							enabled: bEnable
+						}
+					}, (function (data) {
+						if (top.verbose === 1 ) {
+							console.log("_StreamingSetupEnable", data);
+						}
+					}).bind(this));
+				}).bind(this));
+			}
+
+			var _StreamingSetupCommit = function () {
+				// commit the changes
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('uci', 'commit', {
+						config: 'mjpg-streamer',
+					}, (function (data) {
+						if (top.verbose === 1 ) {
+							console.log("commit:", data);
+						}
+					}).bind(this));
+				}).bind(this));
+			}
+
+			
+
+			Polymer({
+				is: 'onion-webcam',
+				ready: 				ready,
+
+				_setResolution: 	_setResolution,
+				_setFps: 			_setFps,
+
+				_StreamingStart: 		_StreamingStart,
+				_StreamingStop: 		_StreamingStop,
+				_StreamingSetup: 		_StreamingSetup,
+				
+				_StreamingSetupGet: 		_StreamingSetupGet,
+				_StreamingSetupDeleteAuth: 	_StreamingSetupDeleteAuth,
+				_StreamingSetupScreen: 		_StreamingSetupScreen,
+				_StreamingSetupEnable: 		_StreamingSetupEnable,
+				_StreamingSetupCommit: 		_StreamingSetupCommit,
+
+				properties: {
+				},
+			});
+		})();
+	</script>
+
+</dom-module>

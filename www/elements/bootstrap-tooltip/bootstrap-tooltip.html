@@ -1,0 +1,174 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/bootstrap-styles/bootstrap-styles.html">
+
+
+<dom-module id="bootstrap-tooltip">
+	<style>
+		.tooltip.tooltip-top .tooltip-arrow, 
+		.tooltip.bs-tether-element-attached-bottom .tooltip-arrow {
+		  border-top-color: #434a54;
+		  margin-bottom: 1.1px;
+		}
+		.tooltip.tooltip-right .tooltip-arrow, 
+		.tooltip.bs-tether-element-attached-left .tooltip-arrow {
+		  border-right-color: #434a54;
+		  margin-left: 1.1px;
+		}
+		.tooltip.tooltip-bottom .tooltip-arrow, 
+		.tooltip.bs-tether-element-attached-top .tooltip-arrow {
+		  border-bottom-color: #434a54;
+		  margin-top: 1.1px;
+		}
+		.tooltip.tooltip-left .tooltip-arrow, 
+		.tooltip.bs-tether-element-attached-right .tooltip-arrow {
+		  border-left-color: #434a54;
+		  margin-right: 1.1px;
+		}
+      	#tooltip {
+      		display: block;
+      		position: absolute;
+      	}
+      	.hidden {
+        	display: none !important;
+      	}
+    </style>
+
+	<template>
+		<div id="tooltip" class$="{{getButtonClass(position)}}" role="tooltip">
+	    	<div class="tooltip-arrow"></div>
+	    	<div class="tooltip-inner">
+	    		<content></content>
+	    	</div>	      	
+	    </div>
+  	</template>
+
+  	<script>
+  		'use strict';
+  		var getButtonClass = function(position){
+			return "hidden tooltip fade in tooltip-" + position;
+		};
+	    Polymer({
+	      	is: 'bootstrap-tooltip',
+	      	getButtonClass : getButtonClass,
+	      	hostAttributes: {
+		        role: 'tooltip',
+		        tabindex: -1
+	      	},
+	      	properties: {
+		        position: {
+		          	type: String,
+		          	value: 'bottom'
+		        },
+		        for: {
+		        	type: String,
+		        	observer: '_forChanged'
+		        },
+		        offset: {
+		          	type: Number,
+         			value: 4
+		        },
+		        _showing: {
+	            	type: Boolean,
+	          		value: false
+		        }
+	      	},
+	      	listeners: {
+	        	'mouseenter': 'hide'
+	      	},
+	      	get target () {
+	      		var ownerRoot = Polymer.dom(this).getOwnerRoot();
+      			var target;
+	      		
+	      		if(this.for) {
+	      			target = Polymer.dom(ownerRoot).querySelector('#' + this.for);
+	      		} else {
+	      			target = Polymer.dom(this).parentNode;
+	      		}		        
+		    	
+		        return target;
+	      	},
+	      	attached: function() {
+		        this._target = this.target;
+		        this.listen(this._target, 'mouseenter', 'show');
+		        this.listen(this._target, 'focus', 'show');
+		        this.listen(this._target, 'mouseleave', 'hide');
+		        this.listen(this._target, 'blur', 'hide');
+		        this.listen(this._target, 'tap', 'hide');
+	      	},
+	      	detached: function() {
+		        if (this._target) {
+		          	this.unlisten(this._target, 'mouseenter', 'show');
+		          	this.unlisten(this._target, 'focus', 'show');
+		          	this.unlisten(this._target, 'mouseleave', 'hide');
+		          	this.unlisten(this._target, 'blur', 'hide');
+		          	this.unlisten(this._target, 'tap', 'hide');
+		        }
+	      	},
+	      	show: function() {
+		        this._showing = true;
+		        this.toggleClass('hidden', false, this.$.tooltip);
+		        this.updatePosition();
+	      	},
+	      	hide: function() {
+		        this._showing = false;
+		        this.toggleClass('hidden', true, this.$.tooltip);
+		        this.updatePosition();
+	      	},
+	      	_forChanged: function() {
+		        this._target = this.target;
+		    },
+
+		    cumulativeOffset: function(element) {
+			    var top = 0, left = 0;
+			    do {
+			        top += element.offsetTop  || 0;
+			        left += element.offsetLeft || 0;
+			        element = element.offsetParent;
+			    } while(element);
+
+			    return {
+			        top: top,
+			        left: left
+			    };
+			},
+	      	updatePosition: function() {
+		        if (!this._target || !this.offsetParent) {
+		          	return;
+		        }
+		        var offset = this.offset;
+		        var parentRect = this.offsetParent.getBoundingClientRect();
+		        var targetRect = this._target.getBoundingClientRect();
+		        var thisRect = this.$.tooltip.getBoundingClientRect();
+		        var horizontalCenterOffset = (targetRect.width - thisRect.width) / 2;
+		        var verticalCenterOffset = (targetRect.height - thisRect.height) / 2;
+		        var targetLeft = targetRect.left - parentRect.left;
+		        var targetTop = targetRect.top - parentRect.top;
+		        var tooltipLeft, tooltipTop;
+		        var thisWidth = thisRect.right - thisRect.left;
+		        var targetWidth = targetRect.right - targetRect.left;
+		        switch (this.position) {
+		          	case 'top':
+			            tooltipLeft = targetLeft + horizontalCenterOffset;
+			            tooltipTop = targetTop - thisRect.height - offset;
+			            break;
+		          	case 'bottom':
+			            tooltipLeft = targetLeft + horizontalCenterOffset;
+			            tooltipTop = targetTop + targetRect.height + offset;
+			            break;
+		          	case 'left':
+			            tooltipLeft = targetLeft - thisWidth - offset;
+			            tooltipTop = targetTop + verticalCenterOffset;
+			            break;
+		          	case 'right':
+			            tooltipLeft = targetLeft + offset + targetWidth;
+			            tooltipTop = targetTop + verticalCenterOffset;
+			            break;
+		        }
+
+
+	          	this.$.tooltip.style.left = tooltipLeft + 'px';
+	          	this.$.tooltip.style.top = tooltipTop + 'px';		        
+	      	}
+	    });
+  	</script>
+</dom-module>  

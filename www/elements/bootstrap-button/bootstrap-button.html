@@ -1,0 +1,39 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/bootstrap-styles/bootstrap-styles.html">
+
+
+
+
+<dom-module id="bootstrap-button">
+	<style>
+
+	</style>
+	<template>
+		<button type="button" class$="{{getButtonClass(colorScheme)}}">
+			<content></content>
+		</button>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			
+			var getButtonClass = function(colorScheme){
+				return "btn btn-block btn-"+colorScheme;
+			}
+			
+			Polymer({
+				is: 'bootstrap-button',
+				getButtonClass: getButtonClass,
+				properties: {
+					colorScheme: {
+						type: String,
+						value: "default",
+						notify: true
+					}
+				},
+			});
+		})();
+	</script>
+</dom-module>

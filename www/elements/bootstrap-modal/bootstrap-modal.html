@@ -1,107 +1,81 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-overlay-behavior/iron-overlay-behavior.html">
 <link rel="import" href="/elements/bootstrap-styles/bootstrap-styles.html">
-<link rel="import" href="./bootstrap-modal-header.html">
-<link rel="import" href="./bootstrap-modal-body.html">
-<link rel="import" href="./bootstrap-modal-footer.html">
 
 <dom-module id="bootstrap-modal">
+	<style>
+		:host {
+			widows: 100%;
+		}
+		
+		.modal-content {
+			min-width: 400px;
+		}
+	
+	</style>
 	<template>
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<content></content>
+		
+		<div class="modal-content">
+			<div class="modal-header">
+				<template is="dom-if" if="{{!noCloseButton}}">
+					<button type="button" class="close" on-click="close">×</button>
+				</template>
+				<h4 class="modal-title">{{title}}</h4>
+			</div>
+			<div class="modal-body">
+				<content select="modal-body"></content>
+			</div>
+			<div class="modal-footer" on-tap="onFooterClick">
+				<content select="modal-footer"></content>
 			</div>
 		</div>
+
 	</template>
 
 	<script>
 		'use strict';
 
 		(function () {
-			var self = null;
+			var ready = function () {
+				if (this.modal) {
+					this.noCancelOnOutsideClick = true;
+			        this.noCancelOnEscKey = true;
+			        this.withBackdrop = true;
+				}
+			}
 
-			var created = function () {
-				self = this;
-			};
-
-			var _updateClosingReasonConfirmed = function (confirmed) {
-				self.closingReason = self.closingReason || {};
-				self.closingReason.confirmed = confirmed;
-			};
-
-			var _onDialogClick = function (event) {
+			var onFooterClick = function (event) {
+				if (this.modal) {
+					return;
+				}
 				var target = event.target;
-
-				while (target && target !== self) {
-					if (target.hasAttribute) {
-						if (target.hasAttribute('dialog-dismiss')) {
-							self._updateClosingReasonConfirmed(false);
-							self.close();
-							break;
-						} else if (target.hasAttribute('dialog-confirm')) {
-							self._updateClosingReasonConfirmed(true);
-							self.close();
-							break;
-						}
-					}
-
-					target = target.parentNode;
+				
+				if (target.type.indexOf('button') > -1) {
+					this.close();
 				}
 			};
-
-			var _onIronOverlayOpened = function () {
-				if (self.modal) {
-					document.body.addEventListener('focus', self._boundOnFocus, true);
-					self.backdropElement.addEventListener('click', self._boundOnBackdropClick);
-				}
-			};
-
-			var _onIronOverlayClosed = function () {
-				document.body.removeEventListener('focus', self._boundOnFocus, true);
-				self.backdropElement.removeEventListener('click', self._boundOnBackdropClick);
-			};
-
-			var _onFocus = function (event) {
-				if (self.modal) {
-					var target = event.target;
-					while (target && target !== self && target !== document.body) {
-						target = target.parentNode;
-					}
-
-					if (target) {
-						if (target === document.body) {
-							if (self._lastFocusedElement) {
-								self._lastFocusedElement.focus();
-							} else {
-								self._focusNode.focus();
-							}
-						} else {
-							self._lastFocusedElement = event.target;
-						}
-					}
-				}
-			};
-
-			var _onBackdropClick = function () {
-				if (self.modal) {
-					if (self._lastFocusedElement) {
-						self._lastFocusedElement.focus();
-					} else {
-						self._focusNode.focus();
-					}
-				}
-			};
+			
+			var onClose = function () {
+				console.log('on close');
+				this.close();
+			}
 
 			Polymer({
 				is: 'bootstrap-modal',
-				created: created,
 				behaviors: [Polymer.IronOverlayBehavior],
 				hostAttributes: {
 					role: 'dialog',
 					tabindex: '-1'
 				},
+				ready: ready,
+				onClose: onClose,
+				onFooterClick: onFooterClick,
 				properties: {
-					closeButton: {
+					noCloseButton: {
+						type: Boolean,
+						value: false
+					},
+					modal: {
 						type: Boolean,
 						value: false
 					},
@@ -109,33 +83,12 @@
 						type: Boolean,
 						value: true
 					},
-					_lastFocusedElement: {
-						type: Object
-					},
-					_boundOnFocus: {
-						type: Function,
-						value: function () {
-							return self._onFocus.bind(self);
-						}
-					},
-					_boundOnBackdropClick: {
-						type: Function,
-						value: function () {
-							return self._onBackdropClick.bind(self);
-						}
+					title: {
+						type: String,
+						value: ''
 					}
 				},
-				listeners: {
-					'tap': '_onDialogClick',
-					'iron-overlay-opened': '_onIronOverlayOpened',
-					'iron-overlay-closed': '_onIronOverlayClosed'
-				},
-				_updateClosingReasonConfirmed: _updateClosingReasonConfirmed,
-				_onDialogClick: _onDialogClick,
-				_onIronOverlayOpened: _onIronOverlayOpened,
-				_onIronOverlayClosed: _onIronOverlayClosed,
-				_onFocus: _onFocus,
-				_onBackdropClick: _onBackdropClick
+				
 			});
 		})();
 	</script>

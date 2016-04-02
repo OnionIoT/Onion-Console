@@ -1,6 +1,11 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="import" href="/lib/iron-icons/device-icons.html">
+
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="/elements/bootstrap-button/bootstrap-button.html">
+<link rel="import" href="/elements/bootstrap-tooltip/bootstrap-tooltip.html">
 
 <dom-module id="onion-settings-wifi">
 	<style>
@@ -74,23 +79,59 @@
 				transform: rotate(359deg)
 			}
 		}
+
+		#networkTable {
+			margin-bottom: 20px;
+			width: 100%;
+			/*text-align: center;*/
+		}
+
+		#networkTable div:hover{
+			background-color: #ecf0f1;
+		}
+
+		#globalControl {
+			margin: 10px;
+		}
+
+		#enableWifi {
+			margin-left: 20px;
+		}
+
+		.signal-on {
+			color: #0275d8;
+		}
+
+		.signal-off {
+			opacity: 0.4;
+		}
+
+		.action-button {
+			cursor: pointer;
+		}
+
+		.action-button:hover {
+			color: #f39c12;
+		}
+
+		iron-icon[id^=moveUp] {
+			-webkit-transform: rotate(180deg);
+		    -moz-transform: rotate(180deg);
+		    -o-transform: rotate(180deg);
+		    -ms-transform: rotate(180deg);
+		    transform: rotate(180deg);
+		}
+
+		#wifi-message {
+			color: red;
+		}
 	</style>
 
 	<template>
-		<div class="container">
-			<h4>Wi-Fi Network Setup</h4>
-			<div class="card card-block">
-				<form id="wifi-form">
-					<div class="form-group row">
-						<!-- enabled -->
-						<label for="enableWifi" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Enable Wi-Fi</label>
-						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<div class="checkbox">
-								<label><input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" /></label>
-							</div>
-						</div>
-					</div>
 
+		<bootstrap-modal id="newWifiDlg" title="New WiFi Network" modal>
+			<modal-body>
+				<form id="wifi-form">
 					<fieldset disabled="{{!enableWifi}}">
 						<div class="form-group row">
 							<!-- Detected networks -->
@@ -153,17 +194,80 @@
 							</div>
 						</div>
 					</fieldset>
+				</form>
+			</modal-body>
+			<modal-footer>
+				<bootstrap-button id="wifi-config-button" on-click="addNetwork" color-scheme="success">Add Network</bootstrap-button>
+				<div id="configureLoading" class="loading" hidden></div>
+			</modal-footer>
+		</bootstrap-modal>
 
-					<div class="form-group row">
-						<!-- start wifi-config -->
-						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
-							<div class="layout horizontal center">
-								<button id="wifi-config-button" type="button" class="btn btn-success" on-click="setupWifi">Configure Wi-Fi</button>
-								<div id="configureLoading" class="loading" hidden></div>
+
+
+
+		<div class="container">
+			<div class="card card-block">
+				<div id="globalControl" class="layout horizontal center">
+				  	<div>Enable Wi-Fi</div>
+					<input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" />
+					<div class="flex"></div><!-- space holder -->
+					<div id="configureLoading" class="loading" hidden></div>
+				</div>
+
+				<div id="networkTable" class="list-group layout vertical end-justified">
+
+					<div class="list-group-item layout horizontal end">
+						<div>SSID</div>
+						<div class="flex"></div><!-- space holder -->
+						<div>Actions</div>
+					</div>
+
+					<template is="dom-repeat" items="{{savedNetworks}}">
+
+						<div class="list-group-item layout horizontal end">
+							<div>
+								<span>
+								<template is="dom-if" if="{{!isEnabled(item)}}">
+									<iron-icon icon="device:signal-wifi-off" class="signal-off"></iron-icon>
+								</template>
+								<template is="dom-if" if="{{isEnabled(item)}}">
+									<iron-icon icon="device:signal-wifi-4-bar" class="signal-on"></iron-icon>
+								</template>
+							</span>
+								
+								<span>{{item.ssid}}</span>
+							</div>
+
+							<div class="flex"></div><!-- space holder -->
+
+							<div>
+								<div class="layout horizontal center">
+									<template is="dom-if" if="{{!isEnabled(item)}}">
+										<iron-icon id="changeNetwork{{item.index}}" icon="icons:check-circle" class="action-button" 
+											network="{{item}}" on-click="changeNetwork">
+											</iron-icon>
+										<bootstrap-tooltip for="changeNetwork{{item.index}}">Enable</bootstrap-tooltip>
+									</template>
+
+									<iron-icon icon="arrow-drop-down-circle" class="action-button" 
+										id="moveUp{{item.index}}" network="{{item}}" on-click="moveUp"></iron-icon>
+									<bootstrap-tooltip for="moveUp{{item.index}}">Move Up</bootstrap-tooltip>
+
+									<iron-icon icon="arrow-drop-down-circle" class="action-button"
+										id="moveDown{{item.index}}" network="{{item}}" on-click="moveDown"></iron-icon>
+									<bootstrap-tooltip for="moveDown{{item.index}}">Move Down</bootstrap-tooltip>
+
+									<iron-icon icon="icons:cancel" class="action-button"
+										id="removeNetwork{{item.index}}" network="{{item}}" on-click="removeNetwork"></iron-icon>
+									<bootstrap-tooltip for="removeNetwork{{item.index}}">Remove</bootstrap-tooltip>
+
+								</div>
 							</div>
 						</div>
-					</div>
-				</form>
+					</template>
+					
+				</div>
+				<bootstrap-button on-click="newWifiNetwork" color-scheme="primary">Add Wi-Fi Network</bootstrap-button>
 			</div>
 		</div>
 	</template>
@@ -196,17 +300,32 @@
 			};
 
 			var init = function () {
-				self.scanWifiNetwork();
-
-				var wifiConfigPromise = self.wifiProvider.getConfig('sta');
-
-                wifiConfigPromise.then(function (result) {
-                	self.set('enableWifi', result.enabled);
-                	self.set('networkSsid', result.ssid);
-                	self.set('networkAuth', result.encryption);
-                	self.set('networkPassword', result.password);
-                });
+				self.bInitComplete	= false;
+				self.scanWifiNetwork();		// scan for available networks
+                self.refreshNetwork();		// get the list of currently configured networks
 			};
+
+			var refreshNetwork = function() {
+				var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
+                getWifiSetupPromise.then(function(result){
+                	for (var i = 0; i < result.length; i++) {
+                		result[i].index = '_'+result[i]['.index'];
+                	};
+                	console.log(result);
+                	self.savedNetworks = result;
+
+                	// check if any networks are enabled
+                	var enabledNetwork 	= self._findEnabledNetwork();
+                	var bEnabled 	= false;
+                	if (enabledNetwork != null) {
+                		bEnabled 	= true;
+                	}
+
+                	// set the checkbox
+                	self.set('enableWifi', bEnabled);
+                	self.bInitComplete	= true;
+                });
+			}
 
 			var showScanMessage = function (message) {
 				self.set('wifiScanMsgEn', true);
@@ -221,9 +340,8 @@
 			var scanWifiNetwork = function () {
 				self.showScanMessage('Scanning...');
 
-				var wifiScanPromise = self.wifiProvider.wifiScan();
-
-				wifiScanPromise.then(function (result) {
+				self.wifiProvider.wifiScan()
+				.then(function (result) {
 					while (self.networks.length > 0) {
 						self.pop('networks');
 					}
@@ -267,56 +385,261 @@
 
 				console.log('Auth: ', self.networkAuth);
 			};
-		
-		    var setupWifi = function () {
-		    	self.$.configureLoading.hidden = false;
-		    	self.$['wifi-config-button'].disabled = true;
 
-		    	setTimeout(function () {
-		    		self.$.configureLoading.hidden = true;
-		    		self.$['wifi-config-button'].disabled = false;
-		    	}, 10000);
+			var _computeShowPassword = function (showPassword) {
+				return showPassword ? 'text' : 'password';
+			};
 
+			var newWifiNetwork = function () {
+				this.$.newWifiDlg.open();
+			};
+
+			var addNetwork = function () {
 			    self.wifiMessage = '';
 
 			    var verifyResult = self.wifiProvider.verifyKey(self.networkPassword, self.networkAuth);
 
-				if (verifyResult === 'OK') {
-                    if (self.sessionProvider.isAlive() === true) {
-                    	var wifiSetupPromise = self.wifiProvider.wifiSetup(self.enableWifi, self.networkSsid, self.networkPassword, self.networkAuth, self.networkIp, self.networkNetmask);
+				if (verifyResult === 'OK' && self.sessionProvider.isAlive() === true) {
+                	// add a network wifi-iface
+                	var wifiAddNetworkPromise = self.wifiProvider.prepareWifiNetwork();
+
+                	wifiAddNetworkPromise.then(function() {
+                		// setup the network
+                    	var wifiSetupPromise = self.wifiProvider.setupWifiNetwork(self.networkSsid, self.networkPassword, self.networkAuth);
 
                     	wifiSetupPromise.then(function () {
-
+                    		self.refreshNetwork();		// refresh the list to include this new network
+                    		self.$.newWifiDlg.close();	// close the dialogue
                     	}, function (err) {
                     		console.error(err);
                     	});
-				    }
+                	});
 				} else {
 				    self.wifiMessage = verifyResult;
 				}
 			};
 
-			var _computeShowPassword = function (showPassword) {
-				return showPassword ? 'text' : 'password';
+			var removeNetwork = function(e) {
+				var network = e.target.network;
+				console.log('Removing ', network.ssid);
+
+				var wifiRemoveNetworkPromise = self.wifiProvider.removeWifiNetwork(network);
+
+				wifiRemoveNetworkPromise.then(function () {
+					self.refreshNetwork();		// refresh the list to reflect this delete
+				});
 			};
+
+			var onLoading = function () {
+				self.$.configureLoading.hidden = false;
+
+		    	setTimeout(function () {
+		    		self.$.configureLoading.hidden = true;
+		    	}, 5000);
+			}
+
+			var changeNetwork = function(e) {
+				var network = e.target.network;
+				this.onLoading();
+
+				// disable all other networks
+				console.log('Disabling all networks');
+				var disablePromise = self._disableAllNetworks();
+
+				disablePromise.then((function () {
+					// enable the specified network
+					console.log('Enabling network: ' + network.ssid);
+					var enablePromise = self.wifiProvider.setEnableWirelessNetwork(network['.name'], true);
+
+					enablePromise.then(function () {
+						self.refreshNetwork();		// refresh the list
+						
+					});
+				}).bind(this));
+			};
+
+
+			var moveUp = function(e) {
+				var network = e.target.network;
+				
+				if ( !(self._isTopNetwork(network)) ) {
+					// move the network UP in the list
+					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(network, true);
+
+					wifiChangeOrderPromise.then(function () {
+						self.refreshNetwork();		// refresh the list to reflect this reorder
+					});
+				}
+			};
+
+			var moveDown = function(e) {
+				var network = e.target.network;
+				
+				if ( !(self._isBottomNetwork(network)) ) {
+					// move the network DOWN in the list
+					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(network, false);
+
+					wifiChangeOrderPromise.then(function () {
+						self.refreshNetwork();		// refresh the list to reflect this reorder
+					});
+				}
+			};
+
+			var enableWifiChanged = function (newVal) {
+	
+				if (self.bInitComplete) {
+					if (newVal === false) {
+						if (confirm('Are you sure you want to turn off the WiFi?\r\nYou may not be able to access your Omega when the WiFi is off.')) {
+							// disable all networks (and commit the change)
+							var disablePromise = self._disableAllNetworks(true);
+
+							disablePromise.then((function () {
+								self.refreshNetwork();		// refresh the list to reflect this change
+								this.onLoading();
+							}).bind(this));
+						}else {
+							this.enableWifi = !newVal;
+						}
+					}
+					else {
+						// Lazar: turn on wifi
+					}
+				}
+			};
+
+			var isEnabled = function (network) {
+				return !(network.disabled==='1')
+			};
+
+
+			//// functions that use the list of networks ////
+			// find the enabled network, returns null if none are enabled
+			var _findEnabledNetwork = function () {
+				var enabledNetwork 	= null;
+
+				// loop through the list and look for enabled networks
+				for (var key in self.savedNetworks) {
+            		var network = self.savedNetworks[key];
+
+            		if (network.disabled == null || network.disabled === '0') {
+            			enabledNetwork = self.savedNetworks[key];
+            			break;
+            		}
+            	}
+
+				return enabledNetwork;
+			};
+
+			// find the network's index in the network array
+			var _findNetworkIndex = function (targetNetwork) {
+				var	count 	= 0;
+				var index 	= -1;
+
+				// loop through the list and look for this network
+				for (var key in self.savedNetworks) {
+            		var network = self.savedNetworks[key];
+
+            		if (network['.name'] === targetNetwork['.name']) {
+            			index = count;
+            			break;
+            		}
+
+            		count++;
+            	}
+
+            	return index;
+			};
+
+			// check if network as at the top of the list
+			var _isTopNetwork = function (targetNetwork) {
+				var bTop 	= false;
+				var index 	= self._findNetworkIndex(targetNetwork);
+
+				if (index === 0) {
+					bTop = true;
+				}
+
+				return bTop;
+			};
+
+			// check if network as at the bottom of the list
+			var _isBottomNetwork = function (targetNetwork) {
+				var bBottom 	= false;
+				var index 	= self._findNetworkIndex(targetNetwork);
+
+				if (index === (self.savedNetworks.length - 1)) {
+					bBottom = true;
+				}
+				
+				return bBottom;
+			};
+
+			// disable any and all active networks
+			var _disableAllNetworks = function (bCommit) {
+				var promise = new Promise(function (resolve, reject) {
+					// loop through the list and look for enabled networks
+					for (var key in self.savedNetworks) {
+	            		var network = self.savedNetworks[key];
+
+	            		if (network.disabled == null || network.disabled === '0') {
+	            			// disable the network
+	            			var disablePromise = self.wifiProvider.setEnableWirelessNetwork(network['.name'], false, true);
+	            		}
+	            	}
+
+	            	if (bCommit) {
+	            		// commit the changes
+	            		var commitPromise = self.wifiProvider.commitWirelessChanges();
+	            		// resolve the promise when the commit is done
+	            		commitPromise.then(function () {
+							resolve();
+						});
+
+	            	} else {
+	            		resolve();
+	            	}
+            	});
+
+            	return promise;
+			};
+
 
 			Polymer({
 				is: 'onion-settings-wifi',
 				created: created,
 				attached: attached,
 				init: init,
+				onLoading: onLoading,
 				showScanMessage: showScanMessage,
 				hideScanMessage: hideScanMessage,
 				scanWifiNetwork: scanWifiNetwork,
 				selectSsid: selectSsid,
-				setupWifi: setupWifi,
+				isEnabled: isEnabled,
 				_computeShowPassword: _computeShowPassword,
+				newWifiNetwork: newWifiNetwork,
+				refreshNetwork: refreshNetwork,
+				changeNetwork: changeNetwork,
+				addNetwork: addNetwork,
+				removeNetwork: removeNetwork,
+				moveUp: moveUp,
+				moveDown: moveDown,
+				enableWifiChanged: enableWifiChanged,
+				_findEnabledNetwork: _findEnabledNetwork,
+				_findNetworkIndex: _findNetworkIndex,
+				_isTopNetwork: _isTopNetwork,
+				_isBottomNetwork: _isBottomNetwork,
+				_disableAllNetworks: _disableAllNetworks,
 				properties: {
 					enableWifi: {
 						type: Boolean,
-						notify: true
+						notify: true,
+						observer: "enableWifiChanged"
 					},
 					networks: {
+						type: Array,
+						notify: true
+					},
+					savedNetworks: {
 						type: Array,
 						notify: true
 					},
