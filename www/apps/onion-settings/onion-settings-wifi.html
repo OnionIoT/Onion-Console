@@ -289,23 +289,35 @@
 			};
 
 			var init = function () {
+				self.bInitComplete	= false;
 				self.scanWifiNetwork();
 
+				/*// Lazar
 				var wifiConfigPromise = self.wifiProvider.getConfig('sta');
 
-                wifiConfigPromise.then(function (result) {
-                	self.set('enableWifi', result.enabled);
+                wifiConfigPromise.then((function (result) {
+                	this.set('enableWifi', result.enabled);
                 	// self.set('networkSsid', result.ssid);
                 	// self.set('networkAuth', result.encryption);
                 	// self.set('networkPassword', result.password);
-                });
+                }).bind(this));*/
 
 
-
+                // get list of all STA networks
                 var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
                 getWifiSetupPromise.then(function(result){
                 	self.savedNetworks = result;
                 	console.log(result);
+
+                	// check if any networks are enabled
+                	var enabledNetwork 	= self._findEnabledNetwork();
+                	var bEnabled 	= false;
+                	if (enabledNetwork != null) {
+                		bEnabled 	= true;
+                	}
+
+                	self.set('enableWifi', bEnabled);
+                	self.bInitComplete	= true;
                 });
 
 			};
@@ -424,36 +436,68 @@
 			}
 
 			var addNetwork = function () {
-
+				// Lazar: move contents of setupWifi function and link to the button
 			}
 
 			var changeNetwork = function(e) {
 				var network = e.target.network;
 				console.log(network);
 
+				// Lazar: disable current network (if any), enable var network
 			}
 
 			var moveUp = function(e) {
 				var network = e.target.network;
 				console.log(network);
 				
+				// Lazar: implement this
+
+				// update with: this.refreshNetwork
 			}
 
 			var moveDown = function(e) {
 				var network = e.target.network;
 				console.log(network);
 				
+				// Lazar: implement this	
+
+				// update with: this.refreshNetwork
 			}
 
 			var enableWifiChanged = function (newVal) {
-				var wifiOff
-				
-				if (newVal === false) {
-					if (confirm('Are you sure you want to turn off the WiFi?\r\nYou may not be able to access your Omega when the WiFi is off.')) {
-					}else {
-						this.enableWifi = !newVal;
+	
+				if (self.bInitComplete) {
+					if (newVal === false) {
+						if (confirm('Are you sure you want to turn off the WiFi?\r\nYou may not be able to access your Omega when the WiFi is off.')) {
+							// Lazar: turn off all networks
+						}else {
+							this.enableWifi = !newVal;
+						}
+
+					}
+					else {
+						// Lazar: turn on wifi
 					}
 				}
+			}
+
+
+			//// functions that use the list of networks ////
+			// find the enabled network, returns null if none are enabled
+			var _findEnabledNetwork = function () {
+				var enabledNetwork 	= null;
+
+				// loop through the list and look for enabled networks
+				for (var key in self.savedNetworks) {
+            		var network = self.savedNetworks[key];
+
+            		if (network.disabled == null || network.disabled === '0') {
+            			enabledNetwork = self.savedNetworks[key];
+            			break;
+            		}
+            	}
+
+				return enabledNetwork;
 			}
 
 
@@ -475,6 +519,7 @@
 				moveUp: moveUp,
 				moveDown: moveDown,
 				enableWifiChanged: enableWifiChanged,
+				_findEnabledNetwork: _findEnabledNetwork,
 				properties: {
 					enableWifi: {
 						type: Boolean,
