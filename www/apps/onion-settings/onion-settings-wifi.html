@@ -121,6 +121,10 @@
 		    -ms-transform: rotate(180deg);
 		    transform: rotate(180deg);
 		}
+
+		#wifi-message {
+			color: red;
+		}
 	</style>
 
 	<template>
@@ -206,6 +210,7 @@
 				<div id="globalControl" class="layout horizontal center">
 				  	<div>Enable Wi-Fi</div>
 					<input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" />
+					<div class="flex"></div><!-- space holder -->
 					<div id="configureLoading" class="loading" hidden></div>
 				</div>
 
@@ -244,11 +249,11 @@
 										<bootstrap-tooltip for="changeNetwork{{item.index}}">Enable</bootstrap-tooltip>
 									</template>
 
-									<iron-icon icon="icons:add-circle" class="action-button" 
+									<iron-icon icon="arrow-drop-down-circle" class="action-button" 
 										id="moveUp{{item.index}}" network="{{item}}" on-click="moveUp"></iron-icon>
 									<bootstrap-tooltip for="moveUp{{item.index}}">Move Up</bootstrap-tooltip>
 
-									<iron-icon icon="icons:remove-circle" class="action-button"
+									<iron-icon icon="arrow-drop-down-circle" class="action-button"
 										id="moveDown{{item.index}}" network="{{item}}" on-click="moveDown"></iron-icon>
 									<bootstrap-tooltip for="moveDown{{item.index}}">Move Down</bootstrap-tooltip>
 
@@ -390,13 +395,6 @@
 			};
 
 			var addNetwork = function () {
-				self.$.configureLoading.hidden = false;
-		    	self.$['wifi-config-button'].disabled = true;
-
-		    	setTimeout(function () {
-		    		self.$.configureLoading.hidden = true;
-		    		self.$['wifi-config-button'].disabled = false;
-		    	}, 10000);
 
 			    self.wifiMessage = '';
 
@@ -443,6 +441,7 @@
 
 			var changeNetwork = function(e) {
 				var network = e.target.network;
+				this.onLoading();
 
 				// disable all other networks
 				console.log('Disabling all networks');
@@ -455,7 +454,7 @@
 
 					enablePromise.then(function () {
 						self.refreshNetwork();		// refresh the list
-						this.onLoading();
+						
 					});
 				}).bind(this));
 			};
@@ -495,10 +494,10 @@
 							// disable all networks (and commit the change)
 							var disablePromise = self._disableAllNetworks(true);
 
-							disablePromise.then(function () {
+							disablePromise.then((function () {
 								self.refreshNetwork();		// refresh the list to reflect this change
-								// Zheng: add loading animation and disable the buttons 
-							});
+								this.onLoading();
+							}).bind(this));
 						}else {
 							this.enableWifi = !newVal;
 						}
