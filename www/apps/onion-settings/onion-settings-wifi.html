@@ -187,7 +187,6 @@
 			</modal-body>
 			<modal-footer>
 				<bootstrap-button id="wifi-config-button" on-click="setupWifi" color-scheme="success">Add Network</bootstrap-button>
-				<div id="configureLoading" class="loading" hidden></div>
 			</modal-footer>
 		</bootstrap-modal>
 
@@ -199,6 +198,7 @@
 				<div id="globalControl" class="layout horizontal center">
 				  	<div>Enable Wi-Fi</div>
 					<input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" />
+					<div id="configureLoading" class="loading" hidden></div>
 				</div>
 
 				<div id="networkTable" class="list-group layout vertical end-justified">
@@ -230,23 +230,23 @@
 							<div>
 								<div class="layout horizontal center">
 									<template is="dom-if" if="{{!isEnabled(item)}}">
-										<iron-icon id="changeNetwork{{item.ssid}}" icon="icons:check-circle" class="action-button" 
+										<iron-icon id="changeNetwork{{item.index}}" icon="icons:check-circle" class="action-button" 
 											network="{{item}}" on-click="changeNetwork">
 											</iron-icon>
-										<bootstrap-tooltip for="changeNetwork{{item.ssid}}">Enable</bootstrap-tooltip>
+										<bootstrap-tooltip for="changeNetwork{{item.index}}">Enable</bootstrap-tooltip>
 									</template>
 
 									<iron-icon icon="icons:add-circle" class="action-button" 
-										id="moveUp{{item.ssid}}" network="{{item}}" on-click="moveUp"></iron-icon>
-									<bootstrap-tooltip for="moveUp{{item.ssid}}">Move Up</bootstrap-tooltip>
+										id="moveUp{{item.index}}" network="{{item}}" on-click="moveUp"></iron-icon>
+									<bootstrap-tooltip for="moveUp{{item.index}}">Move Up</bootstrap-tooltip>
 
 									<iron-icon icon="icons:remove-circle" class="action-button"
-										id="moveDown{{item.ssid}}" network="{{item}}" on-click="moveDown"></iron-icon>
-									<bootstrap-tooltip for="moveDown{{item.ssid}}">Move Down</bootstrap-tooltip>
+										id="moveDown{{item.index}}" network="{{item}}" on-click="moveDown"></iron-icon>
+									<bootstrap-tooltip for="moveDown{{item.index}}">Move Down</bootstrap-tooltip>
 
 									<iron-icon icon="icons:cancel" class="action-button"
-										id="removeNetwork{{item.ssid}}" network="{{item}}" on-click="removeNetwork"></iron-icon>
-									<bootstrap-tooltip for="removeNetwork{{item.ssid}}">Remove</bootstrap-tooltip>
+										id="removeNetwork{{item.index}}" network="{{item}}" on-click="removeNetwork"></iron-icon>
+									<bootstrap-tooltip for="removeNetwork{{item.index}}">Remove</bootstrap-tooltip>
 
 								</div>
 							</div>
@@ -304,6 +304,10 @@
                 // get list of all STA networks
                 var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
                 getWifiSetupPromise.then(function(result){
+                	for (var i = 0; i < result.length; i++) {
+                		result[i].index = '_'+result[i]['.index'];
+                	};
+                	console.log(result);
                 	self.savedNetworks = result;
 
                 	// check if any networks are enabled
@@ -387,13 +391,6 @@
 			};
 		
 		    var setupWifi = function () {
-		    	self.$.configureLoading.hidden = false;
-		    	self.$['wifi-config-button'].disabled = true;
-
-		    	setTimeout(function () {
-		    		self.$.configureLoading.hidden = true;
-		    		self.$['wifi-config-button'].disabled = false;
-		    	}, 10000);
 
 			    self.wifiMessage = '';
 
@@ -438,6 +435,12 @@
 			var changeNetwork = function(e) {
 				var network = e.target.network;
 				console.log(network);
+
+				self.$.configureLoading.hidden = false;
+
+		    	setTimeout(function () {
+		    		self.$.configureLoading.hidden = true;
+		    	}, 10000);
 
 				// Lazar: disable current network (if any), enable var network
 			}
