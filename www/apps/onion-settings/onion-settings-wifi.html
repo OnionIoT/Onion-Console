@@ -5,6 +5,7 @@
 
 <link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
 <link rel="import" href="/elements/bootstrap-button/bootstrap-button.html">
+<link rel="import" href="/elements/bootstrap-tooltip/bootstrap-tooltip.html">
 
 <dom-module id="onion-settings-wifi">
 	<style>
@@ -110,6 +111,14 @@
 			opacity: 0.4;
 		}
 
+		.action-button {
+			cursor: pointer;
+		}
+
+		.action-button:hover {
+			color: #f39c12;
+		}
+
 	</style>
 
 	<template>
@@ -205,6 +214,7 @@
 					</tr>
 
 					<template is="dom-repeat" items="{{savedNetworks}}">
+
 						<tr class="list-group-item">
 							<td>
 								<span>
@@ -219,8 +229,15 @@
 								<span>{{item.ssid}}</span>
 							</td>
 							<td>
-								<div>
-									
+								<div class="layout horizontal center">
+									<template is="dom-if" if="{{item.disabled}}">
+										<iron-icon icon="icons:check-circle" class="action-button" 
+											network="{{item}}" on-click="changeNetwork"></iron-icon>
+									</template>
+									<iron-icon icon="icons:add-circle" class="action-button" 
+										network="{{item}}" on-click="moveUp"></iron-icon>
+									<iron-icon icon="icons:remove-circle" class="action-button"
+										network="{{item}}" on-click="moveDown"></iron-icon>
 								</div>
 							</td>
 						</tr>
@@ -267,9 +284,9 @@
 
                 wifiConfigPromise.then(function (result) {
                 	self.set('enableWifi', result.enabled);
-                	self.set('networkSsid', result.ssid);
-                	self.set('networkAuth', result.encryption);
-                	self.set('networkPassword', result.password);
+                	// self.set('networkSsid', result.ssid);
+                	// self.set('networkAuth', result.encryption);
+                	// self.set('networkPassword', result.password);
                 });
 
 
@@ -394,6 +411,28 @@
 				this.$.newWifiDlg.open();
 			}
 
+			var addNetwork = function () {
+
+			}
+
+			var changeNetwork = function(e) {
+				var network = e.target.network;
+				console.log(network);
+
+			}
+
+			var moveUp = function(e) {
+				var network = e.target.network;
+				console.log(network);
+				
+			}
+
+			var moveDown = function(e) {
+				var network = e.target.network;
+				console.log(network);
+				
+			}
+
 			Polymer({
 				is: 'onion-settings-wifi',
 				created: created,
@@ -407,6 +446,10 @@
 				_computeShowPassword: _computeShowPassword,
 				newWifiNetwork: newWifiNetwork,
 				refreshNetwork: refreshNetwork,
+				changeNetwork: changeNetwork,
+				addNetwork: addNetwork,
+				moveUp: moveUp,
+				moveDown: moveDown,
 				properties: {
 					enableWifi: {
 						type: Boolean,
