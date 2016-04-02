@@ -479,11 +479,16 @@
 				if (self.bInitComplete) {
 					if (newVal === false) {
 						if (confirm('Are you sure you want to turn off the WiFi?\r\nYou may not be able to access your Omega when the WiFi is off.')) {
-							// Lazar: turn off all networks
+							// disable all networks (and commit the change)
+							var disablePromise = self._disableAllNetworks(true);
+
+							disablePromise.then(function () {
+								self.refreshNetwork();		// refresh the list to reflect this change
+								// Zheng: add loading animation and disable the buttons 
+							});
 						}else {
 							this.enableWifi = !newVal;
 						}
-
 					}
 					else {
 						// Lazar: turn on wifi
@@ -571,12 +576,17 @@
 	            		}
 	            	}
 
-	            	self.refreshNetwork();	// refresh the list to reflect these disables
+	            	if (bCommit) {
+	            		// commit the changes
+	            		var commitPromise = self.wifiProvider.commitWirelessChanges();
+	            		// resolve the promise when the commit is done
+	            		commitPromise.then(function () {
+							resolve();
+						});
 
-	            	// Lazar: implement this
-	            	//if (bCommit) {}
-
-	            	resolve();
+	            	} else {
+	            		resolve();
+	            	}
             	});
 
             	return promise;
