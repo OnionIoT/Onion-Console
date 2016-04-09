@@ -228,11 +228,17 @@
 			};
 
 			var _clearScreen = function () {
+				// clear the canvas
 				this.displayCanvasContext.clearRect(0, 0, this.displayCanvas.width, this.displayCanvas.height);
 				this.dataCanvasContext.clearRect(0, 0, this.dataCanvas.width, this.dataCanvas.height);
 
+				// clear the text
 				this.textValue = '';
 
+				// hide the save image button
+				this.set('bDisplaySaveImage', false);
+
+				// clear the physical oled screen
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
 					ubus.request('i2c_exp', 'oled-exp', {
 						command: 'set',
