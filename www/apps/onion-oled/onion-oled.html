@@ -27,6 +27,13 @@
 		
 		#oled-container {
 			width: 800px;
+			height: 525px;
+			background-color: #fff;
+			border-radius: 3px;
+		}
+
+		#oled-container-long {
+			width: 800px;
 			height: 550px;
 			background-color: #fff;
 			border-radius: 3px;
@@ -147,7 +154,7 @@
 
 			<onion-app-body>
 				<div class="horizontal center-justified layout center">
-					<div id="oled-container" class="horizontal layout">
+					<div id="[[_calculateOledContainerClass(tabs, currentTab, bDisplaySaveImage)]]" class="horizontal layout">
 						<div id="side-bar">
 							<bootstrap-pills stacked selected="{{currentTab}}">
 								<bootstrap-pill>
@@ -225,6 +232,18 @@
 
 			var _currentTab = function (tabs, currentTab) {
 				return tabs[currentTab];
+			};
+
+			var _calculateOledContainerClass = function (tabs, currentTab, bDisplaySaveImage) {
+				var currentTabName 	= tabs[currentTab];
+				
+				var ret 	= 'oled-container';
+				if (currentTabName === 'image' && bDisplaySaveImage) {
+					var ret 	= 'oled-container-long';
+					console.log('inside if statement!');
+				} 
+
+				return ret;
 			};
 
 			var _clearScreen = function () {
@@ -535,6 +554,7 @@
 					}
 				},
 				_currentTab: _currentTab,
+				_calculateOledContainerClass: _calculateOledContainerClass,
 				_textValueChanged: _textValueChanged,
 				_syncText: _syncText,
 				_loadImage: _loadImage,
