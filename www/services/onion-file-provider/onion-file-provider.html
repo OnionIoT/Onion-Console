@@ -11,11 +11,12 @@
 				self = this;
 			};
 
-			var fileListResult = null;
-			var fileContentResult = null;
-			var fileSaveResult = null;
-			var execCommandResult = null;
-			var backsplash = null;
+			var fileListResult 		= null;
+			var fileContentResult 	= null;
+			var fileSaveResult 		= null;
+			var execCommandResult 	= null;
+			var backsplash 			= null;
+			var tmpFile 			= null;
 
 			var ready = function () {
 				backsplash = '/';
@@ -154,6 +155,7 @@
 				this.execCommandReturn('mktemp', {}, function (data) {
 					if (data.length === 2 && data[0] === 0) {
 						var filename = data[1].stdout.trim();
+						tmpFile 	= filename;
 
 						if (fileData) {
 							saveFileContentReturn(filename, fileData, function (data) {
@@ -164,6 +166,23 @@
 						} else {
 							callback(filename);
 						}
+					}
+				});
+			};
+
+			var getTempFile = function () {
+				return tmpFile;
+			};
+
+			var copyFile = function (srcFile, dstFile) {
+				this.execCommandReturn('cp', [srcFile, dstFile], function (result) {
+					console.log('result:', result);
+					if (result[1].code === 0) {
+						// copy was successful
+						console.log('Copy was successful!');
+					} else {
+						// copy not successful
+						console.log('Copy NOT successful!');
 					}
 				});
 			};
@@ -228,7 +247,9 @@
 				setFileContent: setFileContent,
 				setSaveFileContentResult: setSaveFileContentResult,
 				setExecCommandResult: setExecCommandResult,
-				createTempFile: createTempFile
+				createTempFile: createTempFile,
+				getTempFile: getTempFile,
+				copyFile: copyFile
 			});
         })();
 	</script>
