@@ -45,6 +45,7 @@
                                 "system",
                                 "wireless",
                                 "network",
+                                "onion",
                                 "mjpg-streamer"
                         ]
                 },
