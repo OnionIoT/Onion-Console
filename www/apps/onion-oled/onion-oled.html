@@ -27,7 +27,7 @@
 		
 		#oled-container {
 			width: 800px;
-			height: 525px;
+			height: 550px;
 			background-color: #fff;
 			border-radius: 3px;
 		}
@@ -177,6 +177,12 @@
 										<span class="file-custom"></span>
 									</label>
 								</div>
+								<template is="dom-if" if="{{bDisplaySaveImage}}">
+									<div class="horizontal center-justified layout">
+										<button type="button" class="btn btn-success" on-tap="_saveImage">Save to Omega</button>
+										<input type="text" id="save-file" value="{{imageSavePath::input}}"/>
+									</div>
+								</template>
 							</div>
 						</iron-pages>
 					</div>
@@ -212,6 +218,9 @@
 				this.dataCanvas.height = 64;
 				this.dataCanvas.width = 128;
 				this.dataCanvasContext = this.dataCanvas.getContext('2d');
+
+				this.imageSavePath 		= '/root/image.lcd';
+				this.bDisplaySaveImage 	= false;
 			};
 
 			var _currentTab = function (tabs, currentTab) {
@@ -344,9 +353,9 @@
 							_processImage(this.displayCanvas, this.displayCanvasContext, img, true);
 
 							// Get imgData from data canvas
-							var imgData = _processImage(this.dataCanvas, this.dataCanvasContext, img, false);
-							var pageArray = _convertToPageArray(imgData);
-							var hexDump = _generateHexDump(pageArray, true);
+							var imgData 	= _processImage(this.dataCanvas, this.dataCanvasContext, img, false);
+							var pageArray 	= _convertToPageArray(imgData);
+							var hexDump 	= _generateHexDump(pageArray, true);
 
 							onionConsole.getService('onion-file-provider', function (fileProvider) {
 								fileProvider.createTempFile(hexDump, function (filename) {
@@ -369,6 +378,9 @@
 								});
 						    });
 
+							// set the default image name
+						    this.set('imageSavePath', '/root/image.lcd');
+						    this.set('bDisplaySaveImage', true);
 						}).bind(this);
 
 						img.src = e.target.result;
@@ -376,6 +388,19 @@
 
 					fr.readAsDataURL(this.$['image-file'].files[0]);
 				}
+			};
+
+			var _saveImage = function () {
+				var top 		= this;
+				var savePath 	= '/root/image.lcd'
+
+				if (this.imageSavePath != null) {
+					savePath 	= this.imageSavePath;
+				}
+
+				onionConsole.getService('onion-file-provider', function (fileProvider) {
+					fileProvider.copyFile(fileProvider.getTempFile(), savePath);
+				});
 			};
 
 			var _processImage = function (canvas, context, img, bg) {
@@ -507,6 +532,7 @@
 				_textValueChanged: _textValueChanged,
 				_syncText: _syncText,
 				_loadImage: _loadImage,
+				_saveImage: _saveImage,
 				_clearScreen: _clearScreen,
 				_invertScreen: _invertScreen,
 				_dimScreen: _dimScreen,
