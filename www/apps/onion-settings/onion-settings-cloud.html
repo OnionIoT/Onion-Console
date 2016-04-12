@@ -86,6 +86,12 @@
 									<td>{{secret}}</td>
 								</tr>
 							</table>	
+
+							<!-- button to remove current settings -->
+							<div class="layout horizontal end-justified">
+								<button id="cloud-config-button" type="button" class="btn btn-success" on-tap="removeSettings">Reset Device Settings</button>
+								<!-- <div class="flex"></div> -->
+							</div>
 							
 						</template>	
 
@@ -115,14 +121,13 @@
 			var checkSetup = function () {
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
 					ubus.request('uci', 'get', {
-						config: 'onion',
-						section: 'cloud'
+						config: 'onion'
 					}, (function (result) {
-						console.log('uci get onion.cloud result: ', result);
+						console.log('uci get onion result: ', result);
 						if (result[0] === 0) {
-							if (result[1] && ('deviceId' in result[1].values) && ('secret' in result[1].values)) {
-								this.set('deviceId', 	result[1].values.deviceId);
-								this.set('secret',		result[1].values.secret);
+							if (result[1].values.cloud && ('deviceId' in result[1].values.cloud) && ('secret' in result[1].values.cloud) ) {
+								this.set('deviceId', 	result[1].values.cloud.deviceId);
+								this.set('secret',		result[1].values.cloud.secret);
 
 								this.set('bDisplayInfoView',		true);
 							}
@@ -138,7 +143,6 @@
 			var setupDevice = function () {
 				this.loading = true;
 				console.log('Setup code is ', this.setupCode);
-				//zvgBV8WLY
 
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
 					ubus.request('file', 'exec', {
@@ -177,6 +181,32 @@
 
 						// disable the loading animation
 						this.loading = false;
+						// clear the setup code
+						this.set('setupCode', '');
+					}).bind(this));
+				}).bind(this));
+			};
+
+			// remove the current cloud settings
+			var removeSettings = function () {
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					ubus.request('uci', 'delete', {
+						config: 'onion',
+						section: 'cloud'
+					}, (function (result) {
+						if (result[0] === 0) {
+							ubus.request('uci', 'commit', {
+								config: 'onion'
+							}, (function (result) {
+								if (result[0] === 0) {
+									// removed the cloud settings successfully
+									this.checkSetup();
+								} 
+							}).bind(this));
+						}
+
+						// disable the loading animation
+						this.loading = false;
 					}).bind(this));
 				}).bind(this));
 			};
@@ -186,6 +216,7 @@
 				ready: ready,
 				checkSetup: checkSetup,
 				setupDevice: setupDevice,
+				removeSettings: removeSettings,
 				properties: {
 					loading: {
 						type: Boolean,
