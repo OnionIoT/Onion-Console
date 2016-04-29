@@ -59,7 +59,7 @@
 				callback = callback || self.noop;
 
 				if (!services[serviceId]) {
-					self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html'], function () {
+					self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], function () {
 						var serviceElement = document.createElement(serviceId);
 						Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
 
@@ -88,7 +88,7 @@
 					    self.$.appContainer.querySelector(appId).openFolder(fileName);
 					}
 				} else {
-					self.importHref(['/apps/' + appId + '/' + appId + '.html'], function () {
+					self.importHref(['/apps/' + appId + '/' + appId + '.html?r=a2'], function () {
 						var appElement = document.createElement(appId);
 						appElement.setAttribute('id', appId);
 						Polymer.dom(self.$.appContainer).appendChild(appElement); 
