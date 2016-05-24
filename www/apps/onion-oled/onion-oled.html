@@ -137,7 +137,7 @@
 						<iron-icon class="toolbar-icon" icon="icons:invert-colors"></iron-icon><span>Toggle Invert</span></button>
 					<button on-click="_dimScreen">
 						<iron-icon class="toolbar-icon" icon="device:brightness-medium"></iron-icon><span>Toggle Dim</span></button>
-					<bootstrap-dropdown>
+<!--					<bootstrap-dropdown>
 						<bootstrap-dropdown-toggle theme="onion">
 							<iron-icon class="toolbar-icon" icon="icons:swap-horiz"></iron-icon><span>Scroll</span>
 						</bootstrap-dropdown-toggle>
@@ -148,7 +148,18 @@
 							<bootstrap-dropdown-item on-tap="_scroll" data-args="diagonal-right">45&deg; Right</bootstrap-dropdown-item>
 							<bootstrap-dropdown-item on-tap="_scroll" data-args="stop">Stop Scrolling</bootstrap-dropdown-item>
 						</bootstrap-dropdown-menu>
+					</bootstrap-dropdown> -->
+					<bootstrap-dropdown for="scrollDropdown">
+						<li class="_scrollDropDown" on-tap="_scroll" data-args="left">Left</li>
+						<li class="_scrollDropDown" on-tap="_scroll" data-args="right">Right</li>
+						<li class="_scrollDropDown" on-tap="_scroll" data-args="diagonal-left">45&deg; Left</li>
+						<li class="_scrollDropDown" on-tap="_scroll" data-args="diagonal-right">45&deg; Right</li>
+						<li class="_scrollDropDown" on-tap="_scroll" data-args="stop">Stop Scrolling</li>
 					</bootstrap-dropdown>
+					<button id="scrollDropdown">
+						<iron-icon class="toolbar-icon" icon="icons:swap-horiz"></iron-icon><span>Scroll</span>
+						<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
+					</button>
 				</div>
 			</onion-app-toolbar>
 

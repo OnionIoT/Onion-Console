@@ -140,7 +140,7 @@
 			<onion-app-toolbar>
 				<div class="layout horizontal">
 					<div class="flex"></div>  <!-- Place Holder -->   
-					<bootstrap-dropdown>
+<!--					<bootstrap-dropdown>
 						<bootstrap-dropdown-toggle theme="onion">
 							<iron-icon class="toolbar-icon" icon="hardware:developer-board"></iron-icon><span>Board Layout</span>
 						</bootstrap-dropdown-toggle>
@@ -148,7 +148,15 @@
 							<bootstrap-dropdown-item on-tap="_onLayoutChange" data-args="omega">Omega</bootstrap-dropdown-item>
 							<bootstrap-dropdown-item on-tap="_onLayoutChange" data-args="exp_dock">Expansion Dock</bootstrap-dropdown-item>
 						</bootstrap-dropdown-menu>
+					</bootstrap-dropdown> -->
+					<bootstrap-dropdown class="layoutList" style="background-color:rgb(192, 57, 43);" for="layoutDropdown">
+							<li class="layoutList" on-tap="_onLayoutChange" data-args="omega">Omega</li>
+							<li class="layoutList" on-tap="_onLayoutChange" data-args="exp_dock">Expansion Dock</li>
 					</bootstrap-dropdown>
+					<button id="layoutDropdown" class="layoutList">
+						<iron-icon class="toolbar-icon" icon="hardware:developer-board"></iron-icon><span>Board Layout</span>
+						<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
+					</button>
 				</div>
 			</onion-app-toolbar>
 
@@ -417,7 +425,7 @@
 			};
 
 			var _onLayoutChange = function (e) {
-				this.layout = e.target.parentNode.dataset['args'];
+				this.layout = e.target.dataset.args;
 
 				if (this.layout === 'omega'){
 					this.pins = [ // left:true = left side, gpio:-1=not gpio
