@@ -125,7 +125,7 @@
 					}, (function (result) {
 						console.log('uci get onion result: ', result);
 						if (result[0] === 0) {
-							if (result[1].values.cloud && ('deviceId' in result[1].values.cloud) && ('secret' in result[1].values.cloud) ) {
+							if (result[1].values.cloud && ('deviceId' in result[1].values.cloud) && ('secret' in result[1].values.cloud) && (result[1].values.cloud.secret !== 'anonymous')) {
 								this.set('deviceId', 	result[1].values.cloud.deviceId);
 								this.set('secret',		result[1].values.cloud.secret);
 
