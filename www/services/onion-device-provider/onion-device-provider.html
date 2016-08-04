@@ -15,6 +15,14 @@
 				}).bind(this));			
 			};
 
+			var getDeviceType = function(callback){
+				var params = {};
+				callback = callback || this.noop;
+				this.ubus.request('system', 'board', params, function(result){
+					callback(result[1].model);
+				});
+			}
+
 			var getMAC = function (callback) {
 				var params = {
 					device: 'wlan0'
@@ -274,7 +282,8 @@
 				changeHostname: changeHostname,
 				changeTimezone: changeTimezone,
 				shutdown: shutdown,
-				reboot: reboot
+				reboot: reboot,
+				getDeviceType: getDeviceType
 			});
         })();
 	</script>
