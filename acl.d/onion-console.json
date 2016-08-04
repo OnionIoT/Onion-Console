@@ -23,7 +23,8 @@
                                 ],
                                 "system": [
                                         "info",
-                                        "hostname"
+                                        "hostname",
+                                        "board"
                                 ],
                                 "iwinfo": [
                                         "assoclist"
