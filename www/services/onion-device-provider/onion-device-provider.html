@@ -21,7 +21,7 @@
 				this.ubus.request('system', 'board', params, function(result){
 					callback(result[1].model);
 				});
-			}
+			};
 
 			var getMAC = function (callback) {
 				var params = {
@@ -29,6 +29,38 @@
 				};
 				macResult = callback || this.noop;
 				this.ubus.request('iwinfo', 'assoclist', params, setMACResult);
+			};
+
+			var getNetMask = function(callback){
+				this.getDeviceType((function(device){
+					if(device === 'Onion Omega'){
+						var params = {
+							config: 'network',
+							section: 'wlan',
+							option: 'netmask'
+						};
+						console.log("inside getNEt Masl");
+						callback = callback || this.noop;
+						this.ubus.request('uci','get', params, function(result){
+							console.log(result);
+							var response = result[1].value;
+							callback(response);
+						});
+					}else{
+						var params = {
+							config: 'network',
+							section: 'lan',
+							option: 'netmask'
+						};
+						console.log("inside getNEt Masl");
+						callback = callback || this.noop;
+						this.ubus.request('uci','get', params, function(result){
+							console.log(result);
+							var response = result[1].value;
+							callback(response);
+						});
+					}
+				}).bind(this));
 			};
 
 			var setMACResult = function (result) {
@@ -59,32 +91,50 @@
 
 			var getRxTx = function (callback) {
 				var params =  {};
-				rxtxResult = callback || this.noop;
-				this.ubus.request('network.device', 'status', params, setRxTxResult);
+				callback = callback || this.noop;
+				this.ubus.request('network.device','status', params, (function(result){
+					this.setRxTxResult(result,callback);
+				}).bind(this));
 			};
 
-			var setRxTxResult = function (result) {
+			var setRxTxResult = function (result,callback) {
 				var returnCode = result[0];
 				var receivedkB = 0;
 				var transmittedkB = 0;
-				
-				if (returnCode === 0) {  
-				    var rx = result[1].wlan0.statistics.rx_bytes;
-
-                    receivedkB = parseInt(rx);
-                    if (receivedkB > 0) {
-                        receivedkB = (receivedkB / 1000).toFixed(0);
-                    }
-                    var tx = result[1].wlan0.statistics.tx_bytes;
-                    transmittedkB = parseInt(tx);
-                    if (transmittedkB > 0) {
-                        transmittedkB = (transmittedkB / 1000).toFixed(0);
-                    }
-
-	                rxtxResult([{received: receivedkB}, {transmitted: transmittedkB}]);
+				if(returnCode===0){
+					this.getDeviceType((function(type){
+						var returnCode = result[0];
+						var receivedkB = 0;
+						var transmittedkB = 0;
+						if(type == 'Onion Omega'){
+							var rx = result[1].wlan0.statistics.rx_bytes;
+							receivedkB = parseInt(rx);
+                    		if (receivedkB > 0) {
+                        		receivedkB = (receivedkB / 1000).toFixed(0);
+                        	}
+                        	var tx = result[1].wlan0.statistics.tx_bytes;
+                    		transmittedkB = parseInt(tx);
+		                    if (transmittedkB > 0) {
+		                        transmittedkB = (transmittedkB / 1000).toFixed(0);
+		                    }
+		                    callback([{received:receivedkB},{transmitted:transmittedkB}]);
+                    	}else{
+							var rx = result[1].apcli0.statistics.rx_bytes;
+							receivedkB = parseInt(rx);
+                    		if (receivedkB > 0) {
+                        		receivedkB = (receivedkB / 1000).toFixed(0);
+                        	}
+                        	var tx = result[1].apcli0.statistics.tx_bytes;
+                    		transmittedkB = parseInt(tx);
+		                    if (transmittedkB > 0) {
+		                        transmittedkB = (transmittedkB / 1000).toFixed(0);
+		                    }
+		                    callback([{received:receivedkB},{transmitted:transmittedkB}]);
+						}
+					}).bind(this));
 				} else {
 				    console.log('Failed to get received bytes and transmitted bytes!');
-                    rxtxResult([{received: ''}, {transmitted: ''}]);
+                    callback([{received: ''}, {transmitted: ''}]);
 				}
 			};
 			
@@ -95,13 +145,89 @@
 				ipResult = callback || this.noop;
 				this.ubus.request('file', 'exec', params, setIPResult);
 			};
+
+			var getIPAddr = function(callback){
+				console.log("inside get IPAddr");
+				var params = {};
+				callback = callback || this.noop;
+				this.ubus.request('network.interface.wwan', 'status', params, function(result){
+					console.log(result);
+					console.log(result[1]['ipv4-address'][0]['address']);
+					var response = result[1]['ipv4-address'][0]['address'];
+					callback(response);
+				}.bind(this));
+			};
+
+			var setIPAddrResult = function(result){
+				console.log(result);
+				// if(result[0]===0){
+				// 	console.log(result[1].ipv4-address[0].address);
+				// 	ip = 
+				// }
+				var returnCode = result[0];
+			    var available = false;
+			    var ip = '-';
+			    var netmask = '-';
+			};
+
+			var isOnline = function(callback){
+				this.getDeviceType(function(result){
+					var available = false;
+					if(result == 'Onion Omega'){
+						this.ubus.request('network.device','status',{name:"wlan0"},function(result){
+							if(result[0]===0){
+								available = true;
+								callback(available);
+							}else{
+								callback(available);
+							}
+						});
+					}else{
+						this.ubus.request('network.device','status',{name:"apcli0"},function(result){
+							console.log(result);
+							if(result[0]===0){
+								available = true;
+								callback(available);
+							}else{
+								callback(available);
+							}
+						});
+					}
+				}.bind(this));
+			};
+
+			var getMACAddr = function(callback){
+				this.getDeviceType(function(result){
+					var addr = '';
+					if(result == 'Onion Omega'){
+						this.ubus.request('network.device','status',{name:"wlan0"},function(result){
+							if(result[0]===0){
+								addr = result[1].macaddr;
+								callback(addr);
+							}else{
+								callback(addr);
+							}
+						});
+					}else{
+						this.ubus.request('network.device','status',{name:"apcli0"},function(result){
+							console.log(result);
+							if(result[0]===0){
+								addr = result[1].macaddr;
+								callback(addr);
+							}else{
+								callback(addr);
+							}
+						});
+					}
+				}.bind(this));
+			}
 			
 			var setIPResult = function (result) {
 			    var returnCode = result[0];
 			    var available = false;
 			    var ip = '-';
 			    var netmask = '-';
-                
+                console.log(result);
                 if (result[0] === 0 && result[1].code === 0) { 
 					var wlanIndex = result[1].stdout.indexOf('wlan0');
 					if (wlanIndex > 0) {
@@ -275,15 +401,20 @@
 				getSystem: getSystem,
 				setMACResult: setMACResult,
 				getRxTx: getRxTx,
+				getNetMask: getNetMask,
 				setRxTxResult: setRxTxResult,
 				getIP: getIP,
 				setIPResult: setIPResult,
+				getIPAddr: getIPAddr,
+				setIPAddrResult: setIPAddrResult,
 				changePassword: changePassword,
 				changeHostname: changeHostname,
 				changeTimezone: changeTimezone,
 				shutdown: shutdown,
 				reboot: reboot,
-				getDeviceType: getDeviceType
+				getDeviceType: getDeviceType,
+				isOnline: isOnline,
+				getMACAddr: getMACAddr
 			});
         })();
 	</script>

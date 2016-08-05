@@ -32,6 +32,9 @@
                                 "network.device": [
                                         "status"
                                 ],
+                                "network.interface.wwan": [
+                                        "status"
+                                ],
                                 "network.interface": [
                                         "dump"
                                 ],

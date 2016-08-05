@@ -135,19 +135,32 @@
 								<img src="./onion-logo.png" id="onion-logo" />
 							</div>
 						</div>
-
-						<div class="card status">
-							<div class="card-block status-heading">
-								<h4 class="card-title" id="online">Onion Omega</h4>
-								<h6 class="card-subtitle">Device Info</h6>
+						<template is="dom-if" if="{{!bdevice}}">
+							<div class="card status">
+								<div class="card-block status-heading">
+									<h4 class="card-title" id="online">Onion Omega</h4>
+									<h6 class="card-subtitle">Device Info</h6>
+								</div>
+								<div class="card-block">
+									<p><span>400 MHz Atheros AR9331 MIPS</span><br><strong>Processor</strong></p>
+									<p><span>64 MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
+									<p><span>16 MB Flash Memory</span><br><strong>Storage</strong></p>
+								</div>
 							</div>
-							<div class="card-block">
-								<p><span>400 MHz Atheros AR9331 MIPS</span><br><strong>Processor</strong></p>
-								<p><span>64 MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
-								<p><span>16 MB Flash Memory</span><br><strong>Storage</strong></p>
+						</template>
+						<template is="dom-if" if="{{bdevice}}">
+							<div class="card status">
+								<div class="card-block status-heading">
+									<h4 class="card-title" id="online">Onion Omega2</h4>
+									<h6 class="card-subtitle">Device Info</h6>
+								</div>
+								<div class="card-block">
+									<p><span>580 MHz Ralink MT-7688 MIPS</span><br><strong>Processor</strong></p>
+									<p><span>64 MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
+									<p><span>16 MB Flash Memory</span><br><strong>Storage</strong></p>
+								</div>
 							</div>
-						</div>
-
+						</template>
 						<div class="card status">
 							<div class="card-block status-heading">
 								<h4 class="card-title" id="online">Storage</h4>
@@ -267,6 +280,14 @@
 				if (self.sessionProvider.isAlive() === true) {
 					onionConsole.getService('onion-device-provider', function (deviceProvider) {
 						// Format the uptime, memory, and load
+						deviceProvider.getDeviceType(function(result){
+							if(result === 'Onion Omega'){
+								self.bdevice = false;
+							}else{
+								self.bdevice = true;
+							}
+						})
+
 						setInterval(function () {
 							deviceProvider.getSystem(function (result) {
 								self.uptime = millisecondsToStr ( result[1].uptime * 1000 );
@@ -280,23 +301,36 @@
 						self.deviceProvider = deviceProvider;
 
 						//Get MAC Address
-						deviceProvider.getMAC(function (result) {
-						    self.mac = result.mac;
-						});
+						// deviceProvider.getMAC(function (result) {
+						//     self.mac = result.mac;
+						// });
 
 						//Get IP Address, NetMask
-						deviceProvider.getIP(function (result) {
-							if (result[0].available === true) {
+						deviceProvider.isOnline(function (result) {
+							console.log(result);
+							if (result=== true) {
 								self.$.online.style.display = 'block';
 								self.$.offline.style.display = 'none';
 							} else {
 								self.$.online.style.display = 'none';
 								self.$.offline.style.display = 'block';
 							}
-
-							self.ip = result[1].ip;
-							self.netmask = result[2].netmask;
 						});
+
+						deviceProvider.getIPAddr(function (result) {
+							console.log(result);
+							self.ip = result;
+						});
+
+						deviceProvider.getNetMask(function (result) {
+							console.log(result);
+							self.netmask = result;
+						});
+
+						deviceProvider.getMACAddr(function(result){
+							console.log(result);
+							self.mac = result;
+						})
 
 						//Get received and transmitted bytes
 						updateRxTx();
@@ -333,6 +367,7 @@
 					self.deviceProvider.getRxTx(function (result) {
 						//console.log('rxResult[' + result[0].received + ']');
 						//console.log('txResult[' + result[1].transmitted + ']'); 
+						console.log('TXRX',result);
 						self.received = result[0].received;
 						self.transmitted = result[1].transmitted;							
 					});
@@ -402,6 +437,13 @@
 				stopRefreshRxTx: stopRefreshRxTx,
 				updateRxTx: updateRxTx,
 				updateDiskUsage: updateDiskUsage,
+				properties:{
+					bdevice: {
+						type: Boolean,
+						value: false,
+						notify: true
+					}
+				}
 				//refreshStatus: refreshStatus,
 				//updateStatus: updateStatus,
 			});
