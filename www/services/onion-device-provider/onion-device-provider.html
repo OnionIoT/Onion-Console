@@ -119,12 +119,12 @@
 		                    }
 		                    callback([{received:receivedkB},{transmitted:transmittedkB}]);
                     	}else{
-							var rx = result[1].apcli0.statistics.rx_bytes;
+							var rx = result[1].ra0.statistics.rx_bytes;
 							receivedkB = parseInt(rx);
                     		if (receivedkB > 0) {
                         		receivedkB = (receivedkB / 1000).toFixed(0);
                         	}
-                        	var tx = result[1].apcli0.statistics.tx_bytes;
+                        	var tx = result[1].ra0.statistics.tx_bytes;
                     		transmittedkB = parseInt(tx);
 		                    if (transmittedkB > 0) {
 		                        transmittedkB = (transmittedkB / 1000).toFixed(0);

@@ -135,7 +135,7 @@
 								<img src="./onion-logo.png" id="onion-logo" />
 							</div>
 						</div>
-						<template is="dom-if" if="{{!bdevice}}">
+						<template is="dom-if" if="{{isOmega(device)}}">
 							<div class="card status">
 								<div class="card-block status-heading">
 									<h4 class="card-title" id="online">Onion Omega</h4>
@@ -148,7 +148,7 @@
 								</div>
 							</div>
 						</template>
-						<template is="dom-if" if="{{bdevice}}">
+						<template is="dom-if" if="{{isOmega2(device)}}">
 							<div class="card status">
 								<div class="card-block status-heading">
 									<h4 class="card-title" id="online">Onion Omega2</h4>
@@ -241,6 +241,22 @@
 				return Array(+(zero > 0 && zero)).join("0") + num;
 			}
 
+			var isOmega = function (device){
+				if(device ==='Onion Omega'){
+					return true;
+				}else{
+					return false;
+				}
+			}
+
+			var isOmega2 = function (device){
+				if(device ==='Onion Omega2'){
+					return true;
+				}else{
+					return false;
+				}
+			}
+
 			// convert milliseconds to a human readable string
 			function millisecondsToStr (milliseconds) {
 				var 	ret 	= '';
@@ -281,11 +297,7 @@
 					onionConsole.getService('onion-device-provider', function (deviceProvider) {
 						// Format the uptime, memory, and load
 						deviceProvider.getDeviceType(function(result){
-							if(result === 'Onion Omega'){
-								self.bdevice = false;
-							}else{
-								self.bdevice = true;
-							}
+							self.device = result;
 						})
 
 						setInterval(function () {
@@ -437,10 +449,12 @@
 				stopRefreshRxTx: stopRefreshRxTx,
 				updateRxTx: updateRxTx,
 				updateDiskUsage: updateDiskUsage,
+				isOmega2: isOmega2,
+				isOmega: isOmega,
 				properties:{
-					bdevice: {
-						type: Boolean,
-						value: false,
+					device: {
+						type: String,
+						value: '',
 						notify: true
 					}
 				}
