@@ -54,9 +54,9 @@
 							self.deviceProvider = deviceProvider;
 							
 							//Get IP Address, NetMask
-							deviceProvider.getIP(function (result) {
-								if (result[0].available === true) {
-									self.sourceIP = '//' + result[1].ip + ':4200';
+							deviceProvider.getIpAddr(function (addr) {
+								if (addr !== '') {
+									self.sourceIP = '//' + addr + ':4200';
 								};
 							});
 						});
