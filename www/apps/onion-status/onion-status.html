@@ -135,32 +135,19 @@
 								<img src="./onion-logo.png" id="onion-logo" />
 							</div>
 						</div>
-						<template is="dom-if" if="{{isOmega(device)}}">
-							<div class="card status">
-								<div class="card-block status-heading">
-									<h4 class="card-title" id="online">Onion Omega</h4>
-									<h6 class="card-subtitle">Device Info</h6>
-								</div>
-								<div class="card-block">
-									<p><span>400 MHz Atheros AR9331 MIPS</span><br><strong>Processor</strong></p>
-									<p><span>64 MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
-									<p><span>{{displayStorageSize(diskTotal)}}<span><span> MB Flash Memory</span><br><strong>Storage</strong></p>
-								</div>
+
+						<div class="card status">
+							<div class="card-block status-heading">
+								<h4 class="card-title" id="online">{{device}}</h4>
+								<h6 class="card-subtitle">Device Info</h6>
 							</div>
-						</template>
-						<template is="dom-if" if="{{isOmega2(device)}}">
-							<div class="card status">
-								<div class="card-block status-heading">
-									<h4 class="card-title" id="online">Onion Omega2</h4>
-									<h6 class="card-subtitle">Device Info</h6>
-								</div>
-								<div class="card-block">
-									<p><span>580 MHz Ralink MT-7688 MIPS</span><br><strong>Processor</strong></p>
-									<p><span>64 MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
-									<p><span>{{displayStorageSize(diskTotal)}}<span><span> MB Flash Memory</span><br><strong>Storage</strong></p>
-								</div>
+							<div class="card-block">
+								<p><span>{{displayProcessorName(device)}}</span><br><strong>Processor</strong></p>
+								<p><span>{{displayMemorySize(device)}}</span><span> MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
+								<p><span>{{displayStorageSize(device, diskTotal)}}</span><span> MB Flash Memory</span><br><strong>Storage</strong></p>
 							</div>
-						</template>
+						</div>
+
 						<div class="card status">
 							<div class="card-block status-heading">
 								<h4 class="card-title" id="online">Storage</h4>
@@ -417,7 +404,20 @@
 				}
 			};
 
-			var displayStorageSize = function (diskTotal) {
+			var displayProcessorName = function (device) {
+				if (device === 'Onion Omega') {
+					return '400 MHz Atheros AR9331 MIPS';
+				} else if (device === 'Onion Omega2') {
+					return '580 MHz Ralink MT-7688 MIPS';
+				}
+			};
+
+			var displayMemorySize = function (device) {
+				// TO DO: replace this with a calculation
+				return '16';
+			};
+
+			var displayStorageSize = function (device, diskTotal) {
 				if (diskTotal > 16) {
 					return '32';
 				} else if (diskTotal > 0) {
@@ -425,7 +425,7 @@
 				} else {
 					return '-';
 				}
-			}
+			};
 			
 			/*
 			var refreshStatus = function (interval) {
@@ -459,6 +459,8 @@
 				stopRefreshRxTx: stopRefreshRxTx,
 				updateRxTx: updateRxTx,
 				updateDiskUsage: updateDiskUsage,
+				displayProcessorName: displayProcessorName,
+				displayMemorySize: displayMemorySize,
 				displayStorageSize: displayStorageSize,
 				isOmega2: isOmega2,
 				isOmega: isOmega,
