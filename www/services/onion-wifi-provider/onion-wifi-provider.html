@@ -12,41 +12,46 @@
 				self = this;
 			};
 
-            var apSetupResult = null;
-		    var wpaKeyMinLength = 8;
+			var apSetupResult = null;
+			var wpaKeyMinLength = 8;
 			var wepKeyMinLength = 10;
 			var wepKeyMaxLength = 26;
 			var regEx = new RegExp(/^[0-9A-Fa-f]+$/);
 
-            var ready = function () {
-                onionConsole.getService('onion-ubus-provider', function (ubus) {
-                	self.ubus = ubus;
+			var ready = function () {
+				onionConsole.getService('onion-ubus-provider', function (ubus) {
+					self.ubus = ubus;
 				});
 				onionConsole.getService('onion-device-provider', (function (deviceProvider) {
 					deviceProvider.getDeviceType(function(result){
 						console.log(result);
 						self.device = result;
+						if (result === 'Onion Omega') {
+							self.deviceRadio = 'wlan0';
+						} else if (result === 'Onion Omega2') {
+							self.deviceRadio = 'apcli0';
+						}
 					}.bind(this));		
-            	}).bind(this));
-        	};
+				}).bind(this));
+			};
 
-            // parse uci get wireless and return an array of either 'ap' or 'sta' networks
-            var parseWirelessSetup = function (data, type) {
-        		var result 	= [];
+			// parse uci get wireless and return an array of either 'ap' or 'sta' networks
+			var parseWirelessSetup = function (data, type) {
+				var result 	= [];
 
-        		for (var key in data.values) {
-        			var section 	= data.values[key];
-        			
-        			if (section['.type'] === 'wifi-iface' && section.mode === type) {
-        				result.push(section);
-        			}
-        		}
-            	
-        		return result;
-            }
+				for (var key in data.values) {
+					var section 	= data.values[key];
+					
+					if (section['.type'] === 'wifi-iface' && section.mode === type) {
+						result.push(section);
+					}
+				}
+				
+				return result;
+			}
 
-            // get all the current wifi networks that are setup, return based on the type ('ap' or 'sta')
-            var getWirelessSetup = function (bApNetwork) {
+			// get all the current wifi networks that are setup, return based on the type ('ap' or 'sta')
+			var getWirelessSetup = function (bApNetwork) {
 				var promise = new Promise(function (resolve, reject) {
 					var type 	= 'sta'
 					if (bApNetwork) {
@@ -65,84 +70,48 @@
 				});
 
 				return promise;
-            };
+			};
 
-            // uci get call to find the wlan static ip address
-            var getApStaticIpAddr = function () {
-            	var promise = new Promise(function (resolve, reject) {
-            		//O2 Mod Here
-            		if(self.device === 'Onion Omega'){
-	            		self.ubus.request('uci', 'get', {
-							config: 	'network',
-							section: 	'wlan',
-							option: 	'ipaddr'
-						}, function (result) {
-							if (result[0] === 0) {
-								resolve( result[1].value );
-							} else {
-								reject(Error('Unable to read wireless settings.'));
-							}
-						});
-					} else if(self.device === 'Onion Omega2'){
-						self.ubus.request('uci', 'get', {
-							config: 	'network',
-							section: 	'lan',
-							option: 	'ipaddr'
-						}, function (result) {
-							if (result[0] === 0) {
-								resolve( result[1].value );
-							} else {
-								reject(Error('Unable to read wireless settings.'));
-							}
-						});
-					}
-            	});
+			// uci get call to find the wlan static ip address
+			var getApStaticIpAddr = function () {
+				var promise = new Promise(function (resolve, reject) {
+					self.ubus.request('uci', 'get', {
+						config: 	'network',
+						section: 	'wlan',
+						option: 	'ipaddr'
+					}, function (result) {
+						if (result[0] === 0) {
+							resolve( result[1].value );
+						} else {
+							reject(Error('Unable to read wireless settings.'));
+						}
+					});
+				});
 				return promise;
-            };
+			};
 
-            var wifiScan = function () {
-                var promise = new Promise(function (resolve, reject) {
-                	//O2 Mod here
-                	if(self.device === 'Onion Omega'){
-	                	self.ubus.request('onion', 'wifi-scan', {
-		                    device: 'wlan0'
-		                }, function (data) {
-		                	if (data) {
-	            				if (data.length === 2 && data[0] === 0) {
-	            					if (data[1] && data[1].results !== null) {
-		            					resolve(data[1]);
-		            				} else {
-		            					reject(Error('No available WiFi networks found.'));
-		            				}
-		            			} else {
-		            				reject(Error('Wi-Fi scan failed!'));
-		            			}
-	            			} else {
-	            				reject(Error('Wi-Fi scan failed!'));
-	            			}
-						});
-					} else if(self.device === 'Onion Omega2'){
-						self.ubus.request('onion', 'wifi-scan', {
-		                    device: 'apcli0'
-		                }, function (data) {
-		                	if (data) {
-	            				if (data.length === 2 && data[0] === 0) {
-	            					if (data[1] && data[1].results !== null) {
-		            					resolve(data[1]);
-		            				} else {
-		            					reject(Error('No available WiFi networks found.'));
-		            				}
-		            			} else {
-		            				reject(Error('Wi-Fi scan failed!'));
-		            			}
-	            			} else {
-	            				reject(Error('Wi-Fi scan failed!'));
-	            			}
-						});
-					}
-                });
-	            return promise;
-            };
+			var wifiScan = function () {
+				var promise = new Promise(function (resolve, reject) {
+					self.ubus.request('onion', 'wifi-scan', {
+						device: self.deviceRadio
+					}, function (data) {
+						if (data) {
+							if (data.length === 2 && data[0] === 0) {
+								if (data[1] && data[1].results !== null) {
+									resolve(data[1]);
+								} else {
+									reject(Error('No available WiFi networks found.'));
+								}
+							} else {
+								reject(Error('Wi-Fi scan failed!'));
+							}
+						} else {
+							reject(Error('Wi-Fi scan failed!'));
+						}
+					});
+				});
+				return promise;
+			};
 
 			// conditionally add a new wifi-iface to the wireless config
 			var prepareWifiNetwork = function (uciId) {
@@ -236,110 +205,77 @@
 			//// supporting functions ////
 			// validate key			
 			var verifyKey = function (key, authType) {
-			    var verfyResult = 'OK';
+				var verfyResult = 'OK';
 
-			    var length = 0;
-			    if (key != null) {
+				var length = 0;
+				if (key != null) {
 					length = key.length;
 				}
 
 				if (authType === 'psk' || authType === 'psk2') {
-				    if (length < wpaKeyMinLength) {
+					if (length < wpaKeyMinLength) {
 						verfyResult = 'WPA/WPA2 key should be at least eight (8) characters long';
 					}
 				} else if (authType === 'wep') {
-				    if (length !== wepKeyMinLength && length !== wepKeyMaxLength) {
-					    verfyResult = 'WEP key should be ten (10) or twenty-six (26) characters long';
+					if (length !== wepKeyMinLength && length !== wepKeyMaxLength) {
+						verfyResult = 'WEP key should be ten (10) or twenty-six (26) characters long';
 					} else {
 						if (regEx.test(key) === false) {
-						    verfyResult = 'WEP key should be a hexdecimal string';   
+							verfyResult = 'WEP key should be a hexdecimal string';   
 						}
 					}
 				}
 
-			    return verfyResult;
+				return verfyResult;
 			};
 
 			// generate a parameter object for a wireless section ubus call
 			var genUciNetworkParams = function (ssid, auth, password, bApNetwork, bEnabled) {
-
-				//OMEGA2 MDIFICATION
-				//COME BACK TO THIS WHEN WE FIGURE OUT CORRECT CONFIG FOR AP
-
 				var params = {};
 
-				if(self.device === 'Onion Omega'){
-					// set the basic info
-					params.device 		= 'radio0'
+				// set the basic info
+				params.device 		= 'radio0'
 
-					params.ssid 		= ssid;
-					params.encryption 	= auth;
+				params.ssid 		= ssid;
+				params.encryption 	= auth;
 
-					// set the network parameters based on if AP or STA type
-					if (bApNetwork) {
-						params.network 	= 'wlan'
-						params.mode 	= 'ap'
-					} else {
-						params.network 	= 'wwan'
-						params.mode 	= 'sta'
-					}				
+				// set the network parameters based on if AP or STA type
+				if (bApNetwork) {
+					params.network 	= 'wlan';
+					params.mode 	= 'ap';
 
-					// generate the values to set based on the encryption type
-					if (auth === 'wep') {
-						params.key 		= '1';
-						params.key1 	= password;
+					if (self.device === 'Onion Omega2') {
+						params.ifname	='ra0';
 					}
-					else if (auth === 'psk' || auth === 'psk2') {
-						params.key 		= password;
-					}
-					else {
-						params.key 		= '';
-					}
+				} else {
+					params.network 	= 'wwan';
+					params.mode 	= 'sta';
 
-					// enable or disable
-					if (bEnabled) {
-						params.disabled = '0'
-					} else {
-						params.disabled = '1'
+					if (self.device === 'Onion Omega2') {
+						params.ifname	='apcli0'
 					}
+				}				
 
-					return params;
-				}else if(self.device === 'Onion Omega2'){
-					// set the basic info
-					params.device 		= 'radio0'
-
-					params.ssid 		= ssid;
-					params.encryption 	= auth;
-
-					// set the network parameters based on if AP or STA type
-					if (bApNetwork) {
-						params.network 	= 'wlan'
-						params.mode 	= 'ap'
-					} else {
-						params.network 	= 'wwan'
-						params.mode 	= 'sta'
-					}				
-
-					// generate the values to set based on the encryption type
-					if (auth === 'wep') {
-						params.key 		= '1';
-						params.key1 	= password;
-					}
-					else if (auth === 'psk' || auth === 'psk2') {
-						params.key 		= password;
-					}
-					else {
-						params.key 		= '';
-					}
-
-					// enable or disable
-					if (bEnabled) {
-						params.disabled = '0'
-					} else {
-						params.disabled = '1'
-					}
-
+				// generate the values to set based on the encryption type
+				if (auth === 'wep') {
+					params.key 		= '1';
+					params.key1 	= password;
 				}
+				else if (auth === 'psk' || auth === 'psk2') {
+					params.key 		= password;
+				}
+				else {
+					params.key 		= '';
+				}
+
+				// enable or disable
+				if (bEnabled) {
+					params.disabled = '0'
+				} else {
+					params.disabled = '1'
+				}
+
+				return params;
 			};
 
 			// add a placeholder for a wireless network  
@@ -522,56 +458,28 @@
 				var promise = new Promise(function (resolve, reject) {
 					//uci set network.wlan.ipaddr
 
-					// O2 Modification
-
-					if(self.device === 'Onion Omgea'){
-						self.ubus.request('uci', 'set', {
-							config: 'network',
-							section: 'wlan',
-							values: {
-								ipaddr: ipAddr
-							}
-						}, function (result) {
-							console.log('uci commit network result:', result);
-							if (result[0] === 0) {
-								self.ubus.request('uci', 'commit', {
-										config: 'network'
-								}, function (result) {
-									if (result[0] === 0) {
-										resolve();
-									} else {
-										reject(Error('Unable to edit Access Point network settings.'));
-									}
-								});
-							} else {
-								reject(Error('Unable to edit Access Point network settings.'));
-							}
-						});
-					} else if(self.device === 'Onion Omgea2'){
-						self.ubus.request('uci', 'set', {
-							config: 'network',
-							section: 'lan',
-							values: {
-								ipaddr: ipAddr
-							}
-						}, function (result) {
-							console.log('uci commit network result:', result);
-							if (result[0] === 0) {
-								self.ubus.request('uci', 'commit', {
-										config: 'network'
-								}, function (result) {
-									if (result[0] === 0) {
-										resolve();
-									} else {
-										reject(Error('Unable to edit Access Point network settings.'));
-									}
-								});
-							} else {
-								reject(Error('Unable to edit Access Point network settings.'));
-							}
-						});
-					}
-
+					self.ubus.request('uci', 'set', {
+						config: 'network',
+						section: 'wlan',
+						values: {
+							ipaddr: ipAddr
+						}
+					}, function (result) {
+						console.log('uci commit network result:', result);
+						if (result[0] === 0) {
+							self.ubus.request('uci', 'commit', {
+									config: 'network'
+							}, function (result) {
+								if (result[0] === 0) {
+									resolve();
+								} else {
+									reject(Error('Unable to edit Access Point network settings.'));
+								}
+							});
+						} else {
+							reject(Error('Unable to edit Access Point network settings.'));
+						}
+					});
 				});
 
 				return promise
@@ -611,6 +519,6 @@
 					}
 				}
 			});
-        })();
+		})();
 	</script>
 </dom-module>
