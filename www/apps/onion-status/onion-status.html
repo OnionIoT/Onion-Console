@@ -144,7 +144,7 @@
 								<div class="card-block">
 									<p><span>400 MHz Atheros AR9331 MIPS</span><br><strong>Processor</strong></p>
 									<p><span>64 MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
-									<p><span>16 MB Flash Memory</span><br><strong>Storage</strong></p>
+									<p><span>{{displayStorageSize(diskTotal)}}<span><span> MB Flash Memory</span><br><strong>Storage</strong></p>
 								</div>
 							</div>
 						</template>
@@ -157,7 +157,7 @@
 								<div class="card-block">
 									<p><span>580 MHz Ralink MT-7688 MIPS</span><br><strong>Processor</strong></p>
 									<p><span>64 MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
-									<p><span>16 MB Flash Memory</span><br><strong>Storage</strong></p>
+									<p><span>{{displayStorageSize(diskTotal)}}<span><span> MB Flash Memory</span><br><strong>Storage</strong></p>
 								</div>
 							</div>
 						</template>
@@ -295,63 +295,65 @@
 				
 				if (self.sessionProvider.isAlive() === true) {
 					onionConsole.getService('onion-device-provider', function (deviceProvider) {
-						// Format the uptime, memory, and load
-						deviceProvider.getDeviceType(function(result){
-							self.device = result;
-						})
-
-						setInterval(function () {
-							deviceProvider.getSystem(function (result) {
-								self.uptime = millisecondsToStr ( result[1].uptime * 1000 );
-								self.memoryFree		= (result[1].memory.total / 1024000 - result[1].memory.free / 1024000).toFixed(3);
-								self.memoryTotal	= (result[1].memory.total / 1024000).toFixed(3);
-								self.memory = (self.memoryFree) + ' MB / ' + (self.memoryTotal) + ' MB';
-								self.load = (result[1].load[0] / 100000).toFixed(4) + ' ' + (result[1].load[1] / 100000).toFixed(4) + ' ' + (result[1].load[2] / 100000).toFixed(4);
-							});
-						}, 1000);
-
 						self.deviceProvider = deviceProvider;
-
-						//Get MAC Address
-						// deviceProvider.getMAC(function (result) {
-						//     self.mac = result.mac;
-						// });
-
-						//Get IP Address, NetMask
-						deviceProvider.isOnline(function (result) {
-							console.log(result);
-							if (result=== true) {
-								self.$.online.style.display = 'block';
-								self.$.offline.style.display = 'none';
-							} else {
-								self.$.online.style.display = 'none';
-								self.$.offline.style.display = 'block';
-							}
+						self.deviceProvider.getDeviceType(function (deviceType) {
+							self.device = deviceType;
 						});
 
-						deviceProvider.getIPAddr(function (result) {
-							console.log(result);
-							self.ip = result;
-						});
-
-						deviceProvider.getNetMask(function (result) {
-							console.log(result);
-							self.netmask = result;
-						});
-
-						deviceProvider.getMACAddr(function(result){
-							console.log(result);
-							self.mac = result;
-						})
-
-						//Get received and transmitted bytes
-						updateRxTx();
-						refreshRxTx(10000);
-
-						//Get the disk usage
-						updateDiskUsage();
+						self.refreshInfo();
 					});	
                 }			
+			};
+
+			var refreshInfo = function () {
+				// Format the uptime, memory, and load
+				setInterval(function () {
+					self.deviceProvider.getSystem(function (result) {
+						self.uptime = millisecondsToStr ( result[1].uptime * 1000 );
+						self.memoryFree		= (result[1].memory.total / 1024000 - result[1].memory.free / 1024000).toFixed(3);
+						self.memoryTotal	= (result[1].memory.total / 1024000).toFixed(3);
+						self.memory = (self.memoryFree) + ' MB / ' + (self.memoryTotal) + ' MB';
+						self.load = (result[1].load[0] / 100000).toFixed(4) + ' ' + (result[1].load[1] / 100000).toFixed(4) + ' ' + (result[1].load[2] / 100000).toFixed(4);
+					});
+				}, 1000);
+
+				
+
+				//Get MAC Address
+				// self.deviceProvider.getMAC(function (result) {
+				//     self.mac = result.mac;
+				// });
+
+				// Get if device is online
+				self.deviceProvider.isOnline(function (result) {
+					if (result=== true) {
+						self.$.online.style.display = 'block';
+						self.$.offline.style.display = 'none';
+					} else {
+						self.$.online.style.display = 'none';
+						self.$.offline.style.display = 'block';
+					}
+				});
+
+				// Get IP address, netmask and mac address
+				self.deviceProvider.getIpAddr(function (result) {
+					self.ip = result;
+				});
+
+				self.deviceProvider.getNetMask(function (result) {
+					self.netmask = result;
+				});
+
+				self.deviceProvider.getMacAddr(function(result){
+					self.mac = result;
+				})
+
+				//Get received and transmitted bytes
+				updateRxTx();
+				refreshRxTx(10000);
+
+				//Get the disk usage
+				updateDiskUsage();
 			};
 
 			var attached = function () {
@@ -377,9 +379,6 @@
 			var updateRxTx = function () {
 			    if (self.sessionProvider.isAlive() === true) {
 					self.deviceProvider.getRxTx(function (result) {
-						//console.log('rxResult[' + result[0].received + ']');
-						//console.log('txResult[' + result[1].transmitted + ']'); 
-						console.log('TXRX',result);
 						self.received = result[0].received;
 						self.transmitted = result[1].transmitted;							
 					});
@@ -417,6 +416,16 @@
 				    alert('Session time out! Failed to get disk space data!');
 				}
 			};
+
+			var displayStorageSize = function (diskTotal) {
+				if (diskTotal > 16) {
+					return '32';
+				} else if (diskTotal > 0) {
+					return '16';
+				} else {
+					return '-';
+				}
+			}
 			
 			/*
 			var refreshStatus = function (interval) {
@@ -445,10 +454,12 @@
 				ready: ready,
 				attached: attached,
 				behaviors: [Onion.AppBehavior],
+				refreshInfo: refreshInfo,
 				refreshRxTx: refreshRxTx,
 				stopRefreshRxTx: stopRefreshRxTx,
 				updateRxTx: updateRxTx,
 				updateDiskUsage: updateDiskUsage,
+				displayStorageSize: displayStorageSize,
 				isOmega2: isOmega2,
 				isOmega: isOmega,
 				properties:{
