@@ -30,6 +30,7 @@
 		#pin-map-dock {
 			height: auto;
 			width: 600px;
+			margin-bottom: 25px;
 		}
 
 		button.pin {
@@ -40,6 +41,7 @@
 			padding: 3px 5px;
 			background-color: #E8E8E8;
 			color: #fff;
+			margin:.7px;
 
 		}
 
@@ -149,60 +151,120 @@
 							<bootstrap-dropdown-item on-tap="_onLayoutChange" data-args="exp_dock">Expansion Dock</bootstrap-dropdown-item>
 						</bootstrap-dropdown-menu>
 					</bootstrap-dropdown> -->
-					<bootstrap-dropdown class="layoutList" style="background-color:rgb(192, 57, 43);" for="layoutDropdown">
-							<li class="layoutList" on-tap="_onLayoutChange" data-args="omega">Omega</li>
-							<li class="layoutList" on-tap="_onLayoutChange" data-args="exp_dock">Expansion Dock</li>
-					</bootstrap-dropdown>
-					<button id="layoutDropdown" class="layoutList">
-						<iron-icon class="toolbar-icon" icon="hardware:developer-board"></iron-icon><span>Board Layout</span>
-						<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
-					</button>
+					<template is="dom-if" if="{{isOmega(deviceType)}}">
+						<bootstrap-dropdown class="layoutList" style="background-color:rgb(192, 57, 43);" for="layoutDropdown">
+								<li class="layoutList" on-tap="_onLayoutChange" data-args="omega">Omega</li>
+								<li class="layoutList" on-tap="_onLayoutChange" data-args="exp_dock">Expansion Dock</li>
+						</bootstrap-dropdown>
+						<button id="layoutDropdown" class="layoutList">
+							<iron-icon class="toolbar-icon" icon="hardware:developer-board"></iron-icon><span>Board Layout</span>
+							<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
+						</button>
+					</template>
+					<template is="dom-if" if="{{isOmega2(deviceType)}}">
+						<bootstrap-dropdown class="layoutList" style="background-color:rgb(192, 57, 43);" for="layoutDropdown">
+								<li class="layoutList" on-tap="_onLayoutChange" data-args="omega">Omega2</li>
+								<li class="layoutList" on-tap="_onLayoutChange" data-args="exp_dock">Expansion Dock</li>
+						</bootstrap-dropdown>
+						<button id="layoutDropdown" class="layoutList">
+							<iron-icon class="toolbar-icon" icon="hardware:developer-board"></iron-icon><span>Board Layout</span>
+							<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
+						</button>
+					</template>
 				</div>
 			</onion-app-toolbar>
 
 			<onion-app-body>
 				<div class="horizontal center-justified layout center">
-
-					<!-- Omega Layout -->
-					<template is="dom-if" if="{{_checkValue(layout, 'omega')}}">
-						<div class="vertical end-justified layout" id="left-pins">
-							<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
-								<template is="dom-if" if="{{item.left}}">
-									<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
-								</template>
-							</template>
-						</div>
-
-						<img id="pin-map" src="./img/omega.png" />
-
-						<div class="vertical end-justified layout" id="right-pins">
-							<template is="dom-repeat" items="{{pins}}">
-								<template is="dom-if" if="{{!item.left}}">
-									<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
-								</template>
-							</template>
-						</div>
-					</template>
-
-					<!-- Expansion Dock Layout -->
-					<template is="dom-if" if="{{_checkValue(layout, 'exp_dock')}}">
-						<div id="exp-dock-bg">
-							<div id="top-pins">
+					<!-- If deviceType is Omega -->
+					<template is="dom-if" if="{{isOmega(deviceType)}}">
+						<!-- Omega Layout -->
+						<template is="dom-if" if="{{_checkValue(layout, 'omega')}}">
+							<div class="vertical end-justified layout" id="left-pins">
 								<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
-									<template is="dom-if" if="{{!item.left}}">
-										<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
-									</template>
-								</template>
-							</div>
-							<div id="bottom-pins">
-								<template is="dom-repeat" items="{{pins}}">
 									<template is="dom-if" if="{{item.left}}">
-										<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
+										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
 									</template>
 								</template>
 							</div>
-						</div>
+
+							<img id="pin-map" src="./img/omega.png" />
+
+							<div class="vertical end-justified layout" id="right-pins">
+								<template is="dom-repeat" items="{{pins}}">
+									<template is="dom-if" if="{{!item.left}}">
+										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+									</template>
+								</template>
+							</div>
+						</template>
+
+						<!-- Expansion Dock Layout -->
+						<template is="dom-if" if="{{_checkValue(layout, 'exp_dock')}}">
+							<div id="exp-dock-bg">
+								<div id="top-pins">
+									<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
+										<template is="dom-if" if="{{!item.left}}">
+											<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
+										</template>
+									</template>
+								</div>
+								<div id="bottom-pins">
+									<template is="dom-repeat" items="{{pins}}">
+										<template is="dom-if" if="{{item.left}}">
+											<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
+										</template>
+									</template>
+								</div>
+							</div>
+						</template>
 					</template>
+
+
+					<template is="dom-if" if="{{isOmega2(deviceType)}}">
+						<!-- Omega Layout -->
+						<template is="dom-if" if="{{_checkValue(layout, 'omega')}}">
+							<div class="vertical end-justified layout" id="left-pins">
+								<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
+									<template is="dom-if" if="{{item.left}}">
+										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+									</template>
+								</template>
+							</div>
+
+							<!--Wrap this with a device dom-if deviceType -->
+							<img id="pin-map" src="./img/Omega2.png" />
+
+							<div class="vertical end-justified layout" id="right-pins">
+								<template is="dom-repeat" items="{{pins}}">
+									<template is="dom-if" if="{{!item.left}}">
+										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+									</template>
+								</template>
+							</div>
+						</template>
+
+						<!-- Expansion Dock Layout -->
+						<template is="dom-if" if="{{_checkValue(layout, 'exp_dock')}}">
+							<div id="exp-dock-bg">
+								<div id="top-pins">
+									<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
+										<template is="dom-if" if="{{!item.left}}">
+											<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
+										</template>
+									</template>
+								</div>
+								<div id="bottom-pins">
+									<template is="dom-repeat" items="{{pins}}">
+										<template is="dom-if" if="{{item.left}}">
+											<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
+										</template>
+									</template>
+								</div>
+							</div>
+						</template>
+					</template>
+
 
 					<!-- GPIO Control -->
 					<div id="gpio-control">
@@ -257,9 +319,35 @@
 			var ready = function() {
 				this.title = 'Tool';
 				console.log(self.layout);
-
+				this.getDeviceType();
+				this.setPins
             };
 
+            var getDeviceType = function(){
+            	onionConsole.getService('onion-device-provider', (function (deviceProvider) {
+					deviceProvider.getDeviceType(function(result){
+						console.log(result);
+						self.deviceType = result;
+						self.setPins(this.layout,self.deviceType);
+					}.bind(this));		
+            	}).bind(this));
+            };
+
+            var isOmega = function(device){
+            	if(device === 'Onion Omega'){
+            		return true;
+            	}else{
+            		return false;
+            	}
+            }
+
+            var isOmega2 = function(device){
+            	if(device === 'Onion Omega2'){
+            		return true;
+            	}else{
+            		return false;
+            	}
+            }
 			// populate the array with info for all GPIO pins
             var _syncAll = function () {
 				// get the ubus service
@@ -424,90 +512,175 @@
 				return (layout === compare);
 			};
 
+			var setPins = function(layout,device){
+				if(device === 'Onion Omega2'){
+					if (layout === 'omega'){
+						this.pins = [ // left:true = left side, gpio:-1=not gpio
+							// left side pins
+							{left: true, label: 'GND', gpio: -1, direction: null, value: null},
+							{left: true, label: '11', gpio: 11, direction: '?', value: 0},
+							{left: true, label: '3', gpio: 3, direction: '?', value: 0},
+							{left: true, label: '2', gpio: 2, direction: '?', value: 0},
+							{left: true, label: '17', gpio: 17, direction: '?', value: 0},
+							{left: true, label: '16', gpio: 16, direction: '?', value: 0},
+							{left: true, label: '15', gpio: 15, direction: '?', value: 0},
+							{left: true, label: 'RX1', gpio: -1, direction: '?', value: 0},
+							{left: true, label: 'TX1', gpio: -1, direction: '?', value: 0},
+							{left: true, label: '9', gpio: 9, direction: '?', value: 0},
+							{left: true, label: '8', gpio: 8, direction: '?', value: 0},
+							{left: true, label: '7', gpio: 7, direction: '?', value: 0},
+							{left: true, label: '6', gpio: 6, direction: '?', value: 0},
+							{left: true, label: '1', gpio: 1, direction: '?', value: 0},
+							{left: true, label: '0', gpio: 0, direction: '?', value: 0},
+							{left: true, label: 'RST', gpio: -1, direction: null, value: null},
+							// right side pins
+							{left: false, label: 'GND', gpio: -1, direction: null, value: null},
+							{left: false, label: '3.3V', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX', gpio: -1, direction: null, value: null},
+							{left: false, label: 'FW RST', gpio: -1, direction: null, value: null},
+							{left: false, label: '3.3V', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX+', gpio: -1, direction: null, value: null},
+							{left: false, label: '18', gpio: 18, direction: '?', value: 0},
+							{left: false, label: '19', gpio: 19, direction: '?', value: 0},
+							{left: false, label: 'SCL', gpio: -1, direction: null, value: null},
+							{left: false, label: 'SDA', gpio: -1, direction: null, value: null}
+						];
+
+					} else if (layout === 'exp_dock') {
+						this.pins = [ // left:true = left side, gpio:-1=not gpio
+						// left side  (Bottom Row of Pins) Change this for Omega2
+							{left: true, label: 'GND', gpio: -1, direction: null, value: null},
+							{left: true, label: '3.3V', gpio: -1, direction: null, value: null},
+							{left: true, label: '2.0V', gpio: -1, direction: null, value: null},
+							{left: true, label: '3', gpio: 3, direction: '?', value: 0},
+							{left: true, label: '2', gpio: 2, direction: '?', value: 0},
+							{left: true, label: '46', gpio: 46, direction: '?', value: 0},
+							{left: true, label: '45', gpio: 45, direction: '?', value: 0},
+							{left: true, label: '9', gpio: 9, direction: '?', value: 0},
+							{left: true, label: '8', gpio: 8, direction: '?', value: 0},
+							{left: true, label: '7', gpio: 7, direction: '?', value: 0},
+							{left: true, label: '6', gpio: 6, direction: '?', value: 0},
+							{left: true, label: '1', gpio: 1, direction: '?', value: 0},
+							{left: true, label: '0', gpio: 0, direction: '?', value: 0},
+							{left: true, label: 'RST', gpio: -1, direction: null, value: null},
+							{left: true, label: 'GND', gpio: -1, direction: null, value: null},
+							// right side pins
+							
+							{left: false, label: '5V', gpio: -1, direction: null, value: null},
+							{left: false, label: '11', gpio: 11, direction: '?', value: 0},
+							{left: false, label: 'USB+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX+', gpio: -1, direction: null, value: null},
+							{left: false, label: '18', gpio: 18, direction: '?', value: 0},
+							{left: false, label: '19', gpio: 19, direction: '?', value: 0},
+							{left: false, label: 'SCL', gpio: -1, direction: null, value: null},
+							{left: false, label: 'SDA', gpio: -1, direction: null, value: null},
+							{left: false, label: 'GND', gpio: -1, direction: null, value: null},
+							{left: false, label: '5V', gpio: -1, direction: null, value: null},
+							{left: false, label: '3.3V', gpio: -1, direction: null, value: null}
+						];
+					}
+
+				}else {
+					if (layout === 'omega'){
+						this.pins = [ // left:true = left side, gpio:-1=not gpio
+							// left side pins
+							{left: true, label: 'GND', gpio: -1, direction: null, value: null},
+							{left: true, label: '2.8V', gpio: -1, direction: null, value: null},
+							{left: true, label: '26', gpio: 26, direction: '?', value: 0},
+							{left: true, label: '23', gpio: 23, direction: '?', value: 0},
+							{left: true, label: '17', gpio: 17, direction: '?', value: 0},
+							{left: true, label: '16', gpio: 16, direction: '?', value: 0},
+							{left: true, label: '15', gpio: 15, direction: '?', value: 0},
+							{left: true, label: '14', gpio: 14, direction: '?', value: 0},
+							{left: true, label: '13', gpio: 13, direction: '?', value: 0},
+							{left: true, label: '12', gpio: 12, direction: '?', value: 0},
+							{left: true, label: '8', gpio: 8, direction: '?', value: 0},
+							{left: true, label: '7', gpio: 7, direction: '?', value: 0},
+							{left: true, label: '6', gpio: 6, direction: '?', value: 0},
+							{left: true, label: '1', gpio: 1, direction: '?', value: 0},
+							{left: true, label: '0', gpio: 0, direction: '?', value: 0},
+							{left: true, label: 'RST', gpio: -1, direction: null, value: null},
+							// right side pins
+							{left: false, label: 'GND', gpio: -1, direction: null, value: null},
+							{left: false, label: '3.3V', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX', gpio: -1, direction: null, value: null},
+							{left: false, label: 'FW RST', gpio: -1, direction: null, value: null},
+							{left: false, label: '2.0V', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX+', gpio: -1, direction: null, value: null},
+							{left: false, label: '18', gpio: 18, direction: '?', value: 0},
+							{left: false, label: '19', gpio: 19, direction: '?', value: 0},
+							{left: false, label: 'SCL', gpio: -1, direction: null, value: null},
+							{left: false, label: 'SDA', gpio: -1, direction: null, value: null}
+						];
+
+					} else if (layout === 'exp_dock') {
+						this.pins = [ // left:true = left side, gpio:-1=not gpio
+							// left side pins
+							{left: true, label: 'GND', gpio: -1, direction: null, value: null},
+							{left: true, label: '3.3V', gpio: -1, direction: null, value: null},
+							{left: true, label: '2.0V', gpio: -1, direction: null, value: null},
+							{left: true, label: '26', gpio: 26, direction: '?', value: 0},
+							{left: true, label: '23', gpio: 23, direction: '?', value: 0},
+							{left: true, label: '14', gpio: 14, direction: '?', value: 0},
+							{left: true, label: '13', gpio: 13, direction: '?', value: 0},
+							{left: true, label: '12', gpio: 12, direction: '?', value: 0},
+							{left: true, label: '8', gpio: 8, direction: '?', value: 0},
+							{left: true, label: '7', gpio: 7, direction: '?', value: 0},
+							{left: true, label: '6', gpio: 6, direction: '?', value: 0},
+							{left: true, label: '1', gpio: 1, direction: '?', value: 0},
+							{left: true, label: '0', gpio: 0, direction: '?', value: 0},
+							{left: true, label: 'RST', gpio: -1, direction: null, value: null},
+							{left: true, label: 'GND', gpio: -1, direction: null, value: null},
+							// right side pins
+							
+							{left: false, label: '5V', gpio: -1, direction: null, value: null},
+							{left: false, label: '2.5V', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'USB-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'TX+', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX-', gpio: -1, direction: null, value: null},
+							{left: false, label: 'RX+', gpio: -1, direction: null, value: null},
+							{left: false, label: '18', gpio: 18, direction: '?', value: 0},
+							{left: false, label: '19', gpio: 19, direction: '?', value: 0},
+							{left: false, label: 'SCL', gpio: -1, direction: null, value: null},
+							{left: false, label: 'SDA', gpio: -1, direction: null, value: null},
+							{left: false, label: 'GND', gpio: -1, direction: null, value: null},
+							{left: false, label: '5V', gpio: -1, direction: null, value: null},
+							{left: false, label: '3.3V', gpio: -1, direction: null, value: null}
+						];
+					}
+				}
+			}
+
 			var _onLayoutChange = function (e) {
 				this.layout = e.target.dataset.args;
-
-				if (this.layout === 'omega'){
-					this.pins = [ // left:true = left side, gpio:-1=not gpio
-						// left side pins
-						{left: true, label: 'GND', gpio: -1, direction: null, value: null},
-						{left: true, label: '2.8V', gpio: -1, direction: null, value: null},
-						{left: true, label: '26', gpio: 26, direction: '?', value: 0},
-						{left: true, label: '23', gpio: 23, direction: '?', value: 0},
-						{left: true, label: '17', gpio: 17, direction: '?', value: 0},
-						{left: true, label: '16', gpio: 16, direction: '?', value: 0},
-						{left: true, label: '15', gpio: 15, direction: '?', value: 0},
-						{left: true, label: '14', gpio: 14, direction: '?', value: 0},
-						{left: true, label: '13', gpio: 13, direction: '?', value: 0},
-						{left: true, label: '12', gpio: 12, direction: '?', value: 0},
-						{left: true, label: '8', gpio: 8, direction: '?', value: 0},
-						{left: true, label: '7', gpio: 7, direction: '?', value: 0},
-						{left: true, label: '6', gpio: 6, direction: '?', value: 0},
-						{left: true, label: '1', gpio: 1, direction: '?', value: 0},
-						{left: true, label: '0', gpio: 0, direction: '?', value: 0},
-						{left: true, label: 'RST', gpio: -1, direction: null, value: null},
-						// right side pins
-						{left: false, label: 'GND', gpio: -1, direction: null, value: null},
-						{left: false, label: '3.3V', gpio: -1, direction: null, value: null},
-						{left: false, label: 'USB+', gpio: -1, direction: null, value: null},
-						{left: false, label: 'USB-', gpio: -1, direction: null, value: null},
-						{left: false, label: 'TX', gpio: -1, direction: null, value: null},
-						{left: false, label: 'RX', gpio: -1, direction: null, value: null},
-						{left: false, label: 'FW RST', gpio: -1, direction: null, value: null},
-						{left: false, label: '2.0V', gpio: -1, direction: null, value: null},
-						{left: false, label: 'TX-', gpio: -1, direction: null, value: null},
-						{left: false, label: 'TX+', gpio: -1, direction: null, value: null},
-						{left: false, label: 'RX-', gpio: -1, direction: null, value: null},
-						{left: false, label: 'RX+', gpio: -1, direction: null, value: null},
-						{left: false, label: '18', gpio: 18, direction: '?', value: 0},
-						{left: false, label: '19', gpio: 19, direction: '?', value: 0},
-						{left: false, label: 'SCL', gpio: -1, direction: null, value: null},
-						{left: false, label: 'SDA', gpio: -1, direction: null, value: null}
-					];
-
-				} else if (this.layout === 'exp_dock') {
-					this.pins = [ // left:true = left side, gpio:-1=not gpio
-						// left side pins
-						{left: true, label: 'GND', gpio: -1, direction: null, value: null},
-						{left: true, label: '3.3V', gpio: -1, direction: null, value: null},
-						{left: true, label: '2.0V', gpio: -1, direction: null, value: null},
-						{left: true, label: '26', gpio: 26, direction: '?', value: 0},
-						{left: true, label: '23', gpio: 23, direction: '?', value: 0},
-						{left: true, label: '14', gpio: 14, direction: '?', value: 0},
-						{left: true, label: '13', gpio: 13, direction: '?', value: 0},
-						{left: true, label: '12', gpio: 12, direction: '?', value: 0},
-						{left: true, label: '8', gpio: 8, direction: '?', value: 0},
-						{left: true, label: '7', gpio: 7, direction: '?', value: 0},
-						{left: true, label: '6', gpio: 6, direction: '?', value: 0},
-						{left: true, label: '1', gpio: 1, direction: '?', value: 0},
-						{left: true, label: '0', gpio: 0, direction: '?', value: 0},
-						{left: true, label: 'RST', gpio: -1, direction: null, value: null},
-						{left: true, label: 'GND', gpio: -1, direction: null, value: null},
-						// right side pins
-						
-						{left: false, label: '5V', gpio: -1, direction: null, value: null},
-						{left: false, label: '2.5V', gpio: -1, direction: null, value: null},
-						{left: false, label: 'USB+', gpio: -1, direction: null, value: null},
-						{left: false, label: 'USB-', gpio: -1, direction: null, value: null},
-						{left: false, label: 'TX-', gpio: -1, direction: null, value: null},
-						{left: false, label: 'TX+', gpio: -1, direction: null, value: null},
-						{left: false, label: 'RX-', gpio: -1, direction: null, value: null},
-						{left: false, label: 'RX+', gpio: -1, direction: null, value: null},
-						{left: false, label: '18', gpio: 18, direction: '?', value: 0},
-						{left: false, label: '19', gpio: 19, direction: '?', value: 0},
-						{left: false, label: 'SCL', gpio: -1, direction: null, value: null},
-						{left: false, label: 'SDA', gpio: -1, direction: null, value: null},
-						{left: false, label: 'GND', gpio: -1, direction: null, value: null},
-						{left: false, label: '5V', gpio: -1, direction: null, value: null},
-						{left: false, label: '3.3V', gpio: -1, direction: null, value: null}
-					];
-				}
+				self.setPins(this.layout, this.deviceType);
 			};
 
 			Polymer({
 				is: 'onion-gpio',
 				created: created,
 				ready: ready,
+				getDeviceType: getDeviceType,
+				isOmega: isOmega,
+				isOmega2: isOmega2,
 				behaviors: [Onion.AppBehavior],
 				_calculatePinClass: _calculatePinClass,
 				_onPin: _onPin,
@@ -522,6 +695,7 @@
 				_syncOne: _syncOne,
 				_onLayoutChange: _onLayoutChange,
 				_checkValue: _checkValue,
+				setPins,setPins,
 				properties: {
 					layout: {
 						type: String,
@@ -543,6 +717,11 @@
 					currentPin: {
 						type: Object,
 						notify: true,
+					},
+					deviceType: {
+						type: String,
+						value: '',
+						notify: true
 					},
 					pins: {
 						type: Array,
