@@ -151,6 +151,8 @@
 							<bootstrap-dropdown-item on-tap="_onLayoutChange" data-args="exp_dock">Expansion Dock</bootstrap-dropdown-item>
 						</bootstrap-dropdown-menu>
 					</bootstrap-dropdown> -->
+
+					<!-- RAJIV: instead of two dom-ifs, just write a function to populate the Text based on the device type and go back to a single dropdown and button -->
 					<template is="dom-if" if="{{isOmega(deviceType)}}">
 						<bootstrap-dropdown class="layoutList" style="background-color:rgb(192, 57, 43);" for="layoutDropdown">
 								<li class="layoutList" on-tap="_onLayoutChange" data-args="omega">Omega</li>
@@ -176,6 +178,7 @@
 
 			<onion-app-body>
 				<div class="horizontal center-justified layout center">
+					<!-- RAJIV: same as above, go back to a single instance but add functions to change the device specific stuff -->
 					<!-- If deviceType is Omega -->
 					<template is="dom-if" if="{{isOmega(deviceType)}}">
 						<!-- Omega Layout -->
