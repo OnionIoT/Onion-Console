@@ -153,26 +153,14 @@
 					</bootstrap-dropdown> -->
 
 					<!-- RAJIV: instead of two dom-ifs, just write a function to populate the Text based on the device type and go back to a single dropdown and button -->
-					<template is="dom-if" if="{{isOmega(deviceType)}}">
 						<bootstrap-dropdown class="layoutList" style="background-color:rgb(192, 57, 43);" for="layoutDropdown">
-								<li class="layoutList" on-tap="_onLayoutChange" data-args="omega">Omega</li>
+								<li class="layoutList" on-tap="_onLayoutChange" data-args="omega">{{getDeviceName(deviceType)}}</li>
 								<li class="layoutList" on-tap="_onLayoutChange" data-args="exp_dock">Expansion Dock</li>
 						</bootstrap-dropdown>
 						<button id="layoutDropdown" class="layoutList">
 							<iron-icon class="toolbar-icon" icon="hardware:developer-board"></iron-icon><span>Board Layout</span>
 							<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
 						</button>
-					</template>
-					<template is="dom-if" if="{{isOmega2(deviceType)}}">
-						<bootstrap-dropdown class="layoutList" style="background-color:rgb(192, 57, 43);" for="layoutDropdown">
-								<li class="layoutList" on-tap="_onLayoutChange" data-args="omega">Omega2</li>
-								<li class="layoutList" on-tap="_onLayoutChange" data-args="exp_dock">Expansion Dock</li>
-						</bootstrap-dropdown>
-						<button id="layoutDropdown" class="layoutList">
-							<iron-icon class="toolbar-icon" icon="hardware:developer-board"></iron-icon><span>Board Layout</span>
-							<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
-						</button>
-					</template>
 				</div>
 			</onion-app-toolbar>
 
@@ -180,51 +168,6 @@
 				<div class="horizontal center-justified layout center">
 					<!-- RAJIV: same as above, go back to a single instance but add functions to change the device specific stuff -->
 					<!-- If deviceType is Omega -->
-					<template is="dom-if" if="{{isOmega(deviceType)}}">
-						<!-- Omega Layout -->
-						<template is="dom-if" if="{{_checkValue(layout, 'omega')}}">
-							<div class="vertical end-justified layout" id="left-pins">
-								<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
-									<template is="dom-if" if="{{item.left}}">
-										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
-									</template>
-								</template>
-							</div>
-
-							<img id="pin-map" src="./img/omega.png" />
-
-							<div class="vertical end-justified layout" id="right-pins">
-								<template is="dom-repeat" items="{{pins}}">
-									<template is="dom-if" if="{{!item.left}}">
-										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
-									</template>
-								</template>
-							</div>
-						</template>
-
-						<!-- Expansion Dock Layout -->
-						<template is="dom-if" if="{{_checkValue(layout, 'exp_dock')}}">
-							<div id="exp-dock-bg">
-								<div id="top-pins">
-									<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
-										<template is="dom-if" if="{{!item.left}}">
-											<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
-										</template>
-									</template>
-								</div>
-								<div id="bottom-pins">
-									<template is="dom-repeat" items="{{pins}}">
-										<template is="dom-if" if="{{item.left}}">
-											<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
-										</template>
-									</template>
-								</div>
-							</div>
-						</template>
-					</template>
-
-
-					<template is="dom-if" if="{{isOmega2(deviceType)}}">
 						<!-- Omega Layout -->
 						<template is="dom-if" if="{{_checkValue(layout, 'omega')}}">
 							<div class="vertical end-justified layout" id="left-pins">
@@ -236,8 +179,8 @@
 							</div>
 
 							<!--Wrap this with a device dom-if deviceType -->
-							<img id="pin-map" src="./img/Omega2.png" />
-
+							<img id="pin-map" src="{{getImgPath(deviceType)}}" />
+							<!-- <img id="pin-map" src="./img/omega.png" /> -->
 							<div class="vertical end-justified layout" id="right-pins">
 								<template is="dom-repeat" items="{{pins}}">
 									<template is="dom-if" if="{{!item.left}}">
@@ -266,7 +209,6 @@
 								</div>
 							</div>
 						</template>
-					</template>
 
 
 					<!-- GPIO Control -->
@@ -325,6 +267,24 @@
 				this.getDeviceType();
 				this.setPins
             };
+
+            var getDeviceName = function (device){
+            	console.log("Inside getDeviceName");
+            	if(self.isOmega(device)){
+            		return 'Omega';
+            	}else{
+            		return 'Omega2';
+            	}
+            };
+
+            var getImgPath = function (device){
+            	console.log("Inside getImgPath");
+            	if(self.isOmega(device)){
+            		return '/apps/onion-gpio/img/omega.png';
+            	}else{
+            		return '/apps/onion-gpip/img/Omega2.png';
+            	}
+            }
 
             var getDeviceType = function(){
             	onionConsole.getService('onion-device-provider', (function (deviceProvider) {
@@ -698,7 +658,9 @@
 				_syncOne: _syncOne,
 				_onLayoutChange: _onLayoutChange,
 				_checkValue: _checkValue,
-				setPins,setPins,
+				setPins:setPins,
+				getDeviceName: getDeviceName,
+				getImgPath: getImgPath,
 				properties: {
 					layout: {
 						type: String,
