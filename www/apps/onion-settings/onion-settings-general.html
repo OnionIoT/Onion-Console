@@ -225,12 +225,20 @@
 					onionConsole.getService('onion-device-provider', (function (device) {
 						device.changePassword(this.passwordCurrent, this.passwordNew, this.passwordNewVerify)
 						.then((function (message) {
-							this.$.securityMessages.insertAlert('success', message);
+							// this.$.securityMessages.insertAlert('success', message);
+							onionConsole.sendNotification({
+								title: 'Success!',
+								message: message
+							})
 							this.set('passwordCurrent', '');
 							this.set('passwordNew', '');
 							this.set('passwordNewVerify', '');
 						}).bind(this), (function (err) {
-							this.$.securityMessages.insertAlert('danger', '<strong>Error:</strong> ' + err.message);
+							onionConsole.sendNotification({
+								title: 'Error',
+								message: err.message
+							})
+							// this.$.securityMessages.insertAlert('danger', '<strong>Error:</strong> ' + err.message);
 						}).bind(this));
 					}).bind(this));
 				}
@@ -242,10 +250,18 @@
 					onionConsole.getService('onion-device-provider', (function (device) {
 						device.changeHostname(this.hostname)
 						.then((function (message) {
-							this.$.basicMessages.insertAlert('success', message);
+							// this.$.basicMessages.insertAlert('success', message);
+							onionConsole.sendNotification({
+								title: 'Success!',
+								message: message
+							})
 						}).bind(this),
 						(function (err) {
-							this.$.basicMessages.insertAlert('danger', '<strong>Error:</strong> ' + err.message);
+							// this.$.basicMessages.insertAlert('danger', '<strong>Error:</strong> ' + err.message);
+							onionConsole.sendNotification({
+								title: 'Error',
+								message: err.message
+							})
 						}).bind(this));
 					}).bind(this));
 				}
@@ -266,9 +282,17 @@
 					onionConsole.getService('onion-device-provider', (function (device) {
 						device.changeTimezone(this.timezone, zonename)
 						.then((function (message) {
-							this.$.basicMessages.insertAlert('success', message);
+							// this.$.basicMessages.insertAlert('success', message);
+							onionConsole.sendNotification({
+								title: 'Success!',
+								message: message
+							})
 						}).bind(this), (function (err) {
-							this.$.basicMessages.insertAlert('danger', '<strong>Error:</strong> ' + err.message);
+							// this.$.basicMessages.insertAlert('danger', '<strong>Error:</strong> ' + err.message);
+							onionConsole.sendNotification({
+								title: 'Error!',
+								message: err.message
+							})
 						}).bind(this));
 					}).bind(this));
 				}

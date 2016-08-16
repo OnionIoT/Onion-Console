@@ -1,0 +1,51 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<dom-module id="bootstrap-alert">
+	<style>
+		.alert ::content :nth-child(2) {
+			margin-top: 0;
+		}
+	</style>
+ 
+	<template>
+		<div class$="{{getClass(colour, dismissable)}}" role="alert">
+			<button type="button" class="close" on-click="remove">×</button>
+			<content></content>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		var getClass = function(colour, dismissable) {
+			var c = "alert";
+			if(dismissable) {
+				c += " alert-dismissable";
+			}
+			if(colour !== "123") {
+				c += " alert-" + colour;
+			}
+			return c;
+		};
+
+		(function () {			
+			Polymer({
+				is: 'bootstrap-alert',
+				getClass : getClass,
+				properties: {
+					colour: {
+						type: String,
+						value: ""
+					},
+					dismissable: {
+						type: Boolean,
+						value: false
+					}
+				},
+				remove : function(x) {
+					Polymer.dom(this).parentNode.removeChild(this);
+				}
+			});
+		})();
+	</script>
+</dom-module>

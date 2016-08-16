@@ -1,0 +1,58 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-icons/iron-icons.html">
+
+<dom-module id="bootstrap-iconbutton">
+
+	<style>
+		.leftIcon {
+			margin: 0 0 0 -0.5em;
+		}
+		.rightIcon {
+			margin: 0 -0.5em 0 0;
+		}
+	</style>	
+
+	<template>
+		<button type="button" class$="{{getButtonClass(colorScheme)}}">
+			<template is="dom-if" if={{iconLeft}}>
+				<span><iron-icon class="leftIcon" icon="{{iconLeft}}"></iron-icon></span>
+			</template>
+			
+			<span><content></content></span>
+
+			<template is="dom-if" if={{iconRight}}>
+				<span><iron-icon class="rightIcon" icon="{{iconRight}}"></iron-icon></span>
+			</template>
+		</button>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {		
+			var getButtonClass = function(colorScheme){
+				return "btn btn-block btn-"+colorScheme;
+			}
+			
+			Polymer({
+				is: 'bootstrap-iconbutton',
+				getButtonClass: getButtonClass,
+				properties: {
+					colorScheme: {
+						type: String,
+						value: "default",
+						notify: true
+					},
+					iconLeft: {
+						type: String, 
+						value: null
+					},
+					iconRight: {
+						type: String,
+						value: null
+					}
+				}
+			});
+		})();
+	</script>
+</dom-module>

@@ -1,0 +1,42 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<link rel="import" href="../../iron-icon/iron-icon.html">
+
+<dom-module id="bootstrap-button">
+	<style>
+
+	</style>
+	<template>
+		<button type="button" class$="{{getButtonClass(colorScheme)}}">
+<!-- 			<iron-icon icon="maps:directions-bus"></iron-icon> -->
+			<content></content>
+		</button>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			
+			var getButtonClass = function(colorScheme){
+				return "btn btn-block btn-"+colorScheme;
+			}
+			
+			Polymer({
+				is: 'bootstrap-button',
+				getButtonClass: getButtonClass,
+				properties: {
+					colorScheme: {
+						type: String,
+						value: "default",
+						notify: true
+					},
+					icon: {
+						type: String,
+						value: ""
+					}
+				},
+			});
+		})();
+	</script>
+</dom-module>

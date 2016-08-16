@@ -1,0 +1,83 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<dom-module id="bootstrap-radiobutton">
+	<style>
+		input[type="radio"], .iCheck-helper {
+			position: absolute; 
+			top: -20%; 
+			left: -20%; 
+			display: block; 
+			width: 140%; 
+			height: 140%; 
+			margin: 0px; 
+			padding: 0px; 
+			border: 0px; 
+			opacity: 0; 
+			background: rgb(255, 255, 255);
+		}
+	</style>
+
+	<template>
+		<div class="radio" on-click="toggle">
+          	<div id="radio" class="iradio_flat" style="position: relative;">
+          		<input type="radio" id="flat-radio">
+          		<ins class="iCheck-helper" ></ins>
+      		</div>
+          	<label for="flat-radio"><content></content></label>
+        </div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {			
+			Polymer({
+				is: 'bootstrap-radiobutton',
+				properties: {
+					disabled: {
+						type: Boolean,
+						value: false
+					},
+					checked: {
+						type: Boolean,
+						value: false
+					},
+					group: {
+						type: String,
+						value: null
+					},
+					name: {
+						type: String,
+						value: null
+					}
+				},
+				attached: function(x) {
+					if(this.disabled) {
+						this.$.radio.classList.add('disabled');
+					}
+					if(this.checked) {
+						this.$.radio.classList.add('checked');
+					}
+				},
+				toggle: function(x) {
+					if(this.disabled) {return}
+
+					var t = this.$.radio;
+
+					if(t.classList.contains('checked')) {
+						return;
+					} else {
+						if(this.group) {
+							var d = document.querySelectorAll('[group=' + this.group + ']');
+
+							for(var i = 0; i < d.length; i++) {
+								d[i].children[0].children[0].classList.remove('checked');
+							}
+						}
+						t.classList.add('checked');
+					}
+				}
+			});
+		})();
+	</script>
+</dom-module>

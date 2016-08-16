@@ -1,0 +1,55 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<dom-module id="bootstrap-panel">
+	<style>
+		.panel{
+			margin-bottom: 15px;
+		}
+		.panel-heading {
+			padding: 10px 15px;
+			
+		}
+		
+		#panel-control {
+			margin-left: 20px;
+		}
+	</style>
+	<template>
+		<div class$="{{_getPanelClass(colorScheme)}}">
+			<div class="panel-heading layout horizontal center">
+				<div>{{title}}</div>
+				<div  id="panel-control">	
+					<content select="panel-control"></content>
+				</div>
+			</div>
+			<content></content>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			
+			var _getPanelClass = function(colorScheme){
+				return "panel panel-"+colorScheme;
+			}
+			
+			Polymer({
+				is: 'bootstrap-panel',
+				_getPanelClass: _getPanelClass,
+				properties: {
+					colorScheme: {
+						type: String,
+						value: "default",
+						notify: true
+					},
+					title: {
+						type: String,
+						value: "Title"
+					}
+				},
+			});
+		})();
+	</script>
+</dom-module>

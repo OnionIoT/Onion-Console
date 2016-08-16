@@ -1,0 +1,188 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../bootstrap-styles/bootstrap-styles.html">
+
+<dom-module id="bootstrap-popover">
+	<style>
+		.popover.popover-top .popover-arrow,
+		.popover.bs-tether-element-attached-bottom .popover-arrow {
+		  	border-top-color: rgba(0, 0, 0, 0);
+		}
+		.popover.popover-top .popover-arrow::after, 
+		.popover.bs-tether-element-attached-bottom .popover-arrow::after {
+			margin-top: 1.1px;
+		  	border-top-color: #434a54;
+		}
+		.popover.popover-right .popover-arrow, 
+		.popover.bs-tether-element-attached-left .popover-arrow {
+		  	border-right-color: rgba(0, 0, 0, 0);
+		}
+		.popover.popover-right .popover-arrow::after, 
+		.popover.bs-tether-element-attached-left .popover-arrow::after {
+			margin-right: 1.1px;
+		  	border-right-color: #434a54;
+		}
+		.popover.popover-bottom .popover-arrow, 
+		.popover.bs-tether-element-attached-top .popover-arrow {
+		  	border-bottom-color: rgba(0, 0, 0, 0);
+		}
+		.popover.popover-bottom .popover-arrow::after, 
+		.popover.bs-tether-element-attached-top .popover-arrow::after {
+			margin-bottom: 1.1px;
+		  	border-bottom-color: #434a54;
+		}
+		.popover.popover-left .popover-arrow, 
+		.popover.bs-tether-element-attached-right .popover-arrow {
+		  	border-left-color: rgba(0, 0, 0, 0);
+		}
+		.popover.popover-left .popover-arrow::after, 
+		.popover.bs-tether-element-attached-right .popover-arrow::after {
+			margin-left: 1.1px;
+		  	border-left-color: #434a54;
+		}
+		.popover-arrow {
+			color: #434a54;	
+		}
+		.popover {
+			padding: none;
+		}
+		.hidden {
+        	display: none !important;
+      	}
+	</style>
+
+	<template>
+        <div id="popover" class$="{{getButtonClass(position)}}" role="popover">
+          	<div class="popover-arrow"></div>
+          	<h3 class="popover-title">{{title}}</h3>
+          	<div class="popover-content">
+            	<p>
+            		<content></content>
+            	</p>
+          	</div>
+    	</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		var getButtonClass = function(position){
+			return "hidden popover popover-" + position;
+		};
+
+		(function () {			
+			Polymer({
+				is: 'bootstrap-popover',
+				getButtonClass: getButtonClass,
+				properties: {
+			        position: {
+			          	type: String,
+			          	value: 'bottom'
+			        },
+			        for: {
+			        	type: String,
+			        	observer: '_forChanged'
+			        },
+			        title: {
+			        	type: String,
+			        	value: 'title'
+			        },
+			        offset: {
+			          	type: Number,
+	         			value: 14
+			        },
+			        _showing: {
+		            	type: Boolean,
+		          		value: false
+			        }
+		      	},
+		      	listeners: {
+		        	'mouseenter': 'hide'
+		      	},
+		      	get target () {
+		      		var ownerRoot = Polymer.dom(this).getOwnerRoot();
+	      			var target;
+		      		
+		      		if(this.for) {
+		      			target = Polymer.dom(ownerRoot).querySelector('#' + this.for);
+		      		} else {
+		      			target = Polymer.dom(this).parentNode;
+		      		}		        
+			    	
+			        return target;
+		      	},
+		      	attached: function() {
+			        this._target = this.target;
+			        this.listen(this._target, 'mouseenter', 'show');
+			        this.listen(this._target, 'focus', 'show');
+			        this.listen(this._target, 'mouseleave', 'hide');
+			        this.listen(this._target, 'blur', 'hide');
+			        this.listen(this._target, 'tap', 'hide');
+		      	},
+		      	detached: function() {
+			        if (this._target && !this.manualMode) {
+			          	this.unlisten(this._target, 'mouseenter', 'show');
+			          	this.unlisten(this._target, 'focus', 'show');
+			          	this.unlisten(this._target, 'mouseleave', 'hide');
+			          	this.unlisten(this._target, 'blur', 'hide');
+			          	this.unlisten(this._target, 'tap', 'hide');
+			        }
+		      	},
+		      	show: function() {
+			        this._showing = true;
+			        this.toggleClass('hidden', false, this.$.popover);
+			        this.updatePosition();
+		      	},
+		      	hide: function() {
+			        this._showing = false;
+			        this.toggleClass('hidden', true, this.$.popover);
+			        this.updatePosition();
+		      	},
+		      	_forChanged: function() {
+			        this._target = this.target;
+			    },
+		      	updatePosition: function() {
+			        if (!this._target || !this.offsetParent) {
+			          	return;
+			        }
+
+			        var offset = this.offset;
+			        var parentRect = this.offsetParent.getBoundingClientRect();
+			        var targetRect = this._target.getBoundingClientRect();
+			        var thisRect = this.$.popover.getBoundingClientRect();
+
+			        var horizontalCenterOffset = (targetRect.width - thisRect.width) / 2;
+			        var verticalCenterOffset = (targetRect.height - thisRect.height) / 2;
+			        var targetLeft = targetRect.left - parentRect.left;
+			        var targetTop = targetRect.top - parentRect.top;
+		
+			        var popoverLeft, popoverTop;
+
+			        var thisWidth = thisRect.right - thisRect.left;
+			        var targetWidth = targetRect.right - targetRect.left;
+
+			        switch (this.position) {
+			          	case 'top':
+				            popoverLeft = targetLeft + horizontalCenterOffset;
+				            popoverTop = targetTop - thisRect.height - offset;
+				            break;
+			          	case 'bottom':
+				            popoverLeft = targetLeft + horizontalCenterOffset;
+				            popoverTop = targetTop + targetRect.height + offset;
+				            break;
+			          	case 'left':
+				            popoverLeft = targetLeft - thisWidth - offset;
+				            popoverTop = targetTop + verticalCenterOffset;
+				            break;
+			          	case 'right':
+				            popoverLeft = targetLeft + offset + targetWidth;
+				            popoverTop = targetTop + verticalCenterOffset;
+				            break;
+			        }
+
+		          	this.$.popover.style.left = popoverLeft + 'px';
+		          	this.$.popover.style.top = popoverTop + 'px';		        
+		      	}
+			});
+		})();
+	</script>
+</dom-module>

@@ -1,0 +1,72 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<dom-module id="bootstrap-checkbox">
+	<style>
+		input[type="checkbox"], .iCheck-helper {
+			position: absolute; 
+			top: -20%; 
+			left: -20%; 
+			display: block; 
+			width: 140%; 
+			height: 140%; 
+			margin: 0px !important; 
+			padding: 0px; 
+			border: 0px;
+			opacity: 0; 
+			background: rgb(255, 255, 255);
+		}
+	</style>
+
+	<template>
+        <div class="checkbox" on-click="toggle">
+            <div id="box" class="icheckbox_flat" style="position: relative;">
+          		<input type="checkbox" id="flat-checkbox">
+          		<ins class="iCheck-helper"></ins>
+            </div>
+            <label for="flat-checkbox"><content></content></label>
+        </div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {			
+			Polymer({
+				is: 'bootstrap-checkbox',
+				properties: {
+					disabled: {
+						type: Boolean,
+						value: false
+					},
+					checked: {
+						type: Boolean,
+						value: false
+					},
+					name: {
+						type: String,
+						value: null
+					}
+				},
+				attached: function(x) {
+					if(this.disabled) {
+						this.$.box.classList.add('disabled');
+					}
+					if(this.checked) {
+						this.$.box.classList.add('checked');
+					}
+				},
+				toggle: function(x) {
+					if(this.disabled) {return}
+
+					var t = this.$.box;
+
+					if(t.classList.contains('checked')) {
+						t.classList.remove('checked');
+					} else {
+						t.classList.add('checked');
+					}
+				}
+			});
+		})();
+	</script>
+</dom-module>

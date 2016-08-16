@@ -1,0 +1,58 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<dom-module id="bootstrap-progress">
+	<style></style>
+
+	<template>
+		<progress class$="{{getClass(striped, animated, colour)}}" value="{{progress}}" max="100">
+			<div class$="{{getClass(striped, animated, colour)}}">
+				<span class="progress-bar-striped" style="width:{{progress}}%;">
+					<content></content> <!-- No Support yet? -->
+				</span>
+			</div>
+		</progress>
+	</template>
+
+	<script>
+		'use strict';
+
+		var getClass = function(striped, animated, colour) {
+			var c = "progress";
+			if(striped) {
+				c += " progress-striped";
+			}
+			if(animated) {
+				c += " progress-animated";
+			}
+			if(colour !== "123") {
+				c += " progress-" + colour;
+			}
+			return c;
+		};
+
+		(function () {			
+			Polymer({
+				is: 'bootstrap-progress',
+				getClass: getClass,
+				properties: {
+					progress: {
+						type: Number,
+						value: 100
+					},
+					colour: {
+						type: String,
+						value: "123"
+					},
+					animated: {
+						type: Boolean,
+						value: false
+					},
+					striped: {
+						type: Boolean,
+						value: false
+					}
+				}
+			});
+		})();
+	</script>
+</dom-module>

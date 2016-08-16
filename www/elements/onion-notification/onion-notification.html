@@ -1,7 +1,6 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-image/iron-image.html">
-<link rel="import" href="/lib/iron-icons/iron-icons.html">
-<link rel="stylesheet" type="text/css" href="animate.css">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-image/iron-image.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
 
 <dom-module id="onion-notification">
 	<style>
@@ -17,9 +16,10 @@
 			position: fixed;
 			height: 0;
 			width: 0;
-			top: 10px;
-			right: 15px;
+			top: 5px;
+			right: 5px;
 			overflow: visible;
+			z-index: 10000;
 		}
 
 		.notifications-container {
@@ -30,32 +30,104 @@
 
 		.notification {
 			position: relative;
-			width: 250px;
-			border: 1px solid #fff;
+			width: 300px;
 			background: rgba(255, 255, 255, 0.95);
-			border-radius: 3px;
-			padding: 10px;
 			margin-bottom: 5px;
-			z-index: 10000;
-			margin-left: -250px;
-			box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+			margin-left: -300px;
+
+		    -webkit-animation: slideIn 1s;
+		    -moz-animation: slideIn 1s;
+		    -o-animation: slideIn 1s;
+		    animation: slideIn 1s;
+		    animation-fill-mode: forwards;
+		    -webkit-animation-timing-function: ease;
+		}
+		.fadeOutRight {
+			-webkit-animation: slideOut 1s;
+		    -moz-animation: slideOut 1s;
+		    -o-animation: slideOut 1s;
+		    animation: slideOut 1s;
+		    animation-fill-mode: forwards;
+		    -webkit-animation-timing-function: ease;
+			margin-left: 310px;
 		}
 
-		.notification p {
+		@-webkit-keyframes slideOut {
+			from {margin-left: -300px;}
+			to {margin-left: 310px;}
+		}
+		@-moz-keyframes slideOut {
+			from {margin-left: -300px;}
+			to {margin-left: 310px;}
+		}
+		@-o-keyframes slideOut {
+			from {margin-left: -300px;}
+			to {margin-left: 310px;}
+		}
+		@keyframes slideOut {
+			from {margin-left: -300px;}
+			to {margin-left: 310px;}
+		}
+
+		@-webkit-keyframes slideIn {
+			from {margin-left: 310px;}
+			to {margin-left: -300px;}
+		}
+		@-moz-keyframes slideIn {
+			from {margin-left: 310px;}
+			to {margin-left: -300px;}
+		}
+		@-o-keyframes slideIn {
+			from {margin-left: 310px;}
+			to {margin-left: -300px;}
+		}
+		@keyframes slideIn {
+			from {margin-left: 310px;}
+			to {margin-left: -300px;}
+		}
+
+		.notification p:last-child {
+			margin-bottom: 0;
+		}
+		
+		.notification .title {
+			font-size: 1.1em;
+			font-weight: bold;
+		}
+		
+		.notification .message {
 			word-wrap: break-word;
 		}
-			.notification p:last-child {
-				margin-bottom: 0;
-			}
+		
+		.notification .image {
+			width: 50px;
+			height: 50px;
+			margin-right: 10px;
+		}
 	</style>
 
 	<template>
 		<div class="notifications">
 				<template is='dom-repeat' items="{{notificationList}}">
-					<div class="notification animated fadeInRight" id="{{item.id}}">
-						<h6 class="title">{{item.title}}</h6>
-						<!-- <a href="#" class="close" on-click>&times;</a> -->
-						<p>{{item.message}}</p>
+					
+					<div class="layout vertical center">	
+						<template is="dom-if" if="{{item.image}}">
+						</template>
+						
+						<!-- <div class="well notification animated fadeInRight" id="{{item.id}}"> -->
+						<div class="well notification" id="{{item.id}}">
+							<a href="#" class="close" n="{{item}}" on-tap="onClose">&times;</a>
+							<div class="layout horizontal center">
+								<template is="dom-if" if="{{item.image}}">
+									<iron-image src="{{item.image}}" class="image" sizing="contain"></iron-image>
+								</template>
+								<div class="flex layout vertical">
+									<div class="title">{{item.title}}</div>
+									<div class="message">{{item.message}}</div>
+								</div>
+							</div>
+						</div>
+						
 					</div>
 				</template>
 		</div>
@@ -66,22 +138,55 @@
 
 		(function () {
 			var notify = function (n) {
-				n.id = 'notification-' + (this.idCount++);
+				var nid = 'notification' + (this.idCount++);
+				var timeout = n.timeout || 10000;
+				
+				n.id = nid;
+				n.timer = setTimeout((function () {
+					this.close(nid);
+				}).bind(this), timeout);
+				
 				this.push('notificationList', n);
-				setTimeout((function () {
-					var elem = document.getElementById(this.notificationList[0].id);
-					elem.className = elem.className + ' fadeOutRight';
-					this.notificationList.shift('notificationList');
-				}).bind(this), 5000);
 			};
-
+			
+			var close = function (id) {
+				var elem = document.getElementById(id);
+				elem.className = elem.className + ' fadeOutRight';
+				
+				for(var i = 0; i < this.notificationList.length; i++) {
+						if(this.notificationList[i].id === id) {
+							 this.notificationList.splice(i, 1);
+							console.log('deleted')
+							break;
+						}
+				}
+			}
+			
+			var onClose = function (e) {
+				clearTimeout(e.target.n.timer);
+				this.close (e.target.n.id);
+			}
+				
 			Polymer({
 				is: 'onion-notification',
 				notify: notify,
+				close: close,
+				onClose: onClose,
+				// fadeIn: fadeIn,
 				properties: {
 					notificationList: {
 						type: Array,
 						value: [],
+						notify: true,
+						// observer: 'fadeIn'
+					},
+					idCount: {
+						type: Number,
+						value: 0
+					},
+					showNotif: {
+						type: String,
+						value: '',
 						notify: true
 					}
 				}

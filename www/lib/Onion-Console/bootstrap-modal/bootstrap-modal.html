@@ -1,0 +1,92 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="../bootstrap-styles/bootstrap-styles.html">
+
+<dom-module id="bootstrap-modal">
+	<style>
+		:host {
+			widows: 100%;
+		}
+		
+		.modal-content {
+			min-width: 400px;
+		}
+	
+	</style>
+	<template>
+		
+		
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" hidden="{{noCloseButton}}" on-click="close">×</button>
+				<h4 class="modal-title">{{title}}</h4>
+			</div>
+			<div class="modal-body">
+				<content select="modal-body"></content>
+			</div>
+			<div class="modal-footer" on-tap="onFooterClick">
+				<content select="modal-footer"></content>
+			</div>
+		</div>
+
+	</template>
+
+	<script>
+	'use strict';
+		(function () {
+			var ready = function () {
+				if (this.modal) {
+					this.noCancelOnOutsideClick = true;
+			        this.noCancelOnEscKey = true;
+			        this.withBackdrop = true;
+				}
+			}
+			var onFooterClick = function (event) {
+				if (this.modal) {
+					return;
+				}
+				var target = event.target;
+				
+				if (target.type && target.type.indexOf('button') > -1) {
+					this.close();
+				}
+			};
+			
+			var onClose = function () {
+				console.log('on close');
+				this.fire('close');
+				this.close();
+			}
+			Polymer({
+				is: 'bootstrap-modal',
+				behaviors: [Polymer.IronOverlayBehavior],
+				hostAttributes: {
+					role: 'dialog',
+					tabindex: '-1'
+				},
+				ready: ready,
+				onClose: onClose,
+				onFooterClick: onFooterClick,
+				properties: {
+					noCloseButton: {
+						type: Boolean,
+						value: false
+					},
+					modal: {
+						type: Boolean,
+						value: false
+					},
+					withBackdrop: {
+						type: Boolean,
+						value: true
+					},
+					title: {
+						type: String,
+						value: ''
+					}
+				},
+				
+			});
+		})();
+	</script>
+</dom-module>
