@@ -148,7 +148,7 @@
 
 			var _sync = function () {
 				if (this.valueChanged) {
-					onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 							ubus.request('i2c_exp', 'pwm-exp', {
 								command: 'set',
 								params: (this.activeChannelId === null) ? {

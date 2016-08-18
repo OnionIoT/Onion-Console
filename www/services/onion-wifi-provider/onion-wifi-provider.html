@@ -19,10 +19,10 @@
 			var regEx = new RegExp(/^[0-9A-Fa-f]+$/);
 
 			var ready = function () {
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
+				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 					self.ubus = ubus;
 				});
-				onionConsole.getService('onion-device-settings-provider', (function (deviceProvider) {
+				onionConsole.getService('onion-device-settings-provider', (function (err, deviceProvider) {
 					deviceProvider.getDeviceType(function(result){
 						console.log(result);
 						self.device = result;

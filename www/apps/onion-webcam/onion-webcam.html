@@ -116,7 +116,7 @@ e<link rel="import" href="/lib/polymer/polymer.html">
 				this.verbose 			= 0;	
 
 				// check if stream is currently enabled
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'get', {
 						config: 'mjpg-streamer',
 						section: 'core',
@@ -142,7 +142,7 @@ e<link rel="import" href="/lib/polymer/polymer.html">
 				var 	top 	= this;
 
 				// get the device ip address and start the stream
-				onionConsole.getService('onion-device-settings-provider', function (deviceProvider) {
+				onionConsole.getService('onion-device-settings-provider', function (err, deviceProvider) {
 					deviceProvider.getIP(function (result) {
 						top.ipAddr = result[1].ip;
 						console.log('Device ip addr: ' + top.ipAddr);
@@ -194,7 +194,7 @@ e<link rel="import" href="/lib/polymer/polymer.html">
 			var _StreamingSetupGet = function () {
 				var		top 	= this;
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'get', {
 						config: 'mjpg-streamer',
 						section: 'core',
@@ -209,7 +209,7 @@ e<link rel="import" href="/lib/polymer/polymer.html">
 			var _StreamingSetupDeleteAuth = function () {
 				var		top 	= this;
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'delete', {
 						config: 'mjpg-streamer',
 						section: 'core',
@@ -229,7 +229,7 @@ e<link rel="import" href="/lib/polymer/polymer.html">
 			var _StreamingSetupScreen = function () {
 				var		top 	= this;
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'set', {
 						config: 'mjpg-streamer',
 						section: 'core',
@@ -248,7 +248,7 @@ e<link rel="import" href="/lib/polymer/polymer.html">
 			var _StreamingSetupEnable = function (bEnable) {
 				var		top 	= this;
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'set', {
 						config: 'mjpg-streamer',
 						section: 'core',
@@ -265,7 +265,7 @@ e<link rel="import" href="/lib/polymer/polymer.html">
 
 			var _StreamingSetupCommit = function () {
 				// commit the changes
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'commit', {
 						config: 'mjpg-streamer',
 					}, (function (data) {

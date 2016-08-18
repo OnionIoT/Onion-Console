@@ -10,7 +10,7 @@
 				// console.log('onion-device-provider ready!');
 
 				// DEVICE VERSION
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					this.ubus = ubus;
 				}).bind(this));
 

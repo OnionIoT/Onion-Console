@@ -19,7 +19,7 @@ import shared service
             };
 
             var  getApps = function(callback) {
-                onionConsole.getService('onion-ubus-provider', function (ubus) {
+                onionConsole.getService('onion-ubus-provider', function (err, ubus) {
                     ubus.request('onion-console', 'app-list', {}, function (result) {
                         if (result.length === 2 && result[1].exists) {
                             callback(null, result[1].apps);
@@ -31,7 +31,7 @@ import shared service
             }
 
             var reload = function () {
-                onionConsole.getService('onion-ubus-provider', function (ubus) {
+                onionConsole.getService('onion-ubus-provider', function (err, ubus) {
                     ubus.request('onion-console', 'app-list', {}, function (result) {
                         if (result.length === 2 && result[1].exists) {
                             self.apps = [];                     

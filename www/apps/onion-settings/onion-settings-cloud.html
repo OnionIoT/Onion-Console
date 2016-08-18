@@ -119,7 +119,7 @@
 			//	if it exists, will populate the deviceId and secret variables
 			//	if not, does nothing
 			var checkSetup = function () {
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'get', {
 						config: 'onion'
 					}, (function (result) {
@@ -144,7 +144,7 @@
 				this.loading = true;
 				console.log('Setup code is ', this.setupCode);
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('file', 'exec', {
 						command: '/usr/bin/onion-cloud',
 						params: [
@@ -189,7 +189,7 @@
 
 			// remove the current cloud settings
 			var removeSettings = function () {
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'delete', {
 						config: 'onion',
 						section: 'cloud'

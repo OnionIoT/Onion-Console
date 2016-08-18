@@ -165,7 +165,7 @@
 
 			var _onR1 = function () {
 				console.log('r1');
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 						ubus.request('i2c_exp', 'relay-exp', {
 							command: 'set',
 							params: {
@@ -189,7 +189,7 @@
 
 			var _onR2 = function () {
 				console.log('r2');
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 						ubus.request('i2c_exp', 'relay-exp', {
 							command: 'set',
 							params: {

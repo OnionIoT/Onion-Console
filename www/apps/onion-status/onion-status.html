@@ -220,12 +220,12 @@
 			var ready = function() {
 				this.title = 'Device Status';
 				
-				onionConsole.getService('onion-session-provider', (function (sessionProvider) {
+				onionConsole.getService('onion-session-provider', (function (err, sessionProvider) {
 					this.sessionProvider = sessionProvider;
 				}).bind(this));
 				
 				// if (this.sessionProvider.isAlive() === true) {
-					onionConsole.getService('onion-device-settings-provider', (function (deviceSettingsProvider) {
+					onionConsole.getService('onion-device-settings-provider', (function (err, deviceSettingsProvider) {
 						this.deviceSettingsProvider = deviceSettingsProvider;
 						this.deviceSettingsProvider.getDeviceType((function (deviceType) {
 							this.device = deviceType;
@@ -379,7 +379,7 @@
 
 			var updateDiskUsage = function () {
 				if (this.sessionProvider.isAlive() === true ) {
-					onionConsole.getService('onion-device-provider', (function (device) {
+					onionConsole.getService('onion-device-provider', (function (err, device) {
 						var params = {
 							command: '/usr/sbin/disk-space',
 							params: []

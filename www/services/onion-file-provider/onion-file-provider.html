@@ -20,7 +20,7 @@
 
 			var ready = function () {
 				backsplash = '/';
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
+				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 					self.ubus = ubus;
 				});			
 			};

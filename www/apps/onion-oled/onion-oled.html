@@ -215,7 +215,7 @@
 
 		(function () {
 			var ready = function () {
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('i2c_exp', 'oled-exp', {
 						command: 'set',
 						option: 'i'
@@ -269,7 +269,7 @@
 				this.set('bDisplaySaveImage', false);
 
 				// clear the physical oled screen
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('i2c_exp', 'oled-exp', {
 						command: 'set',
 						option: 'c'
@@ -287,7 +287,7 @@
 			var _invertScreen = function () {
 				this.invert = !this.invert;
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('i2c_exp', 'oled-exp', {
 						command: 'set',
 						params: {
@@ -307,7 +307,7 @@
 			var _dimScreen = function () {
 				this.dim = !this.dim;
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('i2c_exp', 'oled-exp', {
 						command: 'set',
 						params: {
@@ -327,7 +327,7 @@
 			var _scroll = function (e) {
 				var direction = e.target.parentNode.dataset['args'];
 				
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('i2c_exp', 'oled-exp', {
 						command: 'set',
 						params: {
@@ -359,7 +359,7 @@
 			};
 
 			var _syncText = function () {
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('i2c_exp', 'oled-exp', {
 						command: 'set',
 						option: 'c',
@@ -393,9 +393,9 @@
 							var pageArray 	= _convertToPageArray(imgData);
 							var hexDump 	= _generateHexDump(pageArray, true);
 
-							onionConsole.getService('onion-file-provider', function (fileProvider) {
+							onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 								fileProvider.createTempFile(hexDump, function (filename) {
-									onionConsole.getService('onion-ubus-provider', function (ubus) {
+									onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 										ubus.request('i2c_exp', 'oled-exp', {
 											command: 'set',
 											option: 'c',
@@ -434,7 +434,7 @@
 					savePath 	= this.imageSavePath;
 				}
 
-				onionConsole.getService('onion-file-provider', function (fileProvider) {
+				onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 					fileProvider.copyFile(fileProvider.getTempFile(), savePath);
 				});
 			};

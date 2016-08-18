@@ -288,12 +288,12 @@
 
 				self.hideScanMessage();
 				
-				onionConsole.getService('onion-session-provider', function (sessionProvider) {
+				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
                     self.sessionProvider = sessionProvider;
                 });
 				
                 if (self.sessionProvider.isAlive() === true) {
-                    onionConsole.getService('onion-wifi-provider', function (wifiProvider) {
+                    onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
                         self.wifiProvider = wifiProvider;
 					});
                 };

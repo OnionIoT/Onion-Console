@@ -105,7 +105,7 @@
 				this.resetButtonDisabled = true;
 				
 				// get the ubus service
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
+				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 					var params = {
 						set_trigger: 'timer'
 					};

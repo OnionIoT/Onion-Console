@@ -139,10 +139,10 @@
 					fileInEdit: ''      //current folder + current file
 				};
 
-				onionConsole.getService('onion-session-provider', function (sessionProvider) {
+				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
 					self.sessionProvider = sessionProvider;
 					if (sessionProvider.isAlive() === true) {   
-						onionConsole.getService('onion-file-provider', function (fileProvider) {
+						onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 							self.fileProvider = fileProvider;
 							self.$.fileList.addEventListener('click', function (e) {
 								if (typeof e.target.icon === 'undefined') {
@@ -197,7 +197,7 @@
                 if (self.sessionProvider.isAlive() === true) {
 			        var currentFile = '';
 					var changed = true;
-				    onionConsole.getService('onion-file-provider', function (fileProvider) {
+				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 				 	    self.fileProvider = fileProvider;
 						
 						//launch app with specified file
@@ -274,7 +274,7 @@
 				    var ext = getFileExtension();
 					self.$.fileEditor.editor.session.setMode('ace/mode/' + ext);
 
-                    onionConsole.getService('onion-file-provider', function (fileProvider) {
+                    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 					    self.fileProvider = fileProvider;
 					    //Get file list
 
@@ -313,7 +313,7 @@
 			var saveFile = function () {
 			    //var saveResult=true;
 				if (self.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
-				    onionConsole.getService('onion-file-provider', function (fileProvider) {
+				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 					    self.fileProvider = fileProvider;
 					    //Get file list
 						var codeInEdit = self.$.fileEditor.editor.session.getValue();
@@ -387,7 +387,7 @@
 						
 			var deleteFile = function (type, filename) {
 			   if (self.sessionProvider.isAlive() === true ) {
-				    onionConsole.getService('onion-file-provider', function (fileProvider) {
+				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 					    self.fileProvider = fileProvider;
 						fileProvider.execCommand('rm', ['-rf', filename], function (result) {
 						    if (result.execResult === true) {
@@ -420,7 +420,7 @@
 				}
 				
 			    if (self.sessionProvider.isAlive() === true ) {
-				    onionConsole.getService('onion-file-provider', function (fileProvider) {
+				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 
 					    self.fileProvider = fileProvider;
 						var newFilename = '';
@@ -465,7 +465,7 @@
 				}
 				
 			    if (self.sessionProvider.isAlive() === true) {
-				    onionConsole.getService('onion-file-provider', function (fileProvider) {
+				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 					    self.fileProvider = fileProvider;
 						if (type === 'folder') {
 						    var newFoldername = fileProvider.getFolderPath(folderFileInfo.folder) + backsplash + filename;

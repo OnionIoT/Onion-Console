@@ -287,7 +287,7 @@
             }
 
             var getDeviceType = function(){
-            	onionConsole.getService('onion-device-settings-provider', (function (deviceProvider) {
+            	onionConsole.getService('onion-device-settings-provider', (function (err, deviceProvider) {
 					deviceProvider.getDeviceType(function(result){
 						console.log(result);
 						self.deviceType = result;
@@ -315,7 +315,7 @@
             var _syncAll = function () {
 				// get the ubus service
 				// TODO: need a new service to pull all pin data
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					for (var i=0; i< this.pins.length; i++) {
 						var pin = this.pins[i];
 						ubus.request('onion', 'gpio', {
@@ -340,7 +340,7 @@
 
 			var _syncOne = function () {
 				var pin = this.currentPin;
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 						ubus.request('onion', 'gpio', {
 							command:'status',
 							params: {
@@ -411,7 +411,7 @@
 			};
 
 			var _getPinStatus = function (pin){
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('onion', 'gpio', {
 						command:'status',
 						params: {
@@ -429,7 +429,7 @@
 			};
 
 			var _pinValueChanged = function () {
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('onion', 'gpio', {
 						command: 'set',
 						params: {
@@ -446,7 +446,7 @@
 			};
 
 			var _pinDirectionChanged = function () {
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('onion', 'gpio', {
 						command: 'set-direction',
 						params: {

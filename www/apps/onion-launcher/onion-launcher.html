@@ -177,14 +177,14 @@
 			var initialized = false;
 
 			var start = function () {
-				onionConsole.getService('onion-apps-provider', function (appsProvider) {
+				onionConsole.getService('onion-apps-provider', function (err, appsProvider) {
 					self.appsProvider = appsProvider;
 					appsProvider.getApps(function(err, apps){
 						self.apps = apps;
 					});
 				});
 
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
+				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 					var params = {
 						config: 'system',
 						section: '@system[0]',
@@ -231,7 +231,7 @@
 
 			var _onLogout = function () {
 				if (confirm('Are you sure you want to log out of your Omega?')) {
-					onionConsole.getService('onion-session-provider', function (session) {
+					onionConsole.getService('onion-session-provider', function (err, session) {
 						session.logout();
 					});
 				}
@@ -239,10 +239,10 @@
 
 			var _onShutdown = function () {
 				if (confirm('Are you sure you want to shutdown your Omega?')) {
-					onionConsole.getService('onion-device-settings-provider', function (device) {
+					onionConsole.getService('onion-device-settings-provider', function (err, device) {
 						device.shutdown()
 						.then(function () {
-							onionConsole.getService('onion-session-provider', function (session) {
+							onionConsole.getService('onion-session-provider', function (err, session) {
 								session.logout();
 							});
 						});
@@ -252,10 +252,10 @@
 
 			var _onRestart = function () {
 				if (confirm('Are you sure you want to restart your Omega?')) {
-					onionConsole.getService('onion-device-settings-provider', function (device) {
+					onionConsole.getService('onion-device-settings-provider', function (err, device) {
 						device.reboot()
 						.then(function () {
-							onionConsole.getService('onion-session-provider', function (session) {
+							onionConsole.getService('onion-session-provider', function (err, session) {
 								session.logout();
 							});
 						});

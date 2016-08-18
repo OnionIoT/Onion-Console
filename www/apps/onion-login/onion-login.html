@@ -49,7 +49,7 @@
 			};
 
 			var ready = function () {
-				onionConsole.getService('onion-session-provider', function (session) {
+				onionConsole.getService('onion-session-provider', function (err, session) {
 	            	self.session = session;
 
 	            	self.session.checkToken(function (hasToken) {

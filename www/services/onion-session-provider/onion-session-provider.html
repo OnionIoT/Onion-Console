@@ -12,7 +12,7 @@
 			};
 
 			var ready = function () {
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
+				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 					self.ubus = ubus;
 
 					checkToken(function (hasToken) {

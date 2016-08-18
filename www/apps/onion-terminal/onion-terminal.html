@@ -46,11 +46,11 @@
 			var ready = function() {
 				self.title = 'Onion Terminal';
 				
-				onionConsole.getService('onion-session-provider', function (sessionProvider) {
+				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
 					self.sessionProvider = sessionProvider;
 
 					if (self.sessionProvider.isAlive() === true) {
-						onionConsole.getService('onion-device-settings-provider', function (deviceProvider) {
+						onionConsole.getService('onion-device-settings-provider', function (err, deviceProvider) {
 							self.deviceProvider = deviceProvider;
 							
 							//Get IP Address, NetMask

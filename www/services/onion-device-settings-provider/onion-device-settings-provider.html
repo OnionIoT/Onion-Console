@@ -10,7 +10,7 @@
 			var rxtxResult = null;
 
 			var ready = function (){
-				onionConsole.getService('onion-device-provider', (function (deviceProvider) {
+				onionConsole.getService('onion-device-provider', (function (err, deviceProvider) {
 					console.log('getting device provider complete');
 					this.deviceProvider = deviceProvider;
 
@@ -24,7 +24,7 @@
 					}).bind(this));
 				}).bind(this));
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					this.ubus = ubus;
 
 					// this.getDeviceType((function (type) {
@@ -59,7 +59,7 @@
 			var getDeviceType = function(callback){
 				var params = {};
 				callback = callback || this.noop;
-				onionConsole.getService('onion-device-provider', (function (deviceProvider) {
+				onionConsole.getService('onion-device-provider', (function (err, deviceProvider) {
 					deviceProvider.callService(null, 'system', 'board', params, function(err, result){
 						// console.log('device settings: getDeviceType: result = ', result);
 						// console.log('device settings: getDeviceType: model = ', result.model);
@@ -284,10 +284,10 @@
 			var changePassword = function (passwordCurrent, passwordNew, passwordNewVerify) {
 				var promise = new Promise(function (resolve, reject) {
 					if (passwordNew === passwordNewVerify) {
-						onionConsole.getService('onion-session-provider', function (session) {
+						onionConsole.getService('onion-session-provider', function (err, session) {
 							session.checkLogin(passwordCurrent)
 							.then(function () {
-								onionConsole.getService('onion-ubus-provider', function (ubus) {
+								onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 									ubus.request('file', 'exec', {
 										command: 'change-password',
 										params: [
@@ -318,7 +318,7 @@
 			var changeHostname = function (hostnameNew) {
 				var promise = new Promise(function (resolve, reject) {
 					if (hostname !== '') {
-						onionConsole.getService('onion-ubus-provider', function (ubus) {
+						onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 							ubus.request('uci', 'set', {
 								config: 'system',
 								section: '@system[0]',
@@ -349,7 +349,7 @@
 
 			var changeTimezone = function (timezoneNew, zonenameNew) {
 				var promise = new Promise(function (resolve, reject) {
-					onionConsole.getService('onion-ubus-provider', function (ubus) {
+					onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 						ubus.request('uci', 'set', {
 							config: 'system',
 							section: '@system[0]',
@@ -380,7 +380,7 @@
 			
 			var shutdown = function () {
 				var shutdownPromise = new Promise(function (resolve, reject) {
-					onionConsole.getService('onion-ubus-provider', function (ubus) {
+					onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 						ubus.request('file', 'exec', {
 							command: 'power-down', 
 							params: [
@@ -402,7 +402,7 @@
 
 			var reboot = function () {
 				var rebootPromise = new Promise(function (resolve, reject) {
-					onionConsole.getService('onion-ubus-provider', function (ubus) {
+					onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 						ubus.request('file', 'exec', {
 							command: 'reboot', 
 							params: [

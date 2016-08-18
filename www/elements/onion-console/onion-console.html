@@ -99,52 +99,52 @@
 			};
 
 			// LAZAR: NEW CODE
-			// var getService = function (serviceId, callback) {
-			// 	return new Promise((function (resolve, reject) {
-			// 		if (serviceId in services) {
-			// 			console.log('getService: resolving existing ' + serviceId + ' service');
-			// 			resolve(services[serviceId]);
-			// 		} else {
-			// 			console.log('getService: importing ' + serviceId + ' service');
-			// 			self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], (function () {
-			// 				var serviceElement = document.createElement(serviceId);
-			// 				Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
+			var getService = function (serviceId, callback) {
+				return new Promise((function (resolve, reject) {
+					if (serviceId in services) {
+						console.log('getService: resolving existing ' + serviceId + ' service');
+						resolve(services[serviceId]);
+					} else {
+						console.log('getService: importing ' + serviceId + ' service');
+						self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], (function () {
+							var serviceElement = document.createElement(serviceId);
+							Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
 
-			// 				services[serviceId] = serviceElement;
+							services[serviceId] = serviceElement;
 
-			// 				console.log('getService: resolving imported ' + serviceId + ' service');
-			// 				resolve(serviceElement);
-			// 			}).bind(this), function (err) {
-			// 				console.log('getService: could not import ' + serviceId + ' service');
-			// 				reject(err);
-			// 			});
-			// 		}
-			// 	}).bind(this)).nodeify(callback);
-			// };
+							console.log('getService: resolving imported ' + serviceId + ' service');
+							resolve(serviceElement);
+						}).bind(this), function (err) {
+							console.log('getService: could not import ' + serviceId + ' service');
+							reject(err);
+						});
+					}
+				}).bind(this)).nodeify(callback);
+			};
 
 			// LAZAR: OLD CODE
-			var getService = function (serviceId, callback) {
-				if (serviceId in services) {
-					callback(services[serviceId]);
-				} else {
-					self.launchService(serviceId,callback);
-				}
-			};
+			// var getService = function (serviceId, callback) {
+			// 	if (serviceId in services) {
+			// 		callback(services[serviceId]);
+			// 	} else {
+			// 		self.launchService(serviceId,callback);
+			// 	}
+			// };
 
-			var launchService = function (serviceId, callback) {
-				callback = callback || self.noop;
+			// var launchService = function (serviceId, callback) {
+			// 	callback = callback || self.noop;
 
-				if (!services[serviceId]) {
-					self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], function () {
-						var serviceElement = document.createElement(serviceId);
-						Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
+			// 	if (!services[serviceId]) {
+			// 		self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], function () {
+			// 			var serviceElement = document.createElement(serviceId);
+			// 			Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
 
-						services[serviceId] = serviceElement;
+			// 			services[serviceId] = serviceElement;
 
-						callback(serviceElement);
-					});
-				}
-			};
+			// 			callback(serviceElement);
+			// 		});
+			// 	}
+			// };
 
 			var _showTaskbar = function (runningApps, currentApp) {
 				if (runningApps.length > 0 && currentApp!=='onion-login' && currentApp!=='onion-launcher'){
@@ -164,7 +164,7 @@
 				created: created,
 				attached: attached,
 				launchApp: launchApp,
-				launchService: launchService,
+				// launchService: launchService,
 				getService: getService,
 				_showTaskbar: _showTaskbar,
 				sendNotification: sendNotification,

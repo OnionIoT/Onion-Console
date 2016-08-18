@@ -49,7 +49,7 @@
                 if (response !== null) {
  				    if ('error' in response) {
  				    	if (response['error'].code === -32002) {
- 				    		onionConsole.getService('onion-session-provider', function (sessionProvider) {
+ 				    		onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
  				    			sessionProvider.logout();
  				    		});
  				    	}
