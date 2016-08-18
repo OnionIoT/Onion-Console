@@ -56,19 +56,11 @@
 
 			var services = {};
 
-			var launchService = function (serviceId, callback) {
-				callback = callback || self.noop;
+			var attached = function () {
+				self.launchApp('onion-login');
+				self.getService('onion-intent-provider');
 
-				if (!services[serviceId]) {
-					self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], function () {
-						var serviceElement = document.createElement(serviceId);
-						Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
 
-						services[serviceId] = serviceElement;
-
-						callback(serviceElement);
-					});
-				}
 			};
 
 			var launchApp = function (appId, relaunch, fileName) {
@@ -106,18 +98,51 @@
 				}
 			};
 
-			var attached = function () {
-				self.launchApp('onion-login');
-				self.getService('onion-intent-provider');
+			// LAZAR: NEW CODE
+			// var getService = function (serviceId, callback) {
+			// 	return new Promise((function (resolve, reject) {
+			// 		if (serviceId in services) {
+			// 			console.log('getService: resolving existing ' + serviceId + ' service');
+			// 			resolve(services[serviceId]);
+			// 		} else {
+			// 			console.log('getService: importing ' + serviceId + ' service');
+			// 			self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], (function () {
+			// 				var serviceElement = document.createElement(serviceId);
+			// 				Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
 
+			// 				services[serviceId] = serviceElement;
 
-			};
+			// 				console.log('getService: resolving imported ' + serviceId + ' service');
+			// 				resolve(serviceElement);
+			// 			}).bind(this), function (err) {
+			// 				console.log('getService: could not import ' + serviceId + ' service');
+			// 				reject(err);
+			// 			});
+			// 		}
+			// 	}).bind(this)).nodeify(callback);
+			// };
 
+			// LAZAR: OLD CODE
 			var getService = function (serviceId, callback) {
 				if (serviceId in services) {
 					callback(services[serviceId]);
 				} else {
 					self.launchService(serviceId,callback);
+				}
+			};
+
+			var launchService = function (serviceId, callback) {
+				callback = callback || self.noop;
+
+				if (!services[serviceId]) {
+					self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], function () {
+						var serviceElement = document.createElement(serviceId);
+						Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
+
+						services[serviceId] = serviceElement;
+
+						callback(serviceElement);
+					});
 				}
 			};
 

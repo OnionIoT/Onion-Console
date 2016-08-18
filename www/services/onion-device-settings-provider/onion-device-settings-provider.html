@@ -10,8 +10,9 @@
 			var rxtxResult = null;
 
 			var ready = function (){
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
-					this.ubus = ubus;
+				onionConsole.getService('onion-device-provider', (function (deviceProvider) {
+					console.log('getting device provider complete');
+					this.deviceProvider = deviceProvider;
 
 					this.getDeviceType((function (type) {
 						this.device 	= type;
@@ -22,14 +23,53 @@
 						}
 					}).bind(this));
 				}).bind(this));
+
+				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+					this.ubus = ubus;
+
+					// this.getDeviceType((function (type) {
+					// 	this.device 	= type;
+					// 	if (type === 'Onion Omega') {
+					// 		this.deviceRadio = 'wlan0';
+					// 	} else if (type === 'Onion Omega2') {
+					// 		this.deviceRadio = 'ra0';
+					// 	}
+					// }).bind(this));
+				}).bind(this));
 			};
+
+			// LAZAR: should work like this
+			// var getDeviceType = function(callback){
+			// 	var params = {};
+			// 	callback = callback || this.noop;
+			// 	console.log('getDeviceType: this = ', this);
+			// 	console.log('getDeviceType: this.deviceProvider = ', this.deviceProvider);
+			// 	this.deviceProvider.callService(null, 'system', 'board', params, function(err, result){
+			// 		// console.log('device settings: getDeviceType: result = ', result);
+			// 		// console.log('device settings: getDeviceType: model = ', result.model);
+			// 		if (!err) {
+			// 			callback(result.model);
+			// 		} else {
+			//			callback('error: ' + err);
+			// 		}
+
+			// 	});
+			// };
 
 			var getDeviceType = function(callback){
 				var params = {};
 				callback = callback || this.noop;
-				this.ubus.request('system', 'board', params, function(result){
-					callback(result[1].model);
-				});
+				onionConsole.getService('onion-device-provider', (function (deviceProvider) {
+					deviceProvider.callService(null, 'system', 'board', params, function(err, result){
+						// console.log('device settings: getDeviceType: result = ', result);
+						// console.log('device settings: getDeviceType: model = ', result.model);
+						if (!err) {
+							callback(result.model);
+						} else {
+							callback('error: ' + err);
+						}
+					});
+				}).bind(this));
 			};
 
 			// deprecated
@@ -64,23 +104,23 @@
 			};
 
 			var getSystem = function (callback) {
-				this.ubus.request('system', 'info', {}, callback);
+				this.deviceProvider.callService(null, 'system', 'info', {}, callback);
 			};
 
 			var getRxTx = function (callback) {
 				var params =  {};
 				callback = callback || this.noop;
-				this.ubus.request('network.device','status', params, (function(result){
-					this.setRxTxResult(result,callback);
+
+				this.deviceProvider.callService(null, 'network.device','status', params, (function(err, result){
+					this.setRxTxResult(err, result,callback);
 				}).bind(this));
 			};
 
-			var setRxTxResult = function (result,callback) {
-				var returnCode = result[0];
+			var setRxTxResult = function (err, result, callback) {
+				var returnCode = err;
 				var receivedkB = 0;
 				var transmittedkB = 0;
-				if(returnCode===0){
-					var returnCode = result[0];
+				if (!err) {
 					var receivedkB = 0;
 					var transmittedkB = 0;
 					
@@ -90,7 +130,7 @@
 						if (deviceType === 'Onion Omega2') {
 							deviceRadio = 'ra0';
 						}
-						var radioInfo = result[1][deviceRadio];
+						var radioInfo = result[deviceRadio];
 
 						var rx = radioInfo.statistics.rx_bytes;
 						receivedkB = parseInt(rx);
@@ -149,9 +189,13 @@
 			var getIpAddr = function(callback){
 				var params = {};
 				callback = callback || this.noop;
-				this.ubus.request('network.interface.wwan', 'status', params, function(result){
-					var response = result[1]['ipv4-address'][0]['address'];
-					callback(response);
+				this.deviceProvider.callService(null, 'network.interface.wwan', 'status', params, function(err, result){
+					if (!err) {
+						var response = result['ipv4-address'][0]['address'];
+						callback(response);
+					} else {
+						callback('error: ', err);
+					}
 				}.bind(this));
 				callback('');
 			};
@@ -165,9 +209,13 @@
 					};
 
 					callback = callback || this.noop;
-					this.ubus.request('uci','get', params, function(result){
-						var response = result[1].value;
-						callback(response);
+					this.deviceProvider.callService(null, 'uci','get', params, function(err, result){
+						if (!err) {
+							var response = result.value;
+							callback(response);
+						} else {
+							callback('error: ', err);
+						}
 					});
 				}).bind(this));
 			};
@@ -194,12 +242,12 @@
 					}
 
 					var available = false;
-					this.ubus.request('network.device','status',
+					this.deviceProvider.callService(null, 'network.device','status',
 						{
 							name: this.deviceRadio
 						},
-					function(result){
-						if(result[0]===0){
+					function(err, result){
+						if(!err){
 							available = true;
 							callback(available);
 						}else{
@@ -217,13 +265,13 @@
 						deviceRadio = 'apcli0';
 					}
 					
-					this.ubus.request('network.device','status',
+					this.deviceProvider.callService(null, 'network.device','status',
 						{
 							name: deviceRadio
 						},
-					function(result){
-						if(result[0]===0){
-							callback(result[1].macaddr);
+					function(err, result){
+						if(!err){
+							callback(result.macaddr);
 						}else{
 							callback('');
 						}

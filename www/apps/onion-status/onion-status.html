@@ -212,15 +212,37 @@
 		'use strict';
 
 		(function () {
-			var self = null;
-
-			var created = function () {
-				self = this;
-			};
 
 			var refreshRxTxInterval = null;
 			var refreshStatusInterval = null;
 			var locked = false;
+
+			var ready = function() {
+				this.title = 'Device Status';
+				
+				onionConsole.getService('onion-session-provider', (function (sessionProvider) {
+					this.sessionProvider = sessionProvider;
+				}).bind(this));
+				
+				// if (this.sessionProvider.isAlive() === true) {
+					onionConsole.getService('onion-device-settings-provider', (function (deviceSettingsProvider) {
+						this.deviceSettingsProvider = deviceSettingsProvider;
+						this.deviceSettingsProvider.getDeviceType((function (deviceType) {
+							this.device = deviceType;
+						}).bind(this));
+
+						this.refreshInfo();
+					}).bind(this));
+
+					// Lazar: test
+					// onionConsole.getService('onion-device-provider', function(deviceApi) {
+					// 	deviceApi.callService(null, 'uci', 'get', {config: 'wireless'}, function (err, data) {
+					// 		console.log('device provider response: ', data);
+					// 		console.log('device provider error: ', err);
+					// 	});
+					// });
+				// }
+			};
 
 			// add zero padding to integers
 			function zeroPad(num, places) {
@@ -273,132 +295,113 @@
 				return ret;
 			}
 
-			var ready = function() {
-				self.title = 'Device Status';
-				
-				onionConsole.getService('onion-session-provider', function (sessionProvider) {
-					self.sessionProvider = sessionProvider;
-				});
-				
-				if (self.sessionProvider.isAlive() === true) {
-					onionConsole.getService('onion-device-settings-provider', function (deviceProvider) {
-						self.deviceProvider = deviceProvider;
-						self.deviceProvider.getDeviceType(function (deviceType) {
-							self.device = deviceType;
-						});
-
-						self.refreshInfo();
-					});
-				}
-			};
-
 			var refreshInfo = function () {
 				// Format the uptime, memory, and load
-				setInterval(function () {
-					self.deviceProvider.getSystem(function (result) {
-						self.uptime = millisecondsToStr ( result[1].uptime * 1000 );
-						self.memoryFree		= (result[1].memory.total / 1024000 - result[1].memory.free / 1024000).toFixed(3);
-						self.memoryTotal	= (result[1].memory.total / 1024000).toFixed(3);
-						self.memory = (self.memoryFree) + ' MB / ' + (self.memoryTotal) + ' MB';
-						self.load = (result[1].load[0] / 100000).toFixed(4) + ' ' + (result[1].load[1] / 100000).toFixed(4) + ' ' + (result[1].load[2] / 100000).toFixed(4);
-					});
-				}, 1000);
+				setInterval((function () {
+					this.deviceSettingsProvider.getSystem((function (err, result) {
+						this.uptime = millisecondsToStr ( result.uptime * 1000 );
+						this.memoryFree		= (result.memory.total / 1024000 - result.memory.free / 1024000).toFixed(3);
+						this.memoryTotal	= (result.memory.total / 1024000).toFixed(3);
+						this.memory = (this.memoryFree) + ' MB / ' + (this.memoryTotal) + ' MB';
+						this.load = (result.load[0] / 100000).toFixed(4) + ' ' + (result.load[1] / 100000).toFixed(4) + ' ' + (result.load[2] / 100000).toFixed(4);
+					}).bind(this));
+				}).bind(this), 1000);
 
 				
 
 				//Get MAC Address
-				// self.deviceProvider.getMAC(function (result) {
+				// self.deviceSettingsProvider.getMAC(function (result) {
 				//     self.mac = result.mac;
 				// });
 
 				// Get if device is online
-				self.deviceProvider.isOnline(function (result) {
+				this.deviceSettingsProvider.isOnline((function (result) {
 					if (result=== true) {
-						self.$.online.style.display = 'block';
-						self.$.offline.style.display = 'none';
+						this.$.online.style.display = 'block';
+						this.$.offline.style.display = 'none';
 					} else {
-						self.$.online.style.display = 'none';
-						self.$.offline.style.display = 'block';
+						this.$.online.style.display = 'none';
+						this.$.offline.style.display = 'block';
 					}
-				});
+				}).bind(this));
 
 				// Get IP address, netmask and mac address
-				self.deviceProvider.getIpAddr(function (result) {
-					self.ip = result;
-				});
+				this.deviceSettingsProvider.getIpAddr((function (result) {
+					this.ip = result;
+				}).bind(this));
 
-				self.deviceProvider.getNetMask(function (result) {
-					self.netmask = result;
-				});
+				this.deviceSettingsProvider.getNetMask((function (result) {
+					this.netmask = result;
+				}).bind(this));
 
-				self.deviceProvider.getMacAddr(function(result){
-					self.mac = result;
-				})
+				this.deviceSettingsProvider.getMacAddr((function(result){
+					this.mac = result;
+				}).bind(this));
 
 				//Get received and transmitted bytes
-				updateRxTx();
-				refreshRxTx(10000);
+				this.updateRxTx();
+				this.refreshRxTx(10000);
 
 				//Get the disk usage
-				updateDiskUsage();
+				this.updateDiskUsage();
 			};
 
 			var attached = function () {
-				var setCardsContainerWidth = function () {
-					self.$.cardsContainer.style.width = Math.floor(window.innerWidth / 310) * 310 + 'px';
-				};
+				var setCardsContainerWidth = (function () {
+					this.$.cardsContainer.style.width = Math.floor(window.innerWidth / 310) * 310 + 'px';
+				}).bind(this);
 
 				window.addEventListener('resize', setCardsContainerWidth, true);
 				setCardsContainerWidth();
 			};
 			
 		    var refreshRxTx = function (interval) {
-			    refreshRxTxInterval = setInterval(function () {
-			    	updateRxTx()
-			    }, interval);
+			    refreshRxTxInterval = setInterval((function () {
+			    	this.updateRxTx()
+			    }).bind(this), interval);
 			};
 			
 			var stopRefreshRxTx = function () { 
-			    clearInterval(self.refreshRxTxInterval);
-				delete self.refreshRxTxInterval;
+			    clearInterval(this.refreshRxTxInterval);
+				delete this.refreshRxTxInterval;
 			};
 			
 			var updateRxTx = function () {
-			    if (self.sessionProvider.isAlive() === true) {
-					self.deviceProvider.getRxTx(function (result) {
-						self.received = result[0].received;
-						self.transmitted = result[1].transmitted;							
-					});
+			    if (this.sessionProvider.isAlive() === true) {
+					this.deviceSettingsProvider.getRxTx((function (result) {
+						this.received 		= result[0].received;
+						this.transmitted 	= result[1].transmitted;							
+					}).bind(this));
 				} else {
-				    stopRefreshRxTx();
+				    this.stopRefreshRxTx();
 				}
 			};
 
 			var updateDiskUsage = function () {
-				if (self.sessionProvider.isAlive() === true ) {
-					onionConsole.getService('onion-ubus-provider', function (ubus) {
+				if (this.sessionProvider.isAlive() === true ) {
+					onionConsole.getService('onion-device-provider', (function (device) {
 						var params = {
 							command: '/usr/sbin/disk-space',
 							params: []
 						};
 
-						// make the ubus call
-						ubus.request('file', 'exec', params, function (data) {
-							if (data && data[0] === 0) {
+						// make the device call
+						device.callService(null, 'file', 'exec', params, (function (err, data) {
+							if (!err && data) {
 								var diskData 	= String(data[1].stdout);
 								var diskFree 	= diskData.replace(/.*free:(\d+).*/, '$1');
-								self.diskUsed 	= diskData.replace(/.*used:(\d+).*/, '$1');
-								self.diskTotal 	= diskData.replace(/.*total:(\d+).*/, '$1');
+								this.diskUsed 	= diskData.replace(/.*used:(\d+).*/, '$1');
+								this.diskTotal 	= diskData.replace(/.*total:(\d+).*/, '$1');
 
 								// find percentage of disk used
-								self.diskPercentage = ((self.diskUsed / self.diskTotal) * 100).toFixed(2)
+								this.diskPercentage = ((this.diskUsed / this.diskTotal) * 100).toFixed(2)
 
 								// convert units to MB
-								self.diskUsed 	= (self.diskUsed / 1000).toFixed(3);
-								self.diskTotal 	= (self.diskTotal / 1000).toFixed(3);
+								this.diskUsed 	= (this.diskUsed / 1000).toFixed(3);
+								this.diskTotal 	= (this.diskTotal / 1000).toFixed(3);
 							}
-						});
-					});
+						}).bind(this));
+					}).bind(this));
 				} else {
 				    alert('Session time out! Failed to get disk space data!');
 				}
@@ -450,7 +453,6 @@
 
 			Polymer({
 				is: 'onion-status',
-				created: created,
 				ready: ready,
 				attached: attached,
 				behaviors: [Onion.AppBehavior],

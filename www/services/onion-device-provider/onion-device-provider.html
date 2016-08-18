@@ -7,8 +7,7 @@
 		(function () {
 
 			var ready = function (){
-				console.log('onion-device-provider ready!');
-				console.log('hostname: ', location.hostname);
+				// console.log('onion-device-provider ready!');
 
 				// DEVICE VERSION
 				onionConsole.getService('onion-ubus-provider', (function (ubus) {
@@ -21,9 +20,20 @@
 				// }).bind(this));	
 			};
 
+			// implement this:
+			var getDeviceType = function(callback){
+				var params = {};
+				callback = callback || this.noop;
+				this.ubus.request('system', 'board', params, function(result){
+					callback(result[1].model);
+				});
+			};
+
+
+
 			var callService = function (deviceId, serviceName, functName, payload, callback) {
 				// DEVICE VERSION
-				console.log('device provider callService activated for service ', serviceName);
+				// console.log('device provider callService activated for service ', serviceName);
 				return new Promise((function (resolve, reject) {
 					this.ubus.request (serviceName, functName, payload, function (result) {
 						// console.log('device provider callService response: ', result);
