@@ -137,7 +137,7 @@
 				});
 				
 				if (self.sessionProvider.isAlive() === true) {
-					onionConsole.getService('onion-device-provider', (function (deviceProvider) {
+					onionConsole.getService('onion-device-settings-provider', (function (deviceProvider) {
 						deviceProvider.getDeviceType(function(result){
 							console.log(result);
 							if(result === 'Onion Omega'){

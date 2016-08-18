@@ -50,7 +50,7 @@
 					self.sessionProvider = sessionProvider;
 
 					if (self.sessionProvider.isAlive() === true) {
-						onionConsole.getService('onion-device-provider', function (deviceProvider) {
+						onionConsole.getService('onion-device-settings-provider', function (deviceProvider) {
 							self.deviceProvider = deviceProvider;
 							
 							//Get IP Address, NetMask

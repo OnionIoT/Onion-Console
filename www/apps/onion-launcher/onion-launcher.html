@@ -239,7 +239,7 @@
 
 			var _onShutdown = function () {
 				if (confirm('Are you sure you want to shutdown your Omega?')) {
-					onionConsole.getService('onion-device-provider', function (device) {
+					onionConsole.getService('onion-device-settings-provider', function (device) {
 						device.shutdown()
 						.then(function () {
 							onionConsole.getService('onion-session-provider', function (session) {
@@ -252,7 +252,7 @@
 
 			var _onRestart = function () {
 				if (confirm('Are you sure you want to restart your Omega?')) {
-					onionConsole.getService('onion-device-provider', function (device) {
+					onionConsole.getService('onion-device-settings-provider', function (device) {
 						device.reboot()
 						.then(function () {
 							onionConsole.getService('onion-session-provider', function (session) {

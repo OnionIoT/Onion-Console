@@ -22,7 +22,7 @@
 				onionConsole.getService('onion-ubus-provider', function (ubus) {
 					self.ubus = ubus;
 				});
-				onionConsole.getService('onion-device-provider', (function (deviceProvider) {
+				onionConsole.getService('onion-device-settings-provider', (function (deviceProvider) {
 					deviceProvider.getDeviceType(function(result){
 						console.log(result);
 						self.device = result;

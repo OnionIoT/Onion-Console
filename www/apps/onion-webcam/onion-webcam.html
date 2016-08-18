@@ -142,7 +142,7 @@ e<link rel="import" href="/lib/polymer/polymer.html">
 				var 	top 	= this;
 
 				// get the device ip address and start the stream
-				onionConsole.getService('onion-device-provider', function (deviceProvider) {
+				onionConsole.getService('onion-device-settings-provider', function (deviceProvider) {
 					deviceProvider.getIP(function (result) {
 						top.ipAddr = result[1].ip;
 						console.log('Device ip addr: ' + top.ipAddr);
