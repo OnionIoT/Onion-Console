@@ -115,7 +115,14 @@
 					<div class="flex-2 layout horizontal"></div>
 
 					<div id="search" class="flex layout horizontal center-justified">
-						<label id="search-icon" for="search-bar"><iron-icon icon="icons:search"></iron-icon></label>
+						<label id="search-icon" for="search-bar">
+							<template is="dom-if" if="{{!filterString}}">
+								<iron-icon icon="icons:search"></iron-icon>
+							</template>
+							<template is="dom-if" if="{{filterString}}">
+								<iron-icon icon="icons:clear" on-click="_clearSearch"></iron-icon>
+							</template>
+						</label>
 						<input id="search-bar" class="form-control" placeholder="Search" value="{{filterString::input}}" on-keydown="filterEscapeWatcher">
 					</div>
 
@@ -168,41 +175,27 @@
 		'use strict';
 
 		(function () {
-			var self = null;
-
-			var created = function () {
-				self = this;
-			};
-
-			var initialized = false;
-
 			var start = function () {
-				onionConsole.getService('onion-apps-provider', function (err, appsProvider) {
-					self.appsProvider = appsProvider;
-					appsProvider.getApps(function(err, apps){
-						self.apps = apps;
-					});
-				});
-
-				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					var params = {
 						config: 'system',
 						section: '@system[0]',
 						option: 'hostname'
 					};
 
-					ubus.request('uci', 'get', params, function (result) {
+					ubus.request('uci', 'get', params, (function (result) {
 						if (result[0] === 0) {
-							self.hostname = result[1].value;
+							this.hostname = result[1].value;
 						}
-					});
-				});
+					}).bind(this));
+				}).bind(this));
+				this.refresh();
 			};
 
 			var attached = function () {
-				var setAppsContainerWidth = function () {
-					self.$.appsContainer.style.width = Math.floor(window.innerWidth / 250) * 250 + 'px';
-				};
+				var setAppsContainerWidth = (function () {
+					this.$.appsContainer.style.width = Math.floor(window.innerWidth / 250) * 250 + 'px';
+				}).bind(this);
 
 				window.addEventListener('resize', setAppsContainerWidth, true);
 				setAppsContainerWidth();
@@ -224,10 +217,14 @@
 
 			var filterEscapeWatcher = function (e) {
 				if (e.which === 27) {
-					self.set('filterString', '');
-					self.$['search-bar'].blur();
+					this.set('filterString', '');
+					this.$['search-bar'].blur();
 				}
 			};
+			
+			var clearSearch = function(e) {
+				this.set('filterString', '');
+			}
 
 			var _onLogout = function () {
 				if (confirm('Are you sure you want to log out of your Omega?')) {
@@ -261,26 +258,39 @@
 						});
 					});
 				}
+
+			};
+			
+			var refresh = function(){
+				onionConsole.getService('onion-apps-provider')
+				.then( (function (appsProvider) {
+					appsProvider.getApps((function(err, apps){
+						this.set('apps', apps);
+					}).bind(this));
+				} ).bind(this) );
 			};
 
 			Polymer({
 				is: 'onion-launcher',
-				created: created,
 				start: start,
 				attached: attached,
-				apps: [],
 				behaviors: [Onion.AppBehavior],
 				searchFilter: searchFilter,
 				appIconURL: appIconURL,
 				filterEscapeWatcher: filterEscapeWatcher,
+				_clearSearch: clearSearch,
+				refresh: refresh,
+				_onLogout: _onLogout,
+				_onShutdown: _onShutdown,
+				_onRestart: _onRestart,
 				properties: {
 					apps: Array,
 					hostname: String,
-					filterString: String
-				},
-				_onLogout: _onLogout,
-				_onShutdown: _onShutdown,
-				_onRestart: _onRestart
+					filterString: {
+						type: String,
+						value: ''
+					}
+				}
 			});
         })();
 	</script>

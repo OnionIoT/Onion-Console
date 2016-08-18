@@ -36,8 +36,9 @@
 			<onion-taskbar id="taskbar" running-apps="{{runningApps}}" current-app="{{currentApp}}"></onion-taskbar>
 		</template>
 		
-		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
 		<div id="serviceContainer" class="hidden"></div>
+		
+		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
 		<onion-notification id='notification'></onion-notification>
 		
 	</template>
@@ -46,116 +47,128 @@
 		'use strict';
 
 		(function () {
-			var self = {};
-
 			var created = function () {
-				self = this;
+				this.rootDir = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
 				window.onionConsole = this;
-				// this.runningApps = [];
 			};
 
 			var services = {};
 
 			var attached = function () {
-				self.launchApp('onion-login');
-				self.getService('onion-intent-provider');
+				this.launchApp('onion-login');
+				this.getService('onion-device-provider');
+				this.getService('onion-intent-provider');
 
+				// TO DO: implement something like this
+				// this.getService('onion-session-provider')
+				// .then((function (session) {
+				// 	this.session = session;
+				// 	return true;
+				// }).bind(this))
+				// .then((function () {
+				// 	// Start other services
+				// 	return Promise.all([
+				// 		this.getService('onion-device-provider'),
+				// 		this.getService('onion-ubus-provider'),
+				// 		// LAZAR: add push provider?
+				// 	]);
+				// }).bind(this))
+				// .spread((function (deviceProvider, ubusProvider) {
+				// 	this.deviceProvider 	= deviceProvider;
+				// 	this.ubus 				= ubusProvider;
 
+				// 	this.launchApp('onion-login');
+				// 	this.getService('onion-intent-provider');
+				// }).bind(this))
+				// .catch((function (err) {
+				// 	console.log('console attached error!');
+				// 	console.log(err.message);
+				// 	console.log(err.stack);
+				// }).bind(this));
 			};
 
 			var launchApp = function (appId, relaunch, fileName) {
-				self.set("currentApp", appId);
+				this.set('currentApp', appId);
 
-				if (self.$.appContainer.querySelector(appId)) {
+				if (this.$.appContainer.querySelector(appId)) {
 
-					self.$.appContainer.querySelector(appId).fg();
-
-					
+					this.$.appContainer.querySelector(appId).fg();
 
 					if (relaunch) {
-						self.$.appContainer.querySelector(appId).start();
+						this.$.appContainer.querySelector(appId).start();
 					}
 					
 					if (typeof fileName !== 'undefined') {
-					    self.$.appContainer.querySelector(appId).fileName=fileName;
-					    self.$.appContainer.querySelector(appId).openFolder(fileName);
+					    this.$.appContainer.querySelector(appId).fileName = fileName;
+					    this.$.appContainer.querySelector(appId).openFolder(fileName);
 					}
 				} else {
-					self.importHref(['/apps/' + appId + '/' + appId + '.html?r=a2'], function () {
+					this.importHref(['/apps/' + appId + '/' + appId + '.html?r=a2'], function () {
 						var appElement = document.createElement(appId);
 						appElement.setAttribute('id', appId);
-						Polymer.dom(self.$.appContainer).appendChild(appElement); 
+						Polymer.dom(this.$.appContainer).appendChild(appElement); 
 
 						if (typeof fileName !== 'undefined') {
 						    appElement.fileName=fileName;
 						}
 					});
 
-					if (appId!=="onion-login" && appId!=="onion-launcher"){
-						
-						self.push("runningApps", appId);
+					if (appId!=='onion-login' && appId!=='onion-launcher'){
+						this.push('runningApps', appId);
 					}
 				}
 			};
 
-			// LAZAR: NEW CODE
+			var quitApp = function (appId) {
+				if (appId !== 'onion-launcher'){
+					this.$.appContainer.querySelector(appId).quit();
+
+					var idx = (this.runningApps).findIndex(function (element) {
+						return element.id === appId;
+					});
+					if (idx >= 0) {
+						this.splice('runningApps', idx, 1);
+					}
+					
+
+					this.set('currentApp', 'onion-launcher');
+
+					Polymer.dom(this.$.appContainer).removeChild(this.$$(appId));
+
+				} else {
+					this.set('currentApp', 'onion-launcher');
+				}
+			}
+
 			var getService = function (serviceId, callback) {
 				return new Promise((function (resolve, reject) {
 					if (serviceId in services) {
-						console.log('getService: resolving existing ' + serviceId + ' service');
 						resolve(services[serviceId]);
 					} else {
-						console.log('getService: importing ' + serviceId + ' service');
-						self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], (function () {
+						this.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], (function () {
 							var serviceElement = document.createElement(serviceId);
-							Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
+							Polymer.dom(this.$.serviceContainer).appendChild(serviceElement);
 
 							services[serviceId] = serviceElement;
 
-							console.log('getService: resolving imported ' + serviceId + ' service');
 							resolve(serviceElement);
 						}).bind(this), function (err) {
-							console.log('getService: could not import ' + serviceId + ' service');
 							reject(err);
 						});
 					}
 				}).bind(this)).nodeify(callback);
 			};
 
-			// LAZAR: OLD CODE
-			// var getService = function (serviceId, callback) {
-			// 	if (serviceId in services) {
-			// 		callback(services[serviceId]);
-			// 	} else {
-			// 		self.launchService(serviceId,callback);
-			// 	}
-			// };
-
-			// var launchService = function (serviceId, callback) {
-			// 	callback = callback || self.noop;
-
-			// 	if (!services[serviceId]) {
-			// 		self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], function () {
-			// 			var serviceElement = document.createElement(serviceId);
-			// 			Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
-
-			// 			services[serviceId] = serviceElement;
-
-			// 			callback(serviceElement);
-			// 		});
-			// 	}
-			// };
-
 			var _showTaskbar = function (runningApps, currentApp) {
-				if (runningApps.length > 0 && currentApp!=='onion-login' && currentApp!=='onion-launcher'){
+				if (runningApps.length > 0 && currentApp !== 'onion-login' && currentApp !== 'onion-launcher') {
 					return true;
-				}else{
+				} else {
 					return false;
 				}
 			}
 
 			var sendNotification = function(n){
-				self.$.notification.notify(n);
+				this.$.notification.notify(n);
 			}
 
 			Polymer({
@@ -164,7 +177,7 @@
 				created: created,
 				attached: attached,
 				launchApp: launchApp,
-				// launchService: launchService,
+				quitApp: quitApp,
 				getService: getService,
 				_showTaskbar: _showTaskbar,
 				sendNotification: sendNotification,
@@ -177,7 +190,7 @@
 					currentApp: {
 						type: String,
 						notify: true,
-						value: ""
+						value: ''
 					}
 				},
 			});

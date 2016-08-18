@@ -224,24 +224,19 @@
 					this.sessionProvider = sessionProvider;
 				}).bind(this));
 				
-				// if (this.sessionProvider.isAlive() === true) {
+				if (this.sessionProvider.isAlive() === true) {
 					onionConsole.getService('onion-device-settings-provider', (function (err, deviceSettingsProvider) {
 						this.deviceSettingsProvider = deviceSettingsProvider;
-						this.deviceSettingsProvider.getDeviceType((function (deviceType) {
+
+						// find the device 
+						deviceSettingsProvider.getDeviceType((function (deviceType) {
 							this.device = deviceType;
 						}).bind(this));
 
+						// refresh all status info
 						this.refreshInfo();
 					}).bind(this));
-
-					// Lazar: test
-					// onionConsole.getService('onion-device-provider', function(deviceApi) {
-					// 	deviceApi.callService(null, 'uci', 'get', {config: 'wireless'}, function (err, data) {
-					// 		console.log('device provider response: ', data);
-					// 		console.log('device provider error: ', err);
-					// 	});
-					// });
-				// }
+				}
 			};
 
 			// add zero padding to integers
@@ -388,7 +383,7 @@
 						// make the device call
 						device.callService(null, 'file', 'exec', params, (function (err, data) {
 							if (!err && data) {
-								var diskData 	= String(data[1].stdout);
+								var diskData 	= String(data.stdout);
 								var diskFree 	= diskData.replace(/.*free:(\d+).*/, '$1');
 								this.diskUsed 	= diskData.replace(/.*used:(\d+).*/, '$1');
 								this.diskTotal 	= diskData.replace(/.*total:(\d+).*/, '$1');

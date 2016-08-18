@@ -38,38 +38,17 @@
 				}).bind(this));
 			};
 
-			// LAZAR: should work like this
-			// var getDeviceType = function(callback){
-			// 	var params = {};
-			// 	callback = callback || this.noop;
-			// 	console.log('getDeviceType: this = ', this);
-			// 	console.log('getDeviceType: this.deviceProvider = ', this.deviceProvider);
-			// 	this.deviceProvider.callService(null, 'system', 'board', params, function(err, result){
-			// 		// console.log('device settings: getDeviceType: result = ', result);
-			// 		// console.log('device settings: getDeviceType: model = ', result.model);
-			// 		if (!err) {
-			// 			callback(result.model);
-			// 		} else {
-			//			callback('error: ' + err);
-			// 		}
-
-			// 	});
-			// };
-
 			var getDeviceType = function(callback){
 				var params = {};
 				callback = callback || this.noop;
-				onionConsole.getService('onion-device-provider', (function (err, deviceProvider) {
-					deviceProvider.callService(null, 'system', 'board', params, function(err, result){
-						// console.log('device settings: getDeviceType: result = ', result);
-						// console.log('device settings: getDeviceType: model = ', result.model);
-						if (!err) {
-							callback(result.model);
-						} else {
-							callback('error: ' + err);
-						}
-					});
-				}).bind(this));
+				this.deviceProvider.callService(null, 'system', 'board', params, function(err, result){
+					if (!err) {
+						callback(result.model);
+					} else {
+						callback('error: ' + err);
+					}
+
+				});
 			};
 
 			// deprecated
