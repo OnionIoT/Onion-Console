@@ -134,20 +134,32 @@
 				//Add function here to get device type
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
 					self.sessionProvider = sessionProvider;
-				});
+					if (self.sessionProvider.isAlive() === true) {
+						onionConsole.getService('onion-device-settings-provider', (function (err, deviceProvider) {
+							deviceProvider.getDeviceType(function(result){
+								console.log(result);
+								if(result === 'Onion Omega'){
+									this.model = result;
+								}else if(result === 'Onion Omega2'){
+									this.model = result;
+								}
+							}.bind(this));
+						}).bind(this));	
+                	}
+				}.bind(this));
 				
-				if (self.sessionProvider.isAlive() === true) {
-					onionConsole.getService('onion-device-settings-provider', (function (err, deviceProvider) {
-						deviceProvider.getDeviceType(function(result){
-							console.log(result);
-							if(result === 'Onion Omega'){
-								this.model = result;
-							}else if(result === 'Onion Omega2'){
-								this.model = result
-							}
-						}.bind(this));
-					}).bind(this));	
-                }			
+				// if (self.sessionProvider.isAlive() === true) {
+				// 	onionConsole.getService('onion-device-settings-provider', (function (err, deviceProvider) {
+				// 		deviceProvider.getDeviceType(function(result){
+				// 			console.log(result);
+				// 			if(result === 'Onion Omega'){
+				// 				this.model = result;
+				// 			}else if(result === 'Onion Omega2'){
+				// 				this.model = result
+				// 			}
+				// 		}.bind(this));
+				// 	}).bind(this));	
+    //             }			
 			};
 
 

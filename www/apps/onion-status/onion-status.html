@@ -222,21 +222,21 @@
 				
 				onionConsole.getService('onion-session-provider', (function (err, sessionProvider) {
 					this.sessionProvider = sessionProvider;
+					if (this.sessionProvider.isAlive() === true) {
+						onionConsole.getService('onion-device-settings-provider', (function (err, deviceSettingsProvider) {
+							this.deviceSettingsProvider = deviceSettingsProvider;
+
+							// find the device 
+							deviceSettingsProvider.getDeviceType(null,(function (deviceType) {
+								this.device = deviceType;
+							}).bind(this));
+
+							// refresh all status info
+							this.refreshInfo();
+						}).bind(this));
+					}
 				}).bind(this));
 				
-				if (this.sessionProvider.isAlive() === true) {
-					onionConsole.getService('onion-device-settings-provider', (function (err, deviceSettingsProvider) {
-						this.deviceSettingsProvider = deviceSettingsProvider;
-
-						// find the device 
-						deviceSettingsProvider.getDeviceType((function (deviceType) {
-							this.device = deviceType;
-						}).bind(this));
-
-						// refresh all status info
-						this.refreshInfo();
-					}).bind(this));
-				}
 			};
 
 			// add zero padding to integers
@@ -293,7 +293,7 @@
 			var refreshInfo = function () {
 				// Format the uptime, memory, and load
 				setInterval((function () {
-					this.deviceSettingsProvider.getSystem((function (err, result) {
+					this.deviceSettingsProvider.getSystem(null, (function (err, result) {
 						this.uptime = millisecondsToStr ( result.uptime * 1000 );
 						this.memoryFree		= (result.memory.total / 1024000 - result.memory.free / 1024000).toFixed(3);
 						this.memoryTotal	= (result.memory.total / 1024000).toFixed(3);
@@ -310,7 +310,7 @@
 				// });
 
 				// Get if device is online
-				this.deviceSettingsProvider.isOnline((function (result) {
+				this.deviceSettingsProvider.isOnline(null, (function (result) {
 					if (result=== true) {
 						this.$.online.style.display = 'block';
 						this.$.offline.style.display = 'none';
@@ -321,15 +321,15 @@
 				}).bind(this));
 
 				// Get IP address, netmask and mac address
-				this.deviceSettingsProvider.getIpAddr((function (result) {
+				this.deviceSettingsProvider.getIpAddr(null, (function (result) {
 					this.ip = result;
 				}).bind(this));
 
-				this.deviceSettingsProvider.getNetMask((function (result) {
+				this.deviceSettingsProvider.getNetMask(null, (function (result) {
 					this.netmask = result;
 				}).bind(this));
 
-				this.deviceSettingsProvider.getMacAddr((function(result){
+				this.deviceSettingsProvider.getMacAddr(null, (function(result){
 					this.mac = result;
 				}).bind(this));
 
@@ -363,7 +363,7 @@
 			
 			var updateRxTx = function () {
 			    if (this.sessionProvider.isAlive() === true) {
-					this.deviceSettingsProvider.getRxTx((function (result) {
+					this.deviceSettingsProvider.getRxTx(null, (function (result) {
 						this.received 		= result[0].received;
 						this.transmitted 	= result[1].transmitted;							
 					}).bind(this));

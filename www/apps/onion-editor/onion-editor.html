@@ -146,6 +146,7 @@
 							self.fileProvider = fileProvider;
 							self.$.fileList.addEventListener('click', function (e) {
 								if (typeof e.target.icon === 'undefined') {
+									console.log(e);
 					                openFolder(e.target.textContent);
 								}
 							});
@@ -197,18 +198,21 @@
                 if (self.sessionProvider.isAlive() === true) {
 			        var currentFile = '';
 					var changed = true;
+					console.log("Inside the openFolder Function");
 				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 				 	    self.fileProvider = fileProvider;
-						
+						console.log("Inside the file-provider get service");
 						//launch app with specified file
-						if(self.fileName!=='') {							
+						if(self.fileName!=='') {
+							console.log("Inside the self.fileName if statement");							
 							var loadFolderName=fileProvider.getFolderPath(self.fileName);
 							var loadFileName=fileProvider.getFilename(self.fileName);
 								console.log('Load folder:'+loadFolderName);
 								console.log('Load file:'+loadFileName);
 								folderFileInfo.folder=loadFolderName;
 							
-							fileProvider.getFileList(folderFileInfo.folder, function (result) {
+							fileProvider.getFolderContent(null, folderFileInfo.folder, function (result) {
+								console.log("Inside getFolderContent Callback and result is", result);
 								if (result.fileList !== '') {
 								    self.currentFolder = folderFileInfo.folder
 									folderFileInfo.list = result.fileList;
@@ -253,9 +257,10 @@
 							}
                             //Get file list			
                             console.log('onion-editor open folder:'+folderFileInfo.folder);							
-                            fileProvider.getFileList(folderFileInfo.folder, function (result) {
+                            fileProvider.getFolderContent(null,folderFileInfo.folder, function (result) {
+                            	console.log("Inside getFolderContent callback 2 and result is",result);
 							    self.currentFolder = folderFileInfo.folder;	
-							    folderFileInfo.list = result.fileList;
+							    folderFileInfo.list = result.list;
 							    self.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));									
 						    });
 					    } else {

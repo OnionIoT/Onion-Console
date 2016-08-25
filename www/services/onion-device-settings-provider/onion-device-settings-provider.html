@@ -26,22 +26,13 @@
 
 				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					this.ubus = ubus;
-
-					// this.getDeviceType((function (type) {
-					// 	this.device 	= type;
-					// 	if (type === 'Onion Omega') {
-					// 		this.deviceRadio = 'wlan0';
-					// 	} else if (type === 'Onion Omega2') {
-					// 		this.deviceRadio = 'ra0';
-					// 	}
-					// }).bind(this));
 				}).bind(this));
 			};
 
-			var getDeviceType = function(callback){
+			var getDeviceType = function(devId,callback){
 				var params = {};
 				callback = callback || this.noop;
-				this.deviceProvider.callService(null, 'system', 'board', params, function(err, result){
+				this.deviceProvider.callService(devId, 'system', 'board', params, function(err, result){
 					if (!err) {
 						callback(result.model);
 					} else {
@@ -52,50 +43,50 @@
 			};
 
 			// deprecated
-			var getMAC = function (callback) {
-				var params = {
-					device: this.deviceRadio
-				};
-				macResult = callback || this.noop;
-				this.ubus.request('iwinfo', 'assoclist', params, setMACResult);
+			// var getMAC = function (callback) {
+			// 	var params = {
+			// 		device: this.deviceRadio
+			// 	};
+			// 	macResult = callback || this.noop;
+			// 	this.ubus.request('iwinfo', 'assoclist', params, setMACResult);
+			// };
+
+			// var setMACResult = function (result) {
+			// 	var returnCode = result[0];
+			// 	if (returnCode === 0) { 
+			// 		if (result[1] !== null && result[1].results[0] !== null && result[1].results[0].mac !== null) {
+			// 			var mac = result[1].results[0].mac;
+
+			// 			macResult({
+			// 				mac: mac
+			// 			});
+			// 		} else {
+			// 			macResult({
+			// 				mac: ''
+			// 			});    
+			// 		}
+			// 	} else {
+			// 		console.log('Failed to get MAC address!')
+			// 		macResult({
+			// 			mac: ''
+			// 		});
+			// 	}
+			// };
+
+			var getSystem = function (devId,callback) {
+				this.deviceProvider.callService(devId, 'system', 'info', {}, callback);
 			};
 
-			var setMACResult = function (result) {
-				var returnCode = result[0];
-				if (returnCode === 0) { 
-					if (result[1] !== null && result[1].results[0] !== null && result[1].results[0].mac !== null) {
-						var mac = result[1].results[0].mac;
-
-						macResult({
-							mac: mac
-						});
-					} else {
-						macResult({
-							mac: ''
-						});    
-					}
-				} else {
-					console.log('Failed to get MAC address!')
-					macResult({
-						mac: ''
-					});
-				}
-			};
-
-			var getSystem = function (callback) {
-				this.deviceProvider.callService(null, 'system', 'info', {}, callback);
-			};
-
-			var getRxTx = function (callback) {
+			var getRxTx = function (devId, callback) {
 				var params =  {};
 				callback = callback || this.noop;
 
-				this.deviceProvider.callService(null, 'network.device','status', params, (function(err, result){
-					this.setRxTxResult(err, result,callback);
+				this.deviceProvider.callService(devId, 'network.device','status', params, (function(err, result){
+					this.setRxTxResult(devId,err, result,callback);
 				}).bind(this));
 			};
 
-			var setRxTxResult = function (err, result, callback) {
+			var setRxTxResult = function (devId, err, result, callback) {
 				var returnCode = err;
 				var receivedkB = 0;
 				var transmittedkB = 0;
@@ -103,7 +94,7 @@
 					var receivedkB = 0;
 					var transmittedkB = 0;
 					
-					this.getDeviceType(function (deviceType) {
+					this.getDeviceType(devId, function (deviceType) {
 						var deviceRadio	= 'wlan0';
 						// find radio type based on device
 						if (deviceType === 'Onion Omega2') {
@@ -130,45 +121,45 @@
 			};
 			
 			// deprecated
-			var getIP = function (callback) {
-				var params =  {
-					command: 'ifconfig'
-				};
-				ipResult = callback || this.noop;
-				this.ubus.request('file', 'exec', params, setIPResult);
-			};
+			// var getIP = function (callback) {
+			// 	var params =  {
+			// 		command: 'ifconfig'
+			// 	};
+			// 	ipResult = callback || this.noop;
+			// 	this.ubus.request('file', 'exec', params, setIPResult);
+			// };
 
-			var setIPResult = function (result) {
-				var returnCode = result[0];
-				var available = false;
-				var ip = '-';
-				var netmask = '-';
-				console.log(result);
-				if (result[0] === 0 && result[1].code === 0) { 
-					var wlanIndex = result[1].stdout.indexOf('wlan0');
-					if (wlanIndex > 0) {
-						available = true;
-						var startIndex = result[1].stdout.indexOf('inet addr:', wlanIndex);
-						var endIndex = result[1].stdout.indexOf('  Bcast', startIndex);
-						ip = result[1].stdout.substring(startIndex + 'inet addr:'.length, endIndex);
-						startIndex = result[1].stdout.lastIndexOf('Mask:');
-						endIndex = result[1].stdout.indexOf('\n', startIndex);
-						netmask = result[1].stdout.substring(startIndex + 'Mask:'.length, endIndex);
-					} else {
-						console.log('Failed to retrieve IP address information!');
-					}
-				} else {
-					console.log('Failed to execute IP address command!');
-				}
+			// var setIPResult = function (result) {
+			// 	var returnCode = result[0];
+			// 	var available = false;
+			// 	var ip = '-';
+			// 	var netmask = '-';
+			// 	console.log(result);
+			// 	if (result[0] === 0 && result[1].code === 0) { 
+			// 		var wlanIndex = result[1].stdout.indexOf('wlan0');
+			// 		if (wlanIndex > 0) {
+			// 			available = true;
+			// 			var startIndex = result[1].stdout.indexOf('inet addr:', wlanIndex);
+			// 			var endIndex = result[1].stdout.indexOf('  Bcast', startIndex);
+			// 			ip = result[1].stdout.substring(startIndex + 'inet addr:'.length, endIndex);
+			// 			startIndex = result[1].stdout.lastIndexOf('Mask:');
+			// 			endIndex = result[1].stdout.indexOf('\n', startIndex);
+			// 			netmask = result[1].stdout.substring(startIndex + 'Mask:'.length, endIndex);
+			// 		} else {
+			// 			console.log('Failed to retrieve IP address information!');
+			// 		}
+			// 	} else {
+			// 		console.log('Failed to execute IP address command!');
+			// 	}
 				
-				ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
-			};
+			// 	ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
+			// };
 
 
-			var getIpAddr = function(callback){
+			var getIpAddr = function(devId,callback){
 				var params = {};
 				callback = callback || this.noop;
-				this.deviceProvider.callService(null, 'network.interface.wwan', 'status', params, function(err, result){
+				this.deviceProvider.callService(devId, 'network.interface.wwan', 'status', params, function(err, result){
 					if (!err) {
 						var response = result['ipv4-address'][0]['address'];
 						callback(response);
@@ -179,8 +170,8 @@
 				callback('');
 			};
 
-			var getNetMask = function(callback){
-				this.getDeviceType((function(device){
+			var getNetMask = function(devId, callback){
+				this.getDeviceType(devId,(function(device){
 					var params = {
 						config: 'network',
 						section: 'wlan',
@@ -188,7 +179,7 @@
 					};
 
 					callback = callback || this.noop;
-					this.deviceProvider.callService(null, 'uci','get', params, function(err, result){
+					this.deviceProvider.callService(devId, 'uci','get', params, function(err, result){
 						if (!err) {
 							var response = result.value;
 							callback(response);
@@ -200,20 +191,20 @@
 			};
 
 			// not used?
-			var setIPAddrResult = function(result){
-				console.log(result);
-				// if(result[0]===0){
-				// 	console.log(result[1].ipv4-address[0].address);
-				// 	ip = 
-				// }
-				var returnCode = result[0];
-				var available = false;
-				var ip = '-';
-				var netmask = '-';
-			};
+			// var setIPAddrResult = function(result){
+			// 	console.log(result);
+			// 	// if(result[0]===0){
+			// 	// 	console.log(result[1].ipv4-address[0].address);
+			// 	// 	ip = 
+			// 	// }
+			// 	var returnCode = result[0];
+			// 	var available = false;
+			// 	var ip = '-';
+			// 	var netmask = '-';
+			// };
 
-			var isOnline = function(callback){
-				this.getDeviceType((function(deviceType) {
+			var isOnline = function(devId,callback){
+				this.getDeviceType(devId,(function(deviceType) {
 					var deviceRadio	= 'wlan0';
 					// find radio type based on device
 					if (deviceType === 'Onion Omega2') {
@@ -221,7 +212,7 @@
 					}
 
 					var available = false;
-					this.deviceProvider.callService(null, 'network.device','status',
+					this.deviceProvider.callService(devId, 'network.device','status',
 						{
 							name: this.deviceRadio
 						},
@@ -236,15 +227,15 @@
 				}).bind(this));
 			};
 
-			var getMacAddr = function(callback){
-				this.getDeviceType((function(deviceType) {
+			var getMacAddr = function(devId, callback){
+				this.getDeviceType(devId, (function(deviceType) {
 					var deviceRadio	= 'wlan0';
 					// find radio type based on device
 					if (deviceType === 'Onion Omega2') {
 						deviceRadio = 'apcli0';
 					}
 					
-					this.deviceProvider.callService(null, 'network.device','status',
+					this.deviceProvider.callService(devId, 'network.device','status',
 						{
 							name: deviceRadio
 						},
@@ -260,28 +251,43 @@
 			
 			
 
-			var changePassword = function (passwordCurrent, passwordNew, passwordNewVerify) {
+			var changePassword = function (devId,passwordCurrent, passwordNew, passwordNewVerify) {
 				var promise = new Promise(function (resolve, reject) {
 					if (passwordNew === passwordNewVerify) {
 						onionConsole.getService('onion-session-provider', function (err, session) {
 							session.checkLogin(passwordCurrent)
 							.then(function () {
-								onionConsole.getService('onion-ubus-provider', function (err, ubus) {
-									ubus.request('file', 'exec', {
+								// onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+								// 	ubus.request('file', 'exec', {
+								// 		command: 'change-password',
+								// 		params: [
+								// 			'-user', 'root',
+								// 			'-password', passwordNew,
+								// 			'-verify', passwordNew
+								// 		]
+								// 	}, function (data) {
+								// 		if (data.length === 2 && data[0] === 0) {
+								// 			resolve('You have successfully changed your password!');
+								// 		} else {
+								// 			reject(Error('Failed to change your password.'));
+								// 		}
+								// 	});
+								// });
+								this.deviceProvider.callService(devId,'file', 'exec', {
 										command: 'change-password',
 										params: [
 											'-user', 'root',
 											'-password', passwordNew,
 											'-verify', passwordNew
 										]
-									}, function (data) {
-										if (data.length === 2 && data[0] === 0) {
+									}, function (err,data) {
+										if (data) {
 											resolve('You have successfully changed your password!');
 										} else {
 											reject(Error('Failed to change your password.'));
 										}
 									});
-								});
+
 							}, function (err) {
 								reject(Error('Current password is invalid.'));
 							})
@@ -294,30 +300,49 @@
 				return promise;
 			};
 
-			var changeHostname = function (hostnameNew) {
+			var changeHostname = function (devId,hostnameNew) {
 				var promise = new Promise(function (resolve, reject) {
 					if (hostname !== '') {
-						onionConsole.getService('onion-ubus-provider', function (err, ubus) {
-							ubus.request('uci', 'set', {
+						// onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+						// 	ubus.request('uci', 'set', {
+						// 		config: 'system',
+						// 		section: '@system[0]',
+						// 		values: {
+						// 			hostname: hostnameNew
+						// 		}
+						// 	}, function (result) {
+						// 		if (result[0] === 0) {
+						// 			ubus.request('uci', 'commit', {
+						// 				config: 'system'
+						// 			}, function (result) {
+						// 				if (result[0] === 0) {
+						// 					resolve('Hostname changed successfully.');
+						// 				}
+						// 			});
+						// 		} else {
+						// 			reject(Error('Unable to set the hostname.'));
+						// 		}
+						// 	});
+						// });
+						this.deviceProvider.callService(devId,'uci', 'set', {
 								config: 'system',
 								section: '@system[0]',
 								values: {
 									hostname: hostnameNew
 								}
-							}, function (result) {
-								if (result[0] === 0) {
-									ubus.request('uci', 'commit', {
+							}, function (err,result) {
+								if (result) {
+									this.deviceProvider.callService(devId, 'uci', 'commit', {
 										config: 'system'
-									}, function (result) {
-										if (result[0] === 0) {
+									}, function (err, result) {
+										if (result) {
 											resolve('Hostname changed successfully.');
 										}
 									});
 								} else {
 									reject(Error('Unable to set the hostname.'));
 								}
-							});
-						});
+							}.bind(this));
 					} else {
 						reject(Error('Hostname cannot be empty.'));
 					}
@@ -326,22 +351,21 @@
 				return promise;
 			};
 
-			var changeTimezone = function (timezoneNew, zonenameNew) {
+			var changeTimezone = function (devId, timezoneNew, zonenameNew) {
 				var promise = new Promise(function (resolve, reject) {
-					onionConsole.getService('onion-ubus-provider', function (err, ubus) {
-						ubus.request('uci', 'set', {
+						this.deviceProvider.callService(devId, 'uci', 'set', {
 							config: 'system',
 							section: '@system[0]',
 							values: {
 								timezone: timezoneNew,
 								zonename: zonenameNew
 							}
-						}, function (result) {
-							if (result[0] === 0) {
-								ubus.request('uci', 'commit', {
+						}, function (err, result) {
+							if (result) {
+								this.deviceProvider.callService(devId, 'uci', 'commit', {
 									config: 'system'
-								}, function (result) {
-									if (result[0] === 0) {
+								}, function (err, result) {
+									if (result) {
 										resolve('Timezone changed successfully.');
 									} else {
 										reject(Error('Unable to set the timezone with UBUS'));
@@ -350,54 +374,50 @@
 							} else {
 								reject(Error('Unable to set the timezone.'));
 							}
-						});
-					});
+						}.bind(this));
 				});
 
 				return promise;
 			};
 			
-			var shutdown = function () {
+			var shutdown = function (devId) {
 				var shutdownPromise = new Promise(function (resolve, reject) {
-					onionConsole.getService('onion-ubus-provider', function (err, ubus) {
-						ubus.request('file', 'exec', {
+						this.deviceProvider.callService(devId,'file', 'exec', {
 							command: 'power-down', 
 							params: [
 								'-f'
 							]
-						}, function (result) {
+						}, function (err, result) {
 							console.log(result);
-							if (result[0] === 0) {
+							if (result) {
 								resolve();
 							} else {
 								reject();
 							}
 						});
-					});
 				});
 
 				return shutdownPromise;
 			};
 
-			var reboot = function () {
+			var reboot = function (devId) {
 				var rebootPromise = new Promise(function (resolve, reject) {
-					onionConsole.getService('onion-ubus-provider', function (err, ubus) {
-						ubus.request('file', 'exec', {
+						this.deviceProvider.callService(devId,'file', 'exec', {
 							command: 'reboot', 
 							params: [
 								'-d', 
 								'5',
 								'&'
 							]
-						}, function (result) {
+						}, function (err,result) {
 							console.log(result);
-							if (result[0] === 0) {
+							if (result) {
 								resolve();
 							} else {
 								reject();
 							}
 						});
-					});
+
 				});
 
 				return rebootPromise;
@@ -411,16 +431,16 @@
 				ready: ready,
 				getDeviceType: getDeviceType,
 				
-				getMAC: getMAC,
-				setMACResult: setMACResult,
+				// getMAC: getMAC,
+				// setMACResult: setMACResult,
 				
 				getSystem: getSystem,
 				
 				getRxTx: getRxTx,
 				setRxTxResult: setRxTxResult,
 				
-				getIP: getIP,
-				setIPResult: setIPResult,
+				// getIP: getIP,
+				// setIPResult: setIPResult,
 				
 				getIpAddr: getIpAddr,
 				getNetMask: getNetMask,
@@ -428,7 +448,7 @@
 				isOnline: isOnline,
 				getMacAddr: getMacAddr,
 
-				setIPAddrResult: setIPAddrResult,
+				// setIPAddrResult: setIPAddrResult,
 				
 				changePassword: changePassword,
 				changeHostname: changeHostname,

@@ -21,7 +21,7 @@
 			};
 
 			// implement this:
-			var getDeviceType = function(callback){
+			var getDeviceType = function(deviceId, callback){
 				var params = {};
 				callback = callback || this.noop;
 				this.ubus.request('system', 'board', params, function(result){
@@ -53,11 +53,16 @@
 				// }).bind(this));
 			};
 
+			var noop = function(){
+
+			};
 
 			Polymer({
 				is: 'onion-device-provider',
 				ready: ready,
 				callService: callService,
+				getDeviceType: getDeviceType,
+				noop: noop
 			});
 		})();
 	</script>

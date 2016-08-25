@@ -229,6 +229,13 @@
 					}).bind(this));
 				}).bind(this));
 
+				onionConsole.getService('onion-device-hardware-provider', (function (err, hardwareProvider){
+					console.log("err",err);
+					console.log("hardwareProvider",hardwareProvider);
+					this.hardwareProvider = hardwareProvider;
+					console.log("Inside the callback for the getService onion-device-hardware-provider");
+				}).bind(this));
+
 				this.displayCanvas = this.$['oled-image-display'];
 				this.displayCanvasContext = this.displayCanvas.getContext('2d');
 
@@ -269,19 +276,24 @@
 				this.set('bDisplaySaveImage', false);
 
 				// clear the physical oled screen
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-					ubus.request('i2c_exp', 'oled-exp', {
-						command: 'set',
-						option: 'c'
-					}, (function (data) {
-						if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
-							onionConsole.sendNotification({
-								title: 'OLED Control',
-								message: '[Error]: unable to communicate with OLED Expansion'
-							});
-						}
-					}).bind(this));
-				}).bind(this));
+				// onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
+				// 	ubus.request('i2c_exp', 'oled-exp', {
+				// 		command: 'set',
+				// 		option: 'c'
+				// 	}, (function (data) {
+				// 		if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
+				// 			onionConsole.sendNotification({
+				// 				title: 'OLED Control',
+				// 				message: '[Error]: unable to communicate with OLED Expansion'
+				// 			});
+				// 		}
+				// 	}).bind(this));
+				// }).bind(this));
+				this.hardwareProvider.oledClear(null,function(err,response){
+					console.log("Inside the callbacl for the oledClear function");
+					console.log("err:",err);
+					console.log("response",response);
+				})
 			};
 
 			var _invertScreen = function () {
@@ -380,11 +392,13 @@
 			var _loadImage = function (e) {
 				if (this.$['image-file'].files && this.$['image-file'].files[0]) {
 					var fr = new FileReader();
-
+					console.log("Inside the _loadImage if statement");
 					fr.onload = (function (e) {
+						console.log("Inside the fr.onload statement");
 						var img = new Image();
 
 						img.onload = (function () {
+							console.log("Inside the img.onload statement");
 							// Display on display canvas
 							_processImage(this.displayCanvas, this.displayCanvasContext, img, true);
 
@@ -394,34 +408,64 @@
 							var hexDump 	= _generateHexDump(pageArray, true);
 
 							onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-								fileProvider.createTempFile(hexDump, function (filename) {
-									onionConsole.getService('onion-ubus-provider', function (err, ubus) {
-										ubus.request('i2c_exp', 'oled-exp', {
-											command: 'set',
-											option: 'c',
-											params: {
-												draw: filename
-											}
-										}, function (data) {
-											if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
-												onionConsole.sendNotification({
-													title: 'OLED Control',
-													message: '[Error]: unable to communicate with OLED Expansion'
+								console.log(err);
+								fileProvider.createTempFile(null, function (filename) {
+									console.log("The filename is:",filename);
+									this.imagePath = filename.data;
+									fileProvider.saveContent(null, filename.data, hexDump, false, (function(result){
+										console.log(result);
+										if(result.status === 'success'){
+											onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+												console.log("Inside ubus draw request");
+												ubus.request('i2c_exp', 'oled-exp', {
+													command: 'set',
+													option: 'c',
+													params: {
+														draw: filename.data
+													}
+												}, function (data) {
+													console.log(data);
+													if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
+														onionConsole.sendNotification({
+															title: 'OLED Control',
+															message: '[Error]: unable to communicate with OLED Expansion'
+														});
+													}
 												});
-											}
-										});
-									});
-								});
-						    });
+											});
+										}
+									}));
+								// 	onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+								// 		console.log("Inside ubus draw request");
+								// 		ubus.request('i2c_exp', 'oled-exp', {
+								// 			command: 'set',
+								// 			option: 'c',
+								// 			params: {
+								// 				draw: filename
+								// 			}
+								// 		}, function (data) {
+								// 			console.log(data);
+								// 			if (data.length !== 2 || data[0] !== 0 || data[1].status === 'failure') {
+								// 				onionConsole.sendNotification({
+								// 					title: 'OLED Control',
+								// 					message: '[Error]: unable to communicate with OLED Expansion'
+								// 				});
+								// 			}
+								// 		});
+								// 	});
+								// });
+						    	}.bind(this));
 
-							// set the default image name
-						    this.set('imageSavePath', '/root/image.lcd');
-						    this.set('bDisplaySaveImage', true);
-						}).bind(this);
+								// set the default image name
+							   	this.set('imageSavePath', '/root/image.lcd');
+							    this.set('bDisplaySaveImage', true);
+							}.bind(this));
 
+							// img.src = e.target.result;
+						}.bind(this));
 						img.src = e.target.result;
-					}).bind(this);
-
+						// fr.readAsDataURL(this.$['image-file'].files[0]);
+					}.bind(this));
 					fr.readAsDataURL(this.$['image-file'].files[0]);
 				}
 			};
@@ -435,8 +479,8 @@
 				}
 
 				onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-					fileProvider.copyFile(fileProvider.getTempFile(), savePath);
-				});
+					fileProvider.copy(null, this.imagePath, savePath);
+				}.bind(this));
 			};
 
 			var _processImage = function (canvas, context, img, bg) {

@@ -1,256 +1,499 @@
-<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
 
 <dom-module id="onion-file-provider">
 	<script>
 		'use strict';
 		
-		(function () {
-			var self = null;
-
-			var created = function () {
-				self = this;
-			};
-
-			var fileListResult 		= null;
-			var fileContentResult 	= null;
-			var fileSaveResult 		= null;
-			var execCommandResult 	= null;
-			var backsplash 			= null;
-			var tmpFile 			= null;
-
+		(function () {			
+			var backsplash = null;
+			
 			var ready = function () {
 				backsplash = '/';
-				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
-					self.ubus = ubus;
-				});			
+				onionConsole.getService('onion-device-provider', (function (err,deviceApi) {
+					this.deviceApi = deviceApi;
+				}).bind(this));
 			};
 
-			var getFileList = function (filepath,callback) {
+			//////MAIN FUNCTIONS TO BE USED
+
+			//Returns contents of a file or directory. 
+			var getFile = function (devId,path,callback) {
+
+				this.getFileContent(devId,path,(function(result){
+						this.handler(result,'getFile',callback);
+					}).bind(this)); 
+			}
+			
+			var getFolderContent = function (devId,path,callback) {
+
+				this.getFileList(devId,path,(function(err,result){
+						this.handler(result,'getFolder',callback);
+					}).bind(this));
+			}
+
+			//Create Tmp File, returns path to the tmp file created
+			var createTempFile = function (devId,callback){
+				console.log("createTempFile gets called");
+				var data;
+				this.execCommand(devId,'mktemp', {}, (function (err,result) {
+							console.log("inside callback for execCommand");
+							console.log(result);
+							this.handler(result,'createTemp',callback);			
+					}).bind(this));
+			}
+
+			// Creates a file
+			var createFile = function (devId,path,callback){
+				callback = callback || this.callbackReturn;
+				this.execCommand(devId,'touch',[path],(function(err,result){
+					this.handler(result,'createFile',callback);
+					}).bind(this));
+			}
+			
+			//Creates a Folder
+			var createFolder = function (devId,path,callback){
+				callback = callback || this.callbackReturn;
+				this.execCommand(devId,'mkdir',[path],(function(err,result){
+					this.handler(result,'createFolder',callback);
+					}).bind(this));
+			}
+
+			//Saves content to a file
+			var saveContent = function (devId, path, data, append,callback){
+				// var substrings = [data];
+				var body = new String(data);
+				var substrings = body.match(/(.|[\r\n]){1,3500}/g); // Replace n with the size of the substring
+				//Make these global, incase of partial failure and you need to delete the remainder.
+				this.writePath = path;
+				this.deviceId = devId;
+				console.log(substrings);
+				this.syncLoop(devId, path, append, substrings, this.saveFileContent, (function(data){
+					this.handler(data,'saveContent',callback);
+				}).bind(this));
+			}
+	
+
+			//Renames a Folder/Directory
+			var rename = function (devId,origPath,newPath,callback){
+				this.execCommand(devId,'mv',[origPath,newPath],(function(result){
+					this.handler(result,'rename',callback);
+					}).bind(this));
+			}
+
+			//Remove/Delete a file or folder(all sub directories)
+			var remove = function (devId,path,callback){
+				callback = callback || this.callbackReturn;
+				this.execCommand(devId, 'rm',['-r',path], (function(err,result){
+					this.handler(result,'remove',callback);
+					}).bind(this));
+			}
+
+			//Copies one file to another
+			var copy = function (devId,srcFile, dstFile,callback) {
+				callback = callback || this.callbackReturn;
+				//Recursively Copy the directory/ File and all contents. 				
+				this.execCommand(devId,'cp', ['-avr', srcFile, dstFile], (function (err,result) {
+					this.handler(result,'copy',callback);
+					}).bind(this));
+			};
+
+			//Modifies a Files Permission
+			var modPermission = function (devId, path, permission,callback){
+				callback = callback || this.callbackReturn;
+				//Check if permission is in the right format
+				var validPermission = this.checkPermission(permission,this.callbackReturn)
+				//Make exec request
+				this.execCommand(devId,'chmod', [permission, path], (function (err,result) {
+					this.handler(result,'modPermission',callback);
+				}).bind(this));
+			}
+
+
+			// CHECK ARGUMENT FUNCTIONS
+
+			var checkPermission = function (permission,callback){
+				//for character, check to see if it is between 0 - 7. 
+				var result = true;
+				for (var i = 0, len = permission.length; i < len; i++) {
+  					if('0'<=permission[i] && permission[i]<='7'){
+  						continue;
+  					}
+  					else{
+  						result = false;
+  					}
+				}
+				callback = callback || this.callbackReturn;
+				return callback(result);
+			}
+
+
+			var isValid = function (callback){
+				//Start at 1 so it skips the callback
+				callback = callback || this.callbackReturn;
+			    for(var i = 1; i < arguments.length; i++) {
+			    	var result = true;
+			        if (arguments[i] && (arguments[i] != '')){
+			        	continue;
+			        }
+			        else{
+			        	result = false;
+			        }
+			    }
+				return callback(result);
+			}
+
+			var inValidArgument = function () {
+				console.log("Invalid Arguments");
+			}
+			//Callback to force linear execution
+			var callbackReturn = function (result){
+				return result;
+			}
+			
+		// 		LOGIC FUNCTIONS FOR SAVE CONTETNT FUNCTION
+		var saveFileLoop = function(devId, path, append, data, i, writeResults, done) {
+			var string = data[i].toString();
+			console.log(string);
+			if(append == false && i > 0){
+				append = true;
+			};
+			console.log("Inside the loop of loop function");
+			this.saveFileContent(devId, path, string, append, i, (function(err,result) {
+				console.log("Inside the callback of the saveFileContent");
+				console.log("error:",err);
+				console.log("result",result);
+				writeResults.push(result);
+				console.log(writeResults);
+				////Check this here FOR THE DOUBLE 
+				if (++i < data.length) {
+					console.log('running loop');
+					this.saveFileLoop(devId, path, append, data, i, writeResults, done);
+				} else {
+					console.log('running done');
+					console.log(writeResults);
+					done(writeResults);
+					//May fix the 
+				}
+			}).bind(this));
+		};
+			
+		var syncLoop = function (devId, path, append, data, processData, callback) {
+			var dummyCheck = [];
+			// console.log("Enters loop function");
+			// console.log("The devId is:", devId, "append:", append);
+			// console.log("data",data);
+			if (data.length > 0) {
+				console.log('Running loop fct');
+				this.saveFileLoop(devId, path, append, data, 0, dummyCheck, callback);
+			} else {
+				console.log('Running callback');
+				callback(dummyCheck);
+			}
+		}
+			
+			
+
+		///HELPER FUNCTIONS FOR API CALLS FUNCTIONS
+
+		var getFileList = function (devId,filepath,callback) {
 			var params = {
-					path: filepath
-				};
-				fileListResult = callback || self.noop;
-				self.ubus.request('file', 'list', params, setFileList);
+				path: filepath
 			};
-			
-			var getFileContent = function (fullFilename, callback) {
-			    var params = {
-				    path: fullFilename
-				};
-
-				fileContentResult = callback || self.noop;
-				self.ubus.request('file', 'read', params, setFileContent);
-			};
-                
-			var saveFileContent = function (fullFilename, data, callback) {
-			    var params = {
-				    path: fullFilename,
-					data: data
-				};
-
-				callback = callback || self.noop;
-				self.ubus.request('file', 'write', params, setSaveFileContentResult);
+			callback = callback || this.callbackReturn;
+			this.deviceApi.callService(devId,'file', 'list', params, callback);
+		};
+		
+		var getFileContent = function (devId,fullFilename, callback) {
+		    var params = {
+			    path: fullFilename
 			};
 
-			var saveFileContentReturn = function (fullFilename, data, callback) {
-			    var params = {
-				    path: fullFilename,
-					data: data
-				};
-
-				callback = callback || self.noop;
-				self.ubus.request('file', 'write', params, callback);
-			};
-			
-			var execCommand = function (command, parameters, callback) {
-			    var params = {
-				    command: command,
-				    params: parameters
-				};
-
-				callback = callback || self.noop;
-				self.ubus.request('file', 'exec', params, setExecCommandResult);
+			callback = callback || this.callbackReturn;
+			this.deviceApi.callService(devId,'file', 'read', params, callback);
+		};
+            
+		var saveFileContent = function (devId,fullFilename, data, append, i, callback) {
+			console.log(data);
+			console.log("Inside saveFileContent");
+		    var params = {
+			    path: fullFilename,
+					data: data,
+					append: append
 			};
 
-			var execCommandReturn = function (command, parameters, callback) {
-				var params = {
-				    command: command,
-				    params: parameters
-				};
+			callback = callback || this.callbackReturn;
+			this.deviceApi.callService(devId,'onion-helper', 'write', params, callback);
+		};
 
-				callback = callback || self.noop;
-				self.ubus.request('file', 'exec', params, callback);
+		
+		var execCommand = function (devId,command, parameters, callback) {
+		    var params = {
+			    command: command,
+			    params: parameters
 			};
-			
-			var setFileList = function (result) {
-				var returnCode = result[0];
-				if (returnCode === 0) { 
-				    if (result[1] !== null) {
-                        var filelist = [
-                        	{
-                        		name: '..',
-                        		type: 'directory',
-                        		preview: 'folder'
-                        	}
-                        ];
-                            
-                        for (var i = 0; i < result[1].entries.length; i++) {
-						    var newEntry = {
-						    	name: '',
-						    	type: '',
-						    	preview: 'description'
-						    };
+			callback = callback || this.callbackReturn;
+			this.deviceApi.callService(devId,'file', 'exec', params, callback);
+		};
 
-							newEntry.name = result[1].entries[i].name;
-							newEntry.type = result[1].entries[i].type;
-							if (result[1].entries[i].type === 'directory') {
-							    newEntry.preview = 'folder';
-							} else if (result[1].entries[i].type === 'symlink') {
-							    newEntry.preview = 'link';
-							}
 
-							filelist.push(newEntry);
+
+		// HANDLER FUNCTION FOR RESPONSES
+
+		var handler = function (data,command,callback) {
+			callback = callback || this.callbackReturn;
+			// console.log(data);
+			// getFile, 
+			var result;
+			if(command == 'getFile'){
+				this.returnFileContent(data,callback);
+			}
+			//getFolder
+			else if(command == 'getFolder'){
+				this.returnFileList(data,callback)
+			}
+			//createFile
+			else if (command == 'createFile'){
+				this.setExecCommandResult(data,callback);
+			}
+			//Handler For create Temp
+			else if (command == 'createTemp'){
+				this.setCreateTempResult(data,callback);
+			}
+			//createFolder
+			else if (command == 'createFolder'){
+				this.setExecCommandResult(data,callback);
+			}
+			//saveContent
+			else if(command == 'saveContent'){
+				this.saveContentHandler(data,callback);
+			}
+			//rename
+			else if(command == 'rename'){
+				this.setExecCommandResult(data,callback);
+			}
+			//remove
+			else if(command == 'remove'){
+				this.setExecCommandResult(data,callback);
+			}
+			//copy
+			else if(command == 'copy'){
+				this.setExecCommandResult(data,callback);		
+			}
+			//modPermission
+			else if(command == 'modPermission'){
+				this.setExecCommandResult(data,callback);		
+			}
+		}
+
+
+
+		//HELPER FUNCTIONS FOR HANDLER:
+
+		var returnFileList = function (result,callback) {
+			callback = callback || this.callbackReturn;
+			var response = {};
+			console.log(result);
+			if (result) {
+				response.status = 'success';
+				if (result[1] !== null) {
+					var filelist = [
+						{
+							name: '..',
+							type: 'directory',
+							preview: 'folder'
 						}
-						//console.log('FileListResult[' + JSON.stringify(result[1]) + ']');
-						fileListResult({
-							fileList: filelist
-						});
-				    } else {
-					    console.log('Empty file list!')
-					    fileListResult({
-					    	fileList: ''
-					    });    
-					}
-				} else {
-				    console.log('Failed to get file list!')
-					fileListResult({
-						fileList: ''
-					});
-				}
-			};
-			
-			var setFileContent = function (result) {
-				var returnCode = result[0];
-				//console.log('setFileContent resultcode[' + returnCode + ']');
-				if (returnCode === 0) { 
-					if (result[1] !== null) {
-					    fileContentResult({
-						    fileContent: result[1].data
-						});
-					}
-				} else if (returnCode === 5){
-				    console.log('Empty file!');
-					fileContentResult({
-					    fileContent: ''
-					});
-				} else {
-				    console.log('Failed to get file content!');
-					fileContentResult({
-					    fileContent: null
-					});
-				}
-			};
+					];
+					
+					for (var i = 0; i < result.entries.length; i++) {
+						var newEntry = {
+					    	name: '',
+					    	type: '',
+					    	preview: 'description'
+					    };
 
-			var createTempFile = function (fileData, callback) {
-				this.execCommandReturn('mktemp', {}, function (data) {
-					if (data.length === 2 && data[0] === 0) {
-						var filename = data[1].stdout.trim();
-						tmpFile 	= filename;
-
-						if (fileData) {
-							saveFileContentReturn(filename, fileData, function (data) {
-								if (data[0] === 0) {
-									callback(filename);
-								}
-							});
-						} else {
-							callback(filename);
+						newEntry.name = result.entries[i].name;
+						newEntry.type = result.entries[i].type;
+						if (result.entries.type === 'directory') {
+						    newEntry.preview = 'folder';
+						} else if (result.entries.type === 'symlink') {
+						    newEntry.preview = 'link';
 						}
+
+						filelist.push(newEntry);
 					}
-				});
-			};
-
-			var getTempFile = function () {
-				return tmpFile;
-			};
-
-			var copyFile = function (srcFile, dstFile) {
-				this.execCommandReturn('cp', [srcFile, dstFile], function (result) {
-					console.log('result:', result);
-					if (result[1].code === 0) {
-						// copy was successful
-						console.log('Copy was successful!');
-					} else {
-						// copy not successful
-						console.log('Copy NOT successful!');
-					}
-				});
-			};
-
-			var setSaveFileContentResult = function (result) {
-			    var returnCode = result[0];
-				if (returnCode === 0) { 
-					fileSaveResult({
-					    saveResult: true
-					});
-				} else {
-				    console.log('Failed to save file content!');
-					fileSaveResult({
-					    saveResult: false
-					});
+					
+				 	response.list = filelist;
+					
+					console.log(response);
+					callback(response);
+					//console.log('FileListResult[' + JSON.stringify(result[1]) + ']');
+					
+			    } else {
+				    console.log('Empty file list!') 
+						response.list = '';
+						callback(response);
 				}
-			};
-			
-			var setExecCommandResult = function (result) {
-				if (result[0] === 0 && result[1].code === 0) { 
-					execCommandResult({
-					    execResult: true
-					});
-				} else {
-				    console.log('Failed to execute command!');
-					execCommandResult({
-					    execResult: false
-					});
-				}
-			};
-			
-			var getFolderPath = function (folderAndFilename) {   
-			    var folderPath = '';
+			} else {
+				response.status = 'failure';
+			   console.log('Failed to get file list!')
+				 callback(response);
+			}
+		};
+		
+		var returnFileContent = function (result,callback) {
+			callback = callback || callbackReturn;
+			console.log(result);
+			var response = {};
+			if (result.data) { 
+				response.status = 'success';
+				response.data = result.data;
+				callback(response);
+			} else {
+				response.status = 'failure';
+				callback(response);
+			}
+		};
 
-			    if (folderAndFilename.lastIndexOf(backsplash) === 0) {
-				    folderPath = '';
-				} else {
-				    folderPath = folderAndFilename.substring(0, folderAndFilename.lastIndexOf(backsplash));
-				}
 
-				return folderPath;
+		var setSaveFileContentResult = function (result) {
+				
+		};
+		
+		var setExecCommandResult = function (result,callback) {
+			callback = callback || callbackReturn;
+			var response = {};
+			if (result.code == 0) { 
+				    response.status = 'success';
+						callback(response);
+			} else {
+						response.status = 'failure';
+						callback(response);
+			};
+		};
+		
+		var setCreateTempResult = function (result, callback){
+			callback = callback || callbackReturn;
+			console.log(result);
+			var response = {};
+			if (result.code == 0) { 
+				    response.status = 'success';
+						result.stdout = result.stdout.replace(/(\r\n|\n|\r)/gm,"");
+						response.data = result.stdout;
+						callback(response);
+			} else {
+						response.status = 'failure';
+						callback(response);
 			};
 			
-			var getFilename = function (folderAndFilename) {
-			    return folderAndFilename.substring(folderAndFilename.lastIndexOf(backsplash) + 1, folderAndFilename.length);
-			};
+			// callback(response);
+			console.log(result);
 			
+		}
+		
+		var saveContentHandler = function (resultArray,callback){
+			//Assume Success
+			var result = {};
+			console.log(resultArray);
+			result.status = 'success'
+			resultArray.every((function(element,index){
+				if(element.code != 0){
+					result.status = 'failure';
+					return this.remove(this.deviceId,this.writePath,function(response){
+						if(response.status == 'success'){
+							return false;
+						} else{
+							return true;
+						}
+					})
+				}
+			}).bind(this));
+			callback(result);	
+		};
+		
+		/////FILE PATH PARSER HELPER FUNCTIONS
+		var getFolderPath = function (folderAndFilename) {   
+		    var folderPath = '';
+
+		    if (folderAndFilename.lastIndexOf(backsplash) === 0) {
+			    folderPath = '';
+			} else {
+			    folderPath = folderAndFilename.substring(0, folderAndFilename.lastIndexOf(backsplash));
+			}
+
+			return folderPath;
+		};
+		
+		var getFilename = function (folderAndFilename) {
+		    return folderAndFilename.substring(folderAndFilename.lastIndexOf(backsplash) + 1, folderAndFilename.length);
+		};
+		
+		var isFile = function (folderAndFileName){
+			var file = getFilename(folderAndFileName);
+			if(file==''){
+				return false;
+			}
+			else{
+				return true;
+			}
+		}
+			
+
+
 			Polymer({
 				is: 'onion-file-provider',
-				created: created,
 				ready: ready,
 				noop: function () {},
 				getFileList: getFileList,
 				getFileContent: getFileContent,
+				createFile: createFile,
+				createFolder: createFolder,
 				saveFileContent: saveFileContent,
-				saveFileContentReturn: saveFileContentReturn,
+				saveContent: saveContent,
+				saveContentHandler: saveContentHandler,
+				syncLoop: syncLoop,
+				rename: rename,
+				remove: remove,
+				copy:copy,
+				modPermission: modPermission,
+				checkPermission: checkPermission,
+				isFile: isFile,
+				isValid: isValid,
+				inValidArgument: inValidArgument,
+				callbackReturn: callbackReturn,
 				getFolderPath: getFolderPath,
 				getFilename: getFilename,
 				execCommand: execCommand,
-				execCommandReturn: execCommandReturn,
-			    setFileList: setFileList,
-				setFileContent: setFileContent,
+				getFile: getFile,
+				getFolderContent: getFolderContent,
+		  		getFileList: getFileList,
+				returnFileList:returnFileList,
+				getFileContent: getFileContent,
+				returnFileContent:returnFileContent,
 				setSaveFileContentResult: setSaveFileContentResult,
 				setExecCommandResult: setExecCommandResult,
+				setCreateTempResult: setCreateTempResult,
 				createTempFile: createTempFile,
-				getTempFile: getTempFile,
-				copyFile: copyFile
+				handler: handler,
+				saveFileLoop: saveFileLoop,
+				properties:{
+					writePath:{
+						type: String,
+						value: '',
+						notify: true
+					},
+					deviceId:{
+						type: String,
+						value: '',
+						notify: true
+					},
+					fileRemoved:{
+						type: Boolean,
+						value: false,
+						notifty: true
+					}
+				}
+	
 			});
-        })();
+    })();
 	</script>
 </dom-module>

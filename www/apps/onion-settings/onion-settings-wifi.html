@@ -290,13 +290,19 @@
 				
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
                     self.sessionProvider = sessionProvider;
-                });
-				
-                if (self.sessionProvider.isAlive() === true) {
+                    if (self.sessionProvider.isAlive() === true) {
                     onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
                         self.wifiProvider = wifiProvider;
 					});
                 };
+
+                });
+				
+     //            if (self.sessionProvider.isAlive() === true) {
+     //                onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
+     //                    self.wifiProvider = wifiProvider;
+					// });
+     //            };
 			};
 
 			var init = function () {
@@ -306,7 +312,7 @@
 			};
 
 			var refreshNetwork = function() {
-				var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(false);
+				var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(null, false);
                 getWifiSetupPromise.then(function(result){
                 	for (var i = 0; i < result.length; i++) {
                 		result[i].index = '_'+result[i]['.index'];
@@ -340,10 +346,10 @@
 			var scanWifiNetwork = function () {
 				self.showScanMessage('Scanning...');
 
-				self.wifiProvider.wifiScan()
+				self.wifiProvider.wifiScan(null)
 				.then(function (result) {
 					while (self.networks.length > 0) {
-						self.pop('networks');
+						self.pop('networks'); 
 					}
 
 					// add newly detected networks to array
@@ -357,7 +363,7 @@
 						}
 					}
 				}, function (result) {
-					console.error(result);
+					console.log(result);
 				});
 			};
 
@@ -401,11 +407,11 @@
 
 				if (verifyResult === 'OK' && self.sessionProvider.isAlive() === true) {
                 	// add a network wifi-iface
-                	var wifiAddNetworkPromise = self.wifiProvider.prepareWifiNetwork();
+                	var wifiAddNetworkPromise = self.wifiProvider.prepareWifiNetwork(null);
 
                 	wifiAddNetworkPromise.then(function() {
                 		// setup the network
-                    	var wifiSetupPromise = self.wifiProvider.setupWifiNetwork(self.networkSsid, self.networkPassword, self.networkAuth);
+                    	var wifiSetupPromise = self.wifiProvider.setupWifiNetwork(null,self.networkSsid, self.networkPassword, self.networkAuth);
 
                     	wifiSetupPromise.then(function () {
                     		self.refreshNetwork();		// refresh the list to include this new network
@@ -423,7 +429,7 @@
 				var network = e.target.network;
 				console.log('Removing ', network.ssid);
 
-				var wifiRemoveNetworkPromise = self.wifiProvider.removeWifiNetwork(network);
+				var wifiRemoveNetworkPromise = self.wifiProvider.removeWifiNetwork(null, network);
 
 				wifiRemoveNetworkPromise.then(function () {
 					self.refreshNetwork();		// refresh the list to reflect this delete
@@ -449,7 +455,7 @@
 				disablePromise.then((function () {
 					// enable the specified network
 					console.log('Enabling network: ' + network.ssid);
-					var enablePromise = self.wifiProvider.setEnableWirelessNetwork(network['.name'], true);
+					var enablePromise = self.wifiProvider.setEnableWirelessNetwork(null,network['.name'], true);
 
 					enablePromise.then(function () {
 						self.refreshNetwork();		// refresh the list
@@ -464,7 +470,7 @@
 				
 				if ( !(self._isTopNetwork(network)) ) {
 					// move the network UP in the list
-					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(network, true);
+					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(null, network, true);
 
 					wifiChangeOrderPromise.then(function () {
 						self.refreshNetwork();		// refresh the list to reflect this reorder
@@ -477,7 +483,7 @@
 				
 				if ( !(self._isBottomNetwork(network)) ) {
 					// move the network DOWN in the list
-					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(network, false);
+					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(null, network, false);
 
 					wifiChangeOrderPromise.then(function () {
 						self.refreshNetwork();		// refresh the list to reflect this reorder
@@ -583,13 +589,13 @@
 
 	            		if (network.disabled == null || network.disabled === '0') {
 	            			// disable the network
-	            			var disablePromise = self.wifiProvider.setEnableWirelessNetwork(network['.name'], false, true);
+	            			var disablePromise = self.wifiProvider.setEnableWirelessNetwork(null, network['.name'], false, true);
 	            		}
 	            	}
 
 	            	if (bCommit) {
 	            		// commit the changes
-	            		var commitPromise = self.wifiProvider.commitWirelessChanges();
+	            		var commitPromise = self.wifiProvider.commitWirelessChanges(null);
 	            		// resolve the promise when the commit is done
 	            		commitPromise.then(function () {
 							resolve();

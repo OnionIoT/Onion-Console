@@ -5,37 +5,34 @@
 		'use strict';
 
 		(function () {
-			var self = null;
-
 			var created = function () {
-				self = this;
 			};
 
 			var ready = function () {
+				console.log("Inside ready, this =",this);
 				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
-					self.ubus = ubus;
-
-					checkToken(function (hasToken) {
+					this.ubus = ubus;
+					this.checkToken(function (hasToken) {
 						if (hasToken) {
-							self.ubus.token = sessionStorage.getItem('_omega_session_token');
-							self.ubus.isAlive = true;
+							this.ubus.token = sessionStorage.getItem('_omega_session_token');
+							this.ubus.isAlive = true;
 						} else {
-							self.ubus.isAlive = false;
+							this.ubus.isAlive = false;
 						}
-					});
-				});
+					}.bind(this));
+				}.bind(this));
 			};
 
 			var login = function (username, password, callback) {				
 				callback = callback || function () {};
 
-				self.ubus.request('session', 'login', {
+				this.ubus.request('session', 'login', {
 					username: username,
 					password: password
 				}, function (result) {
 					if (result !== null && result[0] !== null) {
 					    if ('error' in result) {
-					        self.ubus.isAlive = false;
+					        this.ubus.isAlive = false;
 						    callback({success: false});
 						    return;
 					    }
@@ -46,26 +43,26 @@
 		                    console.log('session token: ' + token);
 
 		                    sessionStorage.setItem('_omega_session_token', token);
-						    self.ubus.token = token;
-						    self.ubus.isAlive = true;
-						    startHeartbeat(10000);
+						    this.ubus.token = token;
+						    this.ubus.isAlive = true;
+						    this.startHeartbeat(10000);
 						    callback({success: true});
 
 					    } else {
 					        console.log('Login failed!');
-						    self.ubus.isAlive = false;
+						    this.ubus.isAlive = false;
 					        callback({success: false});
 					    }
 					} else {
-				        self.ubus.isAlive = false;
+				        this.ubus.isAlive = false;
 						callback({success: false});
 				    }
-				});
+				}.bind(this));
 			};
 
 			var checkLogin = function (password) {
 				var promise = new Promise(function (resolve, reject) {
-					self.ubus.request('session', 'login', {
+					this.ubus.request('session', 'login', {
 						username: 'root',
 						password: password
 					}, function (data) {
@@ -81,38 +78,38 @@
 			};
 		 
 			var heartbeat = function () {
-			    if (isAlive() === true) {
-					self.ubus.request('session', 'access', {}, setAlive);
+			    if (this.isAlive() === true) {
+					this.ubus.request('session', 'access', {}, this.setAlive);
 				} else {
                     logout();   
 				}				
 			};  
 				  
 			var startHeartbeat = function (interval) {
-			    self.heartbeatInterval = setInterval(function () {  
-			    	heartbeat();
-			    }, interval);
+			    this.heartbeatInterval = setInterval((function () {  
+			    	this.heartbeat();
+			    }.bind(this)), interval);
 			};
 			
 			var stopHeartbeat = function () {
-			    clearInterval(self.heartbeatInterval);
-				delete self.heartbeatInterval;
-				self.ubus.isAlive = false;
-                self.ubus.token = '00000000000000000000000000000000';
+			    clearInterval(this.heartbeatInterval);
+				delete this.heartbeatInterval;
+				this.ubus.isAlive = false;
+                this.ubus.token = '00000000000000000000000000000000';
 			};
 
 			var setAlive = function (result) {
 				if (result !== null && result[0] === 0) {
-				    self.ubus.isAlive = true;   
+				    this.ubus.isAlive = true;   
                     console.log('Alive');					
 				} else {
-				    self.ubus.isAlive = false;
+				    this.ubus.isAlive = false;
 				    logout();
 				}   
 		    }; 
 			
 			var isAlive = function () {
-			    return 	self.ubus.isAlive;
+			    return 	this.ubus.isAlive;
 			};
 
 			var checkToken = function (callback) {
@@ -121,10 +118,10 @@
 			};
 			
 			var logout = function () {
-				if (self.heartbeatInterval !== null) {
+				if (this.heartbeatInterval !== null) {
 				    console.log('logout');
 				    sessionStorage.removeItem('_omega_session_token');
-					stopHeartbeat();	
+					this.stopHeartbeat();	
                     onionConsole.launchApp('onion-login');					
 			    }
 			};

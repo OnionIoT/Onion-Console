@@ -171,13 +171,18 @@
 			var ready = function () {				
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
                     self.sessionProvider = sessionProvider;
+	                if (self.sessionProvider.isAlive() === true) {
+	                    onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
+	                        self.wifiProvider = wifiProvider;
+						});
+	                };
                 });
 				
-                if (self.sessionProvider.isAlive() === true) {
-                    onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
-                        self.wifiProvider = wifiProvider;
-					});
-                };
+     //            if (self.sessionProvider.isAlive() === true) {
+     //                onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
+     //                    self.wifiProvider = wifiProvider;
+					// });
+     //            };
 
                 self.uciId 	= -1;
 			};
