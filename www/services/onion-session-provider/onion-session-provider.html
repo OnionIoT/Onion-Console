@@ -9,7 +9,6 @@
 			};
 
 			var ready = function () {
-				console.log("Inside ready, this =",this);
 				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 					this.ubus = ubus;
 					this.checkToken(function (hasToken) {
@@ -60,6 +59,7 @@
 				}.bind(this));
 			};
 
+			// TO DO: RAJIV: move this function to device settings provider
 			var checkLogin = function (password) {
 				var promise = new Promise(function (resolve, reject) {
 					this.ubus.request('session', 'login', {

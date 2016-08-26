@@ -81,8 +81,10 @@
 			margin-right: 5px;
 		}
 
-		#appsContainer {
-			padding-bottom: 50px;
+		#appsIcons {
+			padding: 20px 80px;
+			width: 100%;
+			height: 100%;
 		}
 
 		#launcherBody {
@@ -110,7 +112,7 @@
 
 			
 
-			<onion-app-toolbar>
+			<onion-app-toolbar page-id="home">
 				<div id="header" class="layout horizontal center">
 					<div class="flex-2 layout horizontal"></div>
 
@@ -135,7 +137,7 @@
 				</div>
 			</onion-app-toolbar>
 
-			<onion-app-body>
+			<onion-app-body page-id="home">
 				<div id="launcherBody" class="layout horizontal center-justified start">
 					<div id="appsContainer" class="horizontal layout wrap">
 						<template is="dom-repeat" items="{{apps}}" filter="{{searchFilter(filterString)}}">

@@ -1,9 +1,13 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/lib/iron-pages/iron-pages.html">
-<link rel="import" href="/elements/onion-taskbar/onion-taskbar.html">
-<link rel="import" href="/elements/onion-notification/onion-notification.html">
+
+
+<link rel="import" href="../../elements/onion-loading/onion-loading.html">
 <link rel="import" href="../../lib/Onion-Console/bootstrap-styles/bootstrap-styles.html">
+<link rel="import" href="../onion-styles/onion-styles.html">
+<link rel="import" href="../onion-taskbar/onion-taskbar.html">
+<link rel="import" href="../onion-notification/onion-notification.html">
 
 <dom-module id="onion-console">
 	<style>
@@ -15,31 +19,62 @@
 
 			background-image: url('/images/bg/a.jpg');
 		    background-attachment: fixed;
-		    background-size: cover;
+			background-size: cover;
 		}
-
+		
 		#appContainer {
-			width: 100%;
+			width: auto;
 			height: 100%;
 		}
-
+		
 		#taskbar {
-			position: fixed;
-			bottom: 0;
+/* 			position: fixed; */
+/* 			bottom: 0; */
+/* 			width: 100%; */
+/* 			height: 100%; */
+		}
+		
+		#serviceContainer {
+			display: none;
+		}
+		.console {
 			width: 100%;
 			z-index: 1000;
 		}
+		@-webkit-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@-moz-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@-o-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@keyframes fadeOut {
+			from { opacity: 1; }
+		    to { opacity: 0; }
+		}
+
 	</style>
 
 	<template>
-		<template is="dom-if" if="{{_showTaskbar(runningApps, currentApp)}}">
-			<onion-taskbar id="taskbar" running-apps="{{runningApps}}" current-app="{{currentApp}}"></onion-taskbar>
-		</template>
 		
 		<div id="serviceContainer" class="hidden"></div>
 		
-		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
-		<onion-notification id='notification'></onion-notification>
+<!-- 		UI Elements -->
+			<div class="console layout horizontal center">
+				<div id="serviceContainer" class="hidden"></div>
+				<onion-taskbar id="taskbar" running-apps="{{runningApps}}" current-app="{{currentApp}}"></onion-taskbar>
+				<iron-pages id="appContainer" class='flex' attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
+				<onion-notification id='notification'></onion-notification>
+			</div>
+		
 		
 	</template>
 
@@ -70,7 +105,6 @@
 				// 	return Promise.all([
 				// 		this.getService('onion-device-provider'),
 				// 		this.getService('onion-ubus-provider'),
-				// 		// LAZAR: add push provider?
 				// 	]);
 				// }).bind(this))
 				// .spread((function (deviceProvider, ubusProvider) {
@@ -145,7 +179,7 @@
 					if (serviceId in services) {
 						resolve(services[serviceId]);
 					} else {
-						this.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], (function () {
+						this.importHref([this.rootDir + '/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], (function () {
 							var serviceElement = document.createElement(serviceId);
 							Polymer.dom(this.$.serviceContainer).appendChild(serviceElement);
 
