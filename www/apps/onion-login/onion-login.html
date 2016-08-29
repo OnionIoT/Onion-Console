@@ -42,65 +42,71 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			// var this = null;
 
 			var created = function () {
-				self = this;
+				// this = this;
 			};
 
 			var ready = function () {
 				onionConsole.getService('onion-session-provider', function (err, session) {
-	            	self.session = session;
+	            	this.session = session;
 
-	            	self.session.checkToken(function (hasToken) {
+	            	this.session.checkToken(function (hasToken) {
 	            		if (hasToken) {
-		            		onionConsole.launchApp('onion-launcher');
-		            		self.quit();
+	            			// Added true, don't know what that will do
+	            			console.log("Inside the ready for onion-login");
+	            			this.$.username.value = '';
+							this.$.password.value = '';
+		            		onionConsole.launchApp('onion-launcher',true);
+		            		this.quit();
 		            	}
-	            	});
-	            });
+	            	}.bind(this));
+	            }.bind(this));
 			};
 
 			var checkUsernameKey = function (e) {
 				if (e.which === 13) {
 					e.preventDefault();
-					self.$.password.focus();
+					this.$.password.focus();
 				}
 			};
 
 			var start = function () {
-				setTimeout(function () {
-					self.$.loginDialog.open();
-				}, 1000);
+				setTimeout((function () {
+					this.$.loginDialog.open();
+				}.bind(this)), 1000);
 			};
 
 			var quit = function () {
-				setTimeout(function () {
-					self.$.loginDialog.close();
-				}, 1000);
+				setTimeout((function () {
+					this.$.loginDialog.close();
+					console.log("callback of setTimeout,inside quit is executed");
+				}.bind(this)), 1000);
 			};
 
 			var login = function (e) {
-				e.preventDefault();
+				// e.preventDefault();
 
-				var username = self.$.username.value;
-				var password = self.$.password.value;
+				var username = this.$.username.value;
+				var password = this.$.password.value;
 
-				self.session.login(username, password, function (result) {
+				this.session.login(username, password, function (result) {
 					if (result.success) {
-						self.$.username.value = '';
-						self.$.password.value = '';
+						this.$.username.value = '';
+						this.$.password.value = '';
+						console.log("Inside login function(onion-login),about to start onion-launcher");
 						onionConsole.launchApp('onion-launcher', true);
-						self.quit();
+						this.quit();
 					} else {
 						var alertElement = document.createElement('bootstrap-alert');
 						alertElement.setAttribute('warning', true);
 						Polymer.dom(alertElement).innerHTML = 'Login failed.';
 
-						Polymer.dom(self.$.messageContainer).appendChild(alertElement);
+						Polymer.dom(this.$.messageContainer).appendChild(alertElement);
 						Polymer.dom.flush();
 					}
-				});
+				}.bind(this));
 			};
 			
 			Polymer({

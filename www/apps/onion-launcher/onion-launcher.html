@@ -178,6 +178,7 @@
 
 		(function () {
 			var start = function () {
+				console.log("Inside onion-launcher start function");
 				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					var params = {
 						config: 'system',
@@ -264,10 +265,12 @@
 			};
 			
 			var refresh = function(){
+				console.log("Inside onion-launcher refresh function");
 				onionConsole.getService('onion-apps-provider')
 				.then( (function (appsProvider) {
 					appsProvider.getApps((function(err, apps){
 						this.set('apps', apps);
+						console.log("Inside callback for getApps provider, apps=",apps);
 					}).bind(this));
 				} ).bind(this) );
 			};
