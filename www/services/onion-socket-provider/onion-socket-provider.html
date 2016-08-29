@@ -1,0 +1,39 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+
+<dom-module id="onion-socket-provider">
+	<script>
+		'use strict';
+
+		(function () {
+			var ready = function () {
+			// 	onionConsole.getService('onion-session-provider')
+			// 	.then((function (sessionProvider) {
+			// 		this.uid = sessionProvider.getUserInfo().uid;
+
+			// 		this.socket = io('https://socket.onion.io');
+			// 		this.socket.on('connect', (function () {
+			// 			this.socket.emit('s', this.uid);
+			// 		}).bind(this));
+
+			// 		document.addEventListener('click', (function (e) {
+			// 			var nodeName = e.target.nodeName || '',
+			// 				nodeClass = e.target.attributes.class ? (e.target.attributes.class.value) : '',
+			// 				node
+
+			// 			this.event(onionConsole.currentApp + ';c;' + (e.target.nodeName || '') + ';' + (e.target.attributes.class ? (e.target.attributes.class.value) : '') + ';' + (e.target.attributes.id ? e.target.attributes.id.value : ''));
+			// 		}).bind(this));
+			// 	}).bind(this));
+			};
+
+			var event = function (data) {
+				// this.socket.emit('e', data);
+			};
+
+			Polymer({
+				is: 'onion-socket-provider',
+				ready: ready,
+				event: event
+			});
+        })();
+	</script>
+</dom-module>

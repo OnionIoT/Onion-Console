@@ -1,0 +1,59 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
+
+<dom-module id="user-profile-dlg">
+	<style>
+		iframe {
+/* 			padding: 15px; */
+			height: 100%;
+			width: 100%;
+		}
+		iframe::-webkit-scrollbar {
+			display: none;
+		}
+		
+		#dlg {
+			height: 100%;
+			width: 100%;
+		}
+	</style>
+
+	<template>
+		<bootstrap-modal id="dlg" close-button>
+<!-- 			<bootstrap-modal-header>
+				<h4 class="modal-title">Help us spread the words</h4>
+			</bootstrap-modal-header> -->
+
+			<bootstrap-modal-body>
+				<iframe id="authServer" frameborder=0></iframe>
+			</bootstrap-modal-body>
+		</bootstrap-modal>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var open = function () {
+				this.$.authServer.src = "https://auth.onion.io/realms/onion/account/";
+				this.$.dlg.open();
+			};
+
+			Polymer({
+				is: 'user-profile-dlg',
+				open: open,
+				properties: {
+					name: {
+						type: String,
+						value: "",
+					},
+					newDeviceDescription: {
+						type: String,
+						value: "",
+					},
+				}
+			});
+		})();
+	</script>
+
+</dom-module>

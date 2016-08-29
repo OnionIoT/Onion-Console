@@ -1,0 +1,39 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+
+<dom-module id="onion-button-press">
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: "onion-button-press",
+        properties: {
+          keypressed: {
+            type: String,
+            value: "",
+            notify: true
+          }
+        },
+
+        attached: function() {
+          //press button
+          document.addEventListener('keydown', (event) => {
+            const keyName = event.key;
+            if(keyName == this.keypressed){
+              this.fire("down");
+            }
+          }, false);
+
+          //release button
+          document.addEventListener('keyup', (event) => {
+            const keyName = event.key;
+            if(keyName == this.keypressed){
+              this.fire("up");
+            }
+          }, false);
+        },
+      });
+    })();
+  </script>
+</dom-module>

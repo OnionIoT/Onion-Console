@@ -20,6 +20,14 @@
 						}
 					}.bind(this));
 				}.bind(this));
+				this.initPromise = null;
+
+				this.accessToken = '';
+				this.accessTokenParsed = {};
+				this.refreshToken = '';
+				this.refreshTokenParsed = {};
+
+				this.developerParsed = {};
 			};
 
 			var login = function (username, password, callback) {				

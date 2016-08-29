@@ -1,0 +1,116 @@
+<!-- USAGE-->
+
+<!-- LAYOUT STYLE-->
+
+<!-- To select the dropdown style add attribute "drop-down="true""-->
+
+<!-- DEVICE FILTERS-->
+
+<!-- To enable the filters(online and shared) add attributes online-filter="true" and share-filter="true"-->
+
+<!-- To select only online devices add attributes online-filter="true" -->
+<!-- To select only offline devices add attribute online-filter="true"  offline-only="true"-->
+<!-- To select only devices you can manage, add attributes share-filter="true" can-manage="true" -->
+<!-- To select only devices you can't manage, add attribute share-filter="true"  -->
+<!-- To select devices that are online and you can manage, add attribute share-filter="true" can-manage"="true" and online-filter"true" online-Only="true"-->
+
+<!-- By default, all attributes are set to false.  -->
+
+
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-signals/iron-signals.html">
+
+<dom-module id="onion-device-list">
+	<script>
+		'use strict';
+		(function () {
+			
+			var ready = function() {
+
+			};
+			
+			var _computeSelected = function (dev, selectedDev){
+			};
+			
+			
+			var _findDevices = function () {
+			};
+			
+			var _onDeviceStatusChange = function (e, detail) {
+			};
+			
+			
+			var onDeviceClick = function (e) {
+			};
+			
+			var onSelectionChange = function (newValue) {
+
+			};
+			
+			Polymer({
+				is: 'onion-device-list',
+				ready: ready,
+				//refresh: refresh,
+				onDeviceClick: onDeviceClick,
+				_onDeviceStatusChange: _onDeviceStatusChange,
+				_findDevices: _findDevices,
+				onSelectionChange: onSelectionChange,
+				_computeSelected: _computeSelected,
+				properties: {
+						devices: {
+							type: Array,
+							value: [],
+							notify: true
+						},
+						deviceArray: {
+							type: Array,
+							value: [null],
+							notify: true,
+							//reflectToAttribute: true
+						},
+						selectedId: {
+							type: String,
+							notify: true,
+							value: null,
+							reflectToAttribute: true,
+						},
+						selectedDevice: {
+							type: Object,
+							notify: true,
+							value: null,
+						},
+						dropDown:{
+							type: Boolean,
+							value: false,
+							notify: true
+						},
+						onlineOnly: {
+							type: Boolean,
+							value: false,
+							notify: true
+						},
+						canManage:{
+							type: Boolean,
+							value: false,
+							notify: true
+						},
+						onlineFilter:{
+							type: Boolean,
+							value: false,
+							notify: true
+						},
+						shareFilter:{
+							type: Boolean,
+							value: false,
+							notify: true
+						},
+						highlightSelected:{
+							type: Boolean,
+							value: false,
+							notify: true
+						}
+				},
+			});
+		})();
+	</script>
+</dom-module>

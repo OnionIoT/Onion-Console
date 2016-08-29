@@ -1,0 +1,143 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-image/iron-image.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../lib/iron-icons/social-icons.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-tooltip/bootstrap-tooltip.html">
+
+<link rel="import" href="./bug-report-dlg.html">
+<!-- <link rel="import" href="./social-share-dlg.html"> -->
+<!-- <link rel="import" href="./add-card-dlg.html"> -->
+<!-- <link rel="import" href="./user-profile-dlg.html"> -->
+
+<dom-module id="taskbar-tools">
+	<style>
+		
+		:host {
+/* 			display: block; */
+			width: 48px;
+			height: 100%;
+		}
+		#taskTools {
+			height: auto;
+			width: 38px;
+			margin: auto;
+			background-color: rgba(255, 255, 255, 0.5);
+			border-radius: 4px;
+		}
+		
+		#taskTools.dark {
+			background-color: rgba(255, 255, 255, 0.3);
+			color: #E6E9ED;
+		}
+		
+		#taskTools.light {
+			background-color: rgba(0, 0, 0, 0.4);
+			color: #E6E9ED;
+		}
+		
+		#taskTools > div > iron-icon {
+			cursor: pointer;
+			height: 24px;
+			width: 24px;
+			margin-top: 2px;
+			margin-bottom: 2px;
+		}
+		#taskTools > div > iron-icon:hover{
+			color: #DA4453;
+		}
+		
+		#taskTools > iron-image {
+			height: 38px;
+			width: 38px;
+			margin: top: 4px;
+			border-radius: 0px 0px 4px 4px;
+		}
+		
+	</style>
+
+	<template>
+			<bug-report-dlg id="bugReportDlg"></bug-report-dlg>
+<!-- 			<social-share-dlg id="socialShareDlg"></social-share-dlg> -->
+<!-- 			<add-card-dlg id="addCardDlg"></add-card-dlg> -->
+			
+<!-- 			<user-profile-dlg id="userProfileDlg"></user-profile-dlg> -->
+			<div id="taskTools" class$="{{getTaskToolsClass(dark)}}">
+				<div class="flex layout vertical center">	
+					<iron-icon id="bugReportBtn" icon="icons:bug-report" on-click="onBugReport" tour-id="launcher-tour-bug-report"></iron-icon>
+<!-- 					TODO: need to fix tooltip posittioning  -->
+<!-- 					<bootstrap-tooltip for="bugReportBtn" position="right">Bug Report &amp; Feedbacks</bootstrap-tooltip> -->
+<!-- 					<iron-icon icon="social:share" on-click="onSocialShare"></iron-icon> -->
+					<iron-icon icon="icons:power-settings-new" on-click="logout">Logout</iron-icon>
+				</div>
+				<iron-image sizing="contain" src="{{gravatar}}"></iron-image>
+			</div>
+		</div>
+	</template>
+
+	<script src="./md5.js"></script>
+	<script>
+		'use strict';
+		(function () {
+			
+			var ready = function() {
+				onionConsole.getService('onion-session-provider')
+				.then((function (sessionProvider) {
+					this.$.bugReportDlg.user.name = sessionProvider.accessTokenParsed.name;
+					this.$.bugReportDlg.user.email = sessionProvider.accessTokenParsed.email;
+
+					this.gravatar = 'https://secure.gravatar.com/avatar/' + md5(sessionProvider.accessTokenParsed.email || '') + '?d=mm&s=64';
+				}).bind(this))
+				.catch(function (err) {
+					throw err;
+				});
+			}
+			
+			var getTaskToolsClass = function(dark) {
+				var baseClass = 'layout vertical center';
+				if (dark) 
+					return baseClass + ' dark';
+				else 
+					return baseClass + ' light';
+			}
+			
+			var onBugReport = function() {
+				this.$.bugReportDlg.open();
+			}
+			
+			var onSocialShare = function() {
+				this.$.addCardDlg.open();
+			}
+			
+// 			var onuUserProfile = function() {
+// 				this.$.userProfileDlg.open();
+// 			}
+			
+			
+			var logout = function () {
+				onionConsole.getService('onion-session-provider')
+				.then(function (sessionProvider) {
+					sessionProvider.logout();
+				});
+			};
+			
+			Polymer({
+				is: 'taskbar-tools',
+				ready: ready,
+				logout: logout,
+				getTaskToolsClass: getTaskToolsClass,
+				onBugReport: onBugReport,
+				onSocialShare: onSocialShare,
+// 				onuUserProfile: onuUserProfile,
+				properties: {
+					gravatar: String,
+					dark: {
+						type: Boolean,
+						value: false,
+						notify: true
+					}
+				},
+			});
+		})();
+	</script>
+
+</dom-module>

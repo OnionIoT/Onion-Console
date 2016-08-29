@@ -1,6 +1,5 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-image/iron-image.html">
-<link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
 
 <dom-module id="onion-loading">
 	<style>
@@ -12,22 +11,36 @@
 		}	
 		
 		.loading {
-		  position: fixed;
-		  bottom: 10px;
-		  left: 10px;
-
-
-		  border: 1px solid #eee;
-		  background: red;
-		  z-index: 101;
-		}		
+			height: 100%;
+			width: 100%;
+/* 			color: #E6E9ED; */
+			-webkit-animation: rotation 5s infinite linear;
+			-moz-animation: rotation 5s infinite linear;
+			-o-animation: rotation 5s infinite linear;
+			animation: rotation 5s infinite linear;
+		}
+		@-webkit-keyframes rotation { 
+			from{ -webkit-transform: rotate(0deg) }
+			to{ -webkit-transform: rotate(359deg) }
+		}
+		@-moz-keyframes rotation {
+			from{ -moz-transform: rotate(0deg) }
+			to{ -moz-transform: rotate(359deg) }
+		}
+		@-o-keyframes rotation {
+			from{ -o-transform: rotate(0deg) }
+			to{ -o-transform: rotate(359deg) }
+		}
+		@keyframes rotation {
+			from{ transform: rotate(0deg) }
+			to{ transform: rotate(359deg) }
+		}
+		
 	</style>
 
 	<template>
-		<template is="dom-if" if="{{isLoading}}">
-			<div class="loading">
-				Loading ...
-			</div>
+		<template is="dom-if" if="{{loading}}">
+			<iron-icon class="loading" icon="{{icon}}"></iron-icon>
 		</template>
 	</template>
 
@@ -35,16 +48,17 @@
 		'use strict';
 
 		(function () {
-			var created = function () {
-				self = this;
-			};
 			Polymer({
 				is: 'onion-loading',
-				created: created,
 				properties: {
-					isLoading: {
+					loading: {
 						type: Boolean,
 						value: false,
+						notify: true
+					}, 
+					icon: {
+						type: String,
+						value: "",
 						notify: true
 					}
 				}

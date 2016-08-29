@@ -1,0 +1,96 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<script type="text/javascript" src="./renderjson.js"></script>
+
+<dom-module id="onion-json-view">
+	<style>
+		
+		:host ::content .renderjson a {
+			text-decoration: none;
+		}
+		
+		:host ::content .renderjson .disclosure {
+			color: crimson;
+			font-size: 150%;
+		}
+		
+		:host ::content .renderjson .syntax {
+			color: grey;
+		}
+		
+		:host ::content .renderjson .string {
+			color: darkred;
+		}
+		
+		:host ::content .renderjson .number {
+			color: darkcyan;
+		}
+		
+		:host ::content .renderjson .boolean {
+			color: blueviolet;
+		}
+		
+		:host ::content .renderjson .key {
+			color: darkblue;
+		}
+		
+		:host ::content .renderjson .keyword {
+			color: blue;
+		}
+		
+		:host ::content .renderjson .object.syntax {
+			color: lightseagreen;
+		}
+		
+		:host ::content .renderjson .array.syntax {
+			color: orange;
+		}
+	</style>
+
+	<template>
+		<div id="jsonView"></div>
+	</template>
+		
+	<script>
+		'use strict';
+
+		(function () {
+			
+			var ready = function () {
+				this.jsonUpdated();
+			}
+			
+			var jsonUpdated = function () {
+				console.log('json updated');
+				while (this.$.jsonView.firstChild) {
+						this.$.jsonView.removeChild(this.$.jsonView.firstChild);
+				}
+				
+				this.$.jsonView.appendChild(
+					renderjson.set_show_to_level(3)
+					.set_max_string_length(200)
+					(this.json)
+				);
+			}
+			
+			
+			
+
+			Polymer({
+				is: 'onion-json-view',
+				ready:  ready,
+				jsonUpdated: jsonUpdated,
+				properties: {
+					json:{
+						type: Object,
+						notify: true,
+						value: {},
+						observer: 'jsonUpdated'
+					}
+				
+				},
+	
+			});
+		})();
+	</script>
+
+</dom-module>
