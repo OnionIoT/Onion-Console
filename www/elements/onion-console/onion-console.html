@@ -88,6 +88,17 @@
 				window.onionConsole = this;
 			};
 
+			var ready = function(){
+				// this.getService('onion-apps-provider',function(err,appsProvider){
+				// 	if(!err){
+				// 		this.appsProvider = appsProvider;
+				// 		// this.appsProvider.getApps(function(){
+				// 		// 	//Does nothing on purpose, just meant to initialize the apps array internally. 
+				// 		// })
+				// 	}
+				// }.bind(this));
+			}
+
 			var services = {};
 
 			var attached = function () {
@@ -140,9 +151,15 @@
 					}
 				} else {
 					console.log("Inside the first else statement");
+					
+					// get the app object by the id
+					// var appObj = this.appsProvider.getApp(appId);
+
+						
 					this.importHref(['/apps/' + appId + '/' + appId + '.html?r=a2'], function () {
 						console.log("Inside the callback for the this.importHref");
 						var appElement = document.createElement(appId);
+						console.log("App element:", appId);
 						appElement.setAttribute('id', appId);
 						Polymer.dom(this.$.appContainer).appendChild(appElement); 
 
@@ -151,6 +168,7 @@
 						}
 					});
 
+					// add to running app list for taskbar
 					if (appId!=='onion-login' && appId!=='onion-launcher'){
 						this.push('runningApps', appId);
 					}
@@ -213,6 +231,7 @@
 				is: 'onion-console',
 				noop: function () {},
 				created: created,
+				ready:ready,
 				attached: attached,
 				launchApp: launchApp,
 				quitApp: quitApp,

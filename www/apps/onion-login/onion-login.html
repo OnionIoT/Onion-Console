@@ -59,6 +59,19 @@
 	            			this.$.username.value = '';
 							this.$.password.value = '';
 		            		onionConsole.launchApp('onion-launcher',true);
+		            		// console.log(this.$.loginDialog);
+		            		// var backdrop = document.getElementsByTagName("iron-overlay-backdrop");
+		            		// setTimeout(function(){
+		            		// 	console.log("The backdrop is :", backdrop);
+		            		// 	console.log("The backdrop[0] is:", backdrop[0]);
+		            		// 	console.log("The parentNode of backdrop[0]:", backdrop[0].parentNode);
+		            		// 	// backdrop[0].parentNode.removeChild(backdrop[0]);
+		            		// 	Polymer.dom(backdrop[0].parentNode).removeChild(backdrop[0]);
+		            		// },1500);
+		            		// console.log("The backdrop is :", backdrop);
+		            		// console.log("The backdrop[0] is:", backdrop[0]);
+		            		// backdrop[0].parentNode.removeChild(backdrop[0]);		            			
+		            		// this.$.loginDialog.close();
 		            		this.quit();
 		            	}
 	            	}.bind(this));
@@ -82,7 +95,7 @@
 				setTimeout((function () {
 					this.$.loginDialog.close();
 					console.log("callback of setTimeout,inside quit is executed");
-				}.bind(this)), 1000);
+				}.bind(this)), 1500);
 			};
 
 			var login = function (e) {

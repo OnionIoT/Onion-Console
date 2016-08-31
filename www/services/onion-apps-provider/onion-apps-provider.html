@@ -24,13 +24,14 @@ import shared service
             };
 
             var  getApps = function(callback) {
+
                 this.ubus.request('onion-console', 'app-list', {}, function (result) {
                     if (result.length === 2 && result[1].exists) {
                         callback(null, result[1].apps);
                     }else{
                         callback("ubus service error", null);
                     }
-                });
+                }.bind(this));
             }
 
             var reload = function () {
@@ -44,6 +45,7 @@ import shared service
                     }
                 }.bind(this));
             };
+			
 
             Polymer({
                 is: 'onion-apps-provider',
@@ -51,7 +53,7 @@ import shared service
                 apps: apps,
                 ready: ready,
                 reload: reload,
-                getApps: getApps
+                getApps: getApps,
             });
         })();
 	</script>
