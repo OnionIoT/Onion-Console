@@ -29,6 +29,20 @@
 				}).bind(this));
 			};
 
+			var checkLogin = function(devId, callback){
+					this.deviceProvider.callService(devId, 'session', 'login', {
+						username: 'root',
+						password: password
+					}, function (err,data) {
+						if (data) {
+							resolve('Correct Password');
+						} else {
+							reject(Error('Incorrect current password.'));
+						}
+					});
+				});
+			}
+
 			var getDeviceType = function(devId,callback){
 				var params = {};
 				callback = callback || this.noop;
@@ -430,7 +444,7 @@
 				noop: function () {},
 				ready: ready,
 				getDeviceType: getDeviceType,
-				
+				checkLogin: checkLogin,
 				// getMAC: getMAC,
 				// setMACResult: setMACResult,
 				

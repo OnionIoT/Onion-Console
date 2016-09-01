@@ -68,22 +68,22 @@
 			};
 
 			// TO DO: RAJIV: move this function to device settings provider
-			var checkLogin = function (password) {
-				var promise = new Promise(function (resolve, reject) {
-					this.ubus.request('session', 'login', {
-						username: 'root',
-						password: password
-					}, function (data) {
-						if (data.length === 2 && data[0] === 0) {
-							resolve();
-						} else {
-							reject(Error('Incorrect current password.'));
-						}
-					});
-				});
+			// var checkLogin = function (password) {
+			// 	var promise = new Promise(function (resolve, reject) {
+			// 		this.ubus.request('session', 'login', {
+			// 			username: 'root',
+			// 			password: password
+			// 		}, function (data) {
+			// 			if (data.length === 2 && data[0] === 0) {
+			// 				resolve();
+			// 			} else {
+			// 				reject(Error('Incorrect current password.'));
+			// 			}
+			// 		});
+			// 	});
 
-				return promise;
-			};
+			// 	return promise;
+			// };
 		 
 			var heartbeat = function () {
 			    if (this.isAlive() === true) {
@@ -140,7 +140,7 @@
 				ready: ready,
 	            login: login,
 				logout: logout,
-				checkLogin: checkLogin,
+				// checkLogin: checkLogin,
 				setAlive: setAlive,
 				heartbeat: heartbeat,
 				startHeartbeat: startHeartbeat,

@@ -177,15 +177,17 @@
 
 			var quitApp = function (appId) {
 				if (appId !== 'onion-launcher'){
-					this.$.appContainer.querySelector(appId).quit();
+					// this.$.appContainer.querySelector(appId).quit();
 
-					var idx = (this.runningApps).findIndex(function (element) {
-						return element.id === appId;
-					});
+					// var idx = (this.runningApps).findIndex(function (element) {
+					// 	return element.id === appId;
+					// });
+					var idx = this.runningApps.indexOf(appId);
 					if (idx >= 0) {
 						this.splice('runningApps', idx, 1);
 					}
 					
+					this.$.appContainer.querySelector(appId).quit();
 
 					this.set('currentApp', 'onion-launcher');
 

@@ -27,6 +27,10 @@
 			
 			var ready = function() {
 
+				setTimeout(function(){
+				this.selectedId = null;					
+				}.bind(this),1000);
+
 			};
 			
 			var _computeSelected = function (dev, selectedDev){
@@ -72,7 +76,7 @@
 							type: String,
 							notify: true,
 							value: null,
-							reflectToAttribute: true,
+							// reflectToAttribute: true,
 						},
 						selectedDevice: {
 							type: Object,
