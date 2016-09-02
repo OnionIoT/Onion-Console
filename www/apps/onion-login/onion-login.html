@@ -58,7 +58,9 @@
 	            			console.log("Inside the ready for onion-login");
 	            			this.$.username.value = '';
 							this.$.password.value = '';
-		            		onionConsole.launchApp('onion-launcher',true);
+							onionConsole.loggedIn(function(){
+								onionConsole.launchApp('onion-launcher');
+							});
 		            		// console.log(this.$.loginDialog);
 		            		// var backdrop = document.getElementsByTagName("iron-overlay-backdrop");
 		            		// setTimeout(function(){
@@ -109,7 +111,9 @@
 						this.$.username.value = '';
 						this.$.password.value = '';
 						console.log("Inside login function(onion-login),about to start onion-launcher");
-						onionConsole.launchApp('onion-launcher', true);
+						onionConsole.loggedIn(function(){
+							onionConsole.launchApp('onion-launcher', true);
+						});
 						this.quit();
 					} else {
 						var alertElement = document.createElement('bootstrap-alert');

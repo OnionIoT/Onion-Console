@@ -92,14 +92,29 @@
 				// this.getService('onion-apps-provider',function(err,appsProvider){
 				// 	if(!err){
 				// 		this.appsProvider = appsProvider;
+				// 		console.log("Inside the getService callback appsProvider",appsProvider);
 				// 		// this.appsProvider.getApps(function(){
 				// 		// 	//Does nothing on purpose, just meant to initialize the apps array internally. 
 				// 		// })
 				// 	}
 				// }.bind(this));
-			}
+			};
 
 			var services = {};
+
+			var loggedIn = function (callback){
+				console.log("loggedIn gets called");
+				this.getService('onion-apps-provider',function(err,appsProvider){
+					if(!err){
+						this.appsProvider = appsProvider;
+						console.log("Inside the getService callback appsProvider",appsProvider);
+						// this.appsProvider.getApps(function(){
+						// 	//Does nothing on purpose, just meant to initialize the apps array internally. 
+						// })
+						callback();
+					}
+				}.bind(this));
+			};
 
 			var attached = function () {
 				this.launchApp('onion-login');
@@ -168,10 +183,18 @@
 						}
 					});
 
-					// add to running app list for taskbar
-					if (appId!=='onion-login' && appId!=='onion-launcher'){
-						this.push('runningApps', appId);
+					if(this.appsProvider){
+						this.appsProvider.getApp(appId, function(appObj){
+							console.log(appObj);
+							if (appId!=='onion-login' && appId!=='onion-launcher'){
+								this.push('runningApps', appObj);
+							}
+						}.bind(this));
 					}
+					// add to running app list for taskbar
+					// if (appId!=='onion-login' && appId!=='onion-launcher'){
+					// 	this.push('runningApps', appId);
+					// }
 				}
 			};
 
@@ -182,9 +205,15 @@
 					// var idx = (this.runningApps).findIndex(function (element) {
 					// 	return element.id === appId;
 					// });
-					var idx = this.runningApps.indexOf(appId);
-					if (idx >= 0) {
-						this.splice('runningApps', idx, 1);
+					// var idx = this.runningApps.indexOf(appId);
+					// if (idx >= 0) {
+					// 	this.splice('runningApps', idx, 1);
+					// }
+
+					for( var i=0; i < this.runningApps.length ; i++){
+						if(appId === this.runningApps[i].id){
+							this.splice('runningApps',i, 1);
+						}
 					}
 					
 					this.$.appContainer.querySelector(appId).quit();
@@ -240,6 +269,7 @@
 				getService: getService,
 				_showTaskbar: _showTaskbar,
 				sendNotification: sendNotification,
+				loggedIn: loggedIn,
 				properties: {
 					runningApps: {
 						type: Array,

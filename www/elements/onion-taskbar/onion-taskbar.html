@@ -109,17 +109,17 @@
 		(function () {
 			var launch = function (e) {
 				var appId = e.model.item;
-				if (appId) {
-					onionConsole.launchApp(appId);
+				if (appId.id) {
+					onionConsole.launchApp(appId.id);
 				}
 			};
 
 			var _computeIconUrl = function (item) {
 				console.log(item);
 				if (item) {
-					return '/apps/' + item +  '/icon.png';
+					return '/apps/' + item.id +  '/icon.png';
 				} else {
-					return '/apps/' + item + '/icon.png';
+					return '/apps/' + item.id + '/icon.png';
 				}
 			};
 
