@@ -29,7 +29,7 @@
 				}).bind(this));
 			};
 
-			var checkLogin = function(devId, callback){
+			var checkLogin = function(devId, password, callback){
 					this.deviceProvider.callService(devId, 'session', 'login', {
 						username: 'root',
 						password: password
@@ -40,7 +40,6 @@
 							reject(Error('Incorrect current password.'));
 						}
 					});
-				});
 			}
 
 			var getDeviceType = function(devId,callback){
@@ -178,10 +177,9 @@
 						var response = result['ipv4-address'][0]['address'];
 						callback(response);
 					} else {
-						callback('error: ', err);
+						callback(err);
 					}
 				}.bind(this));
-				callback('');
 			};
 
 			var getNetMask = function(devId, callback){

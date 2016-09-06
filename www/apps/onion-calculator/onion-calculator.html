@@ -31,18 +31,18 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			// var self = null;
 
 			var created = function () {
-				self = this;
+				// self = this;
 			};
 
 			var onAppIcon = function (e) {
-				self.onionConsole.launchApp(e.target);
+				this.onionConsole.launchApp(e.target);
 			};
 
 			var openModal = function () {
-				self.$.test.open();
+				this.$.test.open();
 			};
 
 			Polymer({

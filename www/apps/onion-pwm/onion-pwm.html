@@ -2,13 +2,22 @@
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="/elements/onion-dragbar/onion-dragbar.html">
+<link rel="import" href="../../elements/onion-device-list/onion-device-list.html">
+<link rel="import" href="../../elements/onion-help/app-tour.html">
+<link rel="import" href="./pwm-tour.html">
 
 <dom-module id="onion-pwm">
 	<style>
 		onion-app-body > div {
 			height: 100%;
 		}
-
+		onion-app-body {
+			@apply(--layout-vertical);
+/* 			display:  -webkit-flex; */
+		}
+		#appBody{
+			margin-top:0px;
+		}
 		#pwm-image {
 			position: relative;
 			width: 500px;
@@ -75,49 +84,72 @@
 			padding: 15px;
     		color: #888;
 		}
+
+		.device-communication {
+			color: #8c8c8c;
+			height: 35px;
+			width: 35px;
+		}
 	</style>
 
 	<template>
 		<onion-app app-name="PWM Control" toolbar-background="#2980b9" background="#f2f2f2">
 			<onion-app-body page-id="home">
-				<div class="horizontal center-justified layout center">
-					<div id="pwm-image">
-						<div class="pins-container">
-							<template is="dom-repeat" items="{{channels}}">
-								<div class$="{{_computePinsClass(activeChannelId, item.id)}}" on-tap="_onPins"></div>
+				<!-- App Tour -->
+				<pwm-tour></pwm-tour>
+
+				<div class=" flex layout vertical center-center">
+					<div class="layout horizontal center-center">
+						<!-- Device List -->
+						<onion-device-list tour-id="select-device" drop-down="true" online-filter="true" online-only="true" share-filter="true" can-manage="true" selected-id={{currentDev}} tour-id="pwm-select-device"></onion-device-list>
+
+						<!-- Device Communication Icon -->
+						<div class="device-communication">
+							<template is="dom-if" if="{{bDeviceCommunication}}">
+								<onion-loading loading="true" icon="icons:settings"></onion-loading>
 							</template>
 						</div>
 					</div>
 
-					<div id="pwm-info">
-						<table class="table">
-							<tr>
-								<th>PWM Frequency</th>
-								<td>
-									<onion-dragbar min="24" max="1526" value="{{frequency}}"></onion-dragbar>
-									<input class="form-control" type="number" min="24" max="1526" value="{{frequency::input}}" />&nbsp;Hz
-								</td>
-							</tr>
-							<tr>
-								<th>PWM Channel</th>
-								<td><span class="active-channel">{{_computePWMChannel(activeChannelId)}}</span></td>
-							</tr>
-							<tr>
-								<th>Duty Cycle&nbsp;*</th>
-								<td>
-									<onion-dragbar min="0" max="100" step="0.01" value="{{activeChannel.duty}}"></onion-dragbar>
-									<input class="form-control" type="number" min="0" max="100" step="0.01" value="{{activeChannel.duty::input}}" />&nbsp;%
-								</td>
-							</tr>
-							<tr>
-								<th>Delay</th>
-								<td>
-									<onion-dragbar min="0" max="100" step="0.01" value="{{activeChannel.delay}}"></onion-dragbar>
-									<input class="form-control" type="number" min="0" max="100" step="0.01" value="{{activeChannel.delay::input}}" />&nbsp;%
-								</td>
-							</tr>
-						</table>
-						<div class="note">* Typical duty cycle for servo motor is ~3.5% to 13% @ 50Hz</div>
+					<div class="horizontal center-justified layout center" id="appBody">
+						<div id="pwm-image">
+							<div class="pins-container">
+								<template is="dom-repeat" items="{{channels}}">
+									<div tour-id="select-channel" class$="{{_computePinsClass(activeChannelId, item.id)}}" on-tap="_onPins"></div>
+								</template>
+							</div>
+						</div>
+
+						<div id="pwm-info">
+							<table class="table">
+								<tr tour-id="select-frequency">
+									<th>PWM Frequency</th>
+									<td>
+										<onion-dragbar min="24" max="1526" value="{{frequency}}" on-mouseup="changeEvent" ></onion-dragbar>
+										<input class="form-control" type="number" min="24" max="1526" value="{{frequency::input}}" on-blur="changeEvent"/>&nbsp;Hz
+									</td>
+								</tr>
+								<tr>
+									<th>PWM Channel</th>
+									<td><span class="active-channel">{{_computePWMChannel(activeChannelId)}}</span></td>
+								</tr>
+								<tr tour-id="select-duty">
+									<th>Duty Cycle&nbsp;*</th>
+									<td>
+										<onion-dragbar min="0" max="100" step="0.01" value="{{activeChannel.duty}}" on-mouseup="changeEvent"></onion-dragbar>
+										<input class="form-control" type="number" min="0" max="100" step="0.01" value="{{activeChannel.duty::input}}" on-blur="changeEvent"/>&nbsp;%
+									</td>
+								</tr>
+								<tr tour-id="select-delay">
+									<th>Delay</th>
+									<td>
+										<onion-dragbar min="0" max="100" step="0.01" value="{{activeChannel.delay}}" on-mouseup="changeEvent"></onion-dragbar>
+										<input class="form-control" type="number" min="0" max="100" step="0.01" value="{{activeChannel.delay::input}}" on-blur="changeEvent" />&nbsp;%
+									</td>
+								</tr>
+							</table>
+							<div class="note">* Typical duty cycle for servo motor is ~3.5% to 13% @ 50Hz</div>
+						</div>
 					</div>
 				</div>
 			</onion-app-body>
@@ -129,56 +161,12 @@
 		'use strict';
 
 		(function () {
-			var fg = function () {
-				if (!this.syncInterval) {
-					this.syncInterval = setInterval(this._sync.bind(this), 100);
-				}
-			};
-
-			var bg = function () {
-				if (this.syncInterval) {
-					clearInterval(this.syncInterval);
-					this.syncInterval = null;
-				}
-			};
-
 			var ready = function () {
-				this.fg();
+				onionConsole.getService('onion-device-hardware-provider', (function (err,api) {
+					this.expApi= api;
+				}).bind(this));
 			};
-
-			var _sync = function () {
-				if (this.valueChanged) {
-					onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-							ubus.request('i2c_exp', 'pwm-exp', {
-								command: 'set',
-								params: (this.activeChannelId === null) ? {
-									channel: 'all',
-									duty: this.allDuty.toFixed(2),
-									delay: this.allDelay.toFixed(2),
-									frequency: this.frequency.toString()
-								} : {
-									channel: this.activeChannelId,
-									duty: this.channels[this.activeChannelId].duty.toFixed(2),
-									delay: this.channels[this.activeChannelId].delay.toFixed(2),
-									frequency: this.frequency.toString()
-								}
-							}, (function (data) {
-								if (data.length === 2 && data[0] === 0 && data[1].status !== 'failure') {
-									this.r1 = data[1].state === '1' ? true : false;
-								} else {
-									onionConsole.sendNotification({
-										title: 'PWM Control',
-										message: '[Error]: unable to communicate with Servo Expansion'
-									});
-									console.log('gpio status error');
-								}
-							}).bind(this));
-					}).bind(this));
-
-					this.valueChanged = false;
-				}
-			};
-
+			
 			var _onPins = function (e) {
 				if (this.activeChannelId !== e.model.item.id) {
 					this.activeChannelId = e.model.item.id;
@@ -209,17 +197,51 @@
 						this.channels[this.activeChannelId].duty = parseFloat(changeRecord.value);
 					}
 				}
-
-				this.valueChanged = true;
 			};
 
 			var _activeChannelIdChanged = function (changeRecord) {
+				console.log("_activeChannelIdChanged: new channelId", changeRecord);
 				if (changeRecord === null) {
 					this.set('activeChannel.duty', this.allDuty);
 					this.set('activeChannel.delay', this.allDelay);
 				} else {
 					this.set('activeChannel.duty', this.channels[changeRecord].duty);
 					this.set('activeChannel.delay', this.channels[changeRecord].delay);
+				}
+			};
+			
+			var _sendNotification = function (msg) {
+				onionConsole.sendNotification({
+					title: 'PWM Control',
+					message: msg
+				});
+			};
+			
+			var changeEvent = function(){
+				if (this.currentDev !== '0') {
+					this.bDeviceCommunication 	= true;	// enable device communication icon
+
+					var channel 	= (this.activeChannelId === null) ? 'all' : this.activeChannelId;
+					var duty 		= (this.activeChannelId === null) ? this.allDuty.toFixed(2) : this.channels[this.activeChannelId].duty.toFixed(2);
+					var delay 		= (this.activeChannelId === null) ? this.allDelay.toFixed(2) : this.channels[this.activeChannelId].delay.toFixed(2);
+					var frequency 	= this.frequency.toString();
+
+
+					this.expApi.pwmSetChannelDutyCycle(this.currentDev, channel, duty, {
+							delay: delay, 
+							frequency: frequency
+						}, (function (err, response) {
+						// console.log('changeEvent callback: ', response);
+						if (err) {
+							_sendNotification('[Error]: Unable to communicate with Servo Expansion');
+						} else if (response.error) {
+							_sendNotification('[Error]: Unable to communicate with selected device');
+						}
+
+						this.bDeviceCommunication 	= false;	// disable device communication icon
+					}).bind(this));
+				} else {
+					_sendNotification('[Error]: Select Target Device!');
 				}
 			};
 
@@ -238,7 +260,6 @@
 						value: 50,
 						notify: true
 					},
-					valueChanged: Boolean,
 					channels: {
 						type: Array,
 						value: [
@@ -284,14 +305,22 @@
 						type: Number,
 						value: 0,
 						notify: true
+					},
+					currentDev:{
+						type: String,
+						value: '0',
+						notify: true,
+					},
+					bDeviceCommunication: {
+						type: Boolean,
+						value: false,
+						notify: true
 					}
 				},
 				_computePWMChannel: _computePWMChannel,
 				_activeChannelChanged:_activeChannelChanged,
 				_activeChannelIdChanged: _activeChannelIdChanged,
-				_sync: _sync,
-				fg: fg,
-				bg: bg
+				changeEvent: changeEvent
 			});
 		})();
 	</script>

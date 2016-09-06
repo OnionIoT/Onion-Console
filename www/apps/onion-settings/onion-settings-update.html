@@ -133,10 +133,10 @@
 				this.dataReady = 0;
 				//Add function here to get device type
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
-					self.sessionProvider = sessionProvider;
-					if (self.sessionProvider.isAlive() === true) {
+					this.sessionProvider = sessionProvider;
+					// if (this.sessionProvider.isAlive() === true) {
 						onionConsole.getService('onion-device-settings-provider', (function (err, deviceProvider) {
-							deviceProvider.getDeviceType(function(result){
+							deviceProvider.getDeviceType(null,function(result){
 								console.log(result);
 								if(result === 'Onion Omega'){
 									this.model = result;
@@ -145,10 +145,10 @@
 								}
 							}.bind(this));
 						}).bind(this));	
-                	}
+                	// }
 				}.bind(this));
 				
-				// if (self.sessionProvider.isAlive() === true) {
+				// if (this.sessionProvider.isAlive() === true) {
 				// 	onionConsole.getService('onion-device-settings-provider', (function (err, deviceProvider) {
 				// 		deviceProvider.getDeviceType(function(result){
 				// 			console.log(result);

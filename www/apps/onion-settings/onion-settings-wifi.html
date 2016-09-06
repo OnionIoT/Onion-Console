@@ -276,120 +276,120 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			// var this = null;
 
 			var created = function () {
-				self = this;
+				// this = this;
 			};
 
 			var attached = function () {
-				self.networks 	= [];
-				self.networkId	= -1;
+				this.networks 	= [];
+				this.networkId	= -1;
 
-				self.hideScanMessage();
+				this.hideScanMessage();
 				
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
-                    self.sessionProvider = sessionProvider;
-                    if (self.sessionProvider.isAlive() === true) {
+                    this.sessionProvider = sessionProvider;
+                    // if (this.sessionProvider.isAlive() === true) {
                     onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
-                        self.wifiProvider = wifiProvider;
-					});
-                };
+                        this.wifiProvider = wifiProvider;
+					}.bind(this));
+                // };
 
-                });
+                }.bind(this));
 				
-     //            if (self.sessionProvider.isAlive() === true) {
+     //            if (this.sessionProvider.isAlive() === true) {
      //                onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
-     //                    self.wifiProvider = wifiProvider;
+     //                    this.wifiProvider = wifiProvider;
 					// });
      //            };
 			};
 
 			var init = function () {
-				self.bInitComplete	= false;
-				self.scanWifiNetwork();		// scan for available networks
-                self.refreshNetwork();		// get the list of currently configured networks
+				this.bInitComplete	= false;
+				this.scanWifiNetwork();		// scan for available networks
+                this.refreshNetwork();		// get the list of currently configured networks
 			};
 
 			var refreshNetwork = function() {
-				var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(null, false);
+				var getWifiSetupPromise = this.wifiProvider.getWirelessSetup(null, false);
                 getWifiSetupPromise.then(function(result){
                 	for (var i = 0; i < result.length; i++) {
                 		result[i].index = '_'+result[i]['.index'];
                 	};
                 	console.log(result);
-                	self.savedNetworks = result;
+                	this.savedNetworks = result;
 
                 	// check if any networks are enabled
-                	var enabledNetwork 	= self._findEnabledNetwork();
+                	var enabledNetwork 	= this._findEnabledNetwork();
                 	var bEnabled 	= false;
                 	if (enabledNetwork != null) {
                 		bEnabled 	= true;
                 	}
 
                 	// set the checkbox
-                	self.set('enableWifi', bEnabled);
-                	self.bInitComplete	= true;
-                });
+                	this.set('enableWifi', bEnabled);
+                	this.bInitComplete	= true;
+                }.bind(this));
 			}
 
 			var showScanMessage = function (message) {
-				self.set('wifiScanMsgEn', true);
-				self.wifiScanMsg = message;
+				this.set('wifiScanMsgEn', true);
+				this.wifiScanMsg = message;
 			};
 
 			var hideScanMessage = function () {
-				self.set('wifiScanMsgEn', false);
+				this.set('wifiScanMsgEn', false);
 				console.log('Hide scan message!');
 			};
 
 			var scanWifiNetwork = function () {
-				self.showScanMessage('Scanning...');
+				this.showScanMessage('Scanning...');
 
-				self.wifiProvider.wifiScan(null)
+				this.wifiProvider.wifiScan(null)
 				.then(function (result) {
-					while (self.networks.length > 0) {
-						self.pop('networks'); 
+					while (this.networks.length > 0) {
+						this.pop('networks'); 
 					}
 
 					// add newly detected networks to array
-					self.showScanMessage('Select Wi-Fi Network:');
+					this.showScanMessage('Select Wi-Fi Network:');
 
 					var detectedNetworks = result.results;
 
 					for (var i = 0; i < detectedNetworks.length; i++) {
 						if (detectedNetworks[i].ssid !== '') {
-							self.push('networks', detectedNetworks[i]);
+							this.push('networks', detectedNetworks[i]);
 						}
 					}
-				}, function (result) {
+				}.bind(this), function (result) {
 					console.log(result);
-				});
+				}.bind(this));
 			};
 
 			var selectSsid = function (event) {
-				self.networkId = event.target.value;
+				this.networkId = event.target.value;
 
 				// find the selected network in the list
-				var selectedNetwork = self.networks[self.networkId];
+				var selectedNetwork = this.networks[this.networkId];
 				console.log('Selected network: ');
 				console.log(selectedNetwork);
 
 				// find the ssid
-				self.networkSsid = selectedNetwork.ssid;
+				this.networkSsid = selectedNetwork.ssid;
 
 				// translate the authentication type
 				if (selectedNetwork.encryption === 'none') {
-					self.networkAuth = 'none';
+					this.networkAuth = 'none';
 				} else if (selectedNetwork.encryption.indexOf('WPA2') !== -1) {
-					self.networkAuth = 'psk2';
+					this.networkAuth = 'psk2';
 				} else if (selectedNetwork.encryption.indexOf('WPA') !== -1) {
-					self.networkAuth = 'psk';
+					this.networkAuth = 'psk';
 				} else if (selectedNetwork.encryption.indexOf('WEP') !== -1) {
-					self.networkAuth = 'wep';
+					this.networkAuth = 'wep';
 				}
 
-				console.log('Auth: ', self.networkAuth);
+				console.log('Auth: ', this.networkAuth);
 			};
 
 			var _computeShowPassword = function (showPassword) {
@@ -401,27 +401,27 @@
 			};
 
 			var addNetwork = function () {
-			    self.wifiMessage = '';
+			    this.wifiMessage = '';
 
-			    var verifyResult = self.wifiProvider.verifyKey(self.networkPassword, self.networkAuth);
+			    var verifyResult = this.wifiProvider.verifyKey(this.networkPassword, this.networkAuth);
 
-				if (verifyResult === 'OK' && self.sessionProvider.isAlive() === true) {
+				if (verifyResult === 'OK' && this.sessionProvider.isAlive() === true) {
                 	// add a network wifi-iface
-                	var wifiAddNetworkPromise = self.wifiProvider.prepareWifiNetwork(null);
+                	var wifiAddNetworkPromise = this.wifiProvider.prepareWifiNetwork(null);
 
                 	wifiAddNetworkPromise.then(function() {
                 		// setup the network
-                    	var wifiSetupPromise = self.wifiProvider.setupWifiNetwork(null,self.networkSsid, self.networkPassword, self.networkAuth);
+                    	var wifiSetupPromise = this.wifiProvider.setupWifiNetwork(null,this.networkSsid, this.networkPassword, this.networkAuth);
 
                     	wifiSetupPromise.then(function () {
-                    		self.refreshNetwork();		// refresh the list to include this new network
-                    		self.$.newWifiDlg.close();	// close the dialogue
+                    		this.refreshNetwork();		// refresh the list to include this new network
+                    		this.$.newWifiDlg.close();	// close the dialogue
                     	}, function (err) {
                     		console.error(err);
                     	});
                 	});
 				} else {
-				    self.wifiMessage = verifyResult;
+				    this.wifiMessage = verifyResult;
 				}
 			};
 
@@ -429,18 +429,18 @@
 				var network = e.target.network;
 				console.log('Removing ', network.ssid);
 
-				var wifiRemoveNetworkPromise = self.wifiProvider.removeWifiNetwork(null, network);
+				var wifiRemoveNetworkPromise = this.wifiProvider.removeWifiNetwork(null, network);
 
 				wifiRemoveNetworkPromise.then(function () {
-					self.refreshNetwork();		// refresh the list to reflect this delete
+					this.refreshNetwork();		// refresh the list to reflect this delete
 				});
 			};
 
 			var onLoading = function () {
-				self.$.configureLoading.hidden = false;
+				this.$.configureLoading.hidden = false;
 
 		    	setTimeout(function () {
-		    		self.$.configureLoading.hidden = true;
+		    		this.$.configureLoading.hidden = true;
 		    	}, 5000);
 			}
 
@@ -450,15 +450,15 @@
 
 				// disable all other networks
 				console.log('Disabling all networks');
-				var disablePromise = self._disableAllNetworks();
+				var disablePromise = this._disableAllNetworks();
 
 				disablePromise.then((function () {
 					// enable the specified network
 					console.log('Enabling network: ' + network.ssid);
-					var enablePromise = self.wifiProvider.setEnableWirelessNetwork(null,network['.name'], true);
+					var enablePromise = this.wifiProvider.setEnableWirelessNetwork(null,network['.name'], true);
 
 					enablePromise.then(function () {
-						self.refreshNetwork();		// refresh the list
+						this.refreshNetwork();		// refresh the list
 						
 					});
 				}).bind(this));
@@ -468,12 +468,12 @@
 			var moveUp = function(e) {
 				var network = e.target.network;
 				
-				if ( !(self._isTopNetwork(network)) ) {
+				if ( !(this._isTopNetwork(network)) ) {
 					// move the network UP in the list
-					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(null, network, true);
+					var wifiChangeOrderPromise = this.wifiProvider.changeNetworkOrder(null, network, true);
 
 					wifiChangeOrderPromise.then(function () {
-						self.refreshNetwork();		// refresh the list to reflect this reorder
+						this.refreshNetwork();		// refresh the list to reflect this reorder
 					});
 				}
 			};
@@ -481,26 +481,26 @@
 			var moveDown = function(e) {
 				var network = e.target.network;
 				
-				if ( !(self._isBottomNetwork(network)) ) {
+				if ( !(this._isBottomNetwork(network)) ) {
 					// move the network DOWN in the list
-					var wifiChangeOrderPromise = self.wifiProvider.changeNetworkOrder(null, network, false);
+					var wifiChangeOrderPromise = this.wifiProvider.changeNetworkOrder(null, network, false);
 
 					wifiChangeOrderPromise.then(function () {
-						self.refreshNetwork();		// refresh the list to reflect this reorder
+						this.refreshNetwork();		// refresh the list to reflect this reorder
 					});
 				}
 			};
 
 			var enableWifiChanged = function (newVal) {
 	
-				if (self.bInitComplete) {
+				if (this.bInitComplete) {
 					if (newVal === false) {
 						if (confirm('Are you sure you want to turn off the WiFi?\r\nYou may not be able to access your Omega when the WiFi is off.')) {
 							// disable all networks (and commit the change)
-							var disablePromise = self._disableAllNetworks(true);
+							var disablePromise = this._disableAllNetworks(true);
 
 							disablePromise.then((function () {
-								self.refreshNetwork();		// refresh the list to reflect this change
+								this.refreshNetwork();		// refresh the list to reflect this change
 								this.onLoading();
 							}).bind(this));
 						}else {
@@ -524,11 +524,11 @@
 				var enabledNetwork 	= null;
 
 				// loop through the list and look for enabled networks
-				for (var key in self.savedNetworks) {
-            		var network = self.savedNetworks[key];
+				for (var key in this.savedNetworks) {
+            		var network = this.savedNetworks[key];
 
             		if (network.disabled == null || network.disabled === '0') {
-            			enabledNetwork = self.savedNetworks[key];
+            			enabledNetwork = this.savedNetworks[key];
             			break;
             		}
             	}
@@ -542,8 +542,8 @@
 				var index 	= -1;
 
 				// loop through the list and look for this network
-				for (var key in self.savedNetworks) {
-            		var network = self.savedNetworks[key];
+				for (var key in this.savedNetworks) {
+            		var network = this.savedNetworks[key];
 
             		if (network['.name'] === targetNetwork['.name']) {
             			index = count;
@@ -559,7 +559,7 @@
 			// check if network as at the top of the list
 			var _isTopNetwork = function (targetNetwork) {
 				var bTop 	= false;
-				var index 	= self._findNetworkIndex(targetNetwork);
+				var index 	= this._findNetworkIndex(targetNetwork);
 
 				if (index === 0) {
 					bTop = true;
@@ -571,9 +571,9 @@
 			// check if network as at the bottom of the list
 			var _isBottomNetwork = function (targetNetwork) {
 				var bBottom 	= false;
-				var index 	= self._findNetworkIndex(targetNetwork);
+				var index 	= this._findNetworkIndex(targetNetwork);
 
-				if (index === (self.savedNetworks.length - 1)) {
+				if (index === (this.savedNetworks.length - 1)) {
 					bBottom = true;
 				}
 				
@@ -584,18 +584,18 @@
 			var _disableAllNetworks = function (bCommit) {
 				var promise = new Promise(function (resolve, reject) {
 					// loop through the list and look for enabled networks
-					for (var key in self.savedNetworks) {
-	            		var network = self.savedNetworks[key];
+					for (var key in this.savedNetworks) {
+	            		var network = this.savedNetworks[key];
 
 	            		if (network.disabled == null || network.disabled === '0') {
 	            			// disable the network
-	            			var disablePromise = self.wifiProvider.setEnableWirelessNetwork(null, network['.name'], false, true);
+	            			var disablePromise = this.wifiProvider.setEnableWirelessNetwork(null, network['.name'], false, true);
 	            		}
 	            	}
 
 	            	if (bCommit) {
 	            		// commit the changes
-	            		var commitPromise = self.wifiProvider.commitWirelessChanges(null);
+	            		var commitPromise = this.wifiProvider.commitWirelessChanges(null);
 	            		// resolve the promise when the commit is done
 	            		commitPromise.then(function () {
 							resolve();

@@ -1,0 +1,125 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../elements/onion-help/app-tour.html">
+
+<dom-module id="relay-tour">
+	<style>
+
+		.tour-button-container{
+			position: absolute;
+			bottom: 105px;
+			left: 12px;
+			
+			
+		}
+		.tour-button {
+			color: #5D9CEC;
+			
+			cursor: pointer;
+		}
+		
+		
+		
+		.tour-button:hover {
+			color: #4A89DC;
+		}
+
+		.tour-app-icon {
+			width: 80px;
+			height: 80px;
+			position: relative;
+			left: 50%;
+			margin-left: -40px;
+		}
+		
+		
+		
+		.tour-button-tip{
+			animation-name: fade;
+			animation-duration: 30s;
+			animation-iteration-count: infinite;
+		}
+		
+		.tour-button-tip-arrow {
+			color: white;
+			padding-right: -1px;
+		}
+		
+		.tour-button-tip-text {
+			background-color: white;
+			padding: 5px 10px;
+			color: #434a54;
+			border-radius: 5px;
+		}
+	</style>
+
+	<template>
+    <div class="tour-button-container  layout horizontal center">
+		<iron-icon class="tour-button" on-tap="showTour" icon="icons:info"></iron-icon>
+      <div class="tour-button-tip layout horizontal center">
+			<iron-icon class="tour-button-tip-arrow" icon="onion:arrow-left"></iron-icon>
+			<div class="tour-button-tip-text">Click Here for App Tour!</div>
+		  </div>
+		</div>
+		<app-tour id="relay-tour">
+			
+			<tour-title page-id="1">Relay Expansion Control</tour-title>
+			<tour-content page-id="1">
+				<p>
+          			This app allows you to control the <a target='_blank' href="https://wiki.onion.io/Tutorials/Expansions/Using-the-Relay-Expansion">Relay Expansion</a> on any of your Omegas through the Cloud.
+				</p>
+			</tour-content>
+
+<!-- 			<tour-title page-id="2">Select your device</tour-title>
+			<tour-content page-id="2" for="relay-select-device">
+				<p> 
+        			Select the Device to which the Relay Expansion is connected.
+				</p>
+			</tour-content> -->
+			
+			<tour-title page-id="2">Toggle Relay 1</tour-title>
+			<tour-content page-id="2" for="toggle-relay1">
+				<p>
+					Click here to toggle Relay 1 on your Expansion.
+				</p>
+			</tour-content>
+			
+			<tour-title page-id="3">Toggle Relay 2 </tour-title>
+			<tour-content page-id="3" for="toggle-relay2">
+				<p> 
+					Click here to toggle Relay 2 on your Expansion.
+				</p>
+			</tour-content>
+      
+			<tour-title page-id="4">Change I2C Address</tour-title>
+			<tour-content page-id="4" for="change-i2c">
+				<p> 
+					Click on the switches to change the I2C device address to the Relay Expansion you wish to control.
+					<br><br>
+					For more information on the switches and I2C device address, check out the <a target='_blank' href="https://wiki.onion.io/Tutorials/Expansions/Using-the-Relay-Expansion">Relay Expansion Tutorial</a>.
+				</p>
+			</tour-content>	
+			
+		</app-tour>
+		
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var showTour = function () {
+				this.$['relay-tour'].open();
+			};
+			
+		
+			Polymer({
+				is: 'relay-tour',
+				showTour: showTour,
+				properties: {
+				}
+			});
+		})();
+	</script>
+
+</dom-module>

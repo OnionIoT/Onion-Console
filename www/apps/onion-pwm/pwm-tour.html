@@ -1,0 +1,156 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../elements/onion-help/app-tour.html">
+
+<dom-module id="pwm-tour">
+	<style>
+
+		.tour-button-container{
+			position: absolute;
+			bottom: 105px;
+			left: 12px;
+			
+			
+		}
+		.tour-button {
+			color: #5D9CEC;
+			
+			cursor: pointer;
+		}
+		
+		
+		
+		.tour-button:hover {
+			color: #4A89DC;
+		}
+
+		.tour-app-icon {
+			width: 80px;
+			height: 80px;
+			position: relative;
+			left: 50%;
+			margin-left: -40px;
+		}
+		
+		
+		
+		.tour-button-tip{
+			animation-name: fade;
+			animation-duration: 30s;
+			animation-iteration-count: infinite;
+		}
+		
+		.tour-button-tip-arrow {
+			color: white;
+			padding-right: -1px;
+		}
+		
+		.tour-button-tip-text {
+			background-color: white;
+			padding: 5px 10px;
+			color: #434a54;
+			border-radius: 5px;
+		}
+
+		:host::content tour-content td {
+			padding-left: 10px;
+			padding-right: 10px;
+			padding-bottom: 5px;
+		}
+	</style>
+
+	<template>
+    <div class="tour-button-container  layout horizontal center">
+		<iron-icon class="tour-button" on-tap="showTour" icon="icons:info"></iron-icon>
+      <div class="tour-button-tip layout horizontal center">
+			<iron-icon class="tour-button-tip-arrow" icon="onion:arrow-left"></iron-icon>
+			<div class="tour-button-tip-text">Click Here for App Tour!</div>
+		  </div>
+		</div>
+		<app-tour id="pwm-tour">
+			
+			<tour-title page-id="1">PWM Expansion Control</tour-title>
+			<tour-content page-id="1">
+				<p>
+					This App allows you to control the <a target='_blank' href="https://wiki.onion.io/Tutorials/Expansions/Using-the-Servo-Expansion">Servo Expansion</a> on any of your Omegas through the Cloud.
+					<br><br>
+					Use the Servo Expansion to generate up to 16 different Pulse Width Modulated (PWM) signals to control anything from Servo Motors, DC Motor speed, LED brightness, etc.
+				</p>
+			</tour-content>
+			
+			<tour-title page-id="2">Selecting a Channel</tour-title>
+			<tour-content page-id="2" for="select-channel">
+				<p>
+					To select a particular channel, simply click on it.
+				</p>
+			</tour-content>
+
+			<tour-title page-id="3">Selecting All Channels</tour-title>
+			<tour-content page-id="3" for="select-channel">
+				<p>
+					To select <strong>all</strong> channels, click on the currently selected channel to deselect it.
+				</p>
+			</tour-content>
+			
+			<tour-title page-id="4">Select PWM Frequency </tour-title>
+			<tour-content page-id="4" for="select-frequency">
+				<p> 
+					To change the frequency of the oscillator, drag on the bar or input the desired frequency in the text box.
+					<br><br>
+					Note that all channels share the same oscillator and hence the same frequency.
+					<br><br>
+					The limits on the frequency are:
+					<br>
+					<table>
+						<tr>
+							<td>Min</td>
+							<td>24 Hz</td>
+						</tr>
+						<tr>
+							<td>Max</td>
+							<td>1526 Hz</td>
+						</tr>
+						</tr>
+					</table>
+				</p>
+			</tour-content>
+      
+     		<tour-title page-id="5">Select Duty Cycle</tour-title>
+			<tour-content page-id="5" for="select-duty">
+				<p> 
+					To change the duty cycle of a particular channel, drag on the bar or input the desired duty cycle percentage in the text box.
+				</p>
+			</tour-content>
+      
+      		<tour-title page-id="6">Select Delay </tour-title>
+			<tour-content page-id="6" for="select-delay">
+				<p> 
+					To change the delay on a channel, drag on the bar or input the desired delay in the text box.
+				</p>
+			</tour-content>
+			
+			
+			
+		</app-tour>
+		
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var showTour = function () {
+				this.$['pwm-tour'].open();
+			};
+			
+		
+			Polymer({
+				is: 'pwm-tour',
+				showTour: showTour,
+				properties: {
+				}
+			});
+		})();
+	</script>
+
+</dom-module>

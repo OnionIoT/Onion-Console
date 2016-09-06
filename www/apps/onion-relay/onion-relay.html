@@ -1,7 +1,9 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/elements/onion-app/onion-app.html">
-
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../elements/onion-app/onion-app.html">
+<link rel="import" href="../../elements/onion-device-list/onion-device-list.html">
+<link rel="import" href="../../elements/onion-help/app-tour.html">
+<link rel="import" href="./relay-tour.html">
 <dom-module id="onion-relay">
 	<style>
 		:host * {
@@ -9,10 +11,25 @@
 			-moz-user-select: none;     /* Firefox all */
 			-ms-user-select: none;      /* IE 10+ */
 			user-select: none;          /* Likely future */
+			/*height: 100%;*/
 		}
+		
+		onion-app-body {
+			@apply(--layout-vertical);
+/* 			display:  -webkit-flex; */
+		}
+
 
 		onion-app-body > div {
 			height: 100%;
+			display: -webkit-flex;
+		}
+		#appBody{
+			margin-top:0px;
+/* 			flex-direction: column;
+    	flex-wrap: wrap;
+    	align-items: center;
+			display: flex; */
 		}
 		#relay-image {
 			position: relative;
@@ -104,37 +121,71 @@
 				color: #27ae60;
 				content: 'ON';
 			}
+/* 		#mainAppBody{
+			align-self:center;
+		} */
+
+		.device-communication {
+			color: #8c8c8c;
+			height: 50px;
+			width: 50px;
+		}
 	</style>
 
 	<template>
 		<onion-app app-name="Relay Control" toolbar-background="#f39c12" background="#f2f2f2">
-			<onion-app-body page-id="home">
-				<div class="horizontal center-justified layout center">
-					<div id="relay-image">
-						<div id="r1" class="relay" on-tap="_onR1"></div>
-						<div id="r2" class="relay" on-tap="_onR2"></div>
+			<onion-app-body page-id="home" id="mainAppBody">
+				<!-- App tour -->
+				<relay-tour></relay-tour>
 
-						<div id="s1" class$="{{_computeSwitchClass(s1)}}" on-tap="_onS1"></div>
-						<div id="s2" class$="{{_computeSwitchClass(s2)}}" on-tap="_onS2"></div>
-						<div id="s3" class$="{{_computeSwitchClass(s3)}}" on-tap="_onS3"></div>
+				<div class="flex layout vertical center-center">
+					<!-- Device List -->
+					<onion-device-list drop-down="true"  online-filter="true" online-only="true" share-filter="true" can-manage="true" selected-id={{currentDev}} tour-id="relay-select-device"></onion-device-list>
+
+					<div class="horizontal center-justified layout center" id="appBody">
+						<!-- Relay Graphic -->
+						<div id="relay-image">
+							<div id="r1" tour-id="toggle-relay1" class="relay" on-tap="_onR1"></div>
+							<div id="r2" tour-id="toggle-relay2" class="relay" on-tap="_onR2"></div>
+
+							<div id="s1" tour-id="change-i2c" class$="{{_computeSwitchClass(s1)}}" on-tap="_onS1"></div>
+							<div id="s2" class$="{{_computeSwitchClass(s2)}}" on-tap="_onS2"></div>
+							<div id="s3" class$="{{_computeSwitchClass(s3)}}" on-tap="_onS3"></div>
+						</div>
+
+						<!-- Table -->
+						<div class="layout vertical center-center">
+							<div class="layout vertical center-center">
+								<div class="device-communication">
+									<template is="dom-if" if="{{bDeviceCommunication}}">
+										<onion-loading loading="true" icon="icons:settings"></onion-loading>
+									</template>
+								</div>
+							</div>
+							<div id="relay-info">
+								<table class="table">
+									<tr>
+										<th>Relay I2C Address</th>
+										<td>{{_computeI2cAddr(s1, s2, s3)}}</td>
+									</tr>
+									<tr>
+										<th>Relay #1</th>
+										<td>
+											<div class$="{{_computeRelayStatusClass(r1)}}"></div>
+										</td>
+									</tr>
+									<tr>
+										<th>Relay #2</th>
+										<td>
+											<div class$="{{_computeRelayStatusClass(r2)}}"></div>
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div>
+
 					</div>
 
-					<div id="relay-info">
-						<table class="table">
-							<tr>
-								<th>Relay I2C Address</th>
-								<td>{{_computeI2cAddr(s1, s2, s3)}}</td>
-							</tr>
-							<tr>
-								<th>Relay #1</th>
-								<td><div class$="{{_computeRelayStatusClass(r1)}}"></div></td>
-							</tr>
-							<tr>
-								<th>Relay #2</th>
-								<td><div class$="{{_computeRelayStatusClass(r2)}}"></div></td>
-							</tr>
-						</table>
-					</div>
 				</div>
 			</onion-app-body>
 		</onion-app>
@@ -148,72 +199,127 @@
 			var self = null;
 
 			var ready = function () {
-				
+				onionConsole.getService('onion-device-hardware-provider', (function (err, api) {
+					if (err) {
+						console.log('Cannot get onion-device-hardware-provider!!');
+					}
+					this.expApi = api;
+				}).bind(this));
 			};
 
 			var _onS1 = function () {
-				this.s1 = !this.s1;
+				if (!this.bDeviceCommunication) {
+					this.s1 = !this.s1;
+					this._deviceChanged();
+				}
 			};
 
 			var _onS2 = function () {
-				this.s2 = !this.s2;
+				if (!this.bDeviceCommunication) {
+					this.s2 = !this.s2;
+					this._deviceChanged();
+				}
 			};
 
 			var _onS3 = function () {
-				this.s3 = !this.s3;
+				if (!this.bDeviceCommunication) {
+					this.s3 = !this.s3;
+					this._deviceChanged();
+				}
+			};
+
+			var _sendNotification = function (msg) {
+				onionConsole.sendNotification({
+					title: 'Relay Control',
+					message: msg
+				});
+			};
+
+			var _deviceChanged = function () {
+				// update the relay states (notifications disabled)
+				// console.log('Updating relay state for new device ', this.currentDev, ' or new i2c device address');
+				console.log("_deviceChanged gets called");
+				// enable the loading icon
+				if (this.currentDev !== '0' && this.expApi) {
+					this.bDeviceCommunication = true;
+				}
+
+				// attempt to read the state of relay0
+				this._readRelayState(0, 'r1', (function (err) {
+					if (!err) {
+						// only check relay1 if relay0 was successfully read
+						console.log('reading r2 state');
+						this._readRelayState(1, 'r2', (function (err) {
+							this.bDeviceCommunication = false;	// disable the loading icon
+						}).bind(this));
+					} else {
+						// set relay1 to off if no reponse from the first relay
+						this.set('r2', false);
+						this.bDeviceCommunication = false;	// disable the loading icon
+					}
+				}).bind(this));
+			};
+
+			var _readRelayState = function (channel, channelString, callback) {
+				var deviceId 	= this.currentDev;
+				console.log(this.currentDev);
+				
+				if (deviceId !== '0' && this.expApi) {
+					var i2cAddr 	= this.expApi.relayComputeI2cAddr(this.s1, this.s2, this.s3);
+					
+					this.expApi.relayGetChannelState(deviceId, channel, i2cAddr, (function (err, response) {
+						if (!err && !response.error) {
+							// update the relay state
+							var updatedState = response.state === '1' ? true : false;
+							this.set(channelString, updatedState);
+							callback();
+						} else {
+							this.set(channelString, false);
+							callback('error');
+						}
+					}).bind(this));
+				}
+			};
+
+			var _changeRelayState = function (channel, channelString, newState) {
+				var deviceId 	= this.currentDev;
+				var i2cAddr 	= this.expApi.relayComputeI2cAddr(this.s1, this.s2, this.s3);
+
+				if (deviceId !== '0') {
+					this.bDeviceCommunication = true; 	// enable the loading icon
+					this.expApi.relaySetChannelState(deviceId, channel, newState, i2cAddr, (function (err, response) {
+						if (err) {
+							_sendNotification('[Error]: Unable to communicate with Relay Expansion');
+						} else if (response.error) {
+							_sendNotification('[Error]: Unable to communicate with selected device');
+						} else {
+							// update the relay state
+							var updatedState = response.state === '1' ? true : false;
+							this.set(channelString, updatedState);
+						}
+						this.bDeviceCommunication = false;	// disable the loading icon
+					}).bind(this));
+				} else {
+					_sendNotification('[Error]: Select Target Device!');
+				}
 			};
 
 			var _onR1 = function () {
 				console.log('r1');
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-						ubus.request('i2c_exp', 'relay-exp', {
-							command: 'set',
-							params: {
-								channel: 0,
-								state: !this.r1,
-								address: (this.s1 ? '0' : '1') + (this.s2 ? '0' : '1') + (this.s3 ? '0' : '1')
-							}
-						}, (function (data) {
-							if (data.length === 2 && data[0] === 0 && data[1].status !== 'failure') {
-								this.r1 = data[1].state === '1' ? true : false;
-							} else {
-								onionConsole.sendNotification({
-									title: 'Relay Control',
-									message: '[Error]: unable to communicate with Relay Expansion'
-								});
-								console.log('gpio status error');
-							}
-						}).bind(this));
-				}).bind(this));
+				this._changeRelayState(0, 'r1', !this.r1);
 			};
 
 			var _onR2 = function () {
 				console.log('r2');
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-						ubus.request('i2c_exp', 'relay-exp', {
-							command: 'set',
-							params: {
-								channel: 1,
-								state: !this.r2,
-								address: (this.s1 ? '0' : '1') + (this.s2 ? '0' : '1') + (this.s3 ? '0' : '1')
-							}
-						}, (function (data) {
-							console.log(data[1]);
-							if (data.length === 2 && data[0] === 0 && data[1].status !== 'failure') {
-								this.r2 = data[1].state === '1' ? true : false;
-							} else {
-								onionConsole.sendNotification({
-									title: 'Relay Control',
-									message: '[Error]: unable to communicate with Relay Expansion'
-								});
-								console.log('gpio status error');
-							}
-						}).bind(this));
-				}).bind(this));
+				this._changeRelayState(1, 'r2', !this.r2);
 			};
 
 			var _computeI2cAddr = function (s1, s2, s3) {
-				return '0x' + (0x20 + (s1 ? 1 : 0) + (s2 ? 2 : 0) + (s3 ? 4 : 0)).toString(16);
+				var value = '0x27';
+				if (this.expApi) {
+					value = this.expApi.relayComputeI2cAddr(s1, s2, s3);
+				}
+				return value;
 			};
 
 			var _computeSwitchClass = function (s) {
@@ -231,12 +337,22 @@
 				_onS3: _onS3,
 				_onR1: _onR1,
 				_onR2: _onR2,
+				_sendNotification: _sendNotification,
+				_deviceChanged: _deviceChanged,
+				_readRelayState: _readRelayState,
+				_changeRelayState: _changeRelayState,
 				_computeI2cAddr: _computeI2cAddr,
 				_computeSwitchClass: _computeSwitchClass,
 				_computeRelayStatusClass: _computeRelayStatusClass,
 				ready: ready,
 				behaviors: [Onion.AppBehavior],
 				properties: {
+					currentDev:{
+						type: String,
+						value: '0',
+						notify: true,
+						observer: '_deviceChanged',
+					},
 					apps: {
 						type: Array,
 						value: []
@@ -262,6 +378,11 @@
 						notify: true
 					},
 					r2: {
+						type: Boolean,
+						value: false,
+						notify: true
+					},
+					bDeviceCommunication: {
 						type: Boolean,
 						value: false,
 						notify: true

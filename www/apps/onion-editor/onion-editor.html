@@ -118,10 +118,10 @@
 	<script>
 		'use strict';
 		(function () {
-			var self = null;
+			// var this = null;
 
 			var created = function () {
-				self = this;
+				// this = this;
 			};
 
 			var folderFileInfo = null,
@@ -140,24 +140,24 @@
 				};
 
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
-					self.sessionProvider = sessionProvider;
+					this.sessionProvider = sessionProvider;
 					if (sessionProvider.isAlive() === true) {   
 						onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-							self.fileProvider = fileProvider;
-							self.$.fileList.addEventListener('click', function (e) {
+							this.fileProvider = fileProvider;
+							this.$.fileList.addEventListener('click', function (e) {
 								if (typeof e.target.icon === 'undefined') {
 									console.log(e);
 					                openFolder(e.target.textContent);
 								}
 							});
-							if(self.fileName==='') {
-							    openFolder(backsplash);
+							if(this.fileName==='') {
+							    this.openFolder(backsplash);
 							} else {
-								openFolder(self.fileName);
+								this.openFolder(this.fileName);
 							}
-						});
+						}.bind(this));
 					}
-				});	
+				}.bind(this));	
 			};
 			 
 			var findTypeById = function (sourceList, name) {
@@ -177,7 +177,7 @@
 			var isFileChanged = function () {
 			    var changed = false;
 
-			    if (folderFileInfo.fileInEdit !== '' &&	self.currentCode !== self.$.fileEditor.editor.session.getValue()) {
+			    if (folderFileInfo.fileInEdit !== '' &&	this.currentCode !== this.$.fileEditor.editor.session.getValue()) {
 				    changed = true;
 				}
 
@@ -195,18 +195,18 @@
 			};
 			
 			var openFolder = function (path) {
-                if (self.sessionProvider.isAlive() === true) {
+                if (this.sessionProvider.isAlive() === true) {
 			        var currentFile = '';
 					var changed = true;
 					console.log("Inside the openFolder Function");
 				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-				 	    self.fileProvider = fileProvider;
+				 	    this.fileProvider = fileProvider;
 						console.log("Inside the file-provider get service");
 						//launch app with specified file
-						if(self.fileName!=='') {
-							console.log("Inside the self.fileName if statement");							
-							var loadFolderName=fileProvider.getFolderPath(self.fileName);
-							var loadFileName=fileProvider.getFilename(self.fileName);
+						if(this.fileName!=='') {
+							console.log("Inside the this.fileName if statement");							
+							var loadFolderName=fileProvider.getFolderPath(this.fileName);
+							var loadFileName=fileProvider.getFilename(this.fileName);
 								console.log('Load folder:'+loadFolderName);
 								console.log('Load file:'+loadFileName);
 								folderFileInfo.folder=loadFolderName;
@@ -214,13 +214,13 @@
 							fileProvider.getFolderContent(null, folderFileInfo.folder, function (result) {
 								console.log("Inside getFolderContent Callback and result is", result);
 								if (result.fileList !== '') {
-								    self.currentFolder = folderFileInfo.folder
+								    this.currentFolder = folderFileInfo.folder
 									folderFileInfo.list = result.fileList;
-	                                self.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));										
+	                                this.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));										
 								}
 							});
 							path=loadFileName;
-							self.fileName='';
+							this.fileName='';
 						}
 						
 						if (path.match(/\r?\n|\r/g) !== null) {
@@ -249,46 +249,46 @@
 					    if (changed === false || currentFile === '') {
 						    folderFileInfo.folder = path;
 							if (folderFileInfo.folder !== backsplash) {
-							    self.$.deleteFolderButton.disabled = false;
-								self.$.renameFolderButton.disabled = false;
+							    this.$.deleteFolderButton.disabled = false;
+								this.$.renameFolderButton.disabled = false;
 							} else {
-							    self.$.deleteFolderButton.disabled = true;
-								self.$.renameFolderButton.disabled = true;
+							    this.$.deleteFolderButton.disabled = true;
+								this.$.renameFolderButton.disabled = true;
 							}
                             //Get file list			
                             console.log('onion-editor open folder:'+folderFileInfo.folder);							
                             fileProvider.getFolderContent(null,folderFileInfo.folder, function (result) {
                             	console.log("Inside getFolderContent callback 2 and result is",result);
-							    self.currentFolder = folderFileInfo.folder;	
+							    this.currentFolder = folderFileInfo.folder;	
 							    folderFileInfo.list = result.list;
-							    self.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));									
-						    });
+							    this.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));									
+						    }.bind(this));
 					    } else {
 					        folderFileInfo.file = currentFile;
 						    console.log('It\'s a file[' + folderFileInfo.folder + folderFileInfo.file + ']');
 							openFile();
 					    }
-				    });
+				    }.bind(this));
 				}
 			};
 			
 			var openFile = function () {
 			    closeFile();
 
-			    if (self.sessionProvider.isAlive() === true && folderFileInfo.file !== '') {
+			    if (this.sessionProvider.isAlive() === true && folderFileInfo.file !== '') {
 				    var ext = getFileExtension();
-					self.$.fileEditor.editor.session.setMode('ace/mode/' + ext);
+					this.$.fileEditor.editor.session.setMode('ace/mode/' + ext);
 
                     onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-					    self.fileProvider = fileProvider;
+					    this.fileProvider = fileProvider;
 					    //Get file list
 
 						fileProvider.getFileContent(folderFileInfo.folder + backsplash + folderFileInfo.file, function (result) {
 						    if (result.fileContent !== null) {
-						        self.currentCode = result.fileContent;
+						        this.currentCode = result.fileContent;
 								folderFileInfo.fileInEdit = folderFileInfo.folder + backsplash + folderFileInfo.file;
-								self.$.deleteFileButton.disabled = false;
-								self.$.renameFileButton.disabled = false
+								this.$.deleteFileButton.disabled = false;
+								this.$.renameFileButton.disabled = false
 							} else {    
 							    alert('Failed to open \"' + folderFileInfo.folder + backsplash + folderFileInfo.file + '\"');								
 							}
@@ -298,33 +298,33 @@
             };
 			
 			var closeFile = function () {
-			    if (self.sessionProvider.isAlive() === true && folderFileInfo.file !== '') {
+			    if (this.sessionProvider.isAlive() === true && folderFileInfo.file !== '') {
 			        if (isFileChanged()) {
 					    if (confirm('Do you want to save \"' + folderFileInfo.fileInEdit + '\" ?')) {
 						    if (typeof saveFile() === 'boolean') {
-							    self.currentCode = '';
+							    this.currentCode = '';
 					            folderFileInfo.fileInEdit = '';
 							}
 						}
 				    } else {
-					    self.currentCode = '';
+					    this.currentCode = '';
 					    folderFileInfo.fileInEdit = '';
 					}
-					self.$.deleteFileButton.disabled=true;
-					self.$.renameFileButton.disabled=true;
+					this.$.deleteFileButton.disabled=true;
+					this.$.renameFileButton.disabled=true;
 			    }
 			};
 			
 			var saveFile = function () {
 			    //var saveResult=true;
-				if (self.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
+				if (this.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
 				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-					    self.fileProvider = fileProvider;
+					    this.fileProvider = fileProvider;
 					    //Get file list
-						var codeInEdit = self.$.fileEditor.editor.session.getValue();
+						var codeInEdit = this.$.fileEditor.editor.session.getValue();
 					    fileProvider.saveFileContent(folderFileInfo.fileInEdit, codeInEdit, function (result) {
 						    if (result.saveResult === true) {
-							    self.currentCode = codeInEdit;
+							    this.currentCode = codeInEdit;
 						        alert('\"' + folderFileInfo.fileInEdit + '\" saved successfully!!');
 							} else {    
 							    alert('Failed to save \"' + folderFileInfo.fileInEdit + '\"');
@@ -353,7 +353,7 @@
 			};
 			
 			var deleteFileDialog = function () {
-                if (self.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
+                if (this.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
                     if (confirm('Are you sure that you want to permanently delete \"' + folderFileInfo.fileInEdit + '\" ?')) {
                         deleteFile('file', folderFileInfo.fileInEdit);			  
 					}	   
@@ -361,7 +361,7 @@
 			};
 			
 			var deleteFolderDialog = function () {
-                if (self.sessionProvider.isAlive() === true && folderFileInfo.folder) {
+                if (this.sessionProvider.isAlive() === true && folderFileInfo.folder) {
                     if (folderFileInfo.folder === backsplash) {
                         alert('Delete all folders and files under root directory will make the system no long in function! Operation aborted!!'); 
                     } else {
@@ -373,7 +373,7 @@
 			};
 			
 			var renameFileDialog = function () {
-                if (self.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
+                if (this.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
 				    var fileName = prompt('Please enter new file name');
 					if (fileName !== null) {
                         renameFile('file', fileName);			  	   
@@ -382,7 +382,7 @@
 			};
 			
 			var renameFolderDialog = function () {
-                if (self.sessionProvider.isAlive() === true && folderFileInfo.folder !== backsplash) {	
+                if (this.sessionProvider.isAlive() === true && folderFileInfo.folder !== backsplash) {	
 				    var folderName = prompt('Please enter new folder name');
 					if (folderName !== null) {
                         renameFile('folder', folderName);		
@@ -391,12 +391,12 @@
 			};
 						
 			var deleteFile = function (type, filename) {
-			   if (self.sessionProvider.isAlive() === true ) {
+			   if (this.sessionProvider.isAlive() === true ) {
 				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-					    self.fileProvider = fileProvider;
+					    this.fileProvider = fileProvider;
 						fileProvider.execCommand('rm', ['-rf', filename], function (result) {
 						    if (result.execResult === true) {
-							    self.currentCode = '';
+							    this.currentCode = '';
 								folderFileInfo.fileInEdit = '';
 								if (type === 'folder') {
 								    if (folderFileInfo.folder === backsplash || folderFileInfo.folder.lastIndexOf(backsplash) === 0) {
@@ -424,10 +424,10 @@
 					return;
 				}
 				
-			    if (self.sessionProvider.isAlive() === true ) {
+			    if (this.sessionProvider.isAlive() === true ) {
 				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 
-					    self.fileProvider = fileProvider;
+					    this.fileProvider = fileProvider;
 						var newFilename = '';
 
 						if (folderFileInfo.folder === backsplash) {
@@ -469,9 +469,9 @@
 					return;
 				}
 				
-			    if (self.sessionProvider.isAlive() === true) {
+			    if (this.sessionProvider.isAlive() === true) {
 				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-					    self.fileProvider = fileProvider;
+					    this.fileProvider = fileProvider;
 						if (type === 'folder') {
 						    var newFoldername = fileProvider.getFolderPath(folderFileInfo.folder) + backsplash + filename;
 							fileProvider.execCommand('mv', [folderFileInfo.folder,newFoldername], function (result) {

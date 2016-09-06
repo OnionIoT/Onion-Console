@@ -1,0 +1,195 @@
+<link rel="import" href="../../../lib/polymer/polymer.html">
+<link rel="import" href="../../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../../elements/onion-help/app-tour.html">
+<link rel="import" href="../../../elements/onion-icons/onion-icons.html">
+
+<dom-module id="launcher-tour">
+	<style>
+		
+		@keyframes fade {
+			0% {opacity: 1}
+			40% {opacity: 1}
+			45% {opacity: 0}
+/* 			50% {opacity: 0} */
+			90% {opacity: 0}
+			100% {opacity: 1}
+		}
+
+		.tour-button-container{
+			position: absolute;
+			bottom: 135px;
+			left: 12px;
+			
+			
+		}
+		.tour-button {
+			color: #5D9CEC;
+			
+			cursor: pointer;
+		}
+		
+		
+		
+		.tour-button:hover {
+			color: #4A89DC;
+		}
+
+		.tour-app-icon {
+			width: 80px;
+			height: 80px;
+			position: relative;
+			left: 50%;
+			margin-left: -40px;
+		}
+		
+		
+		
+		.tour-button-tip{
+			animation-name: fade;
+			animation-duration: 30s;
+			animation-iteration-count: infinite;
+		}
+		
+		.tour-button-tip-arrow {
+			color: white;
+			padding-right: -1px;
+		}
+		
+		.tour-button-tip-text {
+			background-color: white;
+			padding: 5px 10px;
+			color: #434a54;
+			border-radius: 5px;
+		}
+
+	</style>
+
+	<template>
+		<div class="tour-button-container  layout horizontal center">
+			<iron-icon class="tour-button" on-tap="showTour" icon="icons:info" tour-id="launcher-tour-tour-button"></iron-icon>
+			<div class="tour-button-tip layout horizontal center">
+				<iron-icon class="tour-button-tip-arrow" icon="onion:arrow-left"></iron-icon>
+				<div class="tour-button-tip-text">Take a tour</div>
+			</div>
+		</div>
+		
+		<app-tour id="launcher-tour">
+
+			<tour-title page-id="1">The Onion Console</tour-title>
+			<tour-content page-id="1">
+				<p>
+					Welcome to the Onion Console!
+					<br><br>
+					<img src="/images/icon.png" class="tour-app-icon" /> <br>
+					<br>
+					The Onion Console provides you with a simple UI to control and monitor your Omega/Omega2. We have provided the ability to:
+					<ul>
+						<li>
+							Control our Relay, OLED and PWM expansion.
+						</li>
+						<li>
+							Monitor and change networking settings.
+						</li>
+						<li>
+							Monitor the status of the Omega.
+						</li>
+						<li>
+							Interact with the Omega via a built-in terminal App
+						</li>
+					</ul>
+					<br>
+					The Console is designed to allow you to play with the Omega right away.
+					<br><br>
+					Let's take a look around!
+				</p>
+			</tour-content>
+
+			<tour-title page-id="2">Need Help?</tour-title>
+			<tour-content page-id="2" for="launcher-tour-tour-button">
+				<p> 
+					If you find yourself wondering how something works or needing a pointer in the right direction, hit the <img src="http://i.imgur.com/YLj4Oj6.png" /> button to see the tour for the currently open screen. 
+					<br><br>
+					The tour content is <strong>different for every screen</strong> and explains what can be accomplished on each page and how to do it.
+				</p>
+			</tour-content>
+
+			<tour-title page-id="3">The Home Button</tour-title>
+			<tour-content page-id="3" for="launcher-tour-home-button">
+				<p> 
+					Click this button at any time to return to this home page.
+				</p>
+			</tour-content>
+
+			
+
+			<tour-title page-id="4">Reporting Bugs</tour-title>
+			<tour-content page-id="4" for="launcher-tour-bug-report">
+				<p> 
+					Find an issue or have a suggestion? Let us know by submitting a bug report!
+				</p>
+			</tour-content>
+			
+
+			<!-- System Apps Tour -->
+			<tour-title page-id="5">The Apps</tour-title>
+			<!-- <tour-title page-id="5">The System Apps</tour-title> -->
+			<tour-content page-id="5">
+				<p>
+					And now a small intro for each app...
+				</p>
+			</tour-content>
+
+			<!-- System Apps Tour Pages-->
+			<tour-title page-id="6">Status</tour-title>
+			<tour-content page-id="6">
+				<p>
+					<img src="/apps/onion-status/icon.png" class="tour-app-icon" /> <br>
+					The Status App will tell you the networking statistics(Bytes Received/Transmitted) as well as other important network parameters (IP, MAC and Netmask).
+				</p>
+			</tour-content>
+			
+			<tour-title page-id="7">Settings</tour-title>
+			<tour-content page-id="7">
+				<p>
+					<img src="/apps/onion-settings/icon.png" class="tour-app-icon" /> <br>
+					The Settings App allows you configure the Omega's settings, in particular:
+					<ul>
+						<li>
+							The wifi settings.
+						</li>
+						<li>
+							The Access Point Settings.
+						</li>
+						<li>
+							Firmware Settings/Update.
+						</li>
+						<li>
+							General Settings.
+						</li>
+					</ul>
+				</p>
+			</tour-content>
+		</app-tour>
+		
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var showTour = function () {
+				
+				this.$['launcher-tour'].open();
+			}
+			
+		
+			Polymer({
+				is: 'launcher-tour',
+				showTour: showTour,
+				properties: {
+				}
+			});
+		})();
+	</script>
+
+</dom-module>
