@@ -1,0 +1,156 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../elements/onion-help/app-tour.html">
+
+<dom-module id="gpio-tour">
+	<style>
+
+		.tour-button-container{
+			position: absolute;
+			bottom: 105px;
+			left: 12px;
+			
+			
+		}
+		.tour-button {
+			color: #5D9CEC;
+			
+			cursor: pointer;
+		}
+		
+		
+		
+		.tour-button:hover {
+			color: #4A89DC;
+		}
+
+		.tour-app-icon {
+			width: 80px;
+			height: 80px;
+			position: relative;
+			left: 50%;
+			margin-left: -40px;
+		}
+		
+		
+		
+		.tour-button-tip{
+			animation-name: fade;
+			animation-duration: 30s;
+			animation-iteration-count: infinite;
+		}
+		
+		.tour-button-tip-arrow {
+			color: white;
+			padding-right: -1px;
+		}
+		
+		.tour-button-tip-text {
+			background-color: white;
+			padding: 5px 10px;
+			color: #434a54;
+			border-radius: 5px;
+		}
+	</style>
+
+	<template>
+    <div class="tour-button-container  layout horizontal center">
+		<iron-icon class="tour-button" on-tap="showTour" icon="icons:info"></iron-icon>
+      <div class="tour-button-tip layout horizontal center">
+			<iron-icon class="tour-button-tip-arrow" icon="onion:arrow-left"></iron-icon>
+			<div class="tour-button-tip-text">Click Here for App Tour!</div>
+		  </div>
+		</div>
+		<app-tour id="gpio-tour">
+			
+			<tour-title page-id="1">GPIO Tool</tour-title>
+			<tour-content page-id="1">
+				<p>
+					This app allows you to control the state and values of the GPIOs on any Cloud connected Omega. 
+					<br> </br>
+					In the input state, the GPIO tool displays the voltage applied to a selected pin as HIGH (1) or LOW (0).
+					<br>
+					<strong>Note:</strong> Do NOT apply voltages greater than 5V on the GPIOs. 
+					<br> </br>
+					In the output state, a GPIO can source 24mA at a voltage HIGH (1) at 3.3V and LOW (0) at 0V.
+				</p>
+			</tour-content>
+<!-- 
+			<tour-title page-id="2">Select your Device</tour-title>
+			<tour-content page-id="2" for="gpio-select-device">
+				<p> 
+					Select the name of the Omega that you wish to control. 
+				</p>
+			</tour-content> -->
+			
+			<tour-title page-id="2">Select a GPIO</tour-title>
+			<tour-content page-id="2" for="gpio-select">
+				<p>
+					Click on the GPIO you wish to control.
+				</p>
+			</tour-content>
+			
+			<tour-title page-id="3">Choose Direction</tour-title>
+			<tour-content page-id="3" for="select-direction">
+				<p> 
+					Select the direction or state for GPIO.
+				</p>
+			</tour-content>
+      
+			<tour-title page-id="4">Choose Value</tour-title>
+			<tour-content page-id="4" for="select-value">
+				<p> 
+					When the direction is set to <strong>output</strong>, the pin takes on this value.
+					<br></br>
+					When the direction is set to <strong>input</strong>, this reads back the value at the selected pin.
+				</p>
+			</tour-content>
+
+			<tour-title page-id="5">Sync the Pin</tour-title>
+			<tour-content page-id="5" for="sync">
+				<p> 
+					Click here to synchronize the pin. 
+					<br></br>
+					If the direction is output then the selected pin will take on the specified value. 
+					<br></br>
+					If the direction is input, the value box will change to the value applied to that pin.
+				</p>
+			</tour-content>
+			
+			<tour-title page-id="6">Change the Layout </tour-title>
+			<tour-content page-id="6" for="change-layout">
+				<p> 
+					Choose between the Expansion Dock and Omega layout using the dropdown.
+				</p>
+			</tour-content>
+    		
+			
+		</app-tour>
+		
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var showTour = function () {
+				this.$['gpio-tour'].open();
+        this.tourClicked=true;
+			};
+			
+		
+			Polymer({
+				is: 'gpio-tour',
+				showTour: showTour,
+				properties: {
+          tourClicked:{
+            type: Boolean,
+            value: false,
+            notify: true
+          }
+				}
+			});
+		})();
+	</script>
+
+</dom-module>

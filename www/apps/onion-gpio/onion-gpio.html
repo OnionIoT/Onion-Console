@@ -4,6 +4,7 @@
 <link rel="import" href="/lib/iron-icons/iron-icons.html">
 <link rel="import" href="/lib/iron-icons/hardware-icons.html">
 <link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown.html">
+<link rel="import" href="./gpio-tour.html">
 
 <dom-module id="onion-gpio">
 	<style>
@@ -139,7 +140,7 @@
 	<template>
 		<onion-app app-name="GPIO Tool" toolbar-background="#c0392b" background="#f2f2f2">
 
-			<onion-app-toolbar>
+			<onion-app-toolbar page-id="home">
 				<div class="layout horizontal">
 					<div class="flex"></div>  <!-- Place Holder -->   
 <!--					<bootstrap-dropdown>
@@ -157,7 +158,7 @@
 								<li class="layoutList" on-tap="_onLayoutChange" data-args="omega">{{getDeviceName(deviceType)}}</li>
 								<li class="layoutList" on-tap="_onLayoutChange" data-args="exp_dock">Expansion Dock</li>
 						</bootstrap-dropdown>
-						<button id="layoutDropdown" class="layoutList">
+						<button tour-id="change-layout" id="layoutDropdown" class="layoutList">
 							<iron-icon class="toolbar-icon" icon="hardware:developer-board"></iron-icon><span>Board Layout</span>
 							<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
 						</button>
@@ -165,15 +166,24 @@
 			</onion-app-toolbar>
 
 			<onion-app-body page-id="home">
+				<gpio-tour> </gpio-tour>
 				<div class="horizontal center-justified layout center">
 					<!-- RAJIV: same as above, go back to a single instance but add functions to change the device specific stuff -->
 					<!-- If deviceType is Omega -->
 						<!-- Omega Layout -->
+						<!-- Device List -->
+						<onion-device-list tour-id="select-device" drop-down="true"  online-filter="true" online-only="true" share-filter="true" can-manage="true" selected-id={{currentDev}} tour-id="gpio-select-device"></onion-device-list>
+						<!-- Device Communication Icon -->
+						<div class="device-communication">
+							<template is="dom-if" if="{{bDeviceCommunication}}">
+								<onion-loading loading="true" icon="icons:settings"></onion-loading>
+							</template>
+						</div>
 						<template is="dom-if" if="{{_checkValue(layout, 'omega')}}">
 							<div class="vertical end-justified layout" id="left-pins">
 								<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
 									<template is="dom-if" if="{{item.left}}">
-										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+										<button tour-id="gpio-select" class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
 									</template>
 								</template>
 							</div>
@@ -184,7 +194,7 @@
 							<div class="vertical end-justified layout" id="right-pins">
 								<template is="dom-repeat" items="{{pins}}">
 									<template is="dom-if" if="{{!item.left}}">
-										<button class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
+										<button tour-id="gpio-select" class$="{{_calculatePinClass(item)}}" on-tap="_onPin">{{item.label}}</button>
 									</template>
 								</template>
 							</div>
@@ -196,11 +206,11 @@
 								<div id="top-pins">
 									<template id="pinListLeft" is="dom-repeat" items="{{pins}}" index-as="pinIndex">
 										<template is="dom-if" if="{{!item.left}}">
-											<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
+											<button tour-id="gpio-select" class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
 										</template>
 									</template>
 								</div>
-								<div id="bottom-pins">
+								<div id="bottom-pins" tour-id="gpio-select">
 									<template is="dom-repeat" items="{{pins}}">
 										<template is="dom-if" if="{{item.left}}">
 											<button class$="{{_calculatePinClass(item,layout)}}" on-tap="_onPin"><div>{{item.label}}</div></button>
@@ -220,7 +230,7 @@
 							<div>
 								<h5 id="gpio-pin-number">GPIO <span>{{currentPin.gpio}}</span></h5>
 
-								<div class="form-group row">
+								<div class="form-group row" tour-id="select-direction">
 									<label for="direction" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Direction</label>
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
 										<select id="direction" class="c-select" on-change="_pinDirectionChanged" value="{{currentPin.direction::input}}">
@@ -229,7 +239,7 @@
 										</select>
 									</div>
 								</div>
-								<div class="form-group row">
+								<div class="form-group row" tour-id="select-value">
 									<label for="value" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Value</label>
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
 										<select id="value" class="c-select" on-change="_pinValueChanged" value="{{currentPin.value::input}}" disabled="{{_isInput(currentPin)}}">
@@ -240,7 +250,7 @@
 								</div>
 								<div class="form-group row">
 									<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
-										<button class="btn btn-success" on-tap="_syncOne">Sync</button>
+										<button tour-id="sync" class="btn btn-success" on-tap="_syncOne">Sync</button>
 									</div>
 								</div>
 							</div>
@@ -255,22 +265,40 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			// var this = null;
 
 			var created = function () {
-				self = this;
+				// this = this;
 			};
 
 			var ready = function() {
 				this.title = 'Tool';
-				console.log(self.layout);
+				console.log(this.layout);
 				this.getDeviceType();
 				this.setPins
+				onionConsole.getService('onion-device-hardware-provider', (function (err, api) {
+					if (err) {
+						console.log('Cannot get onion-device-hardware-provider!!');
+					}
+					this.expApi = api;
+				}).bind(this));
+				this._tourPin();
             };
+
+			var _tourPin = function(){
+				console.log('currpin ',this.currentPin);
+				console.log('pins', this.pins);
+				
+				if (this.pins){
+				this.currentPin = this.pins[12];
+				}
+			};
+
 
             var getDeviceName = function (device){
             	console.log("Inside getDeviceName");
-            	if(self.isOmega(device)){
+            	console.log(device)
+            	if(this.isOmega(device)){
             		return 'Omega';
             	}else{
             		return 'Omega2';
@@ -279,19 +307,22 @@
 
             var getImgPath = function (device){
             	console.log("Inside getImgPath");
-            	if(self.isOmega(device)){
+            	if(this.isOmega(device)){
             		return '/apps/onion-gpio/img/omega.png';
             	}else{
-            		return '/apps/onion-gpip/img/Omega2.png';
+            		return '/apps/onion-gpio/img/Omega2.png';
             	}
             }
 
             var getDeviceType = function(){
+            	console.log("Inside getDeviceType");
             	onionConsole.getService('onion-device-settings-provider', (function (err, deviceProvider) {
-					deviceProvider.getDeviceType(function(result){
+            		console.log("Inside callback for onion-device-settings-provider");
+					deviceProvider.getDeviceType(this.currentDev, function(result){
+						console.log("Inside callback for getDeviceType");
 						console.log(result);
-						self.deviceType = result;
-						self.setPins(this.layout,self.deviceType);
+						this.deviceType = result;
+						this.setPins(this.layout,this.deviceType);
 					}.bind(this));		
             	}).bind(this));
             };
@@ -315,49 +346,48 @@
             var _syncAll = function () {
 				// get the ubus service
 				// TODO: need a new service to pull all pin data
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-					for (var i=0; i< this.pins.length; i++) {
-						var pin = this.pins[i];
-						ubus.request('onion', 'gpio', {
-							command:'status',
-							params: {
-								gpio: pin.gpio	
-							}
-						}, (function (data) {
-							if (data.length === 2 && data[0] === 0) {
-								pin.direction = data[1].direction;
-								pin.value = data[1].value;
-								// data[1] contains the following:
-								// {pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
-								this._refresh();
-							} else {
-								console.log('status error');
-							}
-						}).bind(this));
-					}
-				}).bind(this));
+				for (var i=0; i< this.pins.length; i++) {
+					var pin = this.pins[i];
+					this.bDeviceCommunication 	= true;	// enable device communication icon
+
+					this.expApi.gpioGetPinStatus(this.currentDev, pin.gpio, (
+					function (err, response) {
+						if (err) {
+							_sendNotification('[Error]: Unable to communicate with GPIO');
+						} else if (response.error) {
+							_sendNotification('[Error]: Unable to communicate with selected device');
+						} else {
+							// Update pins
+							pin.direction = response.direction;
+							pin.value = response.value;
+							// data[1] contains the following:
+							// {pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
+							this._refresh();
+						}
+						this.bDeviceCommunication = false;	// disable the loading icon
+					}).bind(this));
+				};
 			};
 
 			var _syncOne = function () {
 				var pin = this.currentPin;
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-						ubus.request('onion', 'gpio', {
-							command:'status',
-							params: {
-								gpio: pin.gpio	
-							}
-						}, (function (data) {
-							if (data.length === 2 && data[0] === 0) {
-								pin.direction = data[1].direction;
-								pin.value = data[1].value;
-								// data[1] contains the following:
-								// {pin: int, value: int, direction: "input|output"}
-								this._refresh();
-								//console.log("_syncOne", data);
-							} else {
-								console.log('status error');
-							}
-						}).bind(this));
+				this.bDeviceCommunication 	= true;	// enable device communication icon
+
+				this.expApi.gpioGetPinStatus(this.currentDev, pin.gpio, (
+				function (err, response) {
+					if (err) {
+						_sendNotification('[Error]: Unable to communicate with GPIO');
+					} else if (response.error) {
+						_sendNotification('[Error]: Unable to communicate with selected device');
+					} else {
+						// Update pins
+						pin.direction = response.direction;
+						pin.value = response.value;
+						// data[1] contains the following:
+						// {pin: int, value: int, direction: "input|output", input: true|false, activelow: false|true}
+						this._refresh();
+					}
+					this.bDeviceCommunication = false; //disable the loading icon
 				}).bind(this));
 			}
 
@@ -411,54 +441,52 @@
 			};
 
 			var _getPinStatus = function (pin){
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-					ubus.request('onion', 'gpio', {
-						command:'status',
-						params: {
-							gpio: this.currentPin.gpio
-						}
-					}, (function (data) {
-						if (data.length === 2 && data[0] === 0) {
-							pin.value = data[1].value;
+				this.expApi.gpioGetPinStatus (this.currentDev, this.currentPin, (
+				function (err, response) {
+					if (err) {
+						_sendNotification('[Error]: Unable to communicate with GPIO');
+					} else if (response.error) {
+						_sendNotification('[Error]: Unable to communicate with selected device');
+					} else {
+						if (response.length === 2 && response[0] === 0) {
+							pin.value = response[1].value;
 							this._refresh();
 						} else {
 							console.log('status error');
-						}
-					}).bind(this));
+						}						
+					}
 				}).bind(this));
 			};
 
 			var _pinValueChanged = function () {
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-					ubus.request('onion', 'gpio', {
-						command: 'set',
-						params: {
-							gpio: this.currentPin.gpio, 
-							value: this.currentPin.value
-						}
-					}, (function (data) {
-						if (data.length === 2 && data[0] === 0) {
+				this.expApi.gpioSetPin(this.currentDev, this.currentPin.gpio, this.currentPin.value, (
+				function (err, response) {
+					if (err) {
+						_sendNotification('[Error]: Unable to communicate with GPIO');
+					} else if (response.error) {
+						_sendNotification('[Error]: Unable to communicate with selected device');
+					} else {
+						if (response.length === 2 && response[0] === 0) {
 							// this._getPinStatus(this.currentPin);
 							this._refresh();
 						}
-					}).bind(this));
+					}
 				}).bind(this));
 			};
 
 			var _pinDirectionChanged = function () {
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-					ubus.request('onion', 'gpio', {
-						command: 'set-direction',
-						params: {
-							gpio: this.currentPin.gpio, 
-							value: this.currentPin.direction
-						}
-					}, (function (data) {
-						if (data.length === 2 && data[0] === 0) {
+				this.expApi.gpioSetPinDirection(this.currentDev, this.currentPin.gpio, this.currentPin.direction, (
+				function (err, response) {
+					if (err) {
+						_sendNotification('[Error]: Unable to communicate with GPIO');
+					} else if (response.error) {
+						_sendNotification('[Error]: Unable to communicate with selected device');
+					} else {
+						if (response.length === 2 && response[0] === 0) {
 							//console.log("set-direction", data);
 							this._refresh();
 						}
-					}).bind(this));
+					}
 				}).bind(this));
 			};
 
@@ -634,7 +662,7 @@
 
 			var _onLayoutChange = function (e) {
 				this.layout = e.target.dataset.args;
-				self.setPins(this.layout, this.deviceType);
+				this.setPins(this.layout, this.deviceType);
 			};
 
 			Polymer({
@@ -661,6 +689,7 @@
 				setPins:setPins,
 				getDeviceName: getDeviceName,
 				getImgPath: getImgPath,
+				_tourPin: _tourPin,
 				properties: {
 					layout: {
 						type: String,
@@ -687,6 +716,11 @@
 						type: String,
 						value: '',
 						notify: true
+					},
+					currentDev:{
+						type: String,
+						value: null,
+						notify:true
 					},
 					pins: {
 						type: Array,
