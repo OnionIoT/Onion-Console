@@ -3,6 +3,8 @@
 <link rel="import" href="../../lib/iron-icons/iron-icons.html">
 <link rel="import" href="../../lib/iron-icons/social-icons.html">
 <link rel="import" href="../../lib/Onion-Console/bootstrap-tooltip/bootstrap-tooltip.html">
+<link rel="import" href="../../elements/bootstrap-dropdown/bootstrap-dropdown.html">
+<link rel="import" href="../../elements/bootstrap-dropdown/bootstrap-dropup.html">
 
 <link rel="import" href="./bug-report-dlg.html">
 <!-- <link rel="import" href="./social-share-dlg.html"> -->
@@ -53,6 +55,21 @@
 			border-radius: 0px 0px 4px 4px;
 		}
 		
+		#statusDropdown {
+			cursor: pointer;
+		}
+		#statusDropdown:hover {
+			color: #DA4453;
+		}
+		._statusDropdown {
+			color: white;
+			padding-left: 15px;
+			cursor: pointer;
+		}
+		li._statusDropdown:hover{
+			color: gray;
+		}
+		
 	</style>
 
 	<template>
@@ -62,14 +79,20 @@
 			
 <!-- 			<user-profile-dlg id="userProfileDlg"></user-profile-dlg> -->
 			<div id="taskTools" class$="{{getTaskToolsClass(dark)}}">
-				<div class="flex layout vertical center">	
-					<iron-icon id="bugReportBtn" icon="icons:bug-report" on-click="onBugReport" tour-id="launcher-tour-bug-report"></iron-icon>
+				<div class="flex layout vertical center">
+					<iron-icon id="bugReportBtn" icon="icons:bug-report" tour-id="launcher-tour-bug-report" on-tap="onBugReport"></iron-icon>
 <!-- 					TODO: need to fix tooltip posittioning  -->
 <!-- 					<bootstrap-tooltip for="bugReportBtn" position="right">Bug Report &amp; Feedbacks</bootstrap-tooltip> -->
 <!-- 					<iron-icon icon="social:share" on-click="onSocialShare"></iron-icon> -->
-					<iron-icon icon="icons:power-settings-new" on-click="logout">Logout</iron-icon>
+					<bootstrap-dropup for="statusDropdown">
+					<li class="_statusDropdown" on-tap="logout">Logout</li>
+					<li class="_statusDropdown" on-tap="shutdown">Shutdown</li>
+					<li class="_statusDropdown" on-tap="restart">Restart</li>
+					</bootstrap-dropup>
+					<div id="statusDropdown">
+						<iron-icon icon="icons:power-settings-new">Logout</iron-icon>
+					</div>
 				</div>
-				<iron-image sizing="contain" src="{{gravatar}}"></iron-image>
 			</div>
 		</div>
 	</template>
@@ -121,10 +144,36 @@
 				});
 			};
 			
+			var restart = function () {
+				if (confirm('Are you sure you want to restart your Omega?')) {
+					onionConsole.getService('onion-device-settings-provider', (function (err, deviceSettingsProvider) {
+								this.deviceSettingsProvider = deviceSettingsProvider;
+								this.deviceSettingsProvider.rebootSystem("",(function () {
+									this.logout();
+								}).bind(this) );
+						}).bind(this));
+				}
+			};
+			
+			var shutdown = function () {
+				if (confirm('Are you sure you want to shutdown your Omega?')) {
+					onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
+						ubus.request('rpc-sys', 'reboot', {})
+						.then(function () {
+							onionConsole.getService('onion-session-provider', function (sessionProvider) {
+								sessionProvider.logout();
+							});
+						});
+					}).bind(this));
+				}
+			};
+			
 			Polymer({
 				is: 'taskbar-tools',
 				ready: ready,
 				logout: logout,
+				restart: restart,
+				shutdown: shutdown,
 				getTaskToolsClass: getTaskToolsClass,
 				onBugReport: onBugReport,
 				onSocialShare: onSocialShare,

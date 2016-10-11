@@ -2,7 +2,7 @@
 <link rel="import" href="../../lib/iron-image/iron-image.html">
 <link rel="import" href="../../lib/iron-icons/iron-icons.html">
 <link rel="import" href="../../lib/iron-icons/device-icons.html">
-<link rel="import" href="../../elements/onion-icons/onion-icons.html">
+<link rel="import" href="../onion-icons/onion-icons.html">
 
 <link rel="import" href="./taskbar-tools.html">
 
@@ -36,32 +36,39 @@
 			cursor: pointer;
 			
 			transition: all 0.2s;
-      -webkit-transition: all 0.2s;
+			-webkit-transition: all 0.2s;
 		}
 		#launcher-button:hover {
 			fill: #5D9CEC;
 		}
 
 		.task-icon {
-			height: 36px;
-			width: 36px;
-			padding-left: 2px;
-			background-color: transparent;
-			border: none;
-			border-left-style: solid;
-			border-left-width: 1px;
-			border-left-color: transparent;
-			margin-right: 7px;
+			height: 100%;
+			width: 100%;
+			color: white;
+		}
+		.big {
+		padding-left: 5px;
+		padding-top: 5px;
+		--iron-icon-height: auto;
+		--iron-icon-width: auto;
 		}
 		.task-icon > iron-image {
 			height: 100%;
 			width: 100%;
 		}
+		
 		.task-icon.active {
-			border-left-color: white;
+			background-color: #9a9a9a;
+			color: white;
 		}
+		
+		.task-icon:not(.active):hover {
+			background-color: gray;
+		}
+		
 		.task-icon:hover {
-			border-left-color: #5D9CEC;
+			cursor: pointer;
 		}
 		
 		#taskIcons {
@@ -70,8 +77,8 @@
 			overflow-y: scroll;
 		}
 
-		#taskIcons iron-image {
-			cursor: pointer;
+		#taskIcons iron-image:hover {
+			fill: black;
 		}
 
 		#taskIcons::-webkit-scrollbar {
@@ -88,18 +95,20 @@
 	<template>
 
 		<div id="taskFrame" class$="{{getTaskFrameClass(currentApp)}}">
-			<iron-icon icon="onion:cloud-logo" id="launcher-button" on-tap="onLauncher" tour-id="launcher-tour-home-button"></iron-icon>
-			
-			
 			<div id="taskIcons" class="flex layout vertical center">
 				<template  is="dom-repeat" items="{{runningApps}}">
-					<div class$="{{_isActive(item,currentApp)}}" on-click="launch" >
-						<iron-image sizing="contain" src$="{{_computeIconUrl(item)}}"></iron-image>
-					</div>
+					<template is="dom-if" if="{{item.icon}}">
+						<div class$="{{_isActive(item,currentApp)}}" on-click="launch" >
+							<template is="dom-if" if$="{{getToolsTheme(currentApp)}}">
+								<iron-icon class="big" icon$="{{_computeIconUrl(item)}}"></iron-icon>
+							</template>
+						</div>
+					</template>
 				</template>
 			</div>
-			
-			<taskbar-tools dark$="{{getToolsTheme(currentApp)}}"></taskbar-tools>
+			<template is="dom-if" if$="{{getToolsTheme(currentApp)}}">
+				<taskbar-tools dark$="{{getToolsTheme(currentApp)}}"></taskbar-tools>
+			</template>
 		</div>
 	</template>
 
@@ -117,9 +126,9 @@
 			var _computeIconUrl = function (item) {
 				console.log(item);
 				if (item) {
-					return '/apps/' + item.id +  '/icon.png';
+					return 'icons:' + item.id;
 				} else {
-					return '/apps/' + item.id + '/icon.png';
+					return 'icons:' + item.id;
 				}
 			};
 
@@ -133,8 +142,9 @@
 			
 			var getTaskFrameClass = function(currentApp){
 				var baseClass = 'layout vertical center';
-				if (currentApp === 'onion-launcher' || currentApp === ''){
-					return baseClass;
+				var hiddenClass = 'hidden';
+				if (currentApp === 'onion-login' || currentApp === ''){
+					return hiddenClass;
 				}else{
 					return baseClass + " solid";
 				}
@@ -142,7 +152,7 @@
 			
 			var getToolsTheme = function(currentApp){
 				var baseClass = 'layout vertical center';
-				if (currentApp === 'onion-launcher' || currentApp === ''){
+				if (currentApp === 'onion-login' || currentApp === ''){
 					return false;
 				}else{
 					return true;

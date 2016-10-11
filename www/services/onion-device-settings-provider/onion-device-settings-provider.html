@@ -45,14 +45,18 @@
 			var getDeviceType = function(devId,callback){
 				var params = {};
 				callback = callback || this.noop;
-				this.deviceProvider.callService(devId, 'system', 'board', params, function(err, result){
-					if (!err) {
-						callback(result.model);
-					} else {
-						callback(err);
-					}
+				onionConsole.getService('onion-device-provider', (function (err, deviceProvider) {
+					console.log('getting device provider complete');
+					this.deviceProvider = deviceProvider;
+					this.deviceProvider.callService(devId, 'system', 'board', params, function(err, result){
+						if (!err) {
+							callback(result.model);
+						} else {
+							callback(err);
+						}
 
-				});
+					});
+					}).bind(this));
 			};
 
 			// deprecated
@@ -89,7 +93,11 @@
 			var getSystem = function (devId,callback) {
 				this.deviceProvider.callService(devId, 'system', 'info', {}, callback);
 			};
-
+			
+			var rebootSystem = function (devId,callback) {
+				this.deviceProvider.callService(devId, 'rpc-sys', 'reboot', {}, callback);
+			};
+			
 			var getRxTx = function (devId, callback) {
 				var params =  {};
 				callback = callback || this.noop;
@@ -447,6 +455,7 @@
 				// setMACResult: setMACResult,
 				
 				getSystem: getSystem,
+				rebootSystem: rebootSystem,
 				
 				getRxTx: getRxTx,
 				setRxTxResult: setRxTxResult,

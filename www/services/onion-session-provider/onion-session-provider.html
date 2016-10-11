@@ -21,12 +21,10 @@
 					}.bind(this));
 				}.bind(this));
 				this.initPromise = null;
-
 				this.accessToken = '';
 				this.accessTokenParsed = {};
 				this.refreshToken = '';
 				this.refreshTokenParsed = {};
-
 				this.developerParsed = {};
 			};
 
@@ -107,13 +105,16 @@
 			};
 
 			var setAlive = function (result) {
-				if (result !== null && result[0] === 0) {
-				    this.ubus.isAlive = true;   
-                    console.log('Alive');					
-				} else {
-				    this.ubus.isAlive = false;
-				    logout();
-				}   
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
+					this.ubus = ubus;
+					if (result !== null && result[0] === 0) {
+						this.ubus.isAlive = true;   
+						console.log('Alive');					
+					} else {
+						this.ubus.isAlive = false;
+						logout();
+					}
+					}).bind(this));
 		    }; 
 			
 			var isAlive = function () {

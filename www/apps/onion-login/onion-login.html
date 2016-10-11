@@ -7,7 +7,7 @@
 
 <dom-module id="onion-login">
 	<style>
-		bootstrap-modal ::shadow .modal-dialog {
+		:bootstrap-modal::shadow .modal-dialog {
 			width: 360px;
 		}
 	</style>
@@ -24,7 +24,7 @@
 							</fieldset>
 							<fieldset class="form-group">
 								<label for="password">Password</label>
-								<input type="password" class="form-control" id="password">
+								<input type="password" class="form-control" id="password" on-keydown="checkPasswordKey">
 							</fieldset>
 							<div id="messageContainer"></div> 
 							<button type="submit" hidden></button>
@@ -59,7 +59,7 @@
 	            			this.$.username.value = '';
 							this.$.password.value = '';
 							onionConsole.loggedIn(function(){
-								onionConsole.launchApp('onion-launcher');
+								onionConsole.launchApp('onion-status');
 							});
 		            		// console.log(this.$.loginDialog);
 		            		// var backdrop = document.getElementsByTagName("iron-overlay-backdrop");
@@ -86,7 +86,14 @@
 					this.$.password.focus();
 				}
 			};
-
+			
+			var checkPasswordKey = function (e) {
+				if (e.which === 13) {
+					e.preventDefault();
+					this.login();
+				}
+			};
+			
 			var start = function () {
 				setTimeout((function () {
 					this.$.loginDialog.open();
@@ -112,7 +119,7 @@
 						this.$.password.value = '';
 						console.log("Inside login function(onion-login),about to start onion-launcher");
 						onionConsole.loggedIn(function(){
-							onionConsole.launchApp('onion-launcher', true);
+							onionConsole.launchApp('onion-status', true);
 						});
 						this.quit();
 					} else {
@@ -136,7 +143,8 @@
 	            start: start,
 	            fg: start,
 	            quit: quit,
-	            checkUsernameKey: checkUsernameKey
+	            checkUsernameKey: checkUsernameKey,
+				checkPasswordKey: checkPasswordKey
 			});
         })();
 	</script>

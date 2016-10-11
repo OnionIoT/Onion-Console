@@ -1,7 +1,7 @@
 <link rel="import" href="/lib/polymer/polymer.html">
 <link rel="import" href="/elements/bootstrap-styles/bootstrap-styles.html">
 
-<dom-module id="bootstrap-dropdown">
+<dom-module id="bootstrap-dropup">
 	<style>
 		.dropdown-toggle::after {
 			margin: none;
@@ -43,7 +43,7 @@
 		'use strict';
 		(function () {			
 			Polymer({
-				is: 'bootstrap-dropdown',
+				is: 'bootstrap-dropup',
 				hostAttributes: {
 			        role: 'dropdown',
 			        tabindex: -1
@@ -51,7 +51,7 @@
 				properties: {
 					position: {
 			          	type: String,
-			          	value: 'bottom'
+			          	value: 'top'
 			        },
 			        for: {
 			        	type: String,

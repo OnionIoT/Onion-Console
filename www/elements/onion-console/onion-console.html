@@ -71,7 +71,7 @@
 <!-- 		UI Elements -->
 			<div class="console layout horizontal center">
 				<div id="serviceContainer" class="hidden"></div>
-				<onion-taskbar id="taskbar" running-apps="{{runningApps}}" current-app="{{currentApp}}"></onion-taskbar>
+				<onion-taskbar id="taskbar" running-apps="{{apps}}" current-app="{{currentApp}}"></onion-taskbar>
 				<iron-pages id="appContainer" class='flex' attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
 				<onion-notification id='notification'></onion-notification>
 			</div>
@@ -114,13 +114,13 @@
 						callback();
 					}
 				}.bind(this));
+				this.refresh();
 			};
 
 			var attached = function () {
 				this.launchApp('onion-login');
 				this.getService('onion-device-provider');
 				this.getService('onion-intent-provider');
-
 				// TO DO: implement something like this
 				// this.getService('onion-session-provider')
 				// .then((function (session) {
@@ -199,7 +199,7 @@
 			};
 
 			var quitApp = function (appId) {
-				if (appId !== 'onion-launcher'){
+				if (appId !== 'onion-status'){
 					// this.$.appContainer.querySelector(appId).quit();
 
 					// var idx = (this.runningApps).findIndex(function (element) {
@@ -218,12 +218,12 @@
 					
 					this.$.appContainer.querySelector(appId).quit();
 
-					this.set('currentApp', 'onion-launcher');
+					this.set('currentApp', 'onion-status');
 
 					Polymer.dom(this.$.appContainer).removeChild(this.$$(appId));
 
 				} else {
-					this.set('currentApp', 'onion-launcher');
+					this.set('currentApp', 'onion-status');
 				}
 			}
 
@@ -246,6 +246,17 @@
 				}).bind(this)).nodeify(callback);
 			};
 
+			var refresh = function(){
+				console.log("Inside onion-launcher refresh function");
+				this.getService('onion-apps-provider')
+				.then( (function (appsProvider) {
+					appsProvider.getApps((function(err, apps){
+						this.set('apps', apps);
+						console.log("Inside callback for getApps provider, apps=",apps);
+					}).bind(this));
+				} ).bind(this) );
+			};
+			
 			var _showTaskbar = function (runningApps, currentApp) {
 				if (runningApps.length > 0 && currentApp !== 'onion-login' && currentApp !== 'onion-launcher') {
 					return true;
@@ -270,7 +281,9 @@
 				_showTaskbar: _showTaskbar,
 				sendNotification: sendNotification,
 				loggedIn: loggedIn,
+				refresh: refresh,
 				properties: {
+					apps: Array,
 					runningApps: {
 						type: Array,
 						notify: true,

@@ -216,27 +216,46 @@
 			var refreshRxTxInterval = null;
 			var refreshStatusInterval = null;
 			var locked = false;
+			
+			var start = function () {
+				console.log('Start Function for the onion-status app')
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
+					var params = {
+						config: 'system',
+						section: '@system[0]',
+						option: 'hostname'
+					};
+					
+					this.ubus = ubus;
+					this.ubus.request('uci', 'get', params, function (result) {
+						if (result[0] === 0) {
+							this.hostname = result[1].value;
+						}
+					});
+				}).bind(this));
+			};
 
 			var ready = function() {
 				this.title = 'Device Status';
 				
 				onionConsole.getService('onion-session-provider', (function (err, sessionProvider) {
 					this.sessionProvider = sessionProvider;
-				}).bind(this));
 				
-				if (this.sessionProvider.isAlive() === true) {
-					onionConsole.getService('onion-device-settings-provider', (function (err, deviceSettingsProvider) {
-						this.deviceSettingsProvider = deviceSettingsProvider;
+					
+					if (this.sessionProvider.isAlive() === true) {
+						onionConsole.getService('onion-device-settings-provider', (function (err, deviceSettingsProvider) {
+							this.deviceSettingsProvider = deviceSettingsProvider;
 
-						// find the device 
-						deviceSettingsProvider.getDeviceType((function (deviceType) {
-							this.device = deviceType;
+							// find the device 
+							this.deviceSettingsProvider.getDeviceType(null,(function (deviceType) {
+								this.device = deviceType;
+							}).bind(this));
+
+							// refresh all status info
+							this.refreshInfo();
 						}).bind(this));
-
-						// refresh all status info
-						this.refreshInfo();
-					}).bind(this));
-				}
+					}
+				}).bind(this));
 			};
 
 			// add zero padding to integers
@@ -292,53 +311,56 @@
 
 			var refreshInfo = function () {
 				// Format the uptime, memory, and load
-				setInterval((function () {
-					this.deviceSettingsProvider.getSystem((function (err, result) {
-						this.uptime = millisecondsToStr ( result.uptime * 1000 );
-						this.memoryFree		= (result.memory.total / 1024000 - result.memory.free / 1024000).toFixed(3);
-						this.memoryTotal	= (result.memory.total / 1024000).toFixed(3);
-						this.memory = (this.memoryFree) + ' MB / ' + (this.memoryTotal) + ' MB';
-						this.load = (result.load[0] / 100000).toFixed(4) + ' ' + (result.load[1] / 100000).toFixed(4) + ' ' + (result.load[2] / 100000).toFixed(4);
+				onionConsole.getService('onion-device-settings-provider', (function (err, deviceSettingsProvider) {
+					this.deviceSettingsProvider = deviceSettingsProvider;
+					setInterval((function () {
+						this.deviceSettingsProvider.getSystem("", (function (err, result) {
+							this.uptime = millisecondsToStr ( result.uptime * 1000 );
+							this.memoryFree		= (result.memory.total / 1024000 - result.memory.free / 1024000).toFixed(3);
+							this.memoryTotal	= (result.memory.total / 1024000).toFixed(3);
+							this.memory = (this.memoryFree) + ' MB / ' + (this.memoryTotal) + ' MB';
+							this.load = (result.load[0] / 100000).toFixed(4) + ' ' + (result.load[1] / 100000).toFixed(4) + ' ' + (result.load[2] / 100000).toFixed(4);
+						}).bind(this));
+					}).bind(this), 1000);
+
+					
+
+					//Get MAC Address
+					// self.deviceSettingsProvider.getMAC(function (result) {
+					//     self.mac = result.mac;
+					// });
+
+					// Get if device is online
+					this.deviceSettingsProvider.isOnline("", (function (result) {
+						if (result=== true) {
+							this.$.online.style.display = 'block';
+							this.$.offline.style.display = 'none';
+						} else {
+							this.$.online.style.display = 'none';
+							this.$.offline.style.display = 'block';
+						}
 					}).bind(this));
-				}).bind(this), 1000);
 
-				
+					// Get IP address, netmask and mac address
+					this.deviceSettingsProvider.getIpAddr("", (function (result) {
+						this.ip = result;
+					}).bind(this));
 
-				//Get MAC Address
-				// self.deviceSettingsProvider.getMAC(function (result) {
-				//     self.mac = result.mac;
-				// });
+					this.deviceSettingsProvider.getNetMask("", (function (result) {
+						this.netmask = result;
+					}).bind(this));
 
-				// Get if device is online
-				this.deviceSettingsProvider.isOnline((function (result) {
-					if (result=== true) {
-						this.$.online.style.display = 'block';
-						this.$.offline.style.display = 'none';
-					} else {
-						this.$.online.style.display = 'none';
-						this.$.offline.style.display = 'block';
-					}
-				}).bind(this));
+					this.deviceSettingsProvider.getMacAddr("", (function(result){
+						this.mac = result;
+					}).bind(this));
 
-				// Get IP address, netmask and mac address
-				this.deviceSettingsProvider.getIpAddr((function (result) {
-					this.ip = result;
-				}).bind(this));
+					//Get received and transmitted bytes
+					this.updateRxTx();
+					this.refreshRxTx(10000);
 
-				this.deviceSettingsProvider.getNetMask((function (result) {
-					this.netmask = result;
-				}).bind(this));
-
-				this.deviceSettingsProvider.getMacAddr((function(result){
-					this.mac = result;
-				}).bind(this));
-
-				//Get received and transmitted bytes
-				this.updateRxTx();
-				this.refreshRxTx(10000);
-
-				//Get the disk usage
-				this.updateDiskUsage();
+					//Get the disk usage
+					this.updateDiskUsage();
+					}).bind(this));
 			};
 
 			var attached = function () {
@@ -363,7 +385,7 @@
 			
 			var updateRxTx = function () {
 			    if (this.sessionProvider.isAlive() === true) {
-					this.deviceSettingsProvider.getRxTx((function (result) {
+					this.deviceSettingsProvider.getRxTx("", (function (result) {
 						this.received 		= result[0].received;
 						this.transmitted 	= result[1].transmitted;							
 					}).bind(this));
@@ -373,15 +395,16 @@
 			};
 
 			var updateDiskUsage = function () {
-				if (this.sessionProvider.isAlive() === true ) {
+				if (this.sessionProvider.isAlive() === true) {
 					onionConsole.getService('onion-device-provider', (function (err, device) {
+						this.device = device;
 						var params = {
 							command: '/usr/sbin/disk-space',
 							params: []
 						};
 
 						// make the device call
-						device.callService(null, 'file', 'exec', params, (function (err, data) {
+						this.device.callService(null, 'file', 'exec', params, (function (err, data) {
 							if (!err && data) {
 								var diskData 	= String(data.stdout);
 								var diskFree 	= diskData.replace(/.*free:(\d+).*/, '$1');
@@ -403,9 +426,9 @@
 			};
 
 			var displayProcessorName = function (device) {
-				if (device === 'Onion Omega') {
+				if (this.device === 'Onion Omega') {
 					return '400 MHz Atheros AR9331 MIPS';
-				} else if (device === 'Onion Omega2') {
+				} else if (this.device === 'Onion Omega2') {
 					return '580 MHz Ralink MT-7688 MIPS';
 				}
 			};
@@ -448,6 +471,7 @@
 
 			Polymer({
 				is: 'onion-status',
+				start: start,
 				ready: ready,
 				attached: attached,
 				behaviors: [Onion.AppBehavior],
@@ -462,6 +486,7 @@
 				isOmega2: isOmega2,
 				isOmega: isOmega,
 				properties:{
+					hostname: String,
 					device: {
 						type: String,
 						value: '',
