@@ -243,7 +243,7 @@
 		    	setTimeout(function () {
 		    		this.$.configureLoading.hidden = true;
 		    		this.$['ap-config-button'].disabled = false;
-		    	}, 10000);
+		    	}.bind(this), 10000);
 		    	
 			    this.apMessage = '';
 
@@ -252,19 +252,19 @@
 				if (verifyResult === 'OK') {
 			        if (this.sessionProvider.isAlive() === true) {
 			        	// if necessary add a uci wireless section for the AP
-			        	var apPreparePromise	= this.wifiProvider.prepareWifiNetwork(this.uciId);
+			        	var apPreparePromise	= this.wifiProvider.prepareWifiNetwork('', this.uciId);
 
 			        	apPreparePromise.then(function () {
 			        		// populate the AP uci wireless section
-			        		var apSetupPromise = this.wifiProvider.setupAp(this.enableAP, this.apSsid, this.apPassword, this.apAuth, this.apIp, this.uciId);
+			        		var apSetupPromise = this.wifiProvider.setupAp('', this.enableAP, this.apSsid, this.apPassword, this.apAuth, this.apIp, this.uciId);
 
 				        	apSetupPromise.then(function () {
 				        		this.init();
-				        	}, 
+				        	}.bind(this), 
 				        	function (err) {
 				        		console.error(err);
 				        	});
-			        	});
+			        	}.bind(this));
 				    }
 				} else {
 				    this.apMessage = verifyResult;

@@ -30,16 +30,18 @@
 			};
 
 			var checkLogin = function(devId, password, callback){
-					this.deviceProvider.callService(devId, 'session', 'login', {
+				onionConsole.getService('onion-device-provider', (function (err, deviceProvider) {
+					deviceProvider.callService(devId, 'session', 'login', {
 						username: 'root',
 						password: password
 					}, function (err,data) {
 						if (data) {
-							resolve('Correct Password');
+							console.log('Correct password')
 						} else {
 							reject(Error('Incorrect current password.'));
 						}
 					});
+				}));
 			}
 
 			var getDeviceType = function(devId,callback){
@@ -271,12 +273,11 @@
 			
 			
 
-			var changePassword = function (devId,passwordCurrent, passwordNew, passwordNewVerify) {
+			var changePassword = function (devId, passwordCurrent, passwordNew, passwordNewVerify) {
 				var promise = new Promise(function (resolve, reject) {
 					if (passwordNew === passwordNewVerify) {
-						onionConsole.getService('onion-session-provider', function (err, session) {
-							session.checkLogin(passwordCurrent)
-							.then(function () {
+						onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+							checkLogin(devId, passwordCurrent);
 								// onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 								// 	ubus.request('file', 'exec', {
 								// 		command: 'change-password',
@@ -293,24 +294,20 @@
 								// 		}
 								// 	});
 								// });
-								this.deviceProvider.callService(devId,'file', 'exec', {
-										command: 'change-password',
-										params: [
-											'-user', 'root',
-											'-password', passwordNew,
-											'-verify', passwordNew
-										]
-									}, function (err,data) {
-										if (data) {
-											resolve('You have successfully changed your password!');
-										} else {
-											reject(Error('Failed to change your password.'));
-										}
-									});
-
-							}, function (err) {
-								reject(Error('Current password is invalid.'));
-							})
+							deviceProvider.callService(devId,'file', 'exec', {
+									command: 'change-password',
+									params: [
+										'-user', 'root',
+										'-password', passwordNew,
+										'-verify', passwordNew
+									]
+								}, function (err,data) {
+									if (data) {
+										resolve('You have successfully changed your password!');
+									} else {
+										reject(Error('Failed to change your password.'));
+									}
+								});
 						});
 					} else {
 						reject(Error("New passwords don't match."));
@@ -344,25 +341,27 @@
 						// 		}
 						// 	});
 						// });
-						this.deviceProvider.callService(devId,'uci', 'set', {
-								config: 'system',
-								section: '@system[0]',
-								values: {
-									hostname: hostnameNew
-								}
-							}, function (err,result) {
-								if (result) {
-									this.deviceProvider.callService(devId, 'uci', 'commit', {
-										config: 'system'
-									}, function (err, result) {
-										if (result) {
-											resolve('Hostname changed successfully.');
-										}
-									});
-								} else {
-									reject(Error('Unable to set the hostname.'));
-								}
-							}.bind(this));
+						onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+							deviceProvider.callService(devId,'uci', 'set', {
+									config: 'system',
+									section: '@system[0]',
+									values: {
+										hostname: hostnameNew
+									}
+								}, function (err,result) {
+									if (!err) {
+										deviceProvider.callService(devId, 'uci', 'commit', {
+											config: 'system'
+										}, function (err, result) {
+											if (!err) {
+												resolve('Hostname changed successfully.');
+											}
+										});
+									} else {
+										reject(Error('Unable to set the hostname.'));
+									}
+								}.bind(this));
+							});
 					} else {
 						reject(Error('Hostname cannot be empty.'));
 					}
@@ -373,7 +372,8 @@
 
 			var changeTimezone = function (devId, timezoneNew, zonenameNew) {
 				var promise = new Promise(function (resolve, reject) {
-						this.deviceProvider.callService(devId, 'uci', 'set', {
+				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+						deviceProvider.callService(devId, 'uci', 'set', {
 							config: 'system',
 							section: '@system[0]',
 							values: {
@@ -381,11 +381,11 @@
 								zonename: zonenameNew
 							}
 						}, function (err, result) {
-							if (result) {
-								this.deviceProvider.callService(devId, 'uci', 'commit', {
+							if (!err) {
+								deviceProvider.callService(devId, 'uci', 'commit', {
 									config: 'system'
 								}, function (err, result) {
-									if (result) {
+									if (!err) {
 										resolve('Timezone changed successfully.');
 									} else {
 										reject(Error('Unable to set the timezone with UBUS'));
@@ -395,6 +395,7 @@
 								reject(Error('Unable to set the timezone.'));
 							}
 						}.bind(this));
+						});
 				});
 
 				return promise;
@@ -402,7 +403,8 @@
 			
 			var shutdown = function (devId) {
 				var shutdownPromise = new Promise(function (resolve, reject) {
-						this.deviceProvider.callService(devId,'file', 'exec', {
+				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+						deviceProvider.callService(devId,'file', 'exec', {
 							command: 'power-down', 
 							params: [
 								'-f'
@@ -415,6 +417,7 @@
 								reject();
 							}
 						});
+						});
 				});
 
 				return shutdownPromise;
@@ -422,7 +425,8 @@
 
 			var reboot = function (devId) {
 				var rebootPromise = new Promise(function (resolve, reject) {
-						this.deviceProvider.callService(devId,'file', 'exec', {
+				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+						deviceProvider.callService(devId,'file', 'exec', {
 							command: 'reboot', 
 							params: [
 								'-d', 
@@ -439,7 +443,7 @@
 						});
 
 				});
-
+				});
 				return rebootPromise;
 			};
 

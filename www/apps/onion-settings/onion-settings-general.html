@@ -223,7 +223,7 @@
 				// If user wants to change password, change it
 				if (this.passwordCurrent && this.passwordNew && this.passwordNewVerify) {
 					onionConsole.getService('onion-device-settings-provider', (function (err, device) {
-						device.changePassword(this.passwordCurrent, this.passwordNew, this.passwordNewVerify)
+						device.changePassword('',this.passwordCurrent, this.passwordNew, this.passwordNewVerify)
 						.then((function (message) {
 							// this.$.securityMessages.insertAlert('success', message);
 							onionConsole.sendNotification({
@@ -248,7 +248,7 @@
 					this.hostnameCopy = this.hostname;
 
 					onionConsole.getService('onion-device-settings-provider', (function (err, device) {
-						device.changeHostname(this.hostname)
+						device.changeHostname('', this.hostname)
 						.then((function (message) {
 							// this.$.basicMessages.insertAlert('success', message);
 							onionConsole.sendNotification({
@@ -280,7 +280,7 @@
 					}
 
 					onionConsole.getService('onion-device-settings-provider', (function (err, device) {
-						device.changeTimezone(this.timezone, zonename)
+						device.changeTimezone('', this.timezone, zonename)
 						.then((function (message) {
 							// this.$.basicMessages.insertAlert('success', message);
 							onionConsole.sendNotification({

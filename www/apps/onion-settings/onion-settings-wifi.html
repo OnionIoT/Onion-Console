@@ -416,10 +416,10 @@
                     	wifiSetupPromise.then(function () {
                     		this.refreshNetwork();		// refresh the list to include this new network
                     		this.$.newWifiDlg.close();	// close the dialogue
-                    	}, function (err) {
+                    	}.bind(this), function (err) {
                     		console.error(err);
-                    	});
-                	});
+                    	}).bind(this);
+                	}.bind(this));
 				} else {
 				    this.wifiMessage = verifyResult;
 				}
@@ -433,7 +433,7 @@
 
 				wifiRemoveNetworkPromise.then(function () {
 					this.refreshNetwork();		// refresh the list to reflect this delete
-				});
+				}.bind(this));
 			};
 
 			var onLoading = function () {
@@ -474,7 +474,7 @@
 
 					wifiChangeOrderPromise.then(function () {
 						this.refreshNetwork();		// refresh the list to reflect this reorder
-					});
+					}.bind(this));
 				}
 			};
 
@@ -487,7 +487,7 @@
 
 					wifiChangeOrderPromise.then(function () {
 						this.refreshNetwork();		// refresh the list to reflect this reorder
-					});
+					}.bind(this));
 				}
 			};
 
