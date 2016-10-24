@@ -192,7 +192,7 @@
 				else {
 					// disable the AP
 					console.log('Disable AP');
-					var promise = this.setEnableWirelessNetwork(wifiSectionName, false);
+					var promise = this.setEnableWirelessNetwork(devId, wifiSectionName, false);
 				}
 
 				return promise;
@@ -395,7 +395,7 @@
 							reject(Error('Unable to change enabled state of wireless network.'));
 						}
 					}.bind(this));
-				});
+				}.bind(this));
 
 				return promise;
 			};
