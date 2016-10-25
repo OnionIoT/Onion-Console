@@ -5,7 +5,12 @@
 		'use strict';
 		
 		(function () {			
-			var backsplash = null;
+			var fileListResult 		= null;
+			var fileContentResult 	= null;
+			var fileSaveResult 		= null;
+			var execCommandResult 	= null;
+			var backsplash 			= null;
+			var tmpFile 			= null;
 			
 			var ready = function () {
 				backsplash = '/';
@@ -18,6 +23,7 @@
 
 			//Returns contents of a file or directory. 
 			var getFile = function (devId,path,callback) {
+				console.log(path);
 
 				this.getFileContent(devId,path,(function(result){
 						this.handler(result,'getFile',callback);
@@ -61,7 +67,11 @@
 			//Saves content to a file
 			var saveContent = function (devId, path, data, append,callback){
 				// var substrings = [data];
+				if(data == null){
+					data = '';
+				}
 				var body = new String(data);
+				var substrings = body.match(/[\s\S]{1,1500}/g);
 				var substrings = body.match(/(.|[\r\n]){1,3500}/g); // Replace n with the size of the substring
 				//Make these global, incase of partial failure and you need to delete the remainder.
 				this.writePath = path;
@@ -241,7 +251,7 @@
 
 		var handler = function (data,command,callback) {
 			callback = callback || this.callbackReturn;
-			// console.log(data);
+			console.log(data);
 			// getFile, 
 			var result;
 			if(command == 'getFile'){
@@ -342,6 +352,7 @@
 		
 		var returnFileContent = function (result,callback) {
 			callback = callback || callbackReturn;
+			console.log("Should return fileContent");
 			console.log(result);
 			var response = {};
 			if (result.data) { 
@@ -423,7 +434,7 @@
 			return folderPath;
 		};
 		
-		var getFilename = function (folderAndFilename) {
+		var getFileName = function (folderAndFilename) {
 		    return folderAndFilename.substring(folderAndFilename.lastIndexOf(backsplash) + 1, folderAndFilename.length);
 		};
 		
@@ -461,7 +472,7 @@
 				inValidArgument: inValidArgument,
 				callbackReturn: callbackReturn,
 				getFolderPath: getFolderPath,
-				getFilename: getFilename,
+				getFileName: getFileName,
 				execCommand: execCommand,
 				getFile: getFile,
 				getFolderContent: getFolderContent,
