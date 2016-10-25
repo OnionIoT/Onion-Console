@@ -25,7 +25,7 @@
 			var getFile = function (devId,path,callback) {
 				console.log(path);
 
-				this.getFileContent(devId,path,(function(result){
+				this.getFileContent(devId,path,(function(err,result){
 						this.handler(result,'getFile',callback);
 					}).bind(this)); 
 			}
