@@ -84,7 +84,7 @@
 	</style>
 	<template>
 		<onion-app app-name="Editor" toolbar-background="#34495e" toolbar-color="#fff">
-			<onion-app-toolbar>
+			<onion-app-toolbar page-id="home">
 				<div class="layout horizontal">
 					<div class="flex">
 						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>New Folder</span></button>
@@ -105,7 +105,7 @@
 				<div class="horizontal layout">
 					<div id="side-bar">
 					    <div id="current-folder">{{currentFolder}}</div>
-						<onion-file-list id="fileList">No File</onion-file-list>
+						<onion-file-list id="fileList" files="{{files}}">No File</onion-file-list>
 					</div>
 
 					<div id="editor-container" class="flex">
@@ -216,12 +216,20 @@
 							
 							fileProvider.getFolderContent(null, folderFileInfo.folder, function (result) {
 								console.log("Inside getFolderContent Callback and result is", result);
-								if (result.fileList !== '') {
+								if (result.status == 'success') {
 								    this.currentFolder = this.folderFileInfo.folder
-									this.folderFileInfo.list = result.fileList;
+									this.folderFileInfo.list = result.list;
+									console.log(result.list);
+									result.list.forEach(function(element,index){
+										console.log(element)
+										if(element.type=='directory'){
+											element.preview ='folder';
+										}
+									});
+									this.files = result.fileList;
 	                                this.$.fileList.setAttribute('files', JSON.stringify(this.folderFileInfo.list));										
 								}
-							});
+							}.bind(this));
 							path=loadfileName;
 							this.fileName='';
 						}
@@ -264,7 +272,13 @@
                             	console.log("Inside getFolderContent callback 2 and result is",result);
 							    this.currentFolder = this.folderFileInfo.folder;	
 							    this.folderFileInfo.list = result.list;
-							    this.$.fileList.setAttribute('files', JSON.stringify(this.folderFileInfo.list));									
+							   	result.list.forEach(function(element,index){
+										console.log(element)
+										if(element.type=='directory'){
+											element.preview ='folder';
+										}
+									});
+							    this.$.fileList.setAttribute('files', JSON.stringify(result.list));									
 						    }.bind(this));
 					    } else {
 					    	console.log(currentFile);
@@ -345,7 +359,7 @@
 								//saveResult=false;
 							}
 					    });
-				    });
+				    }.bind(this));
 				}
 				//return saveResult;
 			};
@@ -539,7 +553,14 @@
 				deleteFileDialog: deleteFileDialog,
 				deleteFolderDialog: deleteFolderDialog,
 				renameFileDialog: renameFileDialog,
-				renameFolderDialog: renameFolderDialog
+				renameFolderDialog: renameFolderDialog,
+				properties:{
+					files:{
+						type:Array,
+						value:[],
+						notify:true
+					}
+				}
 			});
         })();
 	</script>
