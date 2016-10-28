@@ -1,0 +1,64 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="/lib/iron-pages/iron-pages.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+
+<dom-module id="onion-node-red">
+	<style>
+		:host {
+			-webkit-user-select: none;  /* Chrome all / Safari all */
+			-moz-user-select: none;     /* Firefox all */
+			-ms-user-select: none;      /* IE 10+ */
+			user-select: none;          /* Likely future */
+			height: 100%;
+			width: 100%;
+			--bootstrap-pill-border-radius: 3px;
+			--bootstrap-pill-color: #373a3c;
+			--bootstrap-dropdown-toggle-padding: 0 10px;
+			--bootstrap-dropdown-toggle-hover-bg: rgba(255, 255, 255, 0.5);
+		}
+		
+		onion-app-body{
+			@apply(--layout-vertical);
+		}
+		#appBody{
+			margin-top:0px;
+
+		}	
+
+
+	</style>
+
+	<template>
+		<onion-app app-name="Node-Red" toolbar-background="#34495e" background="#f2f2f2">
+			<onion-app-toolbar page-id="home">
+			</onion-app-toolbar>
+
+			<onion-app-body page-id="home" id="mainAppBody">
+				<!-- App Tour -->
+				<iframe style="height:inherit;width:inherit;" src="http://192.168.3.1:1880/"></iframe>
+			</onion-app-body>
+		</onion-app>
+
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var ready = function () {
+				console.log("Ready Function Get's called");
+			};
+
+
+			Polymer({
+				is: 'onion-node-red',
+				ready: ready,
+				behaviors: [Onion.AppBehavior],
+				properties: {
+				}
+			});
+		})();
+	</script>
+
+</dom-module>
