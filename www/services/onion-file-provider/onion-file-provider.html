@@ -67,12 +67,18 @@
 			//Saves content to a file
 			var saveContent = function (devId, path, data, append,callback){
 				// var substrings = [data];
-				if(data == null){
+				console.log(data);
+				if((data == null) || (data =="")){
 					data = '';
+					var substrings = [""];
+				} else{
+					var body = new String(data);
+					var substrings = body.match(/[\s\S]{1,1500}/g);
 				}
-				var body = new String(data);
-				var substrings = body.match(/[\s\S]{1,1500}/g);
-				var substrings = body.match(/(.|[\r\n]){1,3500}/g); // Replace n with the size of the substring
+				console.log(data);
+				console.log(substrings);
+
+				// var substrings = body.match(/(.|[\r\n]){1,3500}/g); // Replace n with the size of the substring
 				//Make these global, incase of partial failure and you need to delete the remainder.
 				this.writePath = path;
 				this.deviceId = devId;
@@ -92,6 +98,7 @@
 
 			//Remove/Delete a file or folder(all sub directories)
 			var remove = function (devId,path,callback){
+				console.log("Inside the remove function");
 				callback = callback || this.callbackReturn;
 				this.execCommand(devId, 'rm',['-r',path], (function(err,result){
 					this.handler(result,'remove',callback);
@@ -353,9 +360,15 @@
 		var returnFileContent = function (result,callback) {
 			callback = callback || callbackReturn;
 			console.log("Should return fileContent");
-			console.log(result);
 			var response = {};
-			if (result.data) { 
+			if(result == undefined){
+				// Case where you open an empty file
+				result={};
+				result.data ="";
+				response.status = 'success';
+				response.data = result.data;
+				callback(response);
+			}else if (result.data) { 
 				response.status = 'success';
 				response.data = result.data;
 				callback(response);

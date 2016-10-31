@@ -305,7 +305,12 @@
 
 					    this.fileProvider = fileProvider;
 					    //Get file list
-					    var path = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;
+					    if(this.folderFileInfo.folder == this.backsplash){
+					    	var path = this.folderFileInfo.folder + this.folderFileInfo.file;
+					    } else{
+					    	var path = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;
+					    }
+					   
 					    console.log(path);
 					    console.log(path);
 						fileProvider.getFile(null,path, function (result) {
@@ -314,7 +319,11 @@
 						    if (result.status === 'success') {
 						        // this.currentCode = result.data;
 						        this.$.fileEditor.editor.session.setValue(result.data);
-								this.folderFileInfo.fileInEdit = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;
+						        if(this.folderFileInfo.folder == this.backsplash){
+						        	this.folderFileInfo.fileInEdit = this.folderFileInfo.folder + this.folderFileInfo.file;
+						        } else{
+									this.folderFileInfo.fileInEdit = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;						        	
+						        }
 								this.$.deleteFileButton.disabled = false;
 								this.$.renameFileButton.disabled = false
 							} else {    
@@ -329,7 +338,7 @@
 			    if (this.sessionProvider.isAlive() === true && this.folderFileInfo.file !== '') {
 			        if (this.isFileChanged()) {
 					    if (confirm('Do you want to save \"' + this.folderFileInfo.fileInEdit + '\" ?')) {
-						    if (typeof saveFile() === 'boolean') {
+						    if (typeof this.saveFile() === 'boolean') {
 							    this.currentCode = '';
 					            this.folderFileInfo.fileInEdit = '';
 							}
@@ -368,7 +377,7 @@
 				var folderName = prompt('Please enter new folder name');
 				
 				if (folderName !== null) {
-				    createFile('folder', folderName);
+				    this.createFile('folder', folderName);
 				}
 			};
 			
@@ -376,14 +385,15 @@
 				var fileName = prompt('Please enter new file name');
 
 				if (fileName !== null) {
-				    createFile('file', fileName);
+				    this.createFile('file', fileName);
 				}
 			};
 			
 			var deleteFileDialog = function () {
                 if (this.sessionProvider.isAlive() === true && this.folderFileInfo.fileInEdit !== '') {	
-                    if (confirm('Are you sure that you want to permanently delete \"' + folderFileInfo.fileInEdit + '\" ?')) {
-                        this.deleteFile('file', folderFileInfo.fileInEdit);			  
+                    if (confirm('Are you sure that you want to permanently delete \"' + this.folderFileInfo.fileInEdit + '\" ?')) {
+                    	console.log(this.folderFileInfo.fileInEdit);
+                        this.deleteFile('file', this.folderFileInfo.fileInEdit);			  
 					}	   
 			    }
 			};
@@ -394,6 +404,7 @@
                         alert('Delete all folders and files under root directory will make the system no long in function! Operation aborted!!'); 
                     } else {
                         if (confirm('Are you sure that you want to permanently delete \"' + this.folderFileInfo.folder + '\" folder?\nWarning!! All the folders and files under \"' + this.folderFileInfo.folder + '\" will be deleted!')) {
+                        	console.log("folderFileInfo.folder",this.folderFileInfo.folder);
                             this.deleteFile('folder', this.folderFileInfo.folder);					   
                         }
 					}	   
@@ -419,11 +430,13 @@
 			};
 						
 			var deleteFile = function (type, fileName) {
+				console.log("fileName",fileName);
 			   if (this.sessionProvider.isAlive() === true ) {
 				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 					    this.fileProvider = fileProvider;
-						fileProvider.execCommand('rm', ['-rf', this.fileName], function (result) {
-						    if (result.execResult === true) {
+					    console.log("fileName",fileName);
+						fileProvider.remove(null,fileName, function (result) {
+						    if (result.status=='success') {
 							    this.currentCode = '';
 								this.folderFileInfo.fileInEdit = '';
 								if (type === 'folder') {
@@ -439,7 +452,7 @@
 					        } else {    
 							    alert('Failed to delete \"' + fileName + '\"');
 							}
-					    });
+					    }.bind(this));
 					}.bind(this));
 				} else {
 				    alert('Session time out! Failed to delete Folder or File!');
@@ -451,7 +464,6 @@
 				    alert('Invalid ' + type + ' name!!');
 					return;
 				}
-				
 			    if (this.sessionProvider.isAlive() === true ) {
 				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 
@@ -460,22 +472,24 @@
 
 						if (this.folderFileInfo.folder === this.backsplash) {
 						    newfileName = this.folderFileInfo.folder + fileName;
+						    console.log("newFileName",newfileName);
 						} else {
 							newfileName = this.folderFileInfo.folder + this.backsplash + fileName;
+							console.log("newFileName",newfileName);
 					    }
 
 						if (type === 'folder') {
-							fileProvider.execCommand('mkdir', [newfileName], function (result) {
-								if (result.execResult === true) {
+							fileProvider.createFolder(null, newfileName, function (result) {
+								if (result.status === 'success') {
 							        this.openFolder(this.folderFileInfo.folder);
 							    } else {    
 							        alert('Failed to create \"' + newfileName + '\"');
 							    }
 							}.bind(this));
 						} else {
-						    if (findTypeById(folderFileInfo.list,fileName) === '') {
-							    fileProvider.execCommand('touch', [newfileName], function (result) {
-						            if (result.execResult === true) {
+						    if (findTypeById(this.folderFileInfo.list,fileName) === '') {
+							    fileProvider.createFile(null, newfileName, function (result) {
+						            if (result.status === 'success') {
 							            this.openFolder(this.folderFileInfo.folder);
 							        } else {    
 							            alert('Failed to create \"' + newfileName + '\"');
