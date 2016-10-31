@@ -109,7 +109,7 @@
 					</div>
 
 					<div id="editor-container" class="flex">
-					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px">{{currentCode}}</juicy-ace-editor>
+					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px"></juicy-ace-editor>
 					</div>
 				</div>
 			</onion-app-body>
@@ -146,6 +146,18 @@
 						onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 							this.fileProvider = fileProvider;
 							this.$.fileList.addEventListener('click', function (e) {
+								console.log("Single Event click is called");
+								console.log("FileList");
+								console.log(this.$.fileList);
+								if (typeof e.target.icon === 'undefined') {
+									console.log(e);
+					                this.openFolder(e.target.textContent);
+								}
+							}.bind(this));
+							this.$.fileList.addEventListener('dblclick', function (e) {
+								console.log("Double Click Event is Called");
+								console.log("FileList");
+								console.log(this.$.fileList);
 								if (typeof e.target.icon === 'undefined') {
 									console.log(e);
 					                this.openFolder(e.target.textContent);
@@ -465,6 +477,8 @@
 
 								this.openFolder(this.folderFileInfo.folder);
 								alert('\"' + fileName + '\" deleted successfully!!');
+								this.$.fileEditor.editor.session.setValue('');
+								this.currentCode = '';
 					        } else {    
 							    alert('Failed to delete \"' + fileName + '\"');
 							}
