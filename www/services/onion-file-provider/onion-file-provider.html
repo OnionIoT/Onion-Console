@@ -286,6 +286,8 @@
 			}
 			//rename
 			else if(command == 'rename'){
+				data = {};
+				data.code = 0;
 				this.setExecCommandResult(data,callback);
 			}
 			//remove
@@ -419,19 +421,28 @@
 			var result = {};
 			console.log(resultArray);
 			result.status = 'success'
-			resultArray.every((function(element,index){
+			resultArray.forEach(function(element,index){
+				console.log("The saveContentHandler is running");
+				console.log(element);
+				console.log(index);
 				if(element.code != 0){
 					result.status = 'failure';
+					callback(result);
 					return this.remove(this.deviceId,this.writePath,function(response){
 						if(response.status == 'success'){
 							return false;
 						} else{
 							return true;
 						}
-					})
+					});
+				} 
+				if(index == (resultArray.length -1) && (element.code == 0)){
+					//Last Iteration and everything should be good, run callback
+					console.log("Inside the last iteration callback,should be called");
+					callback(result);
 				}
-			}).bind(this));
-			callback(result);	
+			});
+			// callback(result);	
 		};
 		
 		/////FILE PATH PARSER HELPER FUNCTIONS

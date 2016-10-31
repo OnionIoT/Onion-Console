@@ -338,13 +338,22 @@
 			    if (this.sessionProvider.isAlive() === true && this.folderFileInfo.file !== '') {
 			        if (this.isFileChanged()) {
 					    if (confirm('Do you want to save \"' + this.folderFileInfo.fileInEdit + '\" ?')) {
-						    if (typeof this.saveFile() === 'boolean') {
-							    this.currentCode = '';
+					    	console.log(this.folderFileInfo.fileInEdit);
+					    	this.saveFile(function(result){
+					    		// this.currentCode = '';
+					    		console.log("Inside closeFile callback");
+					    		this.$.fileEditor.editor.session.setValue('');
+					    		this.currentCode = '';
 					            this.folderFileInfo.fileInEdit = '';
-							}
+					    	}.bind(this));
+						    // if (typeof this.saveFile() === 'boolean') {
+							    // this.currentCode = '';
+					      //       this.folderFileInfo.fileInEdit = '';
+							// }
 						}
 				    } else {
-					    this.currentCode = '';
+					    // this.currentCode = '';
+					    this.$.fileEditor.editor.session.setValue('');
 					    this.folderFileInfo.fileInEdit = '';
 					}
 					this.$.deleteFileButton.disabled=true;
@@ -352,22 +361,29 @@
 			    }
 			};
 			
-			var saveFile = function () {
+			var saveFile = function (callback) {
 			    //var saveResult=true;
 				if (this.sessionProvider.isAlive() === true && this.folderFileInfo.fileInEdit !== '') {	
 				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 					    this.fileProvider = fileProvider;
 					    //Get file list
 						var codeInEdit = this.$.fileEditor.editor.session.getValue();
-					    fileProvider.saveContent(null,this.folderFileInfo.fileInEdit, codeInEdit, function (result) {
+					    fileProvider.saveContent(null,this.folderFileInfo.fileInEdit, codeInEdit,false, function (result) {
+					    	console.log(result);
 						    if (result.status == 'success') {
 							    this.currentCode = codeInEdit;
 						        alert('\"' + this.folderFileInfo.fileInEdit + '\" saved successfully!!');
+						        if(typeof callback === 'function'){
+						        	callback(result);
+						        }
 							} else {    
 							    alert('Failed to save \"' + this.folderFileInfo.fileInEdit + '\"');
+							    if(typeof callback === 'function'){
+							    	callback(result);
+							    }
 								//saveResult=false;
 							}
-					    });
+					    }.bind(this));
 				    }.bind(this));
 				}
 				//return saveResult;
@@ -415,7 +431,7 @@
                 if (this.sessionProvider.isAlive() === true && this.folderFileInfo.fileInEdit !== '') {	
 				    var fileName = prompt('Please enter new file name');
 					if (fileName !== null) {
-                        renameFile('file', fileName);			  	   
+                        this.renameFile('file', fileName);			  	   
 					}
 			    }
 			};
@@ -516,9 +532,10 @@
 					    this.fileProvider = fileProvider;
 						if (type === 'folder') {
 						    var newFoldername = fileProvider.getFolderPath(this.folderFileInfo.folder) + this.backsplash + fileName;
-							fileProvider.execCommand('mv', [this.folderFileInfo.folder,newFoldername], function (result) {
-								if (result.execResult === true) {
-								    var oldFoldername = folderFileInfo.folder;
+						    console.log("newFoldername",newFoldername);
+							fileProvider.rename(null,this.folderFileInfo.folder,newFoldername, function (result) {
+								if (result.status == 'success') {
+								    var oldFoldername = this.folderFileInfo.folder;
 								    this.folderFileInfo.folder = newFoldername;
 							        this.openFolder(this.folderFileInfo.folder);
 									alert('\"' + oldFoldername + '\" renamed to \"' + this.folderFileInfo.folder + '\" successfully!');
@@ -528,20 +545,25 @@
 							}.bind(this));
 						} else {		
 						    var newfileName = fileProvider.getFolderPath(this.folderFileInfo.fileInEdit) + this.backsplash + fileName;
-							fileProvider.execCommand('mv', [this.folderFileInfo.fileInEdit, newfileName], function (result) {
-						        if (result.execResult === true) {
-	                                var oldfileName = this.folderFileInfo.fileInEdit;								
+						    console.log("newfileName",newfileName);
+							fileProvider.rename(null,this.folderFileInfo.fileInEdit, newfileName, function (result) {
+						        if (result.status == 'success') {
+	                                var oldfileName = this.folderFileInfo.fileInEdit;
+	                                console.log("oldfileName",oldfileName);								
 							        this.folderFileInfo.fileInEdit = newfileName;
-									if (this.folderFileInfo.folder === fileProvider.getFolderPath(oldfileName)) {
+							        console.log("fileInEdit",this.folderFileInfo.fileInEdit);
+							        var fileFolder = fileProvider.getFolderPath(oldfileName);
+							        console.log("fileFolder",fileFolder);
+									//if (this.folderFileInfo.folder === fileProvider.getFolderPath(oldfileName)) {
 							            this.openFolder(this.folderFileInfo.folder);
-									}
+									//}
 								    alert('\"' + oldfileName + '\" renamed to \"' + this.folderFileInfo.fileInEdit + '\" successfully!');
 							    } else {
 							        alert('Failed to rename \"' + this.folderFileInfo.fileInEdit + '\"!');
 							    }
 					        }.bind(this));
 						}
-				    });
+				    }.bind(this));
 				} else {
 				    alert('Session time out! Failed to create Folder or File!');
 				}
