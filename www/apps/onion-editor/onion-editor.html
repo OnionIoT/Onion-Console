@@ -87,16 +87,16 @@
 			<onion-app-toolbar page-id="home">
 				<div class="layout horizontal">
 					<div class="flex">
-						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>New Folder</span></button>
-						<button on-click="newFileDialog"><iron-icon class="toolbar-icon" icon="icons:note-add"></iron-icon><span>New File</span></button>
+						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" id="newFolderButton" icon="icons:folder"></iron-icon><span>New Folder</span></button>
+						<button on-click="newFileDialog"><iron-icon class="toolbar-icon" id="newFileButton" icon="icons:note-add"></iron-icon><span>New File</span></button>
 						<button on-click="deleteFolderDialog" disabled="disabled" id="deleteFolderButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
 						<button on-click="deleteFileDialog" disabled="disabled" id="deleteFileButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon></span><span>Delete File</span></button>
 						<button on-click="renameFolderDialog" disabled="disabled" id="renameFolderButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename Folder</span></button>
 					    <button on-click="renameFileDialog" disabled="disabled" id="renameFileButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename File</span></button>
 					</div>
 					<div>
-						<button on-click="saveFile"><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
-						<button on-click="closeFile"><iron-icon class="toolbar-icon" icon="icons:close"></iron-icon><span>Close</span></button>
+						<button id="saveFileButton" on-click="saveFile"><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
+						<button id="closeFileButton" on-click="closeFile"><iron-icon class="toolbar-icon" icon="icons:close"></iron-icon><span>Close</span></button>
 					</div>
 				</div>
 			</onion-app-toolbar>
@@ -124,7 +124,7 @@
 				// this = this;
 			};
 
-			var folderFileInfo = null;
+			// var folderFileInfo = null;
 			var backsplash = null;
 			var extSymbol = null;
 
@@ -133,12 +133,37 @@
 				this.extSymbol = '.';
 				this.fileName = '';
 				
-				this.folderFileInfo = {
-					folder: this.backsplash, //current folder
-					file: '',           //current file
-					list: null,         
-					fileInEdit: ''      //current folder + current file
-				};
+				// this.folderFileInfo = {
+				// 	folder: this.backsplash, //current folder
+				// 	file: '',           //current file
+				// 	list: null,         
+				// 	fileInEdit: ''      //current folder + current file
+				// };
+
+				setInterval(function(){
+					if(this.folderFileInfo.fileInEdit == ''){
+						console.log("fileInEdit == ''");
+						// Means no file has been selected, disable the save,close,renamefile and deleteFile Buttons
+						this.$.saveFileButton.disabled=true;
+						this.$.closeFileButton.disabled=true;
+						this.$.renameFileButton.disabled=true;
+						this.$.deleteFileButton.disabled=true;
+						this.$.saveFileButton.hidden=true;
+						this.$.closeFileButton.hidden=true;
+						this.$.renameFileButton.hidden=true;
+						this.$.deleteFileButton.hidden=true;
+					} else{
+						this.$.saveFileButton.disabled=false;
+						this.$.closeFileButton.disabled=false;
+						this.$.renameFileButton.disabled=false;
+						this.$.deleteFileButton.disabled=false;
+						this.$.saveFileButton.hidden=false;
+						this.$.closeFileButton.hidden=false;
+						this.$.renameFileButton.hidden=false;
+						this.$.deleteFileButton.hidden=false;
+					}						//If there is no file in edit
+
+				}.bind(this),2000);
 
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
 					this.sessionProvider = sessionProvider;
@@ -206,6 +231,16 @@
 
 				return extension;
 			};
+
+			var getLang = function(extension){
+				if(extension == 'js'){
+					return 'javascript';
+				} else if(extension == 'py'){
+					return 'python';
+				} else if(extension == 'html'){
+					return 'html';
+				}
+			}
 			
 			var openFolder = function (path) {
 				console.log(path);
@@ -311,8 +346,9 @@
 					    var ext = this.getFileExtension();
 					    console.log("Inside the ifstatement");
 					    console.log(ext);
-						this.$.fileEditor.editor.session.setMode('ace/mode/' + ext);
-						this.$.fileEditor.mode = 'ace/mode/' + ext;
+					    var lang = getLang(ext);
+						this.$.fileEditor.editor.session.setMode('ace/mode/' + lang);
+						// this.$.fileEditor.mode = 'ace/mode/' + lang;
 
 	                    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 
@@ -633,12 +669,37 @@
 				    alert('Session time out! Failed to create Folder or File!');
 				}
 			};
+
+			var contextButtonManager = function(){
+				console.log("contextButtonObserver is called");
+				// if(this.$.saveFileButton && this.$.closeFileButton && this.$.renameFileButton && this.$.deleteFileButton){
+				// 	if(this.folderFileInfo.fileInEdit == ''){
+				// 		console.log("fileInEdit == ''");
+				// 		// Means no file has been selected, disable the save,close,renamefile and deleteFile Buttons
+				// 		this.$.saveFileButton.disabled=true;
+				// 		this.$.closeFileButton.disabled=true;
+				// 		this.$.renameFileButton.disabled=true;
+				// 		this.$.deleteFileButton.disabled=true;
+				// 		this.$.saveFileButton.opacity=.5;
+				// 		this.$.closeFileButton.opacity=.5;
+				// 		this.$.renameFileButton.opacity=.5;
+				// 		this.$.deleteFileButton.opacity=.5;
+				// 	} else if(this.folderFileInfo.fileInEdit != ''){
+				// 		console.log("fileInEdit != ''");
+				// 		this.$.saveFileButton.disabled=false;
+				// 		this.$.closeFileButton.disabled=false;
+				// 		this.$.renameFileButton.disabled=false;
+				// 		this.$.deleteFileButton.disabled=false;
+				// 	}
+				// }
+			}
 			
 			Polymer({
 				is: 'onion-editor',
 				created: created,
 				ready: ready,
 				behaviors: [Onion.AppBehavior],
+				getLang: getLang,
 				openFolder: openFolder,
 				openFile: openFile,
 				deleteFile: deleteFile,
@@ -659,6 +720,16 @@
 					files:{
 						type:Array,
 						value:[],
+						notify:true
+					},
+					folderFileInfo:{
+						type:Object,
+						value:{
+							folder:'/',
+							file: '',
+							list: null,
+							fileInEdit: ''
+						},
 						notify:true
 					}
 				}
