@@ -5,7 +5,7 @@
 <link rel="import" href="/elements/onion-app/onion-app.html">
 <link rel="import" href="/lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
 <link rel="import" href="/elements/onion-file-list/onion-file-list.html">
-
+<link rel="import" href="/elements/onion-loading/onion-loading.html">
 <dom-module id="onion-editor">
 	<style>
 		:host {
@@ -109,6 +109,7 @@
 					</div>
 
 					<div id="editor-container" class="flex">
+						<onion-loading id="loadingIcon"></onion-loading>
 					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px"></juicy-ace-editor>
 					</div>
 				</div>
@@ -122,6 +123,16 @@
 
 			var created = function () {
 				// this = this;
+			};
+
+			var showLoadingScreen = function(){
+				this.$.loadingIcon.loading = true;
+				this.$.fileEditor.hidden = true;
+			};
+
+			var hideLoadingScreen = function(){
+				this.$.loadingIcon.loading = false;
+				this.$.fileEditor.hidden = false;
 			};
 
 			// var folderFileInfo = null;
@@ -339,6 +350,7 @@
 			};
 			
 			var openFile = function () {
+				this.showLoadingScreen();
 			    this.closeFile(function(){
 			    	console.log("Inside the openFile");
 				    console.log("folderFileInfo",this.folderFileInfo);
@@ -375,8 +387,10 @@
 							        }
 									this.$.deleteFileButton.disabled = false;
 									this.$.renameFileButton.disabled = false;
+									this.hideLoadingScreen();
 								} else {    
-								    alert('Failed to open \"' + this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file + '\"');								
+								    alert('Failed to open \"' + this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file + '\"');
+								    this.hideLoadingScreen();								
 								}
 						    }.bind(this));
 					    }.bind(this));
@@ -716,6 +730,8 @@
 				deleteFolderDialog: deleteFolderDialog,
 				renameFileDialog: renameFileDialog,
 				renameFolderDialog: renameFolderDialog,
+				showLoadingScreen: showLoadingScreen,
+				hideLoadingScreen: hideLoadingScreen,
 				properties:{
 					files:{
 						type:Array,
