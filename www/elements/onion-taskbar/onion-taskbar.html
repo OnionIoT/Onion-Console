@@ -43,32 +43,25 @@
 		}
 
 		.task-icon {
-			height: 100%;
-			width: 100%;
-			color: white;
-		}
-		.big {
-		padding-left: 5px;
-		padding-top: 5px;
-		--iron-icon-height: auto;
-		--iron-icon-width: auto;
+			height: 36px;
+			width: 36px;
+			padding-left: 2px;
+			background-color: transparent;
+			border: none;
+			border-left-style: solid;
+			border-left-width: 1px;
+			border-left-color: transparent;
+			margin-right: 7px;
 		}
 		.task-icon > iron-image {
 			height: 100%;
 			width: 100%;
 		}
-		
 		.task-icon.active {
-			background-color: #9a9a9a;
-			color: white;
+			border-left-color: white;
 		}
-		
-		.task-icon:not(.active):hover {
-			background-color: gray;
-		}
-		
 		.task-icon:hover {
-			cursor: pointer;
+			border-left-color: #5D9CEC;
 		}
 		
 		#taskIcons {
@@ -76,11 +69,9 @@
 			height: auto;
 			overflow-y: scroll;
 		}
-
-		#taskIcons iron-image:hover {
-			fill: black;
+		#taskIcons iron-image {
+			cursor: pointer;
 		}
-
 		#taskIcons::-webkit-scrollbar {
 			display: none;
 		}
@@ -100,7 +91,7 @@
 					<template is="dom-if" if="{{item.icon}}">
 						<div class$="{{_isActive(item,currentApp)}}" on-click="launch" >
 							<template is="dom-if" if$="{{getToolsTheme(currentApp)}}">
-								<iron-icon class="big" icon$="{{_computeIconUrl(item)}}"></iron-icon>
+								<iron-image sizing="contain" src$="{{_computeIconUrl(item)}}"></iron-image>
 							</template>
 						</div>
 					</template>
@@ -124,11 +115,10 @@
 			};
 
 			var _computeIconUrl = function (item) {
-				console.log(item);
-				if (item) {
-					return 'icons:' + item.id;
+				if (item.path) {
+					return '../..' + item.path + '/'+ item.id + '/icon.png';
 				} else {
-					return 'icons:' + item.id;
+					return '../../apps/' + item.id + '/icon.png';
 				}
 			};
 
