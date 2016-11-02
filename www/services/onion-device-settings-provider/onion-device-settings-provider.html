@@ -47,18 +47,13 @@
 			var getDeviceType = function(devId,callback){
 				var params = {};
 				callback = callback || this.noop;
-				onionConsole.getService('onion-device-provider', (function (err, deviceProvider) {
-					console.log('getting device provider complete');
-					this.deviceProvider = deviceProvider;
 					this.deviceProvider.callService(devId, 'system', 'board', params, function(err, result){
 						if (!err) {
 							callback(result.model);
 						} else {
 							callback(err);
 						}
-
-					});
-					}).bind(this));
+					}.bind(this));
 			};
 
 			// deprecated
