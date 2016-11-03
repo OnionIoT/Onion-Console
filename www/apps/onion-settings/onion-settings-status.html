@@ -15,93 +15,198 @@
 			.card .form-group:last-child {
 				margin-bottom: 0;
 			}
-            
+
         #onion-logo {
 			width: 150px;
 			height: auto;
 		}
+
+        :host {
+				display: block;
+				height: 100%;
+				width: 100%;
+		}
+
+		.status {
+			width: 300px;
+			border-color: transparent;
+			margin-left: 5px;
+			margin-right: 5px;
+		}
+			.status .card-block {
+				background-color: #fff;
+			}
+				.status .card-block > p:last-child {
+					margin-bottom: 0;
+				}
+				.status .card-block:last-child {
+					height: 225px;
+					border-bottom-right-radius: .25rem;
+					border-bottom-left-radius: .25rem;
+				}
+
+			.status > .status-heading {
+				color: #fff;
+				background-color: #16a085;
+				border-top-left-radius: .25rem;
+				border-top-right-radius: .25rem;
+			}
+
+		h4 {
+			margin-bottom: 10px;
+		}
+
+		table {
+		    width: 100%;
+		}
+
+		td {
+		    width: 33%;
+		}
+		#statusContainer {
+			height: 100%;
+			width: 100%;
+			padding: 25px;
+			padding-top: 50px;
+			margin-top: -50px;
+			overflow: auto;
+		}
+
+		.status-group {
+			background-color: #fff;
+			margin: 25px auto;
+			margin-top: 10px;
+			padding: 25px;
+			width: 600px;
+			border-radius: 5px;
+			line-height: 40px;
+			border-top: 2px solid #313338;
+			border-top-left-radius: 0;
+			border-top-right-radius: 0;
+		}
+
+		.status-group:last-child {
+			margin-bottom: 0;
+		}
+
+		.status-field {
+			border-top: 1px solid #ddd;
+		}
+
+		.online {
+			background-color: #5db85c;
+			border-radius: 5px;
+			color: #fff;
+			padding: 5px 10px;
+			font-weight: 600;
+		}
+
+		.offline {
+			background-color: #ff0000;
+			border-radius: 5px;
+			color: #fff;
+			padding: 5px 10px;
+			font-weight: 600;
+			visibility: hidden;
+
+		}
+
+		.status-group button {
+			font-size: 14px;
+			background-color: #637ca5;
+			color: #fff;
+			border: 1px solid #42536d;
+			border-radius: 5px;
+			padding: 5px 10px;
+			cursor: pointer;
+		}
+
+		.status-group button:hover, .status-group button:active, .status-group button:focus {
+			background-color: #52698f;
+		}
 	</style>
 
 	<template>
+        <div class="layout horizontal center-justified start">
+    		<div id="cardsContainer" class="container horizontal layout wrap">
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title" id="online">Onion Console</h4>
+                        <h6 class="card-subtitle">Codename Brin J2</h6>
+                    </div>
+                    <div class="card-block horizontal center-justified layout center">
+                        <img src="./onion-logo.png" id="onion-logo" />
+                    </div>
+                </div>
 
-		<div class="container">
-            <div class="card status">
-                <div class="card-block status-heading">
-                    <h4 class="card-title" id="online">Onion Console</h4>
-                    <h6 class="card-subtitle">Codename Brin J2</h6>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title" id="online">{{device}}</h4>
+                        <h6 class="card-subtitle">Device Info</h6>
+                    </div>
+                    <div class="card-block">
+                        <p><span>{{displayProcessorName(device)}}</span><br><strong>Processor</strong></p>
+                        <p><span>{{displayMemorySize(device)}}</span><span> MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
+                        <p><span>{{displayStorageSize(device, diskTotal)}}</span><span> MB Flash Memory</span><br><strong>Storage</strong></p>
+                    </div>
                 </div>
-                <div class="card-block horizontal center-justified layout center">
-                    <img src="./onion-logo.png" id="onion-logo" />
-                </div>
-            </div>
 
-            <div class="card status">
-                <div class="card-block status-heading">
-                    <h4 class="card-title" id="online">{{device}}</h4>
-                    <h6 class="card-subtitle">Device Info</h6>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title" id="online">Storage</h4>
+                        <h6 class="card-subtitle">&nbsp;</h6>
+                    </div>
+                    <div class="card-block">
+                        <p><span>{{diskUsed}}</span> MB / <span>{{diskTotal}}</span> MB<br><strong>Filesystem</strong></p>
+                        <progress class="progress progress-warning" value={{diskPercentage}} max="100">{{diskPercentage}}</progress>
+                    </div>
                 </div>
-                <div class="card-block">
-                    <p><span>{{displayProcessorName(device)}}</span><br><strong>Processor</strong></p>
-                    <p><span>{{displayMemorySize(device)}}</span><span> MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
-                    <p><span>{{displayStorageSize(device, diskTotal)}}</span><span> MB Flash Memory</span><br><strong>Storage</strong></p>
-                </div>
-            </div>
 
-            <div class="card status">
-                <div class="card-block status-heading">
-                    <h4 class="card-title" id="online">Storage</h4>
-                    <h6 class="card-subtitle">&nbsp;</h6>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title" id="online">Online</h4>
+                        <h4 class="card-title" id="offline">Offline</h4>
+                        <h6 class="card-subtitle">Device Status</h6>
+                    </div>
+                    <div class="card-block">
+                        <p><span>{{uptime}}</span><br><strong>Uptime</strong></p>
+                        <p><span>{{memory}}</span><br><strong>Memory</strong></p>
+                        <p><span>{{load}}</span><br><strong>Load</strong></p>
+                    </div>
                 </div>
-                <div class="card-block">
-                    <p><span>{{diskUsed}}</span> MB / <span>{{diskTotal}}</span> MB<br><strong>Filesystem</strong></p>
-                    <progress class="progress progress-warning" value={{diskPercentage}} max="100">{{diskPercentage}}</progress>
-                </div>
-            </div>
 
-            <div class="card status">
-                <div class="card-block status-heading">
-                    <h4 class="card-title" id="online">Online</h4>
-                    <h4 class="card-title" id="offline">Offline</h4>
-                    <h6 class="card-subtitle">Device Status</h6>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title">{{ip}}</h4>
+                        <h6 class="card-subtitle">Wi-Fi Network</h6>
+                    </div>
+                    <div class="card-block">
+                        <p><span>{{netmask}}</span><br><strong>Netmask</strong></p>
+                        <p><span>{{mac}}</span><br><strong>MAC Address</strong></p>
+                    </div>
                 </div>
-                <div class="card-block">
-                    <p><span>{{uptime}}</span><br><strong>Uptime</strong></p>
-                    <p><span>{{memory}}</span><br><strong>Memory</strong></p>
-                    <p><span>{{load}}</span><br><strong>Load</strong></p>
-                </div>
-            </div>
 
-            <div class="card status">
-                <div class="card-block status-heading">
-                    <h4 class="card-title">{{ip}}</h4>
-                    <h6 class="card-subtitle">Wi-Fi Network</h6>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title">{{received}}</h4>
+                        <h6 class="card-subtitle">Bytes Received</h6>
+                    </div>
+                    <div class="card-block">
+                        <p class="card-text">The is the total number of bytes received by the Omega</p>
+                    </div>
                 </div>
-                <div class="card-block">
-                    <p><span>{{netmask}}</span><br><strong>Netmask</strong></p>
-                    <p><span>{{mac}}</span><br><strong>MAC Address</strong></p>
-                </div>
-            </div>
 
-            <div class="card status">
-                <div class="card-block status-heading">
-                    <h4 class="card-title">{{received}}</h4>
-                    <h6 class="card-subtitle">Bytes Received</h6>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title">{{transmitted}}</h4>
+                        <h6 class="card-subtitle">Bytes Transmitted</h6>
+                    </div>
+                    <div class="card-block">
+                        <p class="card-text">The is the total number of bytes transmitted by the Omega</p>
+                    </div>
                 </div>
-                <div class="card-block">
-                    <p class="card-text">The is the total number of bytes received by the Omega</p>
-                </div>
-            </div>
-
-            <div class="card status">
-                <div class="card-block status-heading">
-                    <h4 class="card-title">{{transmitted}}</h4>
-                    <h6 class="card-subtitle">Bytes Transmitted</h6>
-                </div>
-                <div class="card-block">
-                    <p class="card-text">The is the total number of bytes transmitted by the Omega</p>
-                </div>
-            </div>
-		</div>
+    		</div>
+        </div>
 
 	</template>
 
