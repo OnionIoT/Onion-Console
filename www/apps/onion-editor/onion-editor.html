@@ -87,6 +87,7 @@
 			<onion-app-toolbar page-id="home">
 				<div class="layout horizontal">
 					<div class="flex">
+<!-- 						<button on-click="launchUploadFile" id="uploadFileButton"><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>Upload File</span></button> -->
 						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" id="newFolderButton" icon="icons:folder"></iron-icon><span>New Folder</span></button>
 						<button on-click="newFileDialog"><iron-icon class="toolbar-icon" id="newFileButton" icon="icons:note-add"></iron-icon><span>New File</span></button>
 						<button on-click="deleteFolderDialog" disabled="disabled" id="deleteFolderButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
@@ -460,6 +461,10 @@
 							    // this.currentCode = '';
 					      //       this.folderFileInfo.fileInEdit = '';
 							// }
+						} else{
+							this.$.fileEditor.editor.session.setValue('');
+						    this.currentCode = '';
+						    this.folderFileInfo.file='';
 						}
 				    } else {
 					    // this.currentCode = '';
