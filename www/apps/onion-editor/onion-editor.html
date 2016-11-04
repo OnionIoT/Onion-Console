@@ -6,6 +6,7 @@
 <link rel="import" href="/lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
 <link rel="import" href="/elements/onion-file-list/onion-file-list.html">
 <link rel="import" href="/elements/onion-loading/onion-loading.html">
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
 <dom-module id="onion-editor">
 	<style>
 		:host {
@@ -87,7 +88,7 @@
 			<onion-app-toolbar page-id="home">
 				<div class="layout horizontal">
 					<div class="flex">
-<!-- 						<button on-click="launchUploadFile" id="uploadFileButton"><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>Upload File</span></button> -->
+						<button on-click="launchUploadFile" id="uploadFileButton"><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>Upload File</span></button>
 						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" id="newFolderButton" icon="icons:folder"></iron-icon><span>New Folder</span></button>
 						<button on-click="newFileDialog"><iron-icon class="toolbar-icon" id="newFileButton" icon="icons:note-add"></iron-icon><span>New File</span></button>
 						<button on-click="deleteFolderDialog" disabled="disabled" id="deleteFolderButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
@@ -108,9 +109,16 @@
 					    <div id="current-folder">{{currentFolder}}</div>
 						<onion-file-list id="fileList" files="{{files}}">No File</onion-file-list>
 					</div>
-
 					<div id="editor-container" class="flex">
 						<onion-loading id="loadingIcon"></onion-loading>
+						<bootstrap-modal id="fileUploadDialog" title="Upload A File!">
+							<modal-body>
+								<form action="/cgi-bin/cgi-upload" method="post" enctype="multipart/form-data">
+									<input id="fileSelectionInput" type="file" name="file"></input>
+									<input id="fileSelectionButton" type="submit" name="Submit" value="Submit Form">Upload!</input>
+								</form>
+							</modal-body>
+						</bootstrap-modal>
 					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px"></juicy-ace-editor>
 					</div>
 				</div>
@@ -124,6 +132,10 @@
 
 			var created = function () {
 				// this = this;
+			};
+
+			var submitUpload = function(){
+				// console.log(this.$.fileSelectionInput.value);
 			};
 
 			var showLoadingScreen = function(){
@@ -140,42 +152,71 @@
 			var backsplash = null;
 			var extSymbol = null;
 
+			var launchUploadFile = function(){
+				this.$.fileUploadDialog.open();
+				// setTimeout(function(){
+				// 	this.$.fileUploadDialog.close();
+				// }.bind(this),6000);
+			};
+
+			var hideFileButtons = function(){
+				this.$.saveFileButton.disabled=true;
+				this.$.closeFileButton.disabled=true;
+				this.$.renameFileButton.disabled=true;
+				this.$.deleteFileButton.disabled=true;
+				this.$.saveFileButton.hidden=true;
+				this.$.closeFileButton.hidden=true;
+				this.$.renameFileButton.hidden=true;
+				this.$.deleteFileButton.hidden=true;
+			};
+
+			var showFileButtons = function(){
+				this.$.saveFileButton.disabled=false;
+				this.$.closeFileButton.disabled=false;
+				this.$.renameFileButton.disabled=false;
+				this.$.deleteFileButton.disabled=false;
+				this.$.saveFileButton.hidden=false;
+				this.$.closeFileButton.hidden=false;
+				this.$.renameFileButton.hidden=false;
+				this.$.deleteFileButton.hidden=false;
+			};
+
 			var ready = function () {
 				this.backsplash = '/';
 				this.extSymbol = '.';
 				this.fileName = '';
 				
-				// this.folderFileInfo = {
-				// 	folder: this.backsplash, //current folder
-				// 	file: '',           //current file
-				// 	list: null,         
-				// 	fileInEdit: ''      //current folder + current file
-				// };
+				this.folderFileInfo = {
+					folder: this.backsplash, //current folder
+					file: '',           //current file
+					list: null,         
+					fileInEdit: ''      //current folder + current file
+				};
 
-				setInterval(function(){
-					if(this.folderFileInfo.fileInEdit == ''){
-						console.log("fileInEdit == ''");
-						// Means no file has been selected, disable the save,close,renamefile and deleteFile Buttons
-						this.$.saveFileButton.disabled=true;
-						this.$.closeFileButton.disabled=true;
-						this.$.renameFileButton.disabled=true;
-						this.$.deleteFileButton.disabled=true;
-						this.$.saveFileButton.hidden=true;
-						this.$.closeFileButton.hidden=true;
-						this.$.renameFileButton.hidden=true;
-						this.$.deleteFileButton.hidden=true;
-					} else{
-						this.$.saveFileButton.disabled=false;
-						this.$.closeFileButton.disabled=false;
-						this.$.renameFileButton.disabled=false;
-						this.$.deleteFileButton.disabled=false;
-						this.$.saveFileButton.hidden=false;
-						this.$.closeFileButton.hidden=false;
-						this.$.renameFileButton.hidden=false;
-						this.$.deleteFileButton.hidden=false;
-					}						//If there is no file in edit
+				// setInterval(function(){
+				// 	if(this.folderFileInfo.fileInEdit == ''){
+				// 		console.log("fileInEdit == ''");
+				// 		// Means no file has been selected, disable the save,close,renamefile and deleteFile Buttons
+				// 		this.$.saveFileButton.disabled=true;
+				// 		this.$.closeFileButton.disabled=true;
+				// 		this.$.renameFileButton.disabled=true;
+				// 		this.$.deleteFileButton.disabled=true;
+				// 		this.$.saveFileButton.hidden=true;
+				// 		this.$.closeFileButton.hidden=true;
+				// 		this.$.renameFileButton.hidden=true;
+				// 		this.$.deleteFileButton.hidden=true;
+				// 	} else{
+				// 		this.$.saveFileButton.disabled=false;
+				// 		this.$.closeFileButton.disabled=false;
+				// 		this.$.renameFileButton.disabled=false;
+				// 		this.$.deleteFileButton.disabled=false;
+				// 		this.$.saveFileButton.hidden=false;
+				// 		this.$.closeFileButton.hidden=false;
+				// 		this.$.renameFileButton.hidden=false;
+				// 		this.$.deleteFileButton.hidden=false;
+				// 	}						//If there is no file in edit
 
-				}.bind(this),2000);
+				// }.bind(this),2000);
 
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
 					this.sessionProvider = sessionProvider;
@@ -188,7 +229,9 @@
 								console.log(this.$.fileList);
 								if (typeof e.target.icon === 'undefined') {
 									console.log(e);
-					                this.openFolder(e.target.textContent);
+									if(this.folderFileInfo.file != e.target.textContent){
+										this.openFolder(e.target.textContent);
+									}
 								}
 							}.bind(this));
 							this.$.fileList.addEventListener('dblclick', function (e) {
@@ -197,7 +240,9 @@
 								console.log(this.$.fileList);
 								if (typeof e.target.icon === 'undefined') {
 									console.log(e);
-					                this.openFolder(e.target.textContent);
+					               	if(this.folderFileInfo.file != e.target.textContent){
+										this.openFolder(e.target.textContent);
+									}
 								}
 							}.bind(this));
 							if(this.fileName==='') {
@@ -226,7 +271,6 @@
 			 
 			var isFileChanged = function () {
 			    var changed = false;
-
 			    if (this.folderFileInfo.fileInEdit !== '' &&	this.currentCode !== this.$.fileEditor.editor.session.getValue()) {
 				    changed = true;
 				}
@@ -371,20 +415,19 @@
 						    	var path = this.folderFileInfo.folder + this.folderFileInfo.file;
 						    } else{
 						    	var path = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;
-						    }
-						   
-						    console.log(path);
+						    }					   
 						    console.log(path);
 							fileProvider.getFile(null,path, function (result) {
 								console.log("Result, inside of the callback");
 								console.log(result);
 							    if (result.status === 'success') {
-							        // this.currentCode = result.data;
+							        this.currentCode = result.data;
 							        this.$.fileEditor.editor.session.setValue(result.data);
+							        this.showFileButtons();
 							        if(this.folderFileInfo.folder == this.backsplash){
 							        	this.folderFileInfo.fileInEdit = this.folderFileInfo.folder + this.folderFileInfo.file;
 							        } else{
-										this.folderFileInfo.fileInEdit = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;						        	
+										this.folderFileInfo.fileInEdit = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;	        	
 							        }
 									this.$.deleteFileButton.disabled = false;
 									this.$.renameFileButton.disabled = false;
@@ -440,43 +483,67 @@
             };
 			
 			var closeFile = function (callback) {
-			    if (this.sessionProvider.isAlive() === true && this.folderFileInfo.file !== '') {
-			        if (this.isFileChanged()) {
-					    if (confirm('Do you want to save \"' + this.folderFileInfo.fileInEdit + '\" ?')) {
-					    	console.log(this.folderFileInfo.fileInEdit);
-					    	this.saveFile(function(result){
-					    		console.log("Inside closeFile callback");
-					    		if(typeof callback === 'function'){
-					    			//Means it doesnt get called from the callback
-					    		}else{
-						    		this.$.fileEditor.editor.session.setValue('');
-						    		this.currentCode = '';
+				var bdisplayMsg;
+				if(this.folderFileInfo.fileInEdit === ""){
+					bdisplayMsg = true;
+				} else{
+					bdisplayMsg = confirm('Do you want to close \"' + this.folderFileInfo.fileInEdit + '\" ?');
+				}
+				if(bdisplayMsg){
+					this.hideFileButtons();
+				    if (this.sessionProvider.isAlive() === true && this.folderFileInfo.file !== '') {
+				        if (this.isFileChanged()) {
+						    if (confirm('Do you want to save \"' + this.folderFileInfo.fileInEdit + '\" ?')) {
+						    	console.log(this.folderFileInfo.fileInEdit);
+						    	this.saveFile(function(result){
+						    		console.log("Inside closeFile callback");
+						    		if(typeof callback === 'function'){
+						    			//Means it doesnt get called from the button
+						    			callback();
+						    		}else{
+							    		this.$.fileEditor.editor.session.setValue('');
+							    		this.currentCode = '';
+							    		this.folderFileInfo.file='';
+							    		this.folderFileInfo.fileInEdit = '';
+						    		}
+						    		// this.$.fileEditor.editor.session.setValue('');
+						    		// this.currentCode = '';
+						            // this.folderFileInfo.fileInEdit = '';
 
-					    		}
-					    		// this.$.fileEditor.editor.session.setValue('');
-					    		// this.currentCode = '';
-					            this.folderFileInfo.fileInEdit = '';
-					    	}.bind(this));
-						    // if (typeof this.saveFile() === 'boolean') {
-							    // this.currentCode = '';
-					      //       this.folderFileInfo.fileInEdit = '';
-							// }
-						} else{
-							this.$.fileEditor.editor.session.setValue('');
-						    this.currentCode = '';
-						    this.folderFileInfo.file='';
+						    	}.bind(this));
+							    // if (typeof this.saveFile() === 'boolean') {
+								    // this.currentCode = '';
+						      //       this.folderFileInfo.fileInEdit = '';
+								// }
+							} else{
+								this.$.fileEditor.editor.session.setValue('');
+							    this.currentCode = '';
+							    this.folderFileInfo.file='';
+							    this.folderFileInfo.fileInEdit = '';
+							}
+					    } else {
+						    // this.currentCode = '';
+						    this.$.fileEditor.editor.session.setValue('');
+						    this.folderFileInfo.fileInEdit = '';
+						    if(typeof callback === 'function'){
+						    	console.log("Its called from opening another file");
+						    	console.log("This is the folderInfoFile.file",this.folderFileInfo.file);
+						    } else{
+						    	console.log("Its called from closeButton");
+						    	this.folderFileInfo.file = '';
+						    }
 						}
-				    } else {
-					    // this.currentCode = '';
-					    this.$.fileEditor.editor.session.setValue('');
-					    this.folderFileInfo.fileInEdit = '';
-					}
-					this.$.deleteFileButton.disabled=true;
-					this.$.renameFileButton.disabled=true;
+						this.$.deleteFileButton.disabled=true;
+						this.$.renameFileButton.disabled=true;
+						if(typeof callback === 'function'){
+							callback();
+						}
+				    }
+				} else{
 					if(typeof callback === 'function'){
 						callback();
 					}
-			    }
+				}
 			};
 			
 			var saveFile = function (callback) {
@@ -711,7 +778,12 @@
 				// 		this.$.deleteFileButton.disabled=false;
 				// 	}
 				// }
-			}
+			};
+
+			var fileChangeObserver = function(){
+				console.log("!!!!!!!!!!!!!!!!!!!!FileChangeObserver gets called");
+				console.log(this.folderFileInfo.file);
+			};
 			
 			Polymer({
 				is: 'onion-editor',
@@ -720,11 +792,13 @@
 				behaviors: [Onion.AppBehavior],
 				getLang: getLang,
 				openFolder: openFolder,
+				submitUpload: submitUpload,
 				openFile: openFile,
 				deleteFile: deleteFile,
 				createFile: createFile,
 				closeFile: closeFile,
 				saveFile: saveFile,
+				launchUploadFile: launchUploadFile,
 				renameFile: renameFile,
 				isFileChanged: isFileChanged,
 				findTypeById: findTypeById,
@@ -737,6 +811,10 @@
 				renameFolderDialog: renameFolderDialog,
 				showLoadingScreen: showLoadingScreen,
 				hideLoadingScreen: hideLoadingScreen,
+				fileChangeObserver: fileChangeObserver,
+				hideFileButtons: hideFileButtons,
+				showFileButtons: showFileButtons,
+				observers:['fileChangeObserver(folderFileInfo.file)'],
 				properties:{
 					files:{
 						type:Array,
@@ -745,13 +823,18 @@
 					},
 					folderFileInfo:{
 						type:Object,
-						value:{
-							folder:'/',
-							file: '',
-							list: null,
-							fileInEdit: ''
-						},
+						value:{},
+						// 	folder:'/',
+						// 	file: '',
+						// 	list: null,
+						// 	fileInEdit: ''
+						// },
 						notify:true
+					},
+					oldFilePath:{
+						type: String,
+						value:"",
+						notify: true
 					}
 				}
 			});
