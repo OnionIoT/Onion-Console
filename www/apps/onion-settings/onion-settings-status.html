@@ -1,21 +1,30 @@
 <link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="/elements/bootstrap-alert/bootstrap-alert-container.html">
 
-<dom-module id="onion-status">
+<dom-module id="onion-settings-status">
 	<style>
-	    :host {
+		.container {
+			width: 600px;
+			margin: 0 auto;
+		}
+
+		.card {
+			margin-top: 15px;
+			background-color: #fff;
+		}
+			.card .form-group:last-child {
+				margin-bottom: 0;
+			}
+
+        #onion-logo {
+			width: 150px;
+			height: auto;
+		}
+
+        :host {
 				display: block;
 				height: 100%;
 				width: 100%;
-		}
-
-		onion-app-body > div {
-			height: 100%;
-			width: 100%;
-			overflow: scroll;
-			padding: 15px;
-			background-color: #f2f2f2;
 		}
 
 		.status {
@@ -50,7 +59,7 @@
 		table {
 		    width: 100%;
 		}
-		
+
 		td {
 		    width: 33%;
 		}
@@ -75,7 +84,7 @@
 			border-top-left-radius: 0;
 			border-top-right-radius: 0;
 		}
-		
+
 		.status-group:last-child {
 			margin-bottom: 0;
 		}
@@ -101,7 +110,7 @@
 			visibility: hidden;
 
 		}
-		
+
 		.status-group button {
 			font-size: 14px;
 			background-color: #637ca5;
@@ -111,112 +120,104 @@
 			padding: 5px 10px;
 			cursor: pointer;
 		}
-		
+
 		.status-group button:hover, .status-group button:active, .status-group button:focus {
 			background-color: #52698f;
 		}
-
-		#onion-logo {
-			width: 150px;
-			height: auto;
-		}
 	</style>
+
 	<template>
-		<onion-app app-name="Status" toolbar-background="#16a085">
-			<onion-app-body page-id="home">
-				<div class="layout horizontal center-justified start">
-					<div id="cardsContainer" class="horizontal layout wrap">
-						<div class="card status">
-							<div class="card-block status-heading">
-								<h4 class="card-title" id="online">Onion Console</h4>
-								<h6 class="card-subtitle">Codename Brin J2</h6>
-							</div>
-							<div class="card-block horizontal center-justified layout center">
-								<img src="./onion-logo.png" id="onion-logo" />
-							</div>
-						</div>
+        <div class="layout horizontal center-justified start">
+    		<div id="cardsContainer" class="container horizontal layout wrap">
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title" id="online">Onion Console</h4>
+                        <h6 class="card-subtitle">Codename Brin J2</h6>
+                    </div>
+                    <div class="card-block horizontal center-justified layout center">
+                        <img src="./onion-logo.png" id="onion-logo" />
+                    </div>
+                </div>
 
-						<div class="card status">
-							<div class="card-block status-heading">
-								<h4 class="card-title" id="online">{{device}}</h4>
-								<h6 class="card-subtitle">Device Info</h6>
-							</div>
-							<div class="card-block">
-								<p><span>{{displayProcessorName(device)}}</span><br><strong>Processor</strong></p>
-								<p><span>{{displayMemorySize(device)}}</span><span> MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
-								<p><span>{{displayStorageSize(device, diskTotal)}}</span><span> MB Flash Memory</span><br><strong>Storage</strong></p>
-							</div>
-						</div>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title" id="online">{{device}}</h4>
+                        <h6 class="card-subtitle">Device Info</h6>
+                    </div>
+                    <div class="card-block">
+                        <p><span>{{displayProcessorName(device)}}</span><br><strong>Processor</strong></p>
+                        <p><span>{{displayMemorySize(device)}}</span><span> MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
+                        <p><span>{{displayStorageSize(device, diskTotal)}}</span><span> MB Flash Memory</span><br><strong>Storage</strong></p>
+                    </div>
+                </div>
 
-						<div class="card status">
-							<div class="card-block status-heading">
-								<h4 class="card-title" id="online">Storage</h4>
-								<h6 class="card-subtitle">&nbsp;</h6>
-							</div>
-							<div class="card-block">
-								<p><span>{{diskUsed}}</span> MB / <span>{{diskTotal}}</span> MB<br><strong>Filesystem</strong></p>
-								<progress class="progress progress-warning" value={{diskPercentage}} max="100">{{diskPercentage}}</progress>
-							</div>
-						</div>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title" id="online">Storage</h4>
+                        <h6 class="card-subtitle">&nbsp;</h6>
+                    </div>
+                    <div class="card-block">
+                        <p><span>{{diskUsed}}</span> MB / <span>{{diskTotal}}</span> MB<br><strong>Filesystem</strong></p>
+                        <progress class="progress progress-warning" value={{diskPercentage}} max="100">{{diskPercentage}}</progress>
+                    </div>
+                </div>
 
-						<div class="card status">
-							<div class="card-block status-heading">
-								<h4 class="card-title" id="online">Online</h4>
-								<h4 class="card-title" id="offline">Offline</h4>
-								<h6 class="card-subtitle">Device Status</h6>
-							</div>
-							<div class="card-block">
-								<p><span>{{uptime}}</span><br><strong>Uptime</strong></p>
-								<p><span>{{memory}}</span><br><strong>Memory</strong></p>
-								<p><span>{{load}}</span><br><strong>Load</strong></p>
-							</div>
-						</div>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title" id="online">Online</h4>
+                        <h4 class="card-title" id="offline">Offline</h4>
+                        <h6 class="card-subtitle">Device Status</h6>
+                    </div>
+                    <div class="card-block">
+                        <p><span>{{uptime}}</span><br><strong>Uptime</strong></p>
+                        <p><span>{{memory}}</span><br><strong>Memory</strong></p>
+                        <p><span>{{load}}</span><br><strong>Load</strong></p>
+                    </div>
+                </div>
 
-						<div class="card status">
-							<div class="card-block status-heading">
-								<h4 class="card-title">{{ip}}</h4>
-								<h6 class="card-subtitle">Wi-Fi Network</h6>
-							</div>
-							<div class="card-block">
-								<p><span>{{netmask}}</span><br><strong>Netmask</strong></p>
-								<p><span>{{mac}}</span><br><strong>MAC Address</strong></p>
-							</div>
-						</div>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title">{{ip}}</h4>
+                        <h6 class="card-subtitle">Wi-Fi Network</h6>
+                    </div>
+                    <div class="card-block">
+                        <p><span>{{netmask}}</span><br><strong>Netmask</strong></p>
+                        <p><span>{{mac}}</span><br><strong>MAC Address</strong></p>
+                    </div>
+                </div>
 
-						<div class="card status">
-							<div class="card-block status-heading">
-								<h4 class="card-title">{{received}}</h4>
-								<h6 class="card-subtitle">Bytes Received</h6>
-							</div>
-							<div class="card-block">
-								<p class="card-text">The is the total number of bytes received by the Omega</p>
-							</div>
-						</div>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title">{{received}}</h4>
+                        <h6 class="card-subtitle">Bytes Received</h6>
+                    </div>
+                    <div class="card-block">
+                        <p class="card-text">The is the total number of bytes received by the Omega</p>
+                    </div>
+                </div>
 
-						<div class="card status">
-							<div class="card-block status-heading">
-								<h4 class="card-title">{{transmitted}}</h4>
-								<h6 class="card-subtitle">Bytes Transmitted</h6>
-							</div>
-							<div class="card-block">
-								<p class="card-text">The is the total number of bytes transmitted by the Omega</p>
-							</div>
-						</div>
-					</div>
-				</div>			
-			</onion-app-body>
-		</onion-app>
+                <div class="card status">
+                    <div class="card-block status-heading">
+                        <h4 class="card-title">{{transmitted}}</h4>
+                        <h6 class="card-subtitle">Bytes Transmitted</h6>
+                    </div>
+                    <div class="card-block">
+                        <p class="card-text">The is the total number of bytes transmitted by the Omega</p>
+                    </div>
+                </div>
+    		</div>
+        </div>
+
 	</template>
 
 	<script>
 		'use strict';
-
-		(function () {
+        (function () {
 
 			var refreshRxTxInterval = null;
 			var refreshStatusInterval = null;
 			var locked = false;
-			
+
 			var start = function () {
 				console.log('Start Function for the onion-status app')
 				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
@@ -225,7 +226,7 @@
 						section: '@system[0]',
 						option: 'hostname'
 					};
-					
+
 					this.ubus = ubus;
 					this.ubus.request('uci', 'get', params, function (result) {
 						if (result[0] === 0) {
@@ -237,16 +238,16 @@
 
 			var ready = function() {
 				this.title = 'Device Status';
-				
+
 				onionConsole.getService('onion-session-provider', (function (err, sessionProvider) {
 					this.sessionProvider = sessionProvider;
-				
-					
+
+
 					if (this.sessionProvider.isAlive() === true) {
 						onionConsole.getService('onion-device-settings-provider', (function (err, deviceSettingsProvider) {
 							this.deviceSettingsProvider = deviceSettingsProvider;
 
-							// find the device 
+							// find the device
 							this.deviceSettingsProvider.getDeviceType(null,(function (deviceType) {
 								this.device = deviceType;
 							}).bind(this));
@@ -302,7 +303,7 @@
 
 				var minutes = Math.floor((temp %= 3600) / 60);
 				ret = ret +  zeroPad(minutes, 2) + ':';
-				
+
 				var seconds = temp % 60;
 				ret = ret +  zeroPad(seconds, 2);
 
@@ -323,7 +324,7 @@
 						}).bind(this));
 					}).bind(this), 1000);
 
-					
+
 
 					//Get MAC Address
 					// self.deviceSettingsProvider.getMAC(function (result) {
@@ -371,23 +372,23 @@
 				window.addEventListener('resize', setCardsContainerWidth, true);
 				setCardsContainerWidth();
 			};
-			
+
 		    var refreshRxTx = function (interval) {
 			    refreshRxTxInterval = setInterval((function () {
 			    	this.updateRxTx()
 			    }).bind(this), interval);
 			};
-			
-			var stopRefreshRxTx = function () { 
+
+			var stopRefreshRxTx = function () {
 			    clearInterval(this.refreshRxTxInterval);
 				delete this.refreshRxTxInterval;
 			};
-			
+
 			var updateRxTx = function () {
 			    if (this.sessionProvider.isAlive() === true) {
 					this.deviceSettingsProvider.getRxTx("", (function (result) {
 						this.received 		= result[0].received;
-						this.transmitted 	= result[1].transmitted;							
+						this.transmitted 	= result[1].transmitted;
 					}).bind(this));
 				} else {
 				    this.stopRefreshRxTx();
@@ -447,7 +448,7 @@
 					return '-';
 				}
 			};
-			
+
 			/*
 			var refreshStatus = function (interval) {
 			    refreshStatusInterval = setInterval(function () {
@@ -470,11 +471,10 @@
 			*/
 
 			Polymer({
-				is: 'onion-status',
+				is: 'onion-settings-status',
 				start: start,
 				ready: ready,
 				attached: attached,
-				behaviors: [Onion.AppBehavior],
 				refreshInfo: refreshInfo,
 				refreshRxTx: refreshRxTx,
 				stopRefreshRxTx: stopRefreshRxTx,

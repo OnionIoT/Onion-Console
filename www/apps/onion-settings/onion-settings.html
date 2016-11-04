@@ -11,6 +11,7 @@
 <link rel="import" href="./onion-settings-update.html">
 <link rel="import" href="./onion-settings-restore.html">
 <link rel="import" href="./onion-settings-cloud.html">
+<link rel="import" href="./onion-settings-status.html">
 
 
 <dom-module id="onion-settings">
@@ -38,7 +39,7 @@
 			#side-bar bootstrap-pill iron-icon {
 			margin-right: 5px;
 		}
-			
+
 		iron-pages {
 			width: 100%;
 			height: 100%;
@@ -61,7 +62,8 @@
 					</div>
 
 					<iron-pages id="settingContainer" attr-for-selected="id" selected="[[currentSetting(subApps, currentTab)]]">
-						<onion-settings-general id="onion-settings-general"></onion-settings-general>
+                        <onion-settings-status id="onion-settings-status"></onion-settings-status>
+                        <onion-settings-general id="onion-settings-general"></onion-settings-general>
 						<onion-settings-wifi id="onion-settings-wifi"></onion-settings-wifi>
 						<onion-settings-ap id="onion-settings-ap"></onion-settings-ap>
 						<onion-settings-update id="onion-settings-update"></onion-settings-update>
@@ -87,7 +89,12 @@
 				self.title = 'Omega Settings';
 
 				self.subApps = [
-					{
+                    {
+						name: 'Status',
+						icon: 'icons:assessment',
+						page: 'onion-settings-status'
+					},
+                    {
 						name: 'General Settings',
 						icon: 'icons:settings',
 						page: 'onion-settings-general'
