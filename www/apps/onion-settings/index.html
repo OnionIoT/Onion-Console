@@ -1,0 +1,163 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-pages/iron-pages.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../lib/iron-icons/notification-icons.html">
+<link rel="import" href="../../lib/iron-icons/hardware-icons.html">
+<link rel="import" href="../../elements/onion-app/onion-app.html">
+<link rel="import" href="../../elements/bootstrap-pills/bootstrap-pills.html">
+<link rel="import" href="./onion-settings-general.html">
+<link rel="import" href="./onion-settings-wifi.html">
+<link rel="import" href="./onion-settings-ap.html">
+<link rel="import" href="./onion-settings-update.html">
+<link rel="import" href="./onion-settings-restore.html">
+<link rel="import" href="./onion-settings-cloud.html">
+<link rel="import" href="./onion-settings-status.html">
+
+
+<dom-module id="onion-settings">
+	<style>
+		:host {
+			height: 100%;
+			width: 100%;
+			--bootstrap-pill-border-radius: 0;
+			--bootstrap-active-pill-background-color: #ecf0f1;
+			--bootstrap-pill-background-color: #fff;
+			--bootstrap-pill-color: #373a3c;
+		}
+
+		onion-app-body > div {
+			height: 100%;
+			width: 100%;
+		}
+
+		#side-bar {
+			width: 250px;
+			height: 100%;
+			position: relative;
+			background-color: #fff;
+		}
+			#side-bar bootstrap-pill iron-icon {
+			margin-right: 5px;
+		}
+
+		iron-pages {
+			width: 100%;
+			height: 100%;
+			background-color: #ecf0f1;
+			padding: 25px;
+			overflow: scroll;
+		}
+	</style>
+
+	<template>
+		<onion-app app-name="Settings" toolbar-color="#fff" toolbar-background="#7f8c8d">
+			<onion-app-body page-id="home">
+				<div class="horizontal layout">
+					<div id="side-bar">
+						<bootstrap-pills stacked selected="{{currentTab}}">
+							<template is="dom-repeat" items="{{subApps}}">
+								<bootstrap-pill><iron-icon icon="{{item.icon}}"></iron-icon><span>{{item.name}}</span></bootstrap-pill>
+							</template>
+						</bootstrap-pills>
+					</div>
+
+					<iron-pages id="settingContainer" attr-for-selected="id" selected="[[currentSetting(subApps, currentTab)]]">
+                        <onion-settings-status id="onion-settings-status"></onion-settings-status>
+                        <onion-settings-general id="onion-settings-general"></onion-settings-general>
+						<onion-settings-wifi id="onion-settings-wifi"></onion-settings-wifi>
+						<onion-settings-ap id="onion-settings-ap"></onion-settings-ap>
+						<onion-settings-update id="onion-settings-update"></onion-settings-update>
+						<onion-settings-restore id="onion-settings-restore"></onion-settings-restore>
+						<onion-settings-cloud id="onion-settings-cloud"></onion-settings-cloud>
+					</iron-pages>
+				</div>
+			</onion-app-body>
+		</onion-app>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var self = null;
+
+			var created = function () {
+				self = this;
+			};
+
+			var ready = function () {
+				self.title = 'Omega Settings';
+
+				self.subApps = [
+                    {
+						name: 'Status',
+						icon: 'icons:assessment',
+						page: 'onion-settings-status'
+					},
+                    {
+						name: 'General Settings',
+						icon: 'icons:settings',
+						page: 'onion-settings-general'
+					},
+					{
+						name: 'Wi-Fi Settings',
+						icon: 'notification:wifi',
+						page: 'onion-settings-wifi'
+					},
+					{
+						name: 'Wi-Fi AP Settings',
+						icon: 'hardware:router',
+						page: 'onion-settings-ap'
+					},
+					{
+						name: 'Firmware Upgrade',
+						icon: 'icons:cloud-download',
+						page: 'onion-settings-update'
+					},
+					{
+						name: 'Factory Restore',
+						icon: 'icons:history',
+						page: 'onion-settings-restore'
+					},
+					{
+						name: 'Cloud Settings',
+						icon: 'icons:cloud',
+						page: 'onion-settings-cloud'
+					}
+				];
+			};
+
+			var _currentTabChanged = function (e) {
+				setTimeout(function () {
+					if (self.$[self.subApps[e.detail.value].page].init) {
+						self.$[self.subApps[e.detail.value].page].init();
+					}
+				}, 100);
+			};
+
+			var currentSetting = function (subApps, currentTab) {
+				return subApps[currentTab].page;
+			};
+
+			Polymer({
+				is: 'onion-settings',
+				created: created,
+				ready: ready,
+				currentSetting: currentSetting,
+				_currentTabChanged: _currentTabChanged,
+				behaviors: [Onion.AppBehavior],
+				properties: {
+					currentTab: {
+						type: String,
+						value: '0',
+						notify: true
+					}
+				},
+				listeners: {
+					'current-tab-changed': '_currentTabChanged'
+				}
+			});
+        })();
+	</script>
+
+</dom-module>
