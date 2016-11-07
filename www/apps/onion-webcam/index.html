@@ -1,0 +1,71 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../elements/onion-app/onion-app.html">
+<link rel="import" href="../../elements/onion-installer/onion-installer.html">
+
+<dom-module id="onion-webcam-installer">
+	<style>
+		:host {
+			display: block;
+	  		height: 100%;
+			width: 100%;
+		}
+		
+		#sshContainer {
+			height: 100%;
+			width: 100%;
+			padding-top: 50px;
+		   }
+
+		#shellinabox {
+			background: transparent;
+			border: none;
+			width: 100%;
+/*			height: 100%;*/
+			height: 1000px;
+/*			display: block;*/
+			margin: 0;
+			padding: 0;
+		}
+		#iframeContainer{
+			height: 100%;
+			width: 100%;
+		}
+		iframe{
+			height: 100%;
+			width: 100%;
+		}
+	</style>
+	<template>
+
+		
+		<onion-app app-name="Onion Webcam Installer" toolbar-background="#34495e" toolbar-color="#fff">
+			<onion-app-toolbar page-id="home">
+
+			</onion-app-toolbar>
+			<onion-app-body page-id="home">
+				<onion-installer install-name="Webcam" install-id="onion-webcam" info-text="The Webcam App allows you to stream video from your Omega to your browser."></onion-installer>
+			</onion-app-body>
+		</onion-app>
+	</template>
+	<script>
+		'use strict';
+			
+		(function () {
+			// var self = null;
+
+			var created = function () {
+				// self = this;
+			};
+
+			var ready = function() {
+			};
+			
+			Polymer({
+				is: 'onion-webcam-installer',
+				created: created,
+				ready: ready,
+				behaviors: [Onion.AppBehavior],
+			});
+		})();
+	</script>
+</dom-module>

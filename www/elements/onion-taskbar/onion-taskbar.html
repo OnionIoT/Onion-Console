@@ -116,9 +116,9 @@
 
 			var _computeIconUrl = function (item) {
 				if (item.path) {
-					return '../..' + item.path + '/'+ item.id + '/icon.png';
+					return '../../console' + item.path + '/'+ item.id + '/icon.png';
 				} else {
-					return '../../apps/' + item.id + '/icon.png';
+					return '../../console/apps/' + item.id + '/icon.png';
 				}
 			};
 
@@ -170,7 +170,7 @@
 					currentApp: {
 						type: String,
 						notify: true,
-						value: 'onion-launcher',
+						value: 'onion-settings',
 					}
 				},
 			});

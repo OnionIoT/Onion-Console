@@ -1,0 +1,164 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../lib/iron-pages/iron-pages.html">
+<link rel="import" href="../../elements/onion-app/onion-app.html">
+
+
+<link rel="import" href="../../elements/onion-loading/onion-loading.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-styles/bootstrap-styles.html">
+<link rel="import" href="../../elements/onion-styles/onion-styles.html">
+<link rel="import" href="../../elements/onion-taskbar/onion-taskbar.html">
+<link rel="import" href="../../elements/onion-notification/onion-notification.html">
+
+<dom-module id="onion-installer">
+	<style>
+		:host {
+			display: block;
+			height: 100%;
+			width: 100%;
+			overflow: hidden;
+
+			background-image: url('/images/bg/a.jpg');
+		    background-attachment: fixed;
+			background-size: cover;
+		}
+		
+		/*<!-- #installedApp { -->
+			<!-- width: auto; -->
+			<!-- height: 100%; -->
+		<!-- } -->*/
+		
+		#taskbar {
+/* 			position: fixed; */
+/* 			bottom: 0; */
+/* 			width: 100%; */
+/* 			height: 100%; */
+		}
+		
+		#serviceContainer {
+			display: none;
+		}
+		.console {
+			width: 100%;
+			z-index: 1000;
+			height: 100%;
+		}
+		@-webkit-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@-moz-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@-o-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@keyframes fadeOut {
+			from { opacity: 1; }
+		    to { opacity: 0; }
+		}
+
+	</style>
+
+	<template>
+
+		<div>
+			<h3>
+				{{infoText}}
+			</h3>
+			<bootstrap-button color-scheme="success" on-tap="installApp">Click here to install the {{installName}} App!</bootstrap-button>
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var created = function () {
+			};
+
+			var ready = function(){
+				var app = this.installId;
+				this.showApp(app);
+			};
+
+			var showApp = function (installId) {
+				onionConsole.importHref(['./apps/' + installId + '/' + installId + '.html?r=a2'], function () {
+					console.log("Inside the callback for the this.importHref");
+					var appElement = document.createElement(installId);
+					console.log("App element:", installId);
+					appElement.setAttribute('id', installId);
+					Polymer.dom(onionConsole.$.appContainer).appendChild(appElement); 
+					onionConsole.set('currentApp', installId);
+					if (typeof fileName !== 'undefined') {
+						appElement.fileName=fileName;
+					}
+				});
+			}
+			
+			var installApp = function () {
+				var params = {};
+				var key = this.installName.toLowerCase();
+				params[key] = "1"
+
+				onionConsole.getService('onion-device-provider', (function (err, deviceProvider) {
+
+					this.deviceProvider = deviceProvider;
+					this.deviceProvider.callService('', 'uci', 'set', {
+						config: 'onion',
+						section: 'console',
+						values: params
+					}, function (err,result) {
+						if (!err) {
+							this.deviceProvider.callService('', 'uci', 'commit', {
+								config: 'onion'
+							}, function (err, result) {
+								if (!err) {
+									// resolve('App install status changed successfully.');
+									// checkForApp(this.installId);
+								}
+							});
+						} else {
+							reject(Error('Unable to set the install status.'));
+						}
+					}.bind(this));
+				}).bind(this));
+			}
+			
+			var checkForApp = function(appId) {setInterval(function(){
+				showApp(appId);
+				},10000);
+			}
+
+			Polymer({
+				is: 'onion-installer',
+				created: created,
+				ready: ready,
+				installApp: installApp,
+				showApp: showApp,
+				checkForApp: checkForApp,
+				properties: {
+					apps: Array,
+					installName: String,
+					installId: String,
+					infoText: String,
+					runningApps: {
+						type: Array,
+						notify: true,
+						value: []
+					},
+					currentApp: {
+						type: String,
+						notify: true,
+						value: ''
+					}
+				},
+			});
+		})();
+	</script>
+</dom-module>
