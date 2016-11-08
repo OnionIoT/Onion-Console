@@ -225,7 +225,7 @@
 					console.log(code);
 					fileObj.code = code;
 					fileObj.selected = true;
-					fileObj.bSave = true;
+					fileObj.bSave = false;
 					fileObj.language = this.getLang(fileObj.name);
 					this.push('openFiles',fileObj);
 					callback();
@@ -474,31 +474,45 @@
 
 
 
-			var saveUpdate = function(ind){
-				var currentCode = this.openFiles.forEach(function(element,index){
+			var saveUpdate = function(ind,callback){
+				console.log("The saveUpdate index is",ind);
+				var currentCode;
+				this.openFiles.forEach(function(element,index){
 					if(index == ind){
 						currentCode = this.$.fileEditor.editor.session.getValue();
-						return currentCode;
+						if(currentCode == this.openFiles[ind].code){
+							console.log("The codes are the same and do not need to be saved");
+							this.openFiles[ind].bSave = false;
+							callback();
+						}else{
+							console.log("The codes are not the same and a save is necessary")
+							this.openFiles[ind].bSave = true;
+							this.openFiles[ind].code = currentCode;
+							callback();
+						}
 					}
 				}.bind(this));
-				if(currentCode == this.openFiles[ind].code){
-					console.log("The codes are the same and do not need to be saved");
-					this.openFiles[ind].bSave = false;
-				}else{
-					console.log("The codes are not the same and a save is necessary")
-					this.openFolder[ind].bSave = true;
-					this.openFiles[ind].code = currentCode;
-				}
 			};
 
 			var currentTabChange = function(){
-				console.log("Current Tab observer has been called");
-				console.log(this);
-				console.log("currentTab",this.currentTab);
-				console.log("openFiles",this.openFiles);
-				this.saveUpdate(this.fileIndex);
-				this.loadOpenFile(this.openFiles,this.currentTab);
-				this.fileIndex = this.currentTab;
+				if(this.fileIndex == null){
+					//First Iteration
+					this.fileIndex = this.currentTab
+					console.log("Current Tab observer has been called");
+					console.log("currentTab",this.currentTab);
+					console.log("fileIndex",this.fileIndex);
+					// this.saveUpdate(this.fileIndex);
+					this.loadOpenFile(this.openFiles,this.currentTab);
+					this.fileIndex = this.currentTab;
+				} else{
+					console.log("Current Tab observer has been called");
+					console.log("currentTab",this.currentTab);
+					console.log("fileIndex",this.fileIndex);
+					this.saveUpdate(this.fileIndex,function(){
+						this.loadOpenFile(this.openFiles,this.currentTab);
+						this.fileIndex = this.currentTab;
+					}.bind(this));
+				}
 			};
 
 			var openFilesObserver = function(){
