@@ -10,16 +10,16 @@
         
         #iframe-div
         {
-            width    : 100vh;
+            width    : auto;
             height   : 100vh;
-            overflow : hidden;
+            /*overflow : hidden;*/
             position : relative;
         }
          
         #iframe
         {
             position : absolute;
-            left     : -350px;
+            /*left     : -350px;*/
         }
 	</style>
 
@@ -38,11 +38,58 @@
 
 		(function() {
 			var ready = function () {
-				
+				window.addEventListener("message", receiveMessage); //Listening for message from modal
 			};
             
-            // listener for iframe posting event
-            // uses onion-device-provider to call the ubus commands for uci
+            var receiveMessage= function (result) {
+                if (result.origin !== "https://registerdevice.onion.io")
+	            return;
+                
+                var params = {
+                    deviceId: result.data.content.deviceId,
+                    secret: result.data.content.deviceSecret
+                };
+                
+                // send UCI command
+                var promise = new Promise(function (resolve, reject) {
+					onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+						this.deviceProvider = deviceProvider;
+						// this.deviceProvider.callService(null,'uci', 'set', {
+                        this.deviceProvider.callService(null,'uci', 'add', {
+							config: 'onion',
+							type: 'cloud',
+							name: 'cloud'
+						}, function (err,result) {
+							console.log('uci add onion cloud result:', result);
+							if (!err) {
+                                this.deviceProvider.callService(null, 'uci', 'set', {
+                                    config: 'onion',
+                                    section: 'cloud',
+                                    values: params
+                                }, function (err, result) {
+                                    if (!err) {
+                                        this.deviceProvider.callService(null,'uci', 'commit', {
+        									config: 'onion'
+        								}, function (err, result) {
+        									if (!err) {
+                                                console.log('uci commit onion result: ', result);
+        										resolve();
+        									} else {
+        										reject(Error('Unable to set Onion Cloud configuration.'));
+        									}
+        								});
+                                    } else {
+                                        reject(Error('Unable to set Onion Cloud configuration.'));
+                                    }
+                                }.bind(this));
+							} else {
+								reject(Error('Unable to set Onion Cloud configuration.'));
+							}
+						}.bind(this));
+					}.bind(this));
+				}.bind(this));
+				return promise;
+            };
 			
 			Polymer({
 				is: 'onion-settings-cloud',
