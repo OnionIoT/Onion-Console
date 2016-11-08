@@ -121,10 +121,12 @@
 								</form>
 							</modal-body>
 						</bootstrap-modal>
-						<bootstrap-modal id="confirmSave" title="Would you like to save the file">
+						<bootstrap-modal id="confirmDialogue" title="">
 							<modal-body>
-									<button id="noSave" on-click="closeSaveDialog">No</input>
-									<button id="yesSave" on-click="confirmSave">Yes</input>
+								<form>
+									<input type="button" id="noButton" >No</input>
+									<input type="button" id="yesButton">Yes</input>
+								</form>
 							</modal-body>
 						</bootstrap-modal>
 						<bootstrap-pills selected="{{currentTab}}">
@@ -195,29 +197,36 @@
 
 			var openFile = function(fileObj){
 				//Is fileObj in the openFile Array 
-				if(this.isFileInArray(fileObj,this.openFiles)){
-					//Modify the fileName attribute
-					// fileObj.fileName = fileObj.absolutePath;
-					//Bring it to the forefront
-					this.getfileIndex(fileObj,function(index){
-						console.log(index);
-						this.currentTab = index;
-					}.bind(this));
-				} else{
-					//Do need to add it. 
-					this.addFileToArray(fileObj,function(){
-						//And also Bring it to the forefront
+				this.isFileInArray(fileObj,this.openFiles,function(bPresent){
+					console.log("Is file opened?,:",bPresent);
+					if(bPresent){
+						//Modify the fileName attribute
+						// fileObj.fileName = fileObj.absolutePath;
+						//Bring it to the forefront
+						console.log("file Is in Array, do not add it.");
 						this.getfileIndex(fileObj,function(index){
 							console.log(index);
 							this.currentTab = index;
-							console.log(this.currentTab);
 						}.bind(this));
-					}.bind(this));
-				}
+					} else{
+						//Do need to add it. 
+						console.log("files is not in Array, It needs to be added");
+						this.addFileToArray(fileObj,function(){
+							//And also Bring it to the forefront
+							this.getfileIndex(fileObj,function(index){
+								console.log(index);
+								this.currentTab = index;
+								console.log(this.currentTab);
+								console.log(this.fileIndex);
+							}.bind(this));
+						}.bind(this));
+					}
+				}.bind(this));
 			};
 
 
 			var addFileToArray = function(fileObj,callback){
+				console.log("addfileToArray gets called, fileObj is:",fileObj);
 				this.getFileCode(fileObj.absolutePath,function(code){
 					console.log(code);
 					fileObj.code = code;
@@ -250,18 +259,32 @@
 				});
 			};
 
-			var isFileInArray = function(obj,array){
+			var isFileInArray = function(obj,array,callback){
+				console.log("isFileInArray gets called");
 				var length = array.length;
 				var ind = length - 1;
 				var bPress = false;
-				array.forEach(function(element,index){
-					if(obj.absolutePath == element.absolutePath){
-						bPress = true;
-					}
-					if(ind == index){
-						return bPress;
-					}
-				});
+				console.log(array);
+				if(array.length == 0){
+					console.log("The array is empty and callback should be called");
+					callback(bPress);
+					return;
+				} else{
+					array.forEach(function(element,index){
+						if(obj.absolutePath == element.absolutePath){
+							bPress = true;
+							console.log(bPress);
+							callback(bPress);
+						} else if(ind == index && obj.absolutePath == element.absolutePath){
+							console.log(bPress)
+							callback(bPress);
+							return;
+						} else if(ind == index){
+							console.log(bPress);
+							callback(bPress);
+						}
+					});
+				}
 			};
 
 			var isFile = function(fileObj){
@@ -296,15 +319,21 @@
 
 			var loadOpenFile = function(openFileArray,fileIndex){
 				console.log("The File Index is",fileIndex);
-				openFileArray.forEach(function(element,index){
-					if(index == fileIndex){
-						console.log("Index",index);
-						console.log("Element",element);
-						this.$.fileEditor.editor.session.setMode('ace/mode/' + element.language);
-						this.$.fileEditor.editor.session.setValue(element.code);
-						return;
+				console.log(this);
+				setTimeout(function(){
+					if(fileIndex == null){
+						this.$.fileEditor.editor.session.setValue('');
+					}else{
+						openFileArray.forEach(function(element,index){
+							if(index == fileIndex){
+								console.log("Index",index);
+								console.log("Element",element);
+								this.$.fileEditor.editor.session.setMode('ace/mode/' + element.language);
+								this.$.fileEditor.editor.session.setValue(element.code);
+							}
+						}.bind(this));
 					}
-				}.bind(this));
+				}.bind(this),300);
 			};
 			 
 			var findTypeById = function (sourceList, name) {
@@ -368,22 +397,129 @@
 			};
 			
 			var closeFile = function (callback) {
+				this.saveFile(function(response){
+					if(response.status == 'failure'){
+						//DoNothing, if save fails
+						return;
+					}else if(response.status == 'success' || response =="Save Not Necessary"){
+						//remove file From OpenFile List
+						console.log("Length of openFilesArray before splice",this.openFiles.length);
+						this.splice('openFiles',this.currentTab,1);
+						console.log("Length of openFilesArray after splice",this.openFiles.length);
+						console.log(this.currentTab);
+						var newCurrentTab = this.openFiles.length - 1;
+						console.log((this.openFiles.length -1));
+						if(this.openFiles.length == 0){
+							console.log("the length is 0");
+							this.fileIndex = null;
+							this.currentTab = null;
+						}else{
+							console.log(" openFiles length is > 0");
+							if(this.currentTab == newCurrentTab){
+								console.log("currentTab equals newCurrentTab")
+								this.fileIndex = newCurrentTab;
+								this.currentTabChange();
+							}else{
+								console.log("currentTab does not equal new currentTab");
+								this.fileIndex = newCurrentTab;
+								this.currentTab = newCurrentTab;	
+							}
+						}
+						//change currentTab
+						//
+					}
+				}.bind(this));
 
 				this.$.fileEditor.editor.session.setValue('');
 			};
 			
 			var saveFile = function (callback) {
+				console.log(callback);
 			    //var saveResult=true;
-				if (this.sessionProvider.isAlive() === true) {	
-					var fileObj = this.openFiles[this.currentTab];
-					if(fileObj.bSave){
-						this.$.confirmSave.open();
-					}else{
-						//save Not Necessary
+				if (this.sessionProvider.isAlive() === true) {
+					if(typeof callback == "object"){
+						this.saveUpdate(this.currentTab,function(){
+							var fileObj = this.openFiles[this.currentTab];
+							if(fileObj.bSave){
+								this.$.confirmDialogue.title = "Confirm File Save: " + fileObj.absolutePath;
+								this.$.yesButton.addEventListener('click',function(e){
+									//Yes is clicked
+									this.fileProvider.saveContent(null,fileObj.absolutePath,fileObj.code,false,function(response){
+										if(response.status == 'success'){
+											//Save sucessful
+											this.$.confirmDialogue.title = "Save Successful";
+											setTimeout(function(){
+												this.$.confirmDialogue.close();
+											}.bind(this),2000);
+										}else{
+											//Save unsuccessful, maybe do something.
+											this.$.confirmDialogue.title = "Save unSuccessful";
+											setTimeout(function(){
+												this.$.confirmDialogue.close();
+											}.bind(this),2000);
+										}
+									}.bind(this));
+								}.bind(this));
+
+								this.$.noButton.addEventListener('click',function(e){
+									this.$.confirmDialogue.close();
+								}.bind(this));
+
+								this.$.confirmDialogue.open();
+							}else{
+								//save Not Necessary
+							}
+						}.bind(this));
+					} else if(typeof callback == 'function'){
+						this.saveUpdate(this.currentTab,function(){
+							var fileObj = this.openFiles[this.currentTab];
+							if(fileObj.bSave){
+								this.$.confirmDialogue.title = "Confirm File Save: " + fileObj.absolutePath;
+								this.$.yesButton.addEventListener('click',function(e){
+									//Yes is clicked
+									this.fileProvider.saveContent(null,fileObj.absolutePath,fileObj.code,false,function(response){
+										if(response.status == 'success'){
+											//Save is successful
+											//
+											//Maybe Do Something
+											this.$.confirmDialogue.title = "Save Successful";
+											setTimeout(function(){
+												this.$.confirmDialogue.close();
+												if(typeof callback == 'function'){
+													callback({status:"success"});
+												};
+											}.bind(this),2000);
+										}else{
+											//Save unsuccessful, maybe do something.
+											this.$.confirmDialogue.title = "Save unSuccessful";
+											setTimeout(function(){
+												this.$.confirmDialogue.close();
+												if(typeof callback == 'function'){
+													callback({status:"failure"});
+												};
+											}.bind(this),2000);
+										}
+									}.bind(this));
+								}.bind(this));
+
+								this.$.noButton.addEventListener('click',function(e){
+									this.$.confirmDialogue.close();
+									callback({status:"success"});
+								}.bind(this));
+
+								this.$.confirmDialogue.open();
+							}else{
+								if(typeof callback == 'function'){
+									callback("Save Not Necessary");
+								}
+								//save Not Necessary
+							}
+						}.bind(this));
 					}
 				}
 				//return saveResult;
 			};
+
 			
 			var newFolderDialog = function () {
 				var folderName = prompt('Please enter new folder name');
@@ -497,6 +633,9 @@
 			};
 
 			var currentTabChange = function(){
+				console.log("Inside currentTabChange");
+				console.log("this.currentTab",this.currentTab);
+				console.log("this.fileIndex",this.fileIndex);
 				if(this.fileIndex == null){
 					//First Iteration
 					this.fileIndex = this.currentTab
@@ -506,6 +645,8 @@
 					// this.saveUpdate(this.fileIndex);
 					this.loadOpenFile(this.openFiles,this.currentTab);
 					this.fileIndex = this.currentTab;
+				} else if((this.currentTab == this.fileIndex) && (this.currentTab != null)){
+					this.loadOpenFile(this.openFiles,this.currentTab);
 				} else{
 					console.log("Current Tab observer has been called");
 					console.log("currentTab",this.currentTab);
@@ -561,8 +702,8 @@
 				currentTabChange: currentTabChange,
 				loadOpenFile: loadOpenFile,
 				fileClick: fileClick,
-				addFileToArray: addFileToArray,
 				isFile: isFile,
+				addFileToArray: addFileToArray,
 				getFileCode:getFileCode,
 				getfileIndex: getfileIndex,
 				openFilesObserver:openFilesObserver,
@@ -572,16 +713,6 @@
 					files:{
 						type:Array,
 						value:[],
-						notify:true
-					},
-					folderFileInfo:{
-						type:Object,
-						value:{},
-						// 	folder:'/',
-						// 	file: '',
-						// 	list: null,
-						// 	fileInEdit: ''
-						// },
 						notify:true
 					},
 					currentFolder:{
