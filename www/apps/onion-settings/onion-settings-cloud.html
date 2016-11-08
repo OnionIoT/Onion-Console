@@ -4,228 +4,114 @@
 <dom-module id="onion-settings-cloud">
 	<style>
 		.container {
-			width: 600px;
+			width: 100%;
 			margin: 0 auto;
 		}
-		.card {
-			margin-top: 15px;
-			background-color: #fff;
-		}
-			.card .form-group:last-child {
-				margin-bottom: 0;
-			}
-
-		.loading{
-			height: 20px;
-			width: 20px;
-			margin-left: 15px; 
-			-webkit-animation: rotation 1s infinite linear;
-			-moz-animation: rotation 1s infinite linear;
-			-o-animation: rotation 1s infinite linear;
-			animation: rotation 1s infinite linear;
-			border-left: 3px solid #EAF1FF;
-			border-right: 3px solid #EAF1FF;
-			border-bottom: 3px solid #EAF1FF;
-			border-top: 3px solid #2450AD;
-			border-radius: 100%
-		}
-
-		.label {
-			font-weight: bold;
-			margin-right: 10px;
-			color: black;
-			font-size: 1.5em;
-		}
-		#code-input {
-			margin-bottom: 10px; 
-		}
-
-		th {
-			margin-right: 10px;
-    		padding: 15px;
-    		white-space: nowrap;
-		}
-
-		td {
-			width: 100%;
-			word-break: break-all;
-    		padding: 15px;
-		}
+        
+        #iframe-div
+        {
+            width    : auto;
+            height   : 100vh;
+            /*overflow : hidden;*/
+            position : relative;
+        }
+         
+        #iframe
+        {
+            position : absolute;
+            /*left     : -350px;*/
+        }
 	</style>
 
 	<template>
 
 		<div class="container">
-			<form id="settings" on-submit="setupDevice">
-				<h4>Onion Cloud Settings</h4>
-
-				<div class= "card card-block">
-					<div class="form-group layout vertical">
-
-						<!-- Using the Setup Code -->
-						<template is="dom-if" if="{{!bDisplayInfoView}}">
-							<div>Setup Code</div>
-							<input class="form-control" id="code-input" autocomplete="off" value="{{setupCode::input}}" />
-							<div class="layout horizontal center">
-								<button id="cloud-config-button" type="button" class="btn btn-success" on-tap="setupDevice">Setup Device</button>
-								<div id="setupLoading" class="loading" hidden="{{!loading}}"></div>
-								<div class="flex"></div>
-							</div>
-						
-						</template>	
-
-						<!-- Setup is already done -->
-						<template is="dom-if" if="{{bDisplayInfoView}}">
-							<table>
-								<tr>
-									<th>Device ID</th>
-									<td>{{deviceId}}</td>
-								</tr>
-								<tr>
-									<th>Secret</th>
-									<td>{{secret}}</td>
-								</tr>
-							</table>	
-
-							<!-- button to remove current settings -->
-							<div class="layout horizontal end-justified">
-								<button id="cloud-config-button" type="button" class="btn btn-success" on-tap="removeSettings">Reset Device Settings</button>
-								<!-- <div class="flex"></div> -->
-							</div>
-							
-						</template>	
-
-					</div>
-				</div>	
-
-			</form>
+            <div id="iframe-div">
+                <iframe id="iframe" src="https://registerdevice.onion.io" style="width:100%;height:100%;"></iframe>
+            </div>
 		</div>
 
 	</template>
 
-	<script>
+    <script>
 		'use strict';
-		(function () {
+
+		(function() {
 			var ready = function () {
-				this.deviceId	= '';
-				this.secret		= '';
-
-				this.bDisplayInfoView 		 	= false;
-
-				this.checkSetup();
+				window.addEventListener("message", receiveMessage); //Listening for message from modal
 			};
-
-			// function to check for uci onion.cloud
-			//	if it exists, will populate the deviceId and secret variables
-			//	if not, does nothing
-			var checkSetup = function () {
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-					ubus.request('uci', 'get', {
-						config: 'onion'
-					}, (function (result) {
-						console.log('uci get onion result: ', result);
-						if (result[0] === 0) {
-							if (result[1].values.cloud && ('deviceId' in result[1].values.cloud) && ('secret' in result[1].values.cloud) && (result[1].values.cloud.secret !== 'anonymous')) {
-								this.set('deviceId', 	result[1].values.cloud.deviceId);
-								this.set('secret',		result[1].values.cloud.secret);
-
-								this.set('bDisplayInfoView',		true);
+            
+            var receiveMessage= function (result) {
+                if (result.origin !== "https://registerdevice.onion.io")
+	            return;
+                
+                var params = {
+                    deviceId: result.data.content.deviceId,
+                    secret: result.data.content.deviceSecret
+                };
+                
+                // send UCI command
+                var promise = new Promise(function (resolve, reject) {
+					onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+						this.deviceProvider = deviceProvider;
+						// this.deviceProvider.callService(null,'uci', 'set', {
+                        this.deviceProvider.callService(null,'uci', 'add', {
+							config: 'onion',
+							type: 'cloud',
+							name: 'cloud'
+						}, function (err,result) {
+							console.log('uci add onion cloud result:', result);
+							if (!err) {
+                                this.deviceProvider.callService(null, 'uci', 'set', {
+                                    config: 'onion',
+                                    section: 'cloud',
+                                    values: params
+                                }, function (err, result) {
+                                    if (!err) {
+                                        this.deviceProvider.callService(null,'uci', 'commit', {
+        									config: 'onion'
+        								}, function (err, result) {
+        									if (!err) {
+                                                console.log('uci commit onion result: ', result);
+                                                
+                                                // restart the device client
+                                                this.deviceProvider.callService(null, 'file', 'exec', {
+                                                    command: '/etc/init.d/device-client',
+                                                    params: ['restart']
+                								}, function (err, result) {
+                									if (!err) {
+                                                        console.log('file exec result: ', result);
+                                                        resolve();
+                                                    }
+                                                    else {
+                                                        reject(Error('Unable to restart device client.'));
+                                                    }
+                                                }.bind(this));
+        										
+        									} else {
+        										reject(Error('Unable to set Onion Cloud configuration.'));
+        									}
+        								}.bind(this));
+                                    } else {
+                                        reject(Error('Unable to set Onion Cloud configuration.'));
+                                    }
+                                }.bind(this));
+							} else {
+								reject(Error('Unable to set Onion Cloud configuration.'));
 							}
-							else {
-								this.set('bDisplayInfoView',		false);
-							}
-						}
-					}).bind(this));
-				}).bind(this));
-			};
-
-			// use a setup code to run the setup script
-			var setupDevice = function () {
-				this.loading = true;
-				console.log('Setup code is ', this.setupCode);
-
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-					ubus.request('file', 'exec', {
-						command: '/usr/bin/onion-cloud',
-						params: [
-							'setup',
-							this.setupCode
-						]
-					}, (function (result) {
-						if (result.length === 2 && result[0] === 0) {
-							if (result[1].stdout.match(/error/i)) {
-								console.log('Setup Error: code is either invalid or expired');
-								// show a message
-								if (result[1].stdout.match(/expired/i)) {
-									onionConsole.sendNotification({
-										title: 'Cloud Settings',
-										message: '[Error]: Setup code has expired'
-									});
-								} else {
-									onionConsole.sendNotification({
-										title: 'Cloud Settings',
-										message: '[Error]: Setup code is invalid'
-									});
-								}
-							}
-							else {
-								console.log('Setup successful');
-								this.checkSetup();
-							}
-						} else {
-							onionConsole.sendNotification({
-								title: 'Cloud Settings',
-								message: '[Error]: Setup timeout, try again!'
-							});
-						}
-
-						// disable the loading animation
-						this.loading = false;
-						// clear the setup code
-						this.set('setupCode', '');
-					}).bind(this));
-				}).bind(this));
-			};
-
-			// remove the current cloud settings
-			var removeSettings = function () {
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-					ubus.request('uci', 'delete', {
-						config: 'onion',
-						section: 'cloud'
-					}, (function (result) {
-						if (result[0] === 0) {
-							ubus.request('uci', 'commit', {
-								config: 'onion'
-							}, (function (result) {
-								if (result[0] === 0) {
-									// removed the cloud settings successfully
-									this.checkSetup();
-								} 
-							}).bind(this));
-						}
-
-						// disable the loading animation
-						this.loading = false;
-					}).bind(this));
-				}).bind(this));
-			};
+						}.bind(this));
+					}.bind(this));
+				}.bind(this));
+				return promise;
+            };
 			
 			Polymer({
 				is: 'onion-settings-cloud',
 				ready: ready,
-				checkSetup: checkSetup,
-				setupDevice: setupDevice,
-				removeSettings: removeSettings,
 				properties: {
-					loading: {
-						type: Boolean,
-						value: false,
-						notify: true
-					}
+                    
 				}
 			});
 		})();
 	</script>
-
 </dom-module>
