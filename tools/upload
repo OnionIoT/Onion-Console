@@ -36,6 +36,6 @@ find dist -name "package.json" -exec rm -rf {} \; 2>/dev/null
 find dist -name ".git*" -exec rm -rf {} \; 2>/dev/null
 find dist -name ".DS_Store" -exec rm -rf {} \; 2>/dev/null
 
-rsync --progress --del -crv ./dist/* root@$ipAddr:/www
+rsync --progress --del -crv ./dist/* root@$ipAddr:/www/console
 
 rm -rf dist
