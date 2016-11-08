@@ -51,7 +51,8 @@
 			var ready = function () {
 				onionConsole.getService('onion-session-provider', function (err, session) {
 	            	this.session = session;
-
+                    var defaultApp = this.defaultApp;
+                    
 	            	this.session.checkToken(function (hasToken) {
 	            		if (hasToken) {
 	            			// Added true, don't know what that will do
@@ -59,7 +60,7 @@
 	            			this.$.username.value = '';
 							this.$.password.value = '';
 							onionConsole.loggedIn(function(){
-								onionConsole.launchApp('onion-settings');
+								onionConsole.launchApp(defaultApp);
 							});
 		            		// console.log(this.$.loginDialog);
 		            		// var backdrop = document.getElementsByTagName("iron-overlay-backdrop");
@@ -109,7 +110,7 @@
 
 			var login = function (e) {
 				// e.preventDefault();
-
+                var defaultApp = this.defaultApp;
 				var username = this.$.username.value;
 				var password = this.$.password.value;
 
@@ -117,9 +118,9 @@
 					if (result.success) {
 						this.$.username.value = '';
 						this.$.password.value = '';
-						console.log("Inside login function(onion-login),about to start onion-launcher");
+						console.log("Inside login function(onion-login),about to start ", defaultApp);
 						onionConsole.loggedIn(function(){
-							onionConsole.launchApp('onion-settings', true);
+							onionConsole.launchApp(defaultApp, true);
 						});
 						this.quit();
 					} else {
@@ -136,6 +137,14 @@
 			Polymer({
 				is: 'onion-login',
 				behaviors: [Onion.AppBehavior],
+                properties: {
+                    defaultApp: {
+                        type: String,
+                        value: 'onion-settings',
+                        notify: false,
+                        readOnly: true
+                    }
+                },
 				created: created,
 				ready: ready,
 	            login: login,
