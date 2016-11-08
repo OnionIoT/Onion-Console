@@ -53,12 +53,19 @@
 			display: none;
 			z-index: 1;
 		}
+		.current-folder {
+			display: flex;
+			position: relative;
+			padding-left: 20px;
+			font-size: 20px;
+		}
 	</style>
 
 	<template>
 		<div hidden$="{{_hasElements(_files)}}">
 			<content></content>
 		</div>
+		<div class="current-folder">[[currentFolder]]</div>
 		<template is="dom-repeat" items="{{_files}}">
 			<div class="file-row">
 				<iron-icon icon="{{item.preview}}" class="clickable" on-click="open"></iron-icon>
@@ -119,7 +126,15 @@
 			};
 
 			var open = function(e) {
-				this.fire('open', e.model.__data__.item)
+				console.log(e);
+				var fileObj = e.model.__data__.item;
+				if(this.currentFolder == "/"){
+					fileObj.absolutePath = this.currentFolder + fileObj.name;
+				}else{
+					fileObj.absolutePath = this.currentFolder + '/' + fileObj.name;
+				}
+				fileObj.parentDir = this.currentFolder;
+				this.fire('open', fileObj);
 			};
 
 			var saveRename = function(e) {
@@ -229,6 +244,11 @@
 					_reversed: {
 						type: Boolean,
 						value: false
+					},
+					currentFolder:{
+						type:String,
+						notify: true,
+						value: ""
 					}
 				},
 				created: created,
