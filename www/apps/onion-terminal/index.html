@@ -1,7 +1,8 @@
 <link rel="import" href="../../lib/polymer/polymer.html">
 <link rel="import" href="../../elements/onion-app/onion-app.html">
+<link rel="import" href="../../elements/onion-installer/onion-installer.html">
 
-<dom-module id="onion-terminal">
+<dom-module id="onion-terminal-installer">
 	<style>
 		:host {
 			display: block;
@@ -35,13 +36,15 @@
 		}
 	</style>
 	<template>
-		<onion-app app-name="Terminal" toolbar-background="#505050">
+
+		<onion-app app-name="Onion Terminal Installer" toolbar-background="#34495e" toolbar-color="#fff">
+			<onion-app-toolbar page-id="home">
+
+			</onion-app-toolbar>
 			<onion-app-body page-id="home">
-				<div id="iframeContainer" class="layout horizontal center-justified start">
-					<iframe id="shellinabox" src="{{sourceIP}}"></iframe>
-				</div>
+				<onion-installer install-name="Terminal" install-id="onion-terminal" info-text="The Terminal App gives you access to the Omega's command line in your browser."></onion-installer>
 			</onion-app-body>
-		</onion-app>	
+		</onion-app>
 	</template>
 	<script>
 		'use strict';
@@ -54,28 +57,10 @@
 			};
 			
 			var ready = function() {
-				this.title = 'Onion Terminal';
-				
-				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
-					this.sessionProvider = sessionProvider;
-
-					// if (self.sessionProvider.isAlive() === true) {
-						onionConsole.getService('onion-device-settings-provider', function (err, deviceProvider) {
-							this.deviceProvider = deviceProvider;
-							
-							//Get IP Address, NetMask
-							deviceProvider.getIpAddr(null, function (addr) {
-								if (addr !== '') {
-									this.sourceIP = '//' + addr + ':4200';
-								};
-							}.bind(this));
-						}.bind(this));
-					// }
-				}.bind(this));
 			};
 			
 			Polymer({
-				is: 'onion-terminal',
+				is: 'onion-terminal-installer',
 				created: created,
 				ready: ready,
 				behaviors: [Onion.AppBehavior],

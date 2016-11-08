@@ -8,6 +8,15 @@
 <link rel="import" href="/elements/onion-loading/onion-loading.html">
 <link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
 <link rel="import" href="/elements/bootstrap-pills/bootstrap-pills.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../lib/juicy-ace-editor/src/juicy-ace-editor.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../elements/onion-app/onion-app.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="../../elements/onion-file-list/onion-file-list.html">
+<link rel="import" href="../../elements/onion-loading/onion-loading.html">
+<link rel="import" href="../../elements/bootstrap-modal/bootstrap-modal.html">
 <dom-module id="onion-editor">
 	<style>
 		:host {
@@ -152,9 +161,6 @@
 
 			var launchUploadFile = function(){
 				this.$.fileUploadDialog.open();
-				// setTimeout(function(){
-				// 	this.$.fileUploadDialog.close();
-				// }.bind(this),6000);
 			};
 
 			var hideFileButtons = function(){
@@ -192,7 +198,6 @@
 
 			var openFile = function(fileObj){
 				//Is fileObj in the openFile Array 
-				//
 				if(this.isFileInArray(fileObj,this.openFiles)){
 					//Modify the fileName attribute
 					// fileObj.fileName = fileObj.absolutePath;
@@ -298,7 +303,7 @@
 					if(index == fileIndex){
 						console.log("Index",index);
 						console.log("Element",element);
-						this.$.fileEditor.setMode = 'ace/mode/' + element.language;
+						this.$.fileEditor.editor.session.setMode('ace/mode/' + element.language);
 						this.$.fileEditor.editor.session.setValue(element.code);
 						return;
 					}
@@ -330,21 +335,21 @@
 			
 			//Keep This Function
 			var getFileExtension = function (fileString) {
-			    var extension = '';
-			    if (this.folderFileInfo.file !== '') {
-			        extension = fileString.substring(fileString.lastIndexOf('.') + 1, fileString.length);
-			    }
-				return extension;
+			    return fileString.substring(fileString.lastIndexOf('.') + 1, fileString.length);
 			};
 
 			var getLang = function(fileName){
+				console.log(fileName);
 				var extension = this.getFileExtension(fileName);
+				console.log(extension);
 				if(extension == 'js'){
 					return 'javascript';
 				} else if(extension == 'py'){
 					return 'python';
 				} else if(extension == 'html'){
 					return 'html';
+				} else{
+					return 'txt';
 				}
 			}
 			
@@ -358,12 +363,6 @@
 							console.log(result);
 							this.files =result.list;
 							this.currentFolder = folderObj.absolutePath;
-							// t
-							// this.currentFolder = folderObj.absolutePath;
-							// result.list.forEach(function(element,index){
-							// 	this.push('files',element);
-							// }.bind(this));
-							//Empty the array
 						}else{
 							//Handle error, maybe open a modal
 						}
@@ -483,8 +482,10 @@
 					}
 				}.bind(this));
 				if(currentCode == this.openFiles[ind].code){
+					console.log("The codes are the same and do not need to be saved");
 					this.openFiles[ind].bSave = false;
 				}else{
+					console.log("The codes are not the same and a save is necessary")
 					this.openFolder[ind].bSave = true;
 					this.openFiles[ind].code = currentCode;
 				}
@@ -495,7 +496,7 @@
 				console.log(this);
 				console.log("currentTab",this.currentTab);
 				console.log("openFiles",this.openFiles);
-				// this.saveUpdate(this.fileIndex);
+				this.saveUpdate(this.fileIndex);
 				this.loadOpenFile(this.openFiles,this.currentTab);
 				this.fileIndex = this.currentTab;
 			};

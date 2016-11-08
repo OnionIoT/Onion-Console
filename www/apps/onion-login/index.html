@@ -26,7 +26,7 @@
 								<label for="password">Password</label>
 								<input type="password" class="form-control" id="password" on-keydown="checkPasswordKey">
 							</fieldset>
-							<div id="messageContainer"></div>
+							<div id="messageContainer"></div> 
 							<button type="submit" hidden></button>
 						</form>
 					</modal-body>
@@ -51,7 +51,6 @@
 			var ready = function () {
 				onionConsole.getService('onion-session-provider', function (err, session) {
 	            	this.session = session;
-                    var defaultApp = this.defaultApp;
 
 	            	this.session.checkToken(function (hasToken) {
 	            		if (hasToken) {
@@ -60,7 +59,7 @@
 	            			this.$.username.value = '';
 							this.$.password.value = '';
 							onionConsole.loggedIn(function(){
-								onionConsole.launchApp(defaultApp);
+								onionConsole.launchApp('onion-settings');
 							});
 		            		// console.log(this.$.loginDialog);
 		            		// var backdrop = document.getElementsByTagName("iron-overlay-backdrop");
@@ -73,7 +72,7 @@
 		            		// },1500);
 		            		// console.log("The backdrop is :", backdrop);
 		            		// console.log("The backdrop[0] is:", backdrop[0]);
-		            		// backdrop[0].parentNode.removeChild(backdrop[0]);
+		            		// backdrop[0].parentNode.removeChild(backdrop[0]);		            			
 		            		// this.$.loginDialog.close();
 		            		this.quit();
 		            	}
@@ -87,14 +86,14 @@
 					this.$.password.focus();
 				}
 			};
-
+			
 			var checkPasswordKey = function (e) {
 				if (e.which === 13) {
 					e.preventDefault();
 					this.login();
 				}
 			};
-
+			
 			var start = function () {
 				setTimeout((function () {
 					this.$.loginDialog.open();
@@ -120,7 +119,7 @@
 						this.$.password.value = '';
 						console.log("Inside login function(onion-login),about to start onion-launcher");
 						onionConsole.loggedIn(function(){
-							onionConsole.launchApp(defaultApp, true);
+							onionConsole.launchApp('onion-settings', true);
 						});
 						this.quit();
 					} else {
@@ -133,17 +132,9 @@
 					}
 				}.bind(this));
 			};
-
+			
 			Polymer({
 				is: 'onion-login',
-                properties: {
-                    defaultApp: {
-                        type: String,
-                        value: 'onion-settings',
-                        notify: false,
-                        readOnly: true
-                    }
-                },
 				behaviors: [Onion.AppBehavior],
 				created: created,
 				ready: ready,
@@ -153,7 +144,7 @@
 	            fg: start,
 	            quit: quit,
 	            checkUsernameKey: checkUsernameKey,
-				checkPasswordKey: checkPasswordKey,
+				checkPasswordKey: checkPasswordKey
 			});
         })();
 	</script>
