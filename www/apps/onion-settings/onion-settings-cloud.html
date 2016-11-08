@@ -73,11 +73,25 @@
         								}, function (err, result) {
         									if (!err) {
                                                 console.log('uci commit onion result: ', result);
-        										resolve();
+                                                
+                                                // restart the device client
+                                                this.deviceProvider.callService(null, 'file', 'exec', {
+                                                    command: '/etc/init.d/device-client',
+                                                    params: ['restart']
+                								}, function (err, result) {
+                									if (!err) {
+                                                        console.log('file exec result: ', result);
+                                                        resolve();
+                                                    }
+                                                    else {
+                                                        reject(Error('Unable to restart device client.'));
+                                                    }
+                                                }.bind(this));
+        										
         									} else {
         										reject(Error('Unable to set Onion Cloud configuration.'));
         									}
-        								});
+        								}.bind(this));
                                     } else {
                                         reject(Error('Unable to set Onion Cloud configuration.'));
                                     }
