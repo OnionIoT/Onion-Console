@@ -332,9 +332,9 @@
 
 						newEntry.name = result.entries[i].name;
 						newEntry.type = result.entries[i].type;
-						if (result.entries.type === 'directory') {
+						if (result.entries[i].type === 'directory') {
 						    newEntry.preview = 'folder';
-						} else if (result.entries.type === 'symlink') {
+						} else if (result.entries[i].type === 'symlink') {
 						    newEntry.preview = 'link';
 						}
 
@@ -509,7 +509,7 @@
 				setCreateTempResult: setCreateTempResult,
 				createTempFile: createTempFile,
 				handler: handler,
-				saveFileLoop: saveFileLoop,
+				saveFileLoop: saveFileLoop
 				properties:{
 					writePath:{
 						type: String,

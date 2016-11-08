@@ -1,3 +1,13 @@
+<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
+<link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="/lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="/elements/onion-file-list/onion-file-list.html">
+<link rel="import" href="/elements/onion-loading/onion-loading.html">
+<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="/elements/bootstrap-pills/bootstrap-pills.html">
 <link rel="import" href="../../lib/polymer/polymer.html">
 <link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../../lib/juicy-ace-editor/src/juicy-ace-editor.html">
@@ -13,6 +23,8 @@
 		    display: block;
 	  	    height: 100%;
 			width: 100%;
+			--bootstrap-pill-border-radius: 3px;
+			--bootstrap-pill-color: #373a3c;
 		}
 
 		onion-app-body > div {
@@ -26,7 +38,7 @@
 			position: relative;
 		}
 
-			#current-folder {
+/*			#current-folder {
 				font-size: 13px;
 				position: absolute;
 				top: 0;
@@ -37,19 +49,19 @@
 				padding: 10px;
 	            line-height: 20px;
 	            z-index: 10;
-			}
+			}*/
 
 			onion-file-list {
 				width: 100%;
 				height: 100%;
-				padding-top: 40px;
+				padding-top: 20px;
 				background-color: #ecf0f1;
-				overflow: scroll;
 			}
 
 		#editor-container {
 		    width: 100%;
 			height: 100%;
+			background-color:#373a3c;
 		}
 
 	    #fileEditor {
@@ -72,9 +84,9 @@
 			padding: 0 10px;
 			background-color: transparent;
 		}
-			onion-app-toolbar button:hover {
-				background-color: rgba(255, 255, 255, 0.5);
-			}
+		onion-app-toolbar button:hover {
+			background-color: rgba(255, 255, 255, 0.5);
+		}
 		onion-app-toolbar button > iron-icon {
 			margin-right: 5px;
 		}
@@ -106,11 +118,10 @@
 			<onion-app-body page-id="home">
 				<div class="horizontal layout">
 					<div id="side-bar">
-					    <div id="current-folder">{{currentFolder}}</div>
-						<onion-file-list id="fileList" files="{{files}}">No File</onion-file-list>
+<!-- 					    <div id="current-folder">{{currentFolder}}</div> -->
+						<onion-file-list id="fileList" on-open="fileClick" files="{{files}}" current-folder="{{currentFolder}}">No File</onion-file-list>
 					</div>
-					<div id="editor-container" class="flex">
-						<onion-loading id="loadingIcon"></onion-loading>
+					<div id="editor-container" class="flex vertical-layout-center-center">
 						<bootstrap-modal id="fileUploadDialog" title="Upload A File!">
 							<modal-body>
 								<form action="/cgi-bin/cgi-upload" method="post" enctype="multipart/form-data">
@@ -119,6 +130,13 @@
 								</form>
 							</modal-body>
 						</bootstrap-modal>
+						<bootstrap-pills selected="{{currentTab}}">
+							<template is="dom-repeat" items="{{openFiles}}">
+								<bootstrap-pill>
+									<span>[[item.fileName]]</span>
+								</bootstrap-pill>
+							</template>
+						</bootstrap-pills>
 					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px"></juicy-ace-editor>
 					</div>
 				</div>
@@ -138,25 +156,11 @@
 				// console.log(this.$.fileSelectionInput.value);
 			};
 
-			var showLoadingScreen = function(){
-				this.$.loadingIcon.loading = true;
-				this.$.fileEditor.hidden = true;
-			};
-
-			var hideLoadingScreen = function(){
-				this.$.loadingIcon.loading = false;
-				this.$.fileEditor.hidden = false;
-			};
-
-			// var folderFileInfo = null;
 			var backsplash = null;
 			var extSymbol = null;
 
 			var launchUploadFile = function(){
 				this.$.fileUploadDialog.open();
-				// setTimeout(function(){
-				// 	this.$.fileUploadDialog.close();
-				// }.bind(this),6000);
 			};
 
 			var hideFileButtons = function(){
@@ -181,6 +185,96 @@
 				this.$.deleteFileButton.hidden=false;
 			};
 
+			var fileClick = function(e){
+				console.log("fileEventClick",e.detail);
+				var fileObj  = e.detail;
+				fileObj.fileName = fileObj.name;
+				if(this.isFile(fileObj)){
+					this.openFile(fileObj);
+				}else{
+					this.openFolder(fileObj);
+				}
+			};
+
+			var openFile = function(fileObj){
+				//Is fileObj in the openFile Array 
+				if(this.isFileInArray(fileObj,this.openFiles)){
+					//Modify the fileName attribute
+					// fileObj.fileName = fileObj.absolutePath;
+					//Bring it to the forefront
+					this.getfileIndex(fileObj,function(index){
+						console.log(index);
+						this.currentTab = index;
+					}.bind(this));
+				} else{
+					//Do need to add it. 
+					this.addFileToArray(fileObj,function(){
+						//And also Bring it to the forefront
+						this.getfileIndex(fileObj,function(index){
+							console.log(index);
+							this.currentTab = index;
+							console.log(this.currentTab);
+						}.bind(this));
+					}.bind(this));
+				}
+			};
+
+
+			var addFileToArray = function(fileObj,callback){
+				this.getFileCode(fileObj.absolutePath,function(code){
+					console.log(code);
+					fileObj.code = code;
+					fileObj.selected = true;
+					fileObj.bSave = false;
+					fileObj.language = this.getLang(fileObj.name);
+					this.push('openFiles',fileObj);
+					callback();
+				}.bind(this));
+				//return the last index of the array
+			};
+
+			var getfileIndex = function(fileObj,callback){
+				var ind = this.openFiles.forEach(function(element,index){
+					if(fileObj.absolutePath == element.absolutePath){
+						callback(index);
+					}
+				});
+			};
+
+			var getFileCode = function(filePath,callback){
+				this.fileProvider.getFile(null,filePath,function (response){
+					if(response.status == 'success'){
+						var code = response.data;
+						callback(code);
+					} else{
+						//Error For Unable to Open the 
+						//Maybe open a modal here;
+					}
+				});
+			};
+
+			var isFileInArray = function(obj,array){
+				var length = array.length;
+				var ind = length - 1;
+				var bPress = false;
+				array.forEach(function(element,index){
+					if(obj.absolutePath == element.absolutePath){
+						bPress = true;
+					}
+					if(ind == index){
+						return bPress;
+					}
+				});
+			};
+
+			var isFile = function(fileObj){
+				if(fileObj.type == 'directory'){
+					return false;
+				}else{
+					return true;
+				}
+			};
+
 			var ready = function () {
 				this.backsplash = '/';
 				this.extSymbol = '.';
@@ -192,67 +286,28 @@
 					list: null,         
 					fileInEdit: ''      //current folder + current file
 				};
-
-				// setInterval(function(){
-				// 	if(this.folderFileInfo.fileInEdit == ''){
-				// 		console.log("fileInEdit == ''");
-				// 		// Means no file has been selected, disable the save,close,renamefile and deleteFile Buttons
-				// 		this.$.saveFileButton.disabled=true;
-				// 		this.$.closeFileButton.disabled=true;
-				// 		this.$.renameFileButton.disabled=true;
-				// 		this.$.deleteFileButton.disabled=true;
-				// 		this.$.saveFileButton.hidden=true;
-				// 		this.$.closeFileButton.hidden=true;
-				// 		this.$.renameFileButton.hidden=true;
-				// 		this.$.deleteFileButton.hidden=true;
-				// 	} else{
-				// 		this.$.saveFileButton.disabled=false;
-				// 		this.$.closeFileButton.disabled=false;
-				// 		this.$.renameFileButton.disabled=false;
-				// 		this.$.deleteFileButton.disabled=false;
-				// 		this.$.saveFileButton.hidden=false;
-				// 		this.$.closeFileButton.hidden=false;
-				// 		this.$.renameFileButton.hidden=false;
-				// 		this.$.deleteFileButton.hidden=false;
-				// 	}						//If there is no file in edit
-
-				// }.bind(this),2000);
-
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
 					this.sessionProvider = sessionProvider;
 					if (sessionProvider.isAlive() === true) {   
 						onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 							this.fileProvider = fileProvider;
-							this.$.fileList.addEventListener('click', function (e) {
-								console.log("Single Event click is called");
-								console.log("FileList");
-								console.log(this.$.fileList);
-								if (typeof e.target.icon === 'undefined') {
-									console.log(e);
-									if(this.folderFileInfo.file != e.target.textContent){
-										this.openFolder(e.target.textContent);
-									}
-								}
-							}.bind(this));
-							this.$.fileList.addEventListener('dblclick', function (e) {
-								console.log("Double Click Event is Called");
-								console.log("FileList");
-								console.log(this.$.fileList);
-								if (typeof e.target.icon === 'undefined') {
-									console.log(e);
-					               	if(this.folderFileInfo.file != e.target.textContent){
-										this.openFolder(e.target.textContent);
-									}
-								}
-							}.bind(this));
-							if(this.fileName==='') {
-							    this.openFolder(this.backsplash);
-							} else {
-								this.openFolder(this.fileName);
-							}
+							this.openFolder({absolutePath:this.currentFolder});
 						}.bind(this));
 					}
 				}.bind(this));	
+			};
+
+			var loadOpenFile = function(openFileArray,fileIndex){
+				console.log("The File Index is",fileIndex);
+				openFileArray.forEach(function(element,index){
+					if(index == fileIndex){
+						console.log("Index",index);
+						console.log("Element",element);
+						this.$.fileEditor.editor.session.setMode('ace/mode/' + element.language);
+						this.$.fileEditor.editor.session.setValue(element.code);
+						return;
+					}
+				}.bind(this));
 			};
 			 
 			var findTypeById = function (sourceList, name) {
@@ -278,298 +333,52 @@
 				return changed;
 			};
 			
-			var getFileExtension = function () {
-			    var extension = '';
-
-			    if (this.folderFileInfo.file !== '') {
-			        extension = this.folderFileInfo.file.substring(this.folderFileInfo.file.lastIndexOf(this.extSymbol) + 1, this.folderFileInfo.file.length);
-			    }
-
-				return extension;
+			//Keep This Function
+			var getFileExtension = function (fileString) {
+			    return fileString.substring(fileString.lastIndexOf('.') + 1, fileString.length);
 			};
 
-			var getLang = function(extension){
+			var getLang = function(fileName){
+				console.log(fileName);
+				var extension = this.getFileExtension(fileName);
+				console.log(extension);
 				if(extension == 'js'){
 					return 'javascript';
 				} else if(extension == 'py'){
 					return 'python';
 				} else if(extension == 'html'){
 					return 'html';
+				} else{
+					return 'txt';
 				}
 			}
 			
-			var openFolder = function (path) {
-				console.log(path);
+			var openFolder = function (folderObj) {
 				var currentFile = '';
                 if (this.sessionProvider.isAlive() === true) {
 					var changed = true;
 					console.log("Inside the openFolder Function");
-				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-				 	    this.fileProvider = fileProvider;
-						console.log("Inside the file-provider get service");
-						//launch app with specified file
-						console.log(this.fileName);
-						if(this.fileName!=='') {
-							console.log("Inside the this.this.fileName if statement");							
-							var loadFolderName=fileProvider.getFolderPath(this.fileName);
-							var loadfileName=fileProvider.getFileName(this.fileName);
-								console.log('Load folder:'+loadFolderName);
-								console.log('Load file:'+loadfileName);
-								folderFileInfo.folder=loadFolderName;
-							
-							fileProvider.getFolderContent(null, folderFileInfo.folder, function (result) {
-								console.log("Inside getFolderContent Callback and result is", result);
-								if (result.status == 'success') {
-								    this.currentFolder = this.folderFileInfo.folder
-									this.folderFileInfo.list = result.list;
-									console.log(result.list);
-									result.list.forEach(function(element,index){
-										console.log(element)
-										if(element.type=='directory'){
-											element.preview ='folder';
-										}
-									});
-									this.files = result.fileList;
-	                                this.$.fileList.setAttribute('files', JSON.stringify(this.folderFileInfo.list));										
-								}
-							}.bind(this));
-							path=loadfileName;
-							this.fileName='';
+					this.fileProvider.getFolderContent(null,folderObj.absolutePath, function(result){
+						if(result.status == 'success'){
+							console.log(result);
+							this.files =result.list;
+							this.currentFolder = folderObj.absolutePath;
+						}else{
+							//Handle error, maybe open a modal
 						}
-						
-						if (path.match(/\r?\n|\r/g) !== null) {
-						    console.log("multiple selection, do nothing");
-							return;
-						} else if(path === '..') {
-						    if (this.folderFileInfo.folder === this.backsplash || this.folderFileInfo.folder.lastIndexOf(this.backsplash) === 0) {
-							    path = this.backsplash;
-						    } else {
-							    path = this.folderFileInfo.folder.substring(0, this.folderFileInfo.folder.lastIndexOf(this.backsplash));
-                            }
-					    } else {
-						    if (path === this.folderFileInfo.folder) {
-				                changed = false;   
-							} else if (findTypeById(this.folderFileInfo.list, path) === 'directory') {
-							    if (this.folderFileInfo.folder === this.backsplash) {
-								    path = this.folderFileInfo.folder + path;
-							    } else {
-								    path = this.folderFileInfo.folder + this.backsplash + path;
-							    }
-						    } else {
-							    currentFile = path;
-						    }
-					    }
-						
-					    if (changed === false || currentFile === '') {
-						    this.folderFileInfo.folder = path;
-							if (this.folderFileInfo.folder !== this.backsplash) {
-							    this.$.deleteFolderButton.disabled = false;
-								this.$.renameFolderButton.disabled = false;
-							} else {
-							    this.$.deleteFolderButton.disabled = true;
-								this.$.renameFolderButton.disabled = true;
-							}
-                            //Get file list			
-                            console.log('onion-editor open folder:'+this.folderFileInfo.folder);							
-                            fileProvider.getFolderContent(null,this.folderFileInfo.folder, function (result) {
-                            	console.log("Inside getFolderContent callback 2 and result is",result);
-							    this.currentFolder = this.folderFileInfo.folder;	
-							    this.folderFileInfo.list = result.list;
-							   	result.list.forEach(function(element,index){
-										console.log(element)
-										if(element.type=='directory'){
-											element.preview ='folder';
-										}
-									});
-							    this.$.fileList.setAttribute('files', JSON.stringify(result.list));									
-						    }.bind(this));
-					    } else {
-					    	console.log(currentFile);
-					    	console.log(this.folderFileInfo);
-					        this.folderFileInfo.file = currentFile;
-						    console.log('It\'s a file[' + this.folderFileInfo.folder + this.folderFileInfo.file + ']');
-							this.openFile();
-					    }
-				    }.bind(this));
+					}.bind(this));
 				}
 			};
 			
-			var openFile = function () {
-				this.showLoadingScreen();
-			    this.closeFile(function(){
-			    	console.log("Inside the openFile");
-				    console.log("folderFileInfo",this.folderFileInfo);
-				    if (this.sessionProvider.isAlive() === true && this.folderFileInfo.file !== '') {
-					    var ext = this.getFileExtension();
-					    console.log("Inside the ifstatement");
-					    console.log(ext);
-					    var lang = getLang(ext);
-						this.$.fileEditor.editor.session.setMode('ace/mode/' + lang);
-						// this.$.fileEditor.mode = 'ace/mode/' + lang;
-
-	                    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-
-						    this.fileProvider = fileProvider;
-						    //Get file list
-						    if(this.folderFileInfo.folder == this.backsplash){
-						    	var path = this.folderFileInfo.folder + this.folderFileInfo.file;
-						    } else{
-						    	var path = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;
-						    }					   
-						    console.log(path);
-							fileProvider.getFile(null,path, function (result) {
-								console.log("Result, inside of the callback");
-								console.log(result);
-							    if (result.status === 'success') {
-							        this.currentCode = result.data;
-							        this.$.fileEditor.editor.session.setValue(result.data);
-							        this.showFileButtons();
-							        if(this.folderFileInfo.folder == this.backsplash){
-							        	this.folderFileInfo.fileInEdit = this.folderFileInfo.folder + this.folderFileInfo.file;
-							        } else{
-										this.folderFileInfo.fileInEdit = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;	        	
-							        }
-									this.$.deleteFileButton.disabled = false;
-									this.$.renameFileButton.disabled = false;
-									this.hideLoadingScreen();
-								} else {    
-								    alert('Failed to open \"' + this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file + '\"');
-								    this.hideLoadingScreen();								
-								}
-						    }.bind(this));
-					    }.bind(this));
-					}
-				}.bind(this));
-			 //    console.log("Inside the openFile");
-			 //    console.log("folderFileInfo",this.folderFileInfo);
-			 //    if (this.sessionProvider.isAlive() === true && this.folderFileInfo.file !== '') {
-				//     var ext = this.getFileExtension();
-				//     console.log("Inside the ifstatement");
-				//     console.log(ext);
-				// 	this.$.fileEditor.editor.session.setMode('ace/mode/' + ext);
-				// 	this.$.fileEditor.mode = 'ace/mode/' + ext;
-
-    //                 onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-
-				// 	    this.fileProvider = fileProvider;
-				// 	    //Get file list
-				// 	    if(this.folderFileInfo.folder == this.backsplash){
-				// 	    	var path = this.folderFileInfo.folder + this.folderFileInfo.file;
-				// 	    } else{
-				// 	    	var path = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;
-				// 	    }
-					   
-				// 	    console.log(path);
-				// 	    console.log(path);
-				// 		fileProvider.getFile(null,path, function (result) {
-				// 			console.log("Result, inside of the callback");
-				// 			console.log(result);
-				// 		    if (result.status === 'success') {
-				// 		        // this.currentCode = result.data;
-				// 		        this.$.fileEditor.editor.session.setValue(result.data);
-				// 		        if(this.folderFileInfo.folder == this.backsplash){
-				// 		        	this.folderFileInfo.fileInEdit = this.folderFileInfo.folder + this.folderFileInfo.file;
-				// 		        } else{
-				// 					this.folderFileInfo.fileInEdit = this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file;						        	
-				// 		        }
-				// 				this.$.deleteFileButton.disabled = false;
-				// 				this.$.renameFileButton.disabled = false
-				// 			} else {    
-				// 			    alert('Failed to open \"' + this.folderFileInfo.folder + this.backsplash + this.folderFileInfo.file + '\"');								
-				// 			}
-				// 	    }.bind(this));
-				//     }.bind(this));
-				// }
-            };
-			
 			var closeFile = function (callback) {
-				var bdisplayMsg;
-				if(this.folderFileInfo.fileInEdit === ""){
-					bdisplayMsg = true;
-				} else{
-					bdisplayMsg = confirm('Do you want to close \"' + this.folderFileInfo.fileInEdit + '\" ?');
-				}
-				if(bdisplayMsg){
-					this.hideFileButtons();
-				    if (this.sessionProvider.isAlive() === true && this.folderFileInfo.file !== '') {
-				        if (this.isFileChanged()) {
-						    if (confirm('Do you want to save \"' + this.folderFileInfo.fileInEdit + '\" ?')) {
-						    	console.log(this.folderFileInfo.fileInEdit);
-						    	this.saveFile(function(result){
-						    		console.log("Inside closeFile callback");
-						    		if(typeof callback === 'function'){
-						    			//Means it doesnt get called from the button
-						    			callback();
-						    		}else{
-							    		this.$.fileEditor.editor.session.setValue('');
-							    		this.currentCode = '';
-							    		this.folderFileInfo.file='';
-							    		this.folderFileInfo.fileInEdit = '';
-						    		}
-						    		// this.$.fileEditor.editor.session.setValue('');
-						    		// this.currentCode = '';
-						            // this.folderFileInfo.fileInEdit = '';
 
-						    	}.bind(this));
-							    // if (typeof this.saveFile() === 'boolean') {
-								    // this.currentCode = '';
-						      //       this.folderFileInfo.fileInEdit = '';
-								// }
-							} else{
-								this.$.fileEditor.editor.session.setValue('');
-							    this.currentCode = '';
-							    this.folderFileInfo.file='';
-							    this.folderFileInfo.fileInEdit = '';
-							}
-					    } else {
-						    // this.currentCode = '';
-						    this.$.fileEditor.editor.session.setValue('');
-						    this.folderFileInfo.fileInEdit = '';
-						    if(typeof callback === 'function'){
-						    	console.log("Its called from opening another file");
-						    	console.log("This is the folderInfoFile.file",this.folderFileInfo.file);
-						    } else{
-						    	console.log("Its called from closeButton");
-						    	this.folderFileInfo.file = '';
-						    }
-						}
-						this.$.deleteFileButton.disabled=true;
-						this.$.renameFileButton.disabled=true;
-						if(typeof callback === 'function'){
-							callback();
-						}
-				    }
-				} else{
-					if(typeof callback === 'function'){
-						callback();
-					}
-				}
+				this.$.fileEditor.editor.session.setValue('');
 			};
 			
 			var saveFile = function (callback) {
 			    //var saveResult=true;
-				if (this.sessionProvider.isAlive() === true && this.folderFileInfo.fileInEdit !== '') {	
-				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-					    this.fileProvider = fileProvider;
-					    //Get file list
-						var codeInEdit = this.$.fileEditor.editor.session.getValue();
-					    fileProvider.saveContent(null,this.folderFileInfo.fileInEdit, codeInEdit,false, function (result) {
-					    	console.log(result);
-						    if (result.status == 'success') {
-							    this.currentCode = codeInEdit;
-						        alert('\"' + this.folderFileInfo.fileInEdit + '\" saved successfully!!');
-						        if(typeof callback === 'function'){
-						        	callback(result);
-						        }
-							} else {    
-							    alert('Failed to save \"' + this.folderFileInfo.fileInEdit + '\"');
-							    if(typeof callback === 'function'){
-							    	callback(result);
-							    }
-								//saveResult=false;
-							}
-					    }.bind(this));
-				    }.bind(this));
+				if (this.sessionProvider.isAlive() === true) {	
+
 				}
 				//return saveResult;
 			};
@@ -633,30 +442,6 @@
 			var deleteFile = function (type, fileName) {
 				console.log("fileName",fileName);
 			   if (this.sessionProvider.isAlive() === true ) {
-				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-					    this.fileProvider = fileProvider;
-					    console.log("fileName",fileName);
-						fileProvider.remove(null,fileName, function (result) {
-						    if (result.status=='success') {
-							    this.currentCode = '';
-								this.folderFileInfo.fileInEdit = '';
-								if (type === 'folder') {
-								    if (this.folderFileInfo.folder === this.backsplash || this.folderFileInfo.folder.lastIndexOf(this.backsplash) === 0) {
-							            this.folderFileInfo.folder = this.backsplash;
-						            } else {
-							            this.folderFileInfo.folder = this.folderFileInfo.folder.substring(0, this.folderFileInfo.folder.lastIndexOf(this.backsplash));
-								    }
-								}
-
-								this.openFolder(this.folderFileInfo.folder);
-								alert('\"' + fileName + '\" deleted successfully!!');
-								this.$.fileEditor.editor.session.setValue('');
-								this.currentCode = '';
-					        } else {    
-							    alert('Failed to delete \"' + fileName + '\"');
-							}
-					    }.bind(this));
-					}.bind(this));
 				} else {
 				    alert('Session time out! Failed to delete Folder or File!');
 				}
@@ -668,41 +453,7 @@
 					return;
 				}
 			    if (this.sessionProvider.isAlive() === true ) {
-				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
 
-					    this.fileProvider = fileProvider;
-						var newfileName = '';
-
-						if (this.folderFileInfo.folder === this.backsplash) {
-						    newfileName = this.folderFileInfo.folder + fileName;
-						    console.log("newFileName",newfileName);
-						} else {
-							newfileName = this.folderFileInfo.folder + this.backsplash + fileName;
-							console.log("newFileName",newfileName);
-					    }
-
-						if (type === 'folder') {
-							fileProvider.createFolder(null, newfileName, function (result) {
-								if (result.status === 'success') {
-							        this.openFolder(this.folderFileInfo.folder);
-							    } else {    
-							        alert('Failed to create \"' + newfileName + '\"');
-							    }
-							}.bind(this));
-						} else {
-						    if (findTypeById(this.folderFileInfo.list,fileName) === '') {
-							    fileProvider.createFile(null, newfileName, function (result) {
-						            if (result.status === 'success') {
-							            this.openFolder(this.folderFileInfo.folder);
-							        } else {    
-							            alert('Failed to create \"' + newfileName + '\"');
-							        }	
-					            }.bind(this));
-							} else {
-							   alert('\"' + newfileName + '\" already exist!');
-							}
-						}
-				    }.bind(this));
 				} else {
 				    alert('Session time out! Failed to create Folder or File!');
 				}
@@ -715,75 +466,69 @@
 				}
 				
 			    if (this.sessionProvider.isAlive() === true) {
-				    onionConsole.getService('onion-file-provider', function (err, fileProvider) {
-					    this.fileProvider = fileProvider;
-						if (type === 'folder') {
-						    var newFoldername = fileProvider.getFolderPath(this.folderFileInfo.folder) + this.backsplash + fileName;
-						    console.log("newFoldername",newFoldername);
-							fileProvider.rename(null,this.folderFileInfo.folder,newFoldername, function (result) {
-								if (result.status == 'success') {
-								    var oldFoldername = this.folderFileInfo.folder;
-								    this.folderFileInfo.folder = newFoldername;
-							        this.openFolder(this.folderFileInfo.folder);
-									alert('\"' + oldFoldername + '\" renamed to \"' + this.folderFileInfo.folder + '\" successfully!');
-							    } else {    
-							        alert('Failed to rename \"' + this.folderFileInfo.folder + '\"!');
-							    }
-							}.bind(this));
-						} else {		
-						    var newfileName = fileProvider.getFolderPath(this.folderFileInfo.fileInEdit) + this.backsplash + fileName;
-						    console.log("newfileName",newfileName);
-							fileProvider.rename(null,this.folderFileInfo.fileInEdit, newfileName, function (result) {
-						        if (result.status == 'success') {
-	                                var oldfileName = this.folderFileInfo.fileInEdit;
-	                                console.log("oldfileName",oldfileName);								
-							        this.folderFileInfo.fileInEdit = newfileName;
-							        console.log("fileInEdit",this.folderFileInfo.fileInEdit);
-							        var fileFolder = fileProvider.getFolderPath(oldfileName);
-							        console.log("fileFolder",fileFolder);
-									//if (this.folderFileInfo.folder === fileProvider.getFolderPath(oldfileName)) {
-							            this.openFolder(this.folderFileInfo.folder);
-									//}
-								    alert('\"' + oldfileName + '\" renamed to \"' + this.folderFileInfo.fileInEdit + '\" successfully!');
-							    } else {
-							        alert('Failed to rename \"' + this.folderFileInfo.fileInEdit + '\"!');
-							    }
-					        }.bind(this));
-						}
-				    }.bind(this));
+
 				} else {
 				    alert('Session time out! Failed to create Folder or File!');
 				}
 			};
 
-			var contextButtonManager = function(){
-				console.log("contextButtonObserver is called");
-				// if(this.$.saveFileButton && this.$.closeFileButton && this.$.renameFileButton && this.$.deleteFileButton){
-				// 	if(this.folderFileInfo.fileInEdit == ''){
-				// 		console.log("fileInEdit == ''");
-				// 		// Means no file has been selected, disable the save,close,renamefile and deleteFile Buttons
-				// 		this.$.saveFileButton.disabled=true;
-				// 		this.$.closeFileButton.disabled=true;
-				// 		this.$.renameFileButton.disabled=true;
-				// 		this.$.deleteFileButton.disabled=true;
-				// 		this.$.saveFileButton.opacity=.5;
-				// 		this.$.closeFileButton.opacity=.5;
-				// 		this.$.renameFileButton.opacity=.5;
-				// 		this.$.deleteFileButton.opacity=.5;
-				// 	} else if(this.folderFileInfo.fileInEdit != ''){
-				// 		console.log("fileInEdit != ''");
-				// 		this.$.saveFileButton.disabled=false;
-				// 		this.$.closeFileButton.disabled=false;
-				// 		this.$.renameFileButton.disabled=false;
-				// 		this.$.deleteFileButton.disabled=false;
-				// 	}
-				// }
+
+
+			var saveUpdate = function(ind,callback){
+				console.log("The saveUpdate index is",ind);
+				var currentCode;
+				this.openFiles.forEach(function(element,index){
+					if(index == ind){
+						currentCode = this.$.fileEditor.editor.session.getValue();
+						if(currentCode == this.openFiles[ind].code){
+							console.log("The codes are the same and do not need to be saved");
+							this.openFiles[ind].bSave = false;
+							callback();
+						}else{
+							console.log("The codes are not the same and a save is necessary")
+							this.openFiles[ind].bSave = true;
+							this.openFiles[ind].code = currentCode;
+							callback();
+						}
+					}
+				}.bind(this));
 			};
 
-			var fileChangeObserver = function(){
-				console.log("!!!!!!!!!!!!!!!!!!!!FileChangeObserver gets called");
-				console.log(this.folderFileInfo.file);
+			var currentTabChange = function(){
+				if(this.fileIndex == null){
+					//First Iteration
+					this.fileIndex = this.currentTab
+					console.log("Current Tab observer has been called");
+					console.log("currentTab",this.currentTab);
+					console.log("fileIndex",this.fileIndex);
+					// this.saveUpdate(this.fileIndex);
+					this.loadOpenFile(this.openFiles,this.currentTab);
+					this.fileIndex = this.currentTab;
+				} else{
+					console.log("Current Tab observer has been called");
+					console.log("currentTab",this.currentTab);
+					console.log("fileIndex",this.fileIndex);
+					this.saveUpdate(this.fileIndex,function(){
+						this.loadOpenFile(this.openFiles,this.currentTab);
+						this.fileIndex = this.currentTab;
+					}.bind(this));
+				}
 			};
+
+			var openFilesObserver = function(){
+				console.log("openFilesObserver gets called");
+				// var dummyObj = {fileName = "",
+				// 				name = "",
+				// 				code = "",
+				// 				bSave = false,
+				// 				selected = true,	
+				// 				language = "",
+				// 				absolutePath = ""};
+				// if( this.openFiles == []){
+				// 	this.push('openFiles',dummyObj);
+				// 	this.currentTab = 0;
+				// }
+			}
 			
 			Polymer({
 				is: 'onion-editor',
@@ -809,12 +554,18 @@
 				deleteFolderDialog: deleteFolderDialog,
 				renameFileDialog: renameFileDialog,
 				renameFolderDialog: renameFolderDialog,
-				showLoadingScreen: showLoadingScreen,
-				hideLoadingScreen: hideLoadingScreen,
-				fileChangeObserver: fileChangeObserver,
 				hideFileButtons: hideFileButtons,
 				showFileButtons: showFileButtons,
-				observers:['fileChangeObserver(folderFileInfo.file)'],
+				currentTabChange: currentTabChange,
+				loadOpenFile: loadOpenFile,
+				fileClick: fileClick,
+				addFileToArray: addFileToArray,
+				isFile: isFile,
+				getFileCode:getFileCode,
+				getfileIndex: getfileIndex,
+				openFilesObserver:openFilesObserver,
+				isFileInArray: isFileInArray,
+				saveUpdate: saveUpdate,
 				properties:{
 					files:{
 						type:Array,
@@ -831,10 +582,32 @@
 						// },
 						notify:true
 					},
+					currentFolder:{
+						type: String,
+						value: '/',
+						notify: true
+					},
+					openFiles:{
+						type: Array,
+						value: [],
+						notify: true,
+						observer: 'openFilesObserver'
+					},
 					oldFilePath:{
 						type: String,
 						value:"",
 						notify: true
+					},
+					currentTab:{
+						type:Number,
+						value:null,
+						notify:true,
+						observer: 'currentTabChange'
+					},
+					fileIndex:{
+						type:Number,
+						value:null,
+						notify:true
 					}
 				}
 			});
