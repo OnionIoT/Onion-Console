@@ -121,6 +121,12 @@
 								</form>
 							</modal-body>
 						</bootstrap-modal>
+						<bootstrap-modal id="confirmSave" title="Would you like to save the file">
+							<modal-body>
+									<button id="noSave" on-click="closeSaveDialog">No</input>
+									<button id="yesSave" on-click="confirmSave">Yes</input>
+							</modal-body>
+						</bootstrap-modal>
 						<bootstrap-pills selected="{{currentTab}}">
 							<template is="dom-repeat" items="{{openFiles}}">
 								<bootstrap-pill>
@@ -369,7 +375,12 @@
 			var saveFile = function (callback) {
 			    //var saveResult=true;
 				if (this.sessionProvider.isAlive() === true) {	
-
+					var fileObj = this.openFiles[this.currentTab];
+					if(fileObj.bSave){
+						this.$.confirmSave.open();
+					}else{
+						//save Not Necessary
+					}
 				}
 				//return saveResult;
 			};
