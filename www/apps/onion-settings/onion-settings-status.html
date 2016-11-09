@@ -63,9 +63,9 @@
 		td {
 		    width: 33%;
 		}
-		#statusContainer {
+		#cardsContainer {
 			height: 100%;
-			width: 100%;
+			width: inherit;
 			padding: 25px;
 			padding-top: 50px;
 			margin-top: -50px;
@@ -364,15 +364,6 @@
 					}).bind(this));
 			};
 
-			var attached = function () {
-				var setCardsContainerWidth = (function () {
-					this.$.cardsContainer.style.width = Math.floor(window.innerWidth / 310) * 310 + 'px';
-				}).bind(this);
-
-				window.addEventListener('resize', setCardsContainerWidth, true);
-				setCardsContainerWidth();
-			};
-
 		    var refreshRxTx = function (interval) {
 			    refreshRxTxInterval = setInterval((function () {
 			    	this.updateRxTx()
@@ -474,7 +465,6 @@
 				is: 'onion-settings-status',
 				start: start,
 				ready: ready,
-				attached: attached,
 				refreshInfo: refreshInfo,
 				refreshRxTx: refreshRxTx,
 				stopRefreshRxTx: stopRefreshRxTx,
