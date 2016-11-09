@@ -25,13 +25,16 @@
 			--bootstrap-pill-color: #373a3c;
 		}
 
+        onion-app-body {
+            height: 100%;
+        }
 		onion-app-body > div {
 			height: 100%;
 			width: 100%;
 		}
 
 		#side-bar {
-			width: 250px;
+			min-width: 250px;
 			height: 100%;
 			position: relative;
 			background-color: #fff;
@@ -42,18 +45,22 @@
 
 		iron-pages {
 			width: 100%;
-			max-height: 100%;
+			height: 100%;
 			background-color: #ecf0f1;
 			padding: 25px;
-			overflow-y: hidden;
+			overflow: scroll;
 		}
+        
+        .no-padding {
+            padding: 0 0 0 0;
+        }
 	</style>
 
 	<template>
 		<onion-app app-name="Settings" toolbar-color="#fff" toolbar-background="#7f8c8d">
 			<onion-app-body page-id="home">
 				<div class="horizontal layout">
-					<div id="side-bar">
+					<div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 no-padding" id="side-bar">
 						<bootstrap-pills stacked selected="{{currentTab}}">
 							<template is="dom-repeat" items="{{subApps}}">
 								<bootstrap-pill><iron-icon icon="{{item.icon}}"></iron-icon><span>{{item.name}}</span></bootstrap-pill>
@@ -61,7 +68,7 @@
 						</bootstrap-pills>
 					</div>
 
-                    <div class="setting-content">
+                    <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9 no-padding">
                         <iron-pages id="settingContainer" attr-for-selected="id" selected="[[currentSetting(subApps, currentTab)]]">
                             <onion-settings-status id="onion-settings-status"></onion-settings-status>
                             <onion-settings-general id="onion-settings-general"></onion-settings-general>
