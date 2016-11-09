@@ -94,10 +94,10 @@
 						<button on-click="launchUploadFile" id="uploadFileButton"><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>Upload File</span></button>
 						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" id="newFolderButton" icon="icons:folder"></iron-icon><span>New Folder</span></button>
 						<button on-click="newFileDialog"><iron-icon class="toolbar-icon" id="newFileButton" icon="icons:note-add"></iron-icon><span>New File</span></button>
-						<button on-click="deleteFolderDialog" disabled="disabled" id="deleteFolderButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
-						<button on-click="deleteFileDialog" disabled="disabled" id="deleteFileButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon></span><span>Delete File</span></button>
-						<button on-click="renameFolderDialog" disabled="disabled" id="renameFolderButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename Folder</span></button>
-					    <button on-click="renameFileDialog" disabled="disabled" id="renameFileButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename File</span></button>
+						<button on-click="deleteFolderDialog" id="deleteFolderButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
+						<button on-click="deleteFileDialog" id="deleteFileButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon></span><span>Delete File</span></button>
+						<button on-click="renameFolderDialog" id="renameFolderButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename Folder</span></button>
+					    <button on-click="renameFileDialog"  id="renameFileButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename File</span></button>
 					</div>
 					<div>
 						<button id="saveFileButton" on-click="saveFile"><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
@@ -418,7 +418,7 @@
 			var getParentFolder = function(str){
 				if(str != '/'){
 					var base = new String(str);
-					base = base.substring(0,base.lastIndexOf('/')+1); 
+					base = base.substring(0,base.lastIndexOf('/')); 
 					return base;
 				}else{
 					return '/';
@@ -582,18 +582,38 @@
 			};
 			
 			var deleteFolderDialog = function () {
-                if (this.sessionProvider.isAlive() === true && this.folderFileInfo.folder) {
-                    if (this.folderFileInfo.folder === this.backsplash) {
-                        alert('Delete all folders and files under root directory will make the system no long in function! Operation aborted!!'); 
-                    } else {
-                        if (confirm('Are you sure that you want to permanently delete \"' + this.folderFileInfo.folder + '\" folder?\nWarning!! All the folders and files under \"' + this.folderFileInfo.folder + '\" will be deleted!')) {
-                        	console.log("folderFileInfo.folder",this.folderFileInfo.folder);
-                            this.deleteFile('folder', this.folderFileInfo.folder);					   
-                        }
-					}	   
-			    }
+				this.updateDeleteFolderDialogueButtons(this.currentFolder);
 			};
 			
+			var updateDeleteFolderDialogueButtons = function(folder){
+				this.$.confirmDialogue.title = "Delete Folder: " + folder;
+				this.$.textField.hidden = true;
+				this.$.yesButton.hidden = false;
+				this.$.noButton.hidden = false;
+				this.$.confirmDialogue.open();
+				this.yesButtonListener = function(e){
+					var path = folder;
+					this.deleteFile(path,function(response){
+						if(response.status == 'success'){
+							this.hideAllButtons();
+							this.$.confirmDialogue.title = "Successfully Deleted Folder"
+							var newFolderObj = {absolutePath:this.getParentFolder(path)};
+							setTimeout(function(){
+								this.$.confirmDialogue.close();
+								console.log(newFolderObj);
+								this.openFolder(newFolderObj);
+							}.bind(this),4000)
+						}else{
+							this.hideAllButtons();
+							this.$.confirmDialogue.title = "Could Not Delete Folder"
+							setTimeout(function(){
+								this.$.confirmDialogue.close();
+							}.bind(this),4000)
+						}
+					}.bind(this));
+				};
+			};
+
 			var renameFileDialog = function () {
                 if (this.sessionProvider.isAlive() === true && this.folderFileInfo.fileInEdit !== '') {	
 				    var fileName = prompt('Please enter new file name');
@@ -612,11 +632,11 @@
 			    }
 			};
 						
-			var deleteFile = function (type, fileName) {
-				console.log("fileName",fileName);
-			   if (this.sessionProvider.isAlive() === true ) {
-				} else {
-				    alert('Session time out! Failed to delete Folder or File!');
+			var deleteFile = function (path, callback) {
+				if(this.sessionProvider.isAlive()){
+					this.fileProvider.remove(null,path,function(response){
+						callback(response);
+					});
 				}
 			};
 			
@@ -790,6 +810,7 @@
 				getFileCode:getFileCode,
 				getfileIndex: getfileIndex,
 				openFilesObserver:openFilesObserver,
+				updateDeleteFolderDialogueButtons: updateDeleteFolderDialogueButtons,
 				isFileInArray: isFileInArray,
 				saveUpdate: saveUpdate,
 				yesButtonListener: yesButtonListener,
