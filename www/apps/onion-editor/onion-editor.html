@@ -124,6 +124,7 @@
 						<bootstrap-modal id="confirmDialogue" title="">
 							<modal-body>
 								<form>
+									<input type="text" id="textField" value={{textInput::input}}></input>
 									<input type="button" id="noButton" on-click="noButtonListener">No</input>
 									<input type="button" id="yesButton" on-click="yesButtonListener">Yes</input>
 								</form>
@@ -382,17 +383,49 @@
                 if (this.sessionProvider.isAlive() === true) {
 					var changed = true;
 					console.log("Inside the openFolder Function");
-					this.fileProvider.getFolderContent(null,folderObj.absolutePath, function(result){
-						if(result.status == 'success'){
-							console.log(result);
-							this.files =result.list;
-							this.currentFolder = folderObj.absolutePath;
-						}else{
-							//Handle error, maybe open a modal
-						}
-					}.bind(this));
+					// if(folderObj.name == '..'){
+					// 	// var absolutePath = String(folderObj.absolutePath);
+					// 	// absolutePath = absolutePath.substring(0,absolutePath.length -2);
+					// 	console.log("newFolderAbsolutePath")
+					// 	console.log("folder.absolutePath",folderObj.absolutePath);
+					// 	this.fileProvider.getFolderContent(null,folderObj.name, function(result){
+					// 		if(result.status == 'success'){
+					// 			console.log(result);
+					// 			this.files =result.list;
+					// 			this.currentFolder = folderObj.absolutePath;
+					// 		}else{
+					// 			//Handle error, maybe open a modal
+					// 		}
+					// 	}.bind(this));
+					// }else{
+						this.fileProvider.getFolderContent(null,folderObj.absolutePath, function(result){
+							if(result.status == 'success'){
+								console.log(result);
+								this.files =result.list;
+								if(folderObj.name == '..'){
+									this.currentFolder = getParentFolder(folderObj.parentDir);
+								}else{
+									this.currentFolder = folderObj.absolutePath;
+								}
+							}else{
+								//Handle error, maybe open a modal
+							}
+						}.bind(this));
+					// }
 				}
 			};
+
+			var getParentFolder = function(str){
+				if(str != '/'){
+					var base = new String(str);
+					base = base.substring(0,base.lastIndexOf('/')+1); 
+					return base;
+				}else{
+					return '/';
+				}
+			};
+
+
 			
 			var closeFile = function (callback) {
 				this.saveFile(function(response){
@@ -441,7 +474,7 @@
 			    		if(this.openFiles[this.currentTab].bSave){
 			    			this.updateSaveDialogueButtons(callback,function(){
 						    	console.log("this.yesButtonListener afterUpdate", this.yesButtonListener);
-			    				console.log("this.noButtonListener afterUpdate",this.noButtonListener);
+			    				console.log("this.noButtonListener afterUpdate", this.noButtonListener);
 			    				this.$.confirmDialogue.open();
 			    			}.bind(this));
 			    		} else{
@@ -453,13 +486,84 @@
 
 			
 			var newFolderDialog = function () {
-				var folderName = prompt('Please enter new folder name');
-				
-				if (folderName !== null) {
-				    this.createFile('folder', folderName);
-				}
+				this.updateNewFolderDialogueButtons();
 			};
+
+			var updateNewFolderDialogueButtons = function(){
+				this.$.confirmDialogue.title = "Please Enter New Folder Name:";
+				//this.$.textField.placeholder = "";
+				this.$.textField.hidden=false;
+				this.$.noButton.hidden=true;
+				this.$.yesButton.hidden=false;
+				this.textInput = '';
+				this.$.yesButton.innerHTML = "Create Folder";
+				this.$.confirmDialogue.open();
+				this.yesButtonListener = function(e){
+					var folderName = this.textInput;
+					console.log(folderName);
+						this.isFolderPresent(folderName,function(filePresent){
+							if(filePresent){
+								this.$.confirmDialogue.title = "Folder already Exists, Please Choose A Different Name!";
+								this.hideAllButtons();
+								setTimeout(function(){
+									this.newFolderDialog();
+								}.bind(this),5000);
+							}else{
+								var folderPath = genAbsolutePath(this.currentFolder,folderName);
+								this.createFolder(folderPath,function(response){
+									if(response.status == 'success'){
+										this.hideAllButtons();
+										this.$.confirmDialogue.title = "Folder Successfully Created!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+											this.openFolder({absolutePath:this.currentFolder});
+										}.bind(this),4000);
+									}else{
+										this.$.hideAllButtons();
+										this.$.confirmDialogue.title = "Cannot Create Folder, Pleae Try Again!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+										}.bind(this),4000);
+									}
+								}.bind(this));
+							}
+						}.bind(this));
+				};
+			};
+
+			var hideAllButtons = function(){
+				this.$.yesButton.hidden = true;
+				this.$.noButton.hidden = true;
+				this.$.textField.hidden = true;
+			};
+
+
+			var genAbsolutePath = function(parent,sub){
+				if(parent == "/"){
+					return parent + sub;
+				}else{
+					return parent + '/' + sub;
+				}
+			}
 			
+			var createFolder = function(folderPath,callback){
+				this.fileProvider.createFolder(null,folderPath,function(response){
+					callback(response);
+				}.bind(this));
+			};
+
+			var isFolderPresent = function(folderName,callback){
+				var fPresent = false;
+				var fileLength = this.files.length -1;
+				this.files.forEach(function(element,index){
+					if(element.preview == 'folder' && folderName == element.name){
+						fPresent = true;
+					}if(fileLength == index){
+						callback(fPresent);
+					}
+				});
+			}
+
 			var newFileDialog = function () {
 				var fileName = prompt('Please enter new file name');
 
@@ -606,6 +710,11 @@
 			};
 
 			var updateSaveDialogueButtons = function(callback,realCallBack){
+				this.$.textField.hidden=true;
+				this.$.noButton.hidden=false;
+				this.$.noButton.innerHTML = "No";
+				this.$.yesButton.innerHTML = "Yes";
+				this.$.yesButton.hidden=false;
 				var fileObj = this.openFiles[this.currentTab];
 				this.$.confirmDialogue.title="Confirm File Save: " + fileObj.absolutePath;
 				this.yesButtonListener = function(e){
@@ -645,7 +754,7 @@
 				},300);
 			};
 
-
+			var showTextField = true;
 			Polymer({
 				is: 'onion-editor',
 				created: created,
@@ -657,6 +766,7 @@
 				openFile: openFile,
 				deleteFile: deleteFile,
 				createFile: createFile,
+				createFolder: createFolder,
 				closeFile: closeFile,
 				saveFile: saveFile,
 				launchUploadFile: launchUploadFile,
@@ -685,7 +795,12 @@
 				yesButtonListener: yesButtonListener,
 				noButtonListener: noButtonListener,
 				updateSaveDialogueButtons: updateSaveDialogueButtons,
+				updateNewFolderDialogueButtons: updateNewFolderDialogueButtons,
 				noop: noop,
+				isFolderPresent: isFolderPresent,
+				genAbsolutePath: genAbsolutePath,
+				hideAllButtons: hideAllButtons,
+				getParentFolder: getParentFolder,
 				properties:{
 					files:{
 						type:Array,
@@ -718,6 +833,11 @@
 						type:Number,
 						value:null,
 						notify:true
+					},
+					textInput:{
+						type: String,
+						value: "",
+						notify: true
 					}
 				}
 			});
