@@ -624,14 +624,54 @@
 			};
 			
 			var renameFolderDialog = function () {
-                if (this.sessionProvider.isAlive() === true && this.folderFileInfo.folder !== this.backsplash) {	
-				    var folderName = prompt('Please enter new folder name');
-					if (folderName !== null) {
-                        this.renameFile('folder', folderName);		
-                    }						
-			    }
+				this.updateRenameFolderDialogueButtons(this.currentFolder);
 			};
-						
+					
+			var updateRenameFolderDialogueButtons = function(origPath){
+				this.$.confirmDialogue.title = "Please new FolderName:";
+				//this.$.textField.placeholder = "";
+				this.$.textField.hidden=false;
+				this.$.noButton.hidden=true;
+				this.$.yesButton.hidden=false;
+				this.textInput = '';
+				this.$.yesButton.innerHTML = "Create Folder";
+				this.$.confirmDialogue.open();
+				this.yesButtonListener = function(e){
+					var folderName = this.textInput;
+					console.log(folderName);
+						this.isFolderPresent(folderName,function(filePresent){
+							if(filePresent){
+								this.$.confirmDialogue.title = "New Folder already Exists, Please Choose A Different Name!";
+								this.hideAllButtons();
+								setTimeout(function(){
+									this.newFolderDialog();
+								}.bind(this),5000);
+							}else{
+								var folderPath = this.genAbsolutePath(this.getParentFolder(origPath),folderName);
+								this.rename(origPath,folderPath,function(response){
+									console.log(response);
+									console.log(folderPath);
+									if(response.status == 'success'){
+										this.hideAllButtons();
+										this.$.confirmDialogue.title = "Folder Successfully Created!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+											this.openFolder({absolutePath:folderPath});
+										}.bind(this),4000);
+									}else{
+										this.$.hideAllButtons();
+										this.$.confirmDialogue.title = "Cannot Create Folder, Pleae Try Again!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+										}.bind(this),4000);
+									}
+								}.bind(this));
+							}
+						}.bind(this));
+				};
+
+			};
+
 			var deleteFile = function (path, callback) {
 				if(this.sessionProvider.isAlive()){
 					this.fileProvider.remove(null,path,function(response){
@@ -652,17 +692,12 @@
 				}
 			};
 			
-			var renameFile = function (type,fileName) {
-				if (fileName === '') {
-				    alert('Invalid ' + type + ' name!!');
-					return;
-				}
-				
-			    if (this.sessionProvider.isAlive() === true) {
-
-				} else {
-				    alert('Session time out! Failed to create Folder or File!');
-				}
+			var rename = function (origPath,newPath,callback) {
+				if(this.sessionProvider.isAlive()){
+					this.fileProvider.rename(null,origPath,newPath,function(response){
+						callback(response);
+					})
+				};
 			};
 
 
@@ -790,7 +825,7 @@
 				closeFile: closeFile,
 				saveFile: saveFile,
 				launchUploadFile: launchUploadFile,
-				renameFile: renameFile,
+				rename: rename,
 				isFileChanged: isFileChanged,
 				findTypeById: findTypeById,
 				getFileExtension: getFileExtension,
@@ -817,6 +852,7 @@
 				noButtonListener: noButtonListener,
 				updateSaveDialogueButtons: updateSaveDialogueButtons,
 				updateNewFolderDialogueButtons: updateNewFolderDialogueButtons,
+				updateRenameFolderDialogueButtons:updateRenameFolderDialogueButtons,
 				noop: noop,
 				isFolderPresent: isFolderPresent,
 				genAbsolutePath: genAbsolutePath,
