@@ -135,7 +135,7 @@
 						<bootstrap-pills selected="{{currentTab}}">
 							<template is="dom-repeat" items="{{openFiles}}">
 								<bootstrap-pill>
-									<span>{{item.fileName}}</span>
+									<span>{{item.name}}</span>
 								</bootstrap-pill>
 							</template>
 						</bootstrap-pills>
@@ -246,10 +246,48 @@
 					fileObj.selected = true;
 					fileObj.bSave = false;
 					fileObj.language = this.getLang(fileObj.name);
-					this.push('openFiles',fileObj);
-					callback();
+					this.isFileNameSame(fileObj,this.openFiles,function(isSame){
+						console.log("Inside callback of isFileNameSame, isSame",isSame);
+						if(isSame){
+							this.modFileName(fileObj.absolutePath,function(newName){
+								console.log("newName",newName);
+								fileObj.name = newName;
+								console.log("fileObj",fileObj);
+								this.push('openFiles',fileObj);
+								callback();
+							}.bind(this));
+						}else{
+							this.push('openFiles',fileObj);
+							callback();
+						}
+					}.bind(this));
 				}.bind(this));
 				//return the last index of the array
+			};
+
+			var isFileNameSame = function(fileObj,fileArray,callback){
+				var isSame = false;
+				if(fileArray.length == 0){
+					callback(isSame);
+				} else{
+					var lastIndex = fileArray.length -1;
+					fileArray.forEach(function(element,index){
+						if(element.name == fileObj.name){
+							isSame = true;
+						}
+						if(index == lastIndex){
+							callback(isSame)
+						}
+					}.bind(this));
+				}
+			};
+
+			var modFileName = function(absolutePath,callback){
+				var str = String(absolutePath);
+				var strLength = str.length - 1;
+				var modIndex = str.substring(0,str.lastIndexOf('/')).lastIndexOf('/');
+				var modString = str.substring(modIndex,strLength);
+				callback(modString);		
 			};
 
 			var getfileIndex = function(fileObj,array,callback){
@@ -387,7 +425,11 @@
 				if(str != '/'){
 					var base = new String(str);
 					base = base.substring(0,base.lastIndexOf('/')); 
-					return base;
+					if(base == ""){
+						return '/';
+					}else{
+						return base;
+					}
 				}else{
 					return '/';
 				}
@@ -989,6 +1031,8 @@
 				showFolderButtons: showFolderButtons,
 				currentFolderObserver: currentFolderObserver,
 				updateDeleteFileDialogueButtons: updateDeleteFileDialogueButtons,
+				isFileNameSame: isFileNameSame,
+				modFileName: modFileName,
 				observers : ['openFilesObserver(openFiles.splices)'],
 				properties:{
 					fileName: String,
