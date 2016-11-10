@@ -25,13 +25,16 @@
 			--bootstrap-pill-color: #373a3c;
 		}
 
+        onion-app-body {
+            height: 100%;
+        }
 		onion-app-body > div {
 			height: 100%;
 			width: 100%;
 		}
 
 		#side-bar {
-			width: 250px;
+			min-width: 200px;
 			height: 100%;
 			position: relative;
 			background-color: #fff;
@@ -47,13 +50,17 @@
 			padding: 25px;
 			overflow: scroll;
 		}
+        
+        .no-padding {
+            padding: 0 0 0 0;
+        }
 	</style>
 
 	<template>
 		<onion-app app-name="Settings" toolbar-color="#fff" toolbar-background="#7f8c8d">
 			<onion-app-body page-id="home">
 				<div class="horizontal layout">
-					<div id="side-bar">
+					<div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 no-padding" id="side-bar">
 						<bootstrap-pills stacked selected="{{currentTab}}">
 							<template is="dom-repeat" items="{{subApps}}">
 								<bootstrap-pill><iron-icon icon="{{item.icon}}"></iron-icon><span>{{item.name}}</span></bootstrap-pill>
@@ -61,15 +68,18 @@
 						</bootstrap-pills>
 					</div>
 
-					<iron-pages id="settingContainer" attr-for-selected="id" selected="[[currentSetting(subApps, currentTab)]]">
-                        <onion-settings-status id="onion-settings-status"></onion-settings-status>
-                        <onion-settings-general id="onion-settings-general"></onion-settings-general>
-						<onion-settings-wifi id="onion-settings-wifi"></onion-settings-wifi>
-						<onion-settings-ap id="onion-settings-ap"></onion-settings-ap>
-						<onion-settings-update id="onion-settings-update"></onion-settings-update>
-						<onion-settings-restore id="onion-settings-restore"></onion-settings-restore>
-						<onion-settings-cloud id="onion-settings-cloud"></onion-settings-cloud>
-					</iron-pages>
+                    <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9 no-padding">
+                        <iron-pages id="settingContainer" attr-for-selected="id" selected="[[currentSetting(subApps, currentTab)]]">
+                            <onion-settings-status id="onion-settings-status"></onion-settings-status>
+                            <onion-settings-general id="onion-settings-general"></onion-settings-general>
+    						<onion-settings-wifi id="onion-settings-wifi"></onion-settings-wifi>
+    						<onion-settings-ap id="onion-settings-ap"></onion-settings-ap>
+    						<onion-settings-update id="onion-settings-update"></onion-settings-update>
+    						<onion-settings-restore id="onion-settings-restore"></onion-settings-restore>
+    						<onion-settings-cloud id="onion-settings-cloud"></onion-settings-cloud>
+    					</iron-pages>
+                    </div>
+					
 				</div>
 			</onion-app-body>
 		</onion-app>
