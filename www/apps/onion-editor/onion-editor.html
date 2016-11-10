@@ -116,7 +116,9 @@
 						<bootstrap-modal id="fileUploadDialog" title="Upload A File!">
 							<modal-body>
 								<form action="/cgi-bin/cgi-upload" method="post" enctype="multipart/form-data">
-									<input id="fileSelectionInput" type="file" name="file"></input>
+									<input type="hidden" name="sessionid" value="00000000000000000000000000000000"></input>
+									<input id="fileNameInput" type="hidden" name="filename" value="{{fileName}}"></input>
+									<input id="fileSelectionInput" type="file" name="file" on-change="fileNameFunction"></input>
 									<input id="fileSelectionButton" type="submit" name="Submit" value="Submit Form">Upload!</input>
 								</form>
 							</modal-body>
@@ -474,6 +476,11 @@
 				}
 			};
 
+			var fileNameFunction = function() {
+				var path = this.$$('#fileSelectionInput').value;
+				var pathName = path.replace(/^.*\\/, "");
+				this.set('fileName', pathName);
+			}
 
 
 			var saveUpdate = function(ind,callback){
@@ -567,8 +574,10 @@
 				getfileIndex: getfileIndex,
 				openFilesObserver:openFilesObserver,
 				isFileInArray: isFileInArray,
+				fileNameFunction: fileNameFunction,
 				saveUpdate: saveUpdate,
 				properties:{
+					fileName: String,
 					files:{
 						type:Array,
 						value:[],
