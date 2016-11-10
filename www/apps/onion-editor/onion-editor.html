@@ -103,7 +103,7 @@
 				<div class="horizontal layout">
 					<div id="side-bar">
 <!-- 					    <div id="current-folder">{{currentFolder}}</div> -->
-						<onion-file-list id="fileList" on-open="preFileClick" files="{{files}}" current-folder="{{currentFolder}}">No File</onion-file-list>
+						<onion-file-list id="fileList" on-open="fileClick" files="{{files}}" current-folder="{{currentFolder}}">No File</onion-file-list>
 					</div>
 					<div id="editor-container" class="flex vertical-layout-center-center">
 						<bootstrap-modal id="fileUploadDialog" title="Upload A File!">
@@ -199,12 +199,6 @@
 				}else{
 					this.openFolder(fileObj);
 				}
-			};
-
-			var preFileClick = function(e){
-				this.debounce('click',function(){
-					this.fileClick(e);
-				}.bind(this),1000);
 			};
 
 			var openFile = function(fileObj){
@@ -1045,7 +1039,6 @@
 				updateDeleteFileDialogueButtons: updateDeleteFileDialogueButtons,
 				isFileNameSame: isFileNameSame,
 				modFileName: modFileName,
-				preFileClick: preFileClick,
 				observers : ['openFilesObserver(openFiles.splices)'],
 				properties:{
 					fileName: String,
