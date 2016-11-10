@@ -163,6 +163,16 @@
 				this.$.fileUploadDialog.open();
 			};
 
+			var hideFolderButtons = function(){
+				this.$.renameFolderButton.hidden = true;
+				this.$.deleteFolderButton.hidden = true;
+			};
+
+			var showFolderButtons = function(){
+				this.$.renameFolderButton.hidden = false;
+				this.$.deleteFolderButton.hidden = false;
+			};
+
 			var hideFileButtons = function(){
 				this.$.saveFileButton.disabled=true;
 				this.$.closeFileButton.disabled=true;
@@ -835,6 +845,14 @@
 
 			var openFilesObserver = function(){
 				console.log("openFilesObserver gets called");
+				console.log(this.openFiles.length);
+				if(this.openFiles.length == 0){
+					console.log(" hide file Buttons");
+					this.hideFileButtons();
+				}else {
+					console.log("ShowFileButtons");
+					this.showFileButtons();
+				}
 			};
 
 			var yesButtonListener = function(e){
@@ -894,7 +912,16 @@
 				},300);
 			};
 
-			var showTextField = true;
+			var currentFolderObserver = function(){
+				console.log("currentFolder",this.currentFolder);
+				if(this.currentFolder == '/'){
+					this.hideFolderButtons();
+				}else{
+					this.showFolderButtons();
+				}
+			};
+
+
 			Polymer({
 				is: 'onion-editor',
 				created: created,
@@ -945,6 +972,10 @@
 				genAbsolutePath: genAbsolutePath,
 				hideAllButtons: hideAllButtons,
 				getParentFolder: getParentFolder,
+				hideFolderButtons: hideFolderButtons,
+				showFolderButtons: showFolderButtons,
+				currentFolderObserver: currentFolderObserver,
+				observers : ['openFilesObserver(openFiles.splices)'],
 				properties:{
 					files:{
 						type:Array,
@@ -954,14 +985,14 @@
 					currentFolder:{
 						type: String,
 						value: '/',
-						notify: true
+						notify: true,
+						observer: 'currentFolderObserver'
 					},
 					openFiles:{
 						type: Array,
 						value: [],
 						notify: true,
-						reflectToAttribute:true,
-						observer: 'openFilesObserver'
+						reflectToAttribute:true
 					},
 					oldFilePath:{
 						type: String,
