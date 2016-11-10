@@ -103,7 +103,7 @@
 				<div class="horizontal layout">
 					<div id="side-bar">
 <!-- 					    <div id="current-folder">{{currentFolder}}</div> -->
-						<onion-file-list id="fileList" on-open="fileClick" files="{{files}}" current-folder="{{currentFolder}}">No File</onion-file-list>
+						<onion-file-list id="fileList" on-open="preFileClick" files="{{files}}" current-folder="{{currentFolder}}">No File</onion-file-list>
 					</div>
 					<div id="editor-container" class="flex vertical-layout-center-center">
 						<bootstrap-modal id="fileUploadDialog" title="Upload A File!">
@@ -199,6 +199,12 @@
 				}else{
 					this.openFolder(fileObj);
 				}
+			};
+
+			var preFileClick = function(e){
+				this.debounce('click',function(){
+					this.fileClick(e);
+				}.bind(this),1000);
 			};
 
 			var openFile = function(fileObj){
@@ -493,7 +499,10 @@
 
 			
 			var newFolderDialog = function () {
-				this.updateNewFolderDialogueButtons();
+				this.debounce('click',function(){
+					this.updateNewFolderDialogueButtons();
+				}.bind(this),1000);
+				
 			};
 
 			var updateNewFolderDialogueButtons = function(){
@@ -572,7 +581,9 @@
 			}
 
 			var newFileDialog = function () {
-				this.updateNewFileDialogueButtons(this.currentFolder);
+				this.debounce('click',function(){
+					this.updateNewFileDialogueButtons(this.currentFolder);
+				}.bind(this),1000);
 			};
 
 			var updateNewFileDialogueButtons = function(parentPath){
@@ -619,7 +630,9 @@
 
 			var deleteFileDialog = function () {
 				var path = this.openFiles[this.currentTab].absolutePath;
-				this.updateDeleteFileDialogueButtons(path);
+				this.debounce('click',function(){
+					this.updateDeleteFileDialogueButtons(path);
+				}.bind(this),1000);
 			};
 			
 			var updateDeleteFileDialogueButtons = function(absoluteFilePath,callback){
@@ -671,7 +684,9 @@
 			};
 
 			var deleteFolderDialog = function () {
-				this.updateDeleteFolderDialogueButtons(this.currentFolder);
+				this.debounce('click',function(){
+					this.updateDeleteFolderDialogueButtons(this.currentFolder);
+				}.bind(this),1000);
 			};
 			
 			var updateDeleteFolderDialogueButtons = function(folder,callback){
@@ -712,7 +727,9 @@
 
 			var renameFileDialog = function () {
 				var openAbsolutefilePath = this.openFiles[this.currentTab].absolutePath;
-				this.updateRenameFileDialogueButtons(openAbsolutefilePath);
+				this.debounce('click',function(){
+					this.updateRenameFileDialogueButtons(openAbsolutefilePath);
+				}.bind(this),1000);
 			};
 
 			var updateRenameFileDialogueButtons = function(origAbsoluteFilePath){
@@ -773,7 +790,9 @@
 			};
 			
 			var renameFolderDialog = function () {
-				this.updateRenameFolderDialogueButtons(this.currentFolder);
+				this.debounce('click',function(){
+					this.updateRenameFolderDialogueButtons(this.currentFolder);
+				}.bind(this),1000);
 			};
 					
 			var updateRenameFolderDialogueButtons = function(origPath){
@@ -1026,6 +1045,7 @@
 				updateDeleteFileDialogueButtons: updateDeleteFileDialogueButtons,
 				isFileNameSame: isFileNameSame,
 				modFileName: modFileName,
+				preFileClick: preFileClick,
 				observers : ['openFilesObserver(openFiles.splices)'],
 				properties:{
 					fileName: String,

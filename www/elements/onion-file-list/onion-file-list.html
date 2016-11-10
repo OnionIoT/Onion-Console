@@ -126,15 +126,17 @@
 			};
 
 			var open = function(e) {
-				console.log(e);
-				var fileObj = e.model.__data__.item;
-				if(this.currentFolder == "/"){
-					fileObj.absolutePath = this.currentFolder + fileObj.name;
-				}else{
-					fileObj.absolutePath = this.currentFolder + '/' + fileObj.name;
-				}
-				fileObj.parentDir = this.currentFolder;
-				this.fire('open', fileObj);
+				this.debounce('click',function(){
+					console.log(e);
+					var fileObj = e.model.__data__.item;
+					if(this.currentFolder == "/"){
+						fileObj.absolutePath = this.currentFolder + fileObj.name;
+					}else{
+						fileObj.absolutePath = this.currentFolder + '/' + fileObj.name;
+					}
+					fileObj.parentDir = this.currentFolder;
+					this.fire('open', fileObj);
+				}.bind(this),1000)
 			};
 
 			var saveRename = function(e) {
