@@ -288,6 +288,7 @@
 							callback(bPress);
 						} else if(ind == index && obj.absolutePath == element.absolutePath){
 							console.log(bPress)
+							bPress = true;
 							callback(bPress);
 							return;
 						} else if(ind == index){
@@ -307,16 +308,6 @@
 			};
 
 			var ready = function () {
-				this.backsplash = '/';
-				this.extSymbol = '.';
-				this.fileName = '';
-				
-				this.folderFileInfo = {
-					folder: this.backsplash, //current folder
-					file: '',           //current file
-					list: null,         
-					fileInEdit: ''      //current folder + current file
-				};
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
 					this.sessionProvider = sessionProvider;
 					if (sessionProvider.isAlive() === true) {   
