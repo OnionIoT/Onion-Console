@@ -118,11 +118,11 @@
 						</bootstrap-modal>
 						<bootstrap-modal id="confirmDialogue" title="">
 							<modal-body>
-								<form>
-									<input type="text" id="textField" value={{textInput::input}}></input>
+<!-- 								<form id="confirmForm"> -->
+									<input type="text" id="textField" value={{textInput::input}} on-keyup="textEnter"></input>
 									<input type="button" id="noButton" on-click="noButtonListener" value={{noButtonText::input}}></input>
 									<input type="button" id="yesButton" on-click="yesButtonListener" value={{yesButtonText::input}}></input>
-								</form>
+<!-- 								</form> -->
 							</modal-body>
 						</bootstrap-modal>
 						<bootstrap-pills selected="{{currentTab}}">
@@ -149,6 +149,13 @@
 
 			var submitUpload = function(){
 				// console.log(this.$.fileSelectionInput.value);
+			};
+
+			var textEnter = function(e){
+				console.log(e);
+				if(e.code=="Enter" && e.key=="Enter"){
+					this.yesButtonListener(e);
+				}
 			};
 
 			var backsplash = null;
@@ -199,6 +206,12 @@
 				}else{
 					this.openFolder(fileObj);
 				}
+			};
+
+			var enterPressed = function(e){
+				console.log(e);
+				console.log("Enter was pressed");
+				//this.yesButtonListener()
 			};
 
 			var openFile = function(fileObj){
@@ -341,6 +354,9 @@
 			};
 
 			var ready = function () {
+				// this.$.confirmForm.submit(function(e){
+				// 	e.preventDefault();
+				// });
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
 					this.sessionProvider = sessionProvider;
 					if (sessionProvider.isAlive() === true) {   
@@ -995,6 +1011,7 @@
 				openFile: openFile,
 				deleteFile: deleteFile,
 				createFile: createFile,
+				textEnter: textEnter,
 				createFolder: createFolder,
 				closeFile: closeFile,
 				saveFile: saveFile,
