@@ -133,7 +133,7 @@
 						<bootstrap-pills selected="{{currentTab}}">
 							<template is="dom-repeat" items="{{openFiles}}">
 								<bootstrap-pill>
-									<span>[[item.fileName]]</span>
+									<span>{{item.fileName}}</span>
 								</bootstrap-pill>
 							</template>
 						</bootstrap-pills>
@@ -205,7 +205,7 @@
 						// fileObj.fileName = fileObj.absolutePath;
 						//Bring it to the forefront
 						console.log("file Is in Array, do not add it.");
-						this.getfileIndex(fileObj,function(index){
+						this.getfileIndex(fileObj,this.openFiles,function(index){
 							console.log(index);
 							this.currentTab = index;
 						}.bind(this));
@@ -214,7 +214,7 @@
 						console.log("files is not in Array, It needs to be added");
 						this.addFileToArray(fileObj,function(){
 							//And also Bring it to the forefront
-							this.getfileIndex(fileObj,function(index){
+							this.getfileIndex(fileObj,this.openFiles,function(index){
 								console.log(index);
 								this.currentTab = index;
 								console.log(this.currentTab);
@@ -240,8 +240,8 @@
 				//return the last index of the array
 			};
 
-			var getfileIndex = function(fileObj,callback){
-				var ind = this.openFiles.forEach(function(element,index){
+			var getfileIndex = function(fileObj,array,callback){
+				var ind = array.forEach(function(element,index){
 					if(fileObj.absolutePath == element.absolutePath){
 						callback(index);
 					}
@@ -428,6 +428,9 @@
 
 			
 			var closeFile = function (callback) {
+				if(typeof callback != 'function'){
+					callback = this.noop;
+				}
 				this.saveFile(function(response){
 					if(response.status == 'failure'){
 						//DoNothing, if save fails
@@ -444,16 +447,19 @@
 							console.log("the length is 0");
 							this.fileIndex = null;
 							this.currentTab = null;
+							callback();
 						}else{
 							console.log(" openFiles length is > 0");
 							if(this.currentTab == newCurrentTab){
 								console.log("currentTab equals newCurrentTab")
 								this.fileIndex = newCurrentTab;
 								this.currentTabChange();
+								callback()
 							}else{
 								console.log("currentTab does not equal new currentTab");
 								this.fileIndex = newCurrentTab;
 								this.currentTab = newCurrentTab;	
+								callback()
 							}
 						}
 						//change currentTab
@@ -649,12 +655,65 @@
 			};
 
 			var renameFileDialog = function () {
-                if (this.sessionProvider.isAlive() === true && this.folderFileInfo.fileInEdit !== '') {	
-				    var fileName = prompt('Please enter new file name');
-					if (fileName !== null) {
-                        this.renameFile('file', fileName);			  	   
-					}
-			    }
+				var openAbsolutefilePath = this.openFiles[this.currentTab].absolutePath;
+				this.updateRenameFileDialogueButtons(openAbsolutefilePath);
+			};
+
+			var updateRenameFileDialogueButtons = function(origAbsoluteFilePath){
+				this.$.confirmDialogue.title = "Please Enter new File Name:";
+				//this.$.textField.placeholder = "";
+				this.$.textField.hidden=false;
+				this.$.noButton.hidden=true;
+				this.$.yesButton.hidden=false;
+				this.textInput = '';
+				this.$.yesButton.innerHTML = "Rename File";
+				this.$.confirmDialogue.open();
+				this.yesButtonListener = function(e){
+					var newFileName = this.textInput;
+					var newAbsoluteFilePath = this.genAbsolutePath(this.getParentFolder(origAbsoluteFilePath),newFileName);
+					var dummyFileObj = {absolutePath:newAbsoluteFilePath};
+					var oldDummyFileObj = {absolutePath: origAbsoluteFilePath};
+						this.isFileInArray(dummyFileObj,this.files,function(filePresent){
+							this.hideAllButtons();
+							if(filePresent){
+								this.$.confirmDialogue.title = "New File Name already Exists, Please Choose A Different Name!";
+								setTimeout(function(){
+									this.newFolderDialog();
+								}.bind(this),5000);
+							}else{
+								this.rename(origAbsoluteFilePath,newAbsoluteFilePath,function(response){
+									if(response.status == 'success'){
+										this.$.confirmDialogue.title = "File Successfully Renamed!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+											this.openFolder({absolutePath:this.getParentFolder(origAbsoluteFilePath)});
+											this.getfileIndex(oldDummyFileObj,this.openFiles,function(index){
+												console.log(index);
+												this.openFiles[index].bSave = false;
+												var dummyArray = this.openFiles;
+												var dummyObj = dummyArray[index];
+												dummyObj.absolutePath = newAbsoluteFilePath;
+												dummyObj.fileName = newFileName;
+												dummyObj.name = newFileName;
+												dummyObj.language = this.getLang(newFileName);
+												//this.splice('openFiles',index,1);
+												this.closeFile(function(){
+													setTimeout(function(){
+														this.openFile(dummyObj);
+													}.bind(this),300);
+												}.bind(this));
+											}.bind(this));
+										}.bind(this),4000);
+									}else{
+										this.$.confirmDialogue.title = "Cannot Rename File, Pleae Try Again!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+										}.bind(this),4000);
+									}
+								}.bind(this));
+							}
+						}.bind(this));
+				};
 			};
 			
 			var renameFolderDialog = function () {
@@ -662,13 +721,13 @@
 			};
 					
 			var updateRenameFolderDialogueButtons = function(origPath){
-				this.$.confirmDialogue.title = "Please new FolderName:";
+				this.$.confirmDialogue.title = "Please Enter new FolderName:";
 				//this.$.textField.placeholder = "";
 				this.$.textField.hidden=false;
 				this.$.noButton.hidden=true;
 				this.$.yesButton.hidden=false;
 				this.textInput = '';
-				this.$.yesButton.innerHTML = "Create Folder";
+				this.$.yesButton.innerHTML = "Rename Folder";
 				this.$.confirmDialogue.open();
 				this.yesButtonListener = function(e){
 					var folderName = this.textInput;
@@ -880,6 +939,7 @@
 				updateSaveDialogueButtons: updateSaveDialogueButtons,
 				updateNewFolderDialogueButtons: updateNewFolderDialogueButtons,
 				updateRenameFolderDialogueButtons:updateRenameFolderDialogueButtons,
+				updateRenameFileDialogueButtons:updateRenameFileDialogueButtons,
 				noop: noop,
 				isFolderPresent: isFolderPresent,
 				genAbsolutePath: genAbsolutePath,
@@ -900,6 +960,7 @@
 						type: Array,
 						value: [],
 						notify: true,
+						reflectToAttribute:true,
 						observer: 'openFilesObserver'
 					},
 					oldFilePath:{
