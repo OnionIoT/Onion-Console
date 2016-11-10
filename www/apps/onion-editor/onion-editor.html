@@ -502,9 +502,9 @@
 					var folderName = this.textInput;
 					console.log(folderName);
 						this.isFolderPresent(folderName,function(filePresent){
+							this.hideAllButtons();
 							if(filePresent){
 								this.$.confirmDialogue.title = "Folder already Exists, Please Choose A Different Name!";
-								this.hideAllButtons();
 								setTimeout(function(){
 									this.newFolderDialog();
 								}.bind(this),5000);
@@ -512,14 +512,12 @@
 								var folderPath = genAbsolutePath(this.currentFolder,folderName);
 								this.createFolder(folderPath,function(response){
 									if(response.status == 'success'){
-										this.hideAllButtons();
 										this.$.confirmDialogue.title = "Folder Successfully Created!";
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
 											this.openFolder({absolutePath:this.currentFolder});
 										}.bind(this),4000);
 									}else{
-										this.$.hideAllButtons();
 										this.$.confirmDialogue.title = "Cannot Create Folder, Pleae Try Again!";
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
@@ -565,13 +563,51 @@
 			}
 
 			var newFileDialog = function () {
-				var fileName = prompt('Please enter new file name');
-
-				if (fileName !== null) {
-				    this.createFile('file', fileName);
-				}
+				this.updateNewFileDialogueButtons(this.currentFolder);
 			};
-			
+
+			var updateNewFileDialogueButtons = function(parentPath){
+				this.$.confirmDialogue.title = "Please Enter New File Name:";
+				//this.$.textField.placeholder = "";
+				this.$.textField.hidden=false;
+				this.$.noButton.hidden=true;
+				this.$.yesButton.hidden=false;
+				this.textInput = '';
+				this.$.yesButton.innerHTML = "Create File";
+				this.$.confirmDialogue.open();
+				this.yesButtonListener = function(e){
+					var folderName = this.textInput;
+					var filePath = this.genAbsolutePath(parentPath,folderName);
+					var dummyFileObj = {absolutePath:filePath};
+					console.log(filePath);
+						this.isFileInArray(dummyFileObj,this.files,function(filePresent){
+							this.hideAllButtons();
+							if(filePresent){
+								this.$.confirmDialogue.title = "File already Exists, Please Choose A Different Name!";
+								setTimeout(function(){
+									this.newFolderDialog();
+								}.bind(this),5000);
+							}else{
+								var folderPath = genAbsolutePath(this.currentFolder,folderName);
+								this.createFile(filePath,function(response){
+									if(response.status == 'success'){
+										this.$.confirmDialogue.title = "File Successfully Created!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+											this.openFolder({absolutePath:parentPath});
+										}.bind(this),4000);
+									}else{
+										this.$.confirmDialogue.title = "Cannot Create File, Pleae Try Again!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+										}.bind(this),4000);
+									}
+								}.bind(this));
+							}
+						}.bind(this));
+				};
+			};
+
 			var deleteFileDialog = function () {
                 if (this.sessionProvider.isAlive() === true && this.folderFileInfo.fileInEdit !== '') {	
                     if (confirm('Are you sure that you want to permanently delete \"' + this.folderFileInfo.fileInEdit + '\" ?')) {
@@ -594,17 +630,15 @@
 				this.yesButtonListener = function(e){
 					var path = folder;
 					this.deleteFile(path,function(response){
+						this.hideAllButtons();
 						if(response.status == 'success'){
-							this.hideAllButtons();
 							this.$.confirmDialogue.title = "Successfully Deleted Folder"
 							var newFolderObj = {absolutePath:this.getParentFolder(path)};
 							setTimeout(function(){
 								this.$.confirmDialogue.close();
-								console.log(newFolderObj);
 								this.openFolder(newFolderObj);
 							}.bind(this),4000)
 						}else{
-							this.hideAllButtons();
 							this.$.confirmDialogue.title = "Could Not Delete Folder"
 							setTimeout(function(){
 								this.$.confirmDialogue.close();
@@ -640,27 +674,23 @@
 					var folderName = this.textInput;
 					console.log(folderName);
 						this.isFolderPresent(folderName,function(filePresent){
+							this.hideAllButtons();
 							if(filePresent){
 								this.$.confirmDialogue.title = "New Folder already Exists, Please Choose A Different Name!";
-								this.hideAllButtons();
 								setTimeout(function(){
 									this.newFolderDialog();
 								}.bind(this),5000);
 							}else{
 								var folderPath = this.genAbsolutePath(this.getParentFolder(origPath),folderName);
 								this.rename(origPath,folderPath,function(response){
-									console.log(response);
-									console.log(folderPath);
 									if(response.status == 'success'){
-										this.hideAllButtons();
-										this.$.confirmDialogue.title = "Folder Successfully Created!";
+										this.$.confirmDialogue.title = "Folder Successfully Renamed!";
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
 											this.openFolder({absolutePath:folderPath});
 										}.bind(this),4000);
 									}else{
-										this.$.hideAllButtons();
-										this.$.confirmDialogue.title = "Cannot Create Folder, Pleae Try Again!";
+										this.$.confirmDialogue.title = "Cannot Rename Folder, Pleae Try Again!";
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
 										}.bind(this),4000);
@@ -680,15 +710,11 @@
 				}
 			};
 			
-			var createFile = function (type, fileName) {
-			    if (fileName === '') {
-				    alert('Invalid ' + type + ' name!!');
-					return;
-				}
-			    if (this.sessionProvider.isAlive() === true ) {
-
-				} else {
-				    alert('Session time out! Failed to create Folder or File!');
+			var createFile = function (path, callback) {
+				if(this.sessionProvider.isAlive()){
+					this.fileProvider.createFile(null,path,function(response){
+						callback(response);
+					})
 				}
 			};
 			
@@ -846,6 +872,7 @@
 				getfileIndex: getfileIndex,
 				openFilesObserver:openFilesObserver,
 				updateDeleteFolderDialogueButtons: updateDeleteFolderDialogueButtons,
+				updateNewFileDialogueButtons: updateNewFileDialogueButtons,
 				isFileInArray: isFileInArray,
 				saveUpdate: saveUpdate,
 				yesButtonListener: yesButtonListener,
