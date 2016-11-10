@@ -23,31 +23,24 @@
 			width: 100%;
 		}
 
+		onion-app-body{
+			height: 100%;
+			width: 100%;
+		}
+
 		#side-bar {
 			width: 300px;
 			height: 100%;
 			position: relative;
 		}
 
-/*			#current-folder {
-				font-size: 13px;
-				position: absolute;
-				top: 0;
-				width: 100%;
-			    color: black;
-			    background-color: #bdc3c7;
-				font-family: monospace;
-				padding: 10px;
-	            line-height: 20px;
-	            z-index: 10;
-			}*/
-
-			onion-file-list {
-				width: 100%;
-				height: 100%;
-				padding-top: 20px;
-				background-color: #ecf0f1;
-			}
+		onion-file-list {
+			width: 100%;
+			height: 100%;
+			padding-top: 20px;
+			background-color: #ecf0f1;
+			overflow-y:scroll;
+		}
 
 		#editor-container {
 		    width: 100%;
@@ -930,7 +923,7 @@
 				this.$.noButton.hidden=false;
 				this.$.yesButton.hidden=false;
 				this.yesButtonText = "Save";
-				this.noButtonText = "Cancel";
+				this.noButtonText = "Don't Save";
 				var fileObj = this.openFiles[this.currentTab];
 				this.$.confirmDialogue.title="Confirm File Save: " + fileObj.absolutePath;
 				this.yesButtonListener = function(e){
