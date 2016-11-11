@@ -3,16 +3,19 @@
 <link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../../lib/juicy-ace-editor/src/juicy-ace-editor.html">
 <link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../lib/iron-form-element-behavior/iron-form-element-behavior.html">
 <link rel="import" href="../../elements/onion-app/onion-app.html">
 <link rel="import" href="../../lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
 <link rel="import" href="../../elements/onion-file-list/onion-file-list.html">
 <link rel="import" href="../../elements/onion-loading/onion-loading.html">
 <link rel="import" href="../../elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="../../elements/onion-upload/onion-upload.html">
+
 <dom-module id="onion-editor">
 	<style>
 		:host {
-		    display: block;
-	  	    height: 100%;
+			display: block;
+			height: 100%;
 			width: 100%;
 			--bootstrap-pill-border-radius: 3px;
 			--bootstrap-pill-color: #373a3c;
@@ -34,6 +37,7 @@
 			position: relative;
 		}
 
+<<<<<<< Updated upstream
 		.fileCloseIcon{
 			width: 15px;
 			height: 15px;
@@ -53,23 +57,44 @@
 			background-color: #ecf0f1;
 			overflow-y:scroll;
 		}
+=======
+/*			#current-folder {
+				font-size: 13px;
+				position: absolute;
+				top: 0;
+				width: 100%;
+				color: black;
+				background-color: #bdc3c7;
+				font-family: monospace;
+				padding: 10px;
+				line-height: 20px;
+				z-index: 10;
+			}*/
+
+			onion-file-list {
+				width: 100%;
+				height: 100%;
+				padding-top: 20px;
+				background-color: #ecf0f1;
+			}
+>>>>>>> Stashed changes
 
 		#editor-container {
-		    width: 100%;
+			width: 100%;
 			height: 100%;
 			background-color:#373a3c;
 		}
 
-	    #fileEditor {
-	        width: 100%;
-	        height: 100%;
-	    }
+		#fileEditor {
+			width: 100%;
+			height: 100%;
+		}
 		#toast1 {
-		    margin-left:20%;
+			margin-left:20%;
 		}
 		.horizontal-section {
 			padding: 0 !important;
-        }
+		}
 		paper-item {
 			--paper-item: {
 				cursor: pointer;
@@ -102,7 +127,7 @@
 						<button on-click="deleteFolderDialog" id="deleteFolderButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
 						<button on-click="deleteFileDialog" id="deleteFileButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon></span><span>Delete File</span></button>
 						<button on-click="renameFolderDialog" id="renameFolderButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename Folder</span></button>
-					    <button on-click="renameFileDialog"  id="renameFileButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename File</span></button>
+						<button on-click="renameFileDialog"  id="renameFileButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename File</span></button>
 					</div>
 					<div>
 						<button id="saveFileButton" on-click="saveFile"><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
@@ -120,12 +145,7 @@
 					<div id="editor-container" class="flex vertical-layout-center-center">
 						<bootstrap-modal id="fileUploadDialog" title="Upload A File!">
 							<modal-body>
-								<form action="/cgi-bin/cgi-upload" method="post" enctype="multipart/form-data">
-									<input type="hidden" name="sessionid" value="00000000000000000000000000000000"></input>
-									<input id="fileNameInput" type="hidden" name="filename" value="{{fileName}}"></input>
-									<input id="fileSelectionInput" type="file" name="file" on-change="fileNameFunction"></input>
-									<input id="fileSelectionButton" type="submit" name="Submit" value="Submit Form">Upload!</input>
-								</form>
+								<onion-upload session-id="{{sessionId}}" current-folder="{{currentFolder}}"></onion-upload>
 							</modal-body>
 						</bootstrap-modal>
 						<bootstrap-modal id="confirmDialogue" title="">
@@ -144,7 +164,7 @@
 								</bootstrap-pill>
 							</template>
 						</bootstrap-pills>
-					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px"></juicy-ace-editor>
+						<juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px"></juicy-ace-editor>
 					</div>
 				</div>
 			</onion-app-body>
@@ -154,11 +174,12 @@
 		'use strict';
 		(function () {
 			// var this = null;
-
+			
 			var created = function () {
 				// this = this;
 			};
 
+<<<<<<< Updated upstream
 			var submitUpload = function(){
 				// console.log(this.$.fileSelectionInput.value);
 			};
@@ -170,6 +191,8 @@
 				}
 			};
 
+=======
+>>>>>>> Stashed changes
 			var backsplash = null;
 			var extSymbol = null;
 
@@ -382,7 +405,12 @@
 							this.openFolder({absolutePath:this.currentFolder});
 						}.bind(this));
 					}
-				}.bind(this));	
+				}.bind(this));
+
+				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+					this.ubus = ubus;
+					this.set('sessionId', this.ubus.token);
+				}.bind(this));
 			};
 
 			var loadOpenFile = function(openFileArray,fileIndex){
@@ -403,11 +431,11 @@
 					}
 				}.bind(this),300);
 			};
-			 			 
+						 
 			
 			//Keep This Function
 			var getFileExtension = function (fileString) {
-			    return fileString.substring(fileString.lastIndexOf('.') + 1, fileString.length);
+				return fileString.substring(fileString.lastIndexOf('.') + 1, fileString.length);
 			};
 
 			var getLang = function(fileName){
@@ -427,7 +455,7 @@
 			
 			var openFolder = function (folderObj) {
 				var currentFile = '';
-                if (this.sessionProvider.isAlive() === true) {
+				if (this.sessionProvider.isAlive() === true) {
 					var changed = true;
 					console.log("Inside the openFolder Function");
 						this.fileProvider.getFolderContent(null,folderObj.absolutePath, function(result){
@@ -511,17 +539,17 @@
 				if(typeof callback != 'function'){
 					callback = this.noop;
 				}
-			    if(this.sessionProvider.isAlive() == true){
-			    	this.saveUpdate(this.currentTab,function(){
-			    		if(this.openFiles[this.currentTab].bSave){
-			    			this.updateSaveDialogueButtons(callback,function(){
-			    				this.$.confirmDialogue.open();
-			    			}.bind(this));
-			    		} else{
-			    			callback("SaveNotNecessary");
-			    		}
-			    	}.bind(this));
-			    }
+				if(this.sessionProvider.isAlive() == true){
+					this.saveUpdate(this.currentTab,function(){
+						if(this.openFiles[this.currentTab].bSave){
+							this.updateSaveDialogueButtons(callback,function(){
+								this.$.confirmDialogue.open();
+							}.bind(this));
+						} else{
+							callback("SaveNotNecessary");
+						}
+					}.bind(this));
+				}
 			};
 
 			
@@ -1024,7 +1052,6 @@
 				behaviors: [Onion.AppBehavior],
 				getLang: getLang,
 				openFolder: openFolder,
-				submitUpload: submitUpload,
 				openFile: openFile,
 				deleteFile: deleteFile,
 				createFile: createFile,
@@ -1054,7 +1081,6 @@
 				updateDeleteFolderDialogueButtons: updateDeleteFolderDialogueButtons,
 				updateNewFileDialogueButtons: updateNewFileDialogueButtons,
 				isFileInArray: isFileInArray,
-				fileNameFunction: fileNameFunction,
 				saveUpdate: saveUpdate,
 				yesButtonListener: yesButtonListener,
 				noButtonListener: noButtonListener,
@@ -1076,7 +1102,7 @@
 				modFileName: modFileName,
 				observers : ['openFilesObserver(openFiles.splices)'],
 				properties:{
-					fileName: String,
+					sessionId: String,
 					files:{
 						type:Array,
 						value:[],
@@ -1127,6 +1153,6 @@
 					}
 				}
 			});
-        })();
+		})();
 	</script>
 </dom-module>
