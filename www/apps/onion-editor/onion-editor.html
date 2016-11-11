@@ -34,6 +34,18 @@
 			position: relative;
 		}
 
+		.fileCloseIcon{
+			width: 15px;
+			height: 15px;
+			margin-left: 10px;
+		}
+
+		.fileCloseIcon:hover{
+			cursor: pointer;
+			border: solid;
+			border-width: thin;
+		}
+
 		onion-file-list {
 			width: 100%;
 			height: 100%;
@@ -128,7 +140,7 @@
 						<bootstrap-pills selected="{{currentTab}}">
 							<template is="dom-repeat" items="{{openFiles}}">
 								<bootstrap-pill>
-									<span>{{item.name}}</span>
+									<span>{{item.name}}<iron-icon on-click="fileCloseIconListener" class="fileCloseIcon" icon="icons:close"></iron-icon></span>
 								</bootstrap-pill>
 							</template>
 						</bootstrap-pills>
@@ -206,6 +218,11 @@
 				}else{
 					this.openFolder(fileObj);
 				}
+			};
+
+			var fileCloseIconListener = function(e){
+				console.log(e);
+				console.log(this.currentTab);
 			};
 
 			var enterPressed = function(e){
@@ -1047,6 +1064,7 @@
 				updateRenameFileDialogueButtons:updateRenameFileDialogueButtons,
 				noop: noop,
 				isFolderPresent: isFolderPresent,
+				fileCloseIconListener: fileCloseIconListener,
 				genAbsolutePath: genAbsolutePath,
 				hideAllButtons: hideAllButtons,
 				getParentFolder: getParentFolder,
