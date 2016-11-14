@@ -18,6 +18,9 @@
 			width: 100%;
 			--bootstrap-pill-border-radius: 3px;
 			--bootstrap-pill-color: #373a3c;
+			--bootstrap-pill-min-width: 150px;
+			--bootstrap-pill-text-align:center;
+			--bootstrap-pill-padding:.2em 1em;
 		}
 
 		onion-app-body > div {
@@ -170,7 +173,6 @@
 				}
 			};
 
-<<<<<<< HEAD
 			var showClose = function(index,currTab){
 				console.log("showClose Gets Called");
 				console.log("index", index);
@@ -181,11 +183,9 @@
 					return true;
 				}
 			};
-=======
 			var closeModal = function() {
 				this.$.fileUploadDialog.close();
-			}
->>>>>>> origin/dev
+			};
 
 			var backsplash = null;
 			var extSymbol = null;
@@ -1125,11 +1125,8 @@
 				saveFileListener: saveFileListener,
 				isFileNameSame: isFileNameSame,
 				modFileName: modFileName,
-<<<<<<< HEAD
 				selectOpenFile: selectOpenFile,
-=======
 				refreshFolder: refreshFolder,
->>>>>>> origin/dev
 				observers : ['openFilesObserver(openFiles.splices)'],
 				properties:{
 					fileName: String,

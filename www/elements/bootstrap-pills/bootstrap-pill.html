@@ -12,7 +12,7 @@
 
 		.nav-link {
 			display: block;
-			padding: .5em 1em;
+			padding: var(--bootstrap-pill-padding,.5em 1em);
 			border-top-left-radius: var(--bootstrap-pill-border-radius, 0.2rem);
 			border-bottom-left-radius: var(--bootstrap-pill-border-radius, 0.2rem);
 			cursor: pointer;
@@ -26,8 +26,10 @@
 		.nav-item.open .nav-link,
 		.nav-item.open .nav-link:focus,
 		.nav-item.open .nav-link:hover {
+			min-width: var(--bootstrap-pill-min-width,0px);
 			color: var(--bootstrap-pill-color, #fff);
 			background-color: var(--bootstrap-active-pill-background-color, #fff);
+			text-align: var(--bootstrap-pill-text-align, center);
 		}
 	</style>
 
