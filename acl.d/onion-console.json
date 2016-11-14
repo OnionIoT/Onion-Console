@@ -96,7 +96,12 @@
                                 "network",
                                 "onion",
                                 "mjpg-streamer"
-                        ]
+                        ],
+                        "cgi-io": {
+                                "upload": [
+                                        "write"
+                                ]
+                        }
                 }
         }
 

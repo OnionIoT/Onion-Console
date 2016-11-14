@@ -8,6 +8,8 @@
 <link rel="import" href="../../elements/onion-file-list/onion-file-list.html">
 <link rel="import" href="../../elements/onion-loading/onion-loading.html">
 <link rel="import" href="../../elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="../../elements/onion-upload/onion-upload.html">
+
 <dom-module id="onion-editor">
 	<style>
 		:host {
@@ -121,12 +123,7 @@
 					<div id="editor-container" class="flex vertical-layout-center-center">
 						<bootstrap-modal id="fileUploadDialog" title="Upload A File!">
 							<modal-body>
-								<form action="/cgi-bin/cgi-upload" method="post" enctype="multipart/form-data">
-									<input type="hidden" name="sessionid" value="00000000000000000000000000000000"></input>
-									<input id="fileNameInput" type="hidden" name="filename" value="{{fileName}}"></input>
-									<input id="fileSelectionInput" type="file" name="file" on-change="fileNameFunction"></input>
-									<input id="fileSelectionButton" type="submit" name="Submit" value="Submit Form">Upload!</input>
-								</form>
+								<onion-upload session-id="{{sessionId}}" current-folder="{{currentFolder}}" on-reload="refreshFolder" on-close="closeModal"></onion-upload>
 							</modal-body>
 						</bootstrap-modal>
 						<bootstrap-modal id="confirmDialogue" title="">
@@ -173,6 +170,7 @@
 				}
 			};
 
+<<<<<<< HEAD
 			var showClose = function(index,currTab){
 				console.log("showClose Gets Called");
 				console.log("index", index);
@@ -183,6 +181,11 @@
 					return true;
 				}
 			};
+=======
+			var closeModal = function() {
+				this.$.fileUploadDialog.close();
+			}
+>>>>>>> origin/dev
 
 			var backsplash = null;
 			var extSymbol = null;
@@ -395,7 +398,12 @@
 							this.openFolder({absolutePath:this.currentFolder});
 						}.bind(this));
 					}
-				}.bind(this));	
+				}.bind(this));
+
+				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+					this.ubus = ubus;
+					this.set('sessionId', this.ubus.token);
+				}.bind(this));
 			};
 
 			var loadOpenFile = function(openFileArray,fileIndex){
@@ -1051,6 +1059,10 @@
 				}
 			};
 
+			var refreshFolder = function (folderObj){
+				this.openFolder(folderObj.detail)
+			};
+
 
 			Polymer({
 				is: 'onion-editor',
@@ -1058,6 +1070,7 @@
 				ready: ready,
 				behaviors: [Onion.AppBehavior],
 				getLang: getLang,
+				closeModal: closeModal,
 				openFolder: openFolder,
 				submitUpload: submitUpload,
 				openFile: openFile,
@@ -1112,7 +1125,11 @@
 				saveFileListener: saveFileListener,
 				isFileNameSame: isFileNameSame,
 				modFileName: modFileName,
+<<<<<<< HEAD
 				selectOpenFile: selectOpenFile,
+=======
+				refreshFolder: refreshFolder,
+>>>>>>> origin/dev
 				observers : ['openFilesObserver(openFiles.splices)'],
 				properties:{
 					fileName: String,

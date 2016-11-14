@@ -1,197 +1,93 @@
 <link rel="import" href="../../lib/polymer/polymer.html">
 
-<dom-module id="onion-upload">
-	<style is="custom-style">
-		.hidden {
-			display: none;
-		}
 
-		.box {
-			background-color: #f2f2f2;
-			border-radius: 0.25rem;
-			outline: 2px dashed black;
-			outline-offset: -20px;
-			height: 100%;
-			width: 100%;
-			text-align: center;
-			background-image: url();
+
+<dom-module id="onion-upload">
+<!-- 	<style>
+		:host {
+
 		}
-		.file {
-			outline: 1px solid red;
-			height: 100%;
-			width: 100%;
-		}
-		.box.isdragover {
-			background-color: white;
-			outline-offset: -10px;
-		}
-		.box.uploading {
-			background-image: url();
-		}
-	</style>
+	</style> -->
 
 	<template>
-		<div>
-			<div id="drop" class="box font-weight-bold">[[_computeLabel(file)]]</div>
-		  	<div id="uploading" class="hidden">Uploading&hellip;</div>
-		  	<div id="success" class="hidden">Done!</div> 
-		  	<div id="error" class="hidden">Error! <span></span>.</div>
-		</div>
+
+		<form id="fileForm" action="/cgi-bin/cgi-upload" method="post" enctype="multipart/form-data">
+			<input type="hidden" id="fileSessionId" name="sessionid" value="{{sessionId}}"></input>
+			<input id="fileNameInput" type="hidden" name="filename" value="{{fileName}}"></input>
+			<input id="fileSelectionInput" type="file" name="file" on-change="fileNameFunction"></input>
+			<button on-click="_submitUpload">Submit</button>
+		</form>
+		<iron-ajax id="ajax" url="/cgi-bin/cgi-upload" method="POST" handle-as="json" on-response="_moveFile"></iron-ajax>
+		
 	</template>
 
 	<script>
 		'use strict';
 
 		(function () {
-			var ready = function () {
+			var created = function () {
 
 			};
 
-			var attached = function () {
-				this.listen(this, 'drop', '_onDrag');
-        		this.listen(this, 'dragover', '_onDrag');
-        		this.listen(this, 'dragenter', '_onDrag');
-        		this.listen(this, 'dragleave', '_onDrag');
+			var ready = function(){
+				
 			};
 
-			var _onDrag = function (e) {
-				e.preventDefault();
-				e.stopPropagation();
+			var _submitUpload = function(event){
+				event.preventDefault();
+				var form = document.getElementById('fileForm');
+				var formData = new FormData(form);
 
-				switch (e.type) {
-					case 'dragover':
-						break;
-					case 'dragenter':
-						this.$.drop.classList.add('isdragover');
-						break;
-					case 'dragleave':
-						this.$.drop.classList.remove('isdragover');
-						break;
-					case 'drop':
-						this.$.drop.classList.remove('isdragover');
+					this.$.ajax.body = formData;
+					this.$.ajax.generateRequest();
+					
+			};
+			
 
-						if (e.dataTransfer.files.length === 1) {
-							var file = e.dataTransfer.files[0];
+			var fileNameFunction = function() {
+				var path = this.$$('#fileSelectionInput').value;
+				var pathName = path.replace(/^.*\\/, "");
+				this.set('fileName', pathName);
+			};
 
-							// check for the correct file type
-							var bValidType 	= false;
-							var validTypes 	= '';
-							if (this.expectedTypes) {
-								this.expectedTypes.forEach((function (expectedType) {
-									// check if file type matches this expected type
-									if (expectedType === file.type) {
-										bValidType 	= true;
-									}
-
-									// add this file-type to a string
-									var type 	= (expectedType).replace(/.*\//i, "");
-									if (validTypes) {
-										validTypes 	+= ' or ' + type;
-									} else {
-										validTypes 	= type;
-									}
-								}).bind(this));
-							}
-
-							// check that the upload is valid
-							if (!bValidType) {
-								var msg 	= 'Expecting ' + validTypes + ' file!'
-								this.set('error', msg);
-								this.set('file', null);
-							} else if (this.maxSize > 0 && file.size >= this.maxSize) {
-								var size 	= this.maxSize / (1024*1024);
-								var msg 	= 'Expecting file smaller than ' + size + 'MB';
-								this.set('error', msg);
-								this.set('file', null);
-							} else {
-								this.set('error', null);
-								this.set('file', file);
-							}
-						} else {
-							this.set('error', 'No file found');
-							console.log(this.error);
-							this.set('file', null);
-						}
-
-						break;
+			var _moveFile = function() {
+				var move = [];
+				move[0] ='/www/' + this.fileName;
+				if(this.currentFolder === '/'){
+					move[1] = this.currentFolder + this.fileName;
 				}
+				else{
+					move[1] = this.currentFolder + '/' + this.fileName;
+				}
+				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+					this.deviceProvider = deviceProvider;
+					this.deviceProvider.callService(null, 'file', 'exec', {
+						command: 'mv',
+						params: move
+					}, function (err, result) {
+						if (!err) {
+							console.log('file exec result: ', result);
+							this.fire('reload', {absolutePath: this.currentFolder});
+							this.fire('close');
+						}
+						else {
+						}
+					}.bind(this));
+				}.bind(this));
 			};
-
-			var _computeLabel = function (file) {
-				return file ? file.name : 'Drag your files here.';
-			};
-
-			var uploadFile = function () {
-		      	var formData = new FormData();
-
-		      	formData.append('file', this.file);
-		      	formData.append('projectId', this.projectId);
-		      	formData.append('taskId', this.taskId);
-
-		      	var xhr = this.file.xhr = new XMLHttpRequest();
-		      	var url = this.target;
-
-		      	xhr.onreadystatechange = (function () {
-		      		this.set('file', null);
-
-					if (xhr.readyState === 4 && xhr.status === 200) {
-						this.uploadCallback(null, xhr.responseText);
-					} else if (xhr.readyState === 4 && xhr.status !== 200) {
-						this.uploadCallback(xhr, xhr.statusText);
-					}
-				}).bind(this);
-
-		      	xhr.open('POST', url, true);
-		      	xhr.send(formData);
-		    };
 
 			Polymer({
 				is: 'onion-upload',
-				properties: {
-					count: {
-						type: Number,
-						value: 0
-					},
-					target: {
-						type: String
-					},
-					expectedTypes: {
-						type: Array,
-						value: [],
-						notify: true
-					},
-					maxSize: {
-						type: Number,
-						value: -1,
-						notify: true
-					},
-					uploadCallback: {
-						type: Function,
-						value: function () {}
-					},
-					projectId: {
-						type: String,
-						notify: true
-					},
-					taskId: {
-						type: String,
-						notify: true
-					},
-					error: {
-						type: String,
-						notify: true
-					},
-					file: {
-						type: Object,
-						notify: true,
-						value: null
-					}
-				},
+				created: created,
 				ready: ready,
-				attached: attached,
-				_onDrag: _onDrag,
-				_computeLabel: _computeLabel,
-				uploadFile: uploadFile
+				_submitUpload: _submitUpload,
+				fileNameFunction: fileNameFunction,
+				_moveFile: _moveFile,
+				properties: {
+					currentFolder: String,
+					fileName: String,
+					sessionId: String
+				},
 			});
 		})();
 	</script>
