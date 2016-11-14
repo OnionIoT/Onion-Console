@@ -58,6 +58,7 @@
 		    width: 100%;
 			height: 100%;
 			background-color:#373a3c;
+			overflow: hidden;
 		}
 
 	    #fileEditor {
@@ -105,8 +106,8 @@
 					    <button on-click="renameFileDialog"  id="renameFileButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename File</span></button>
 					</div>
 					<div>
-						<button id="saveFileButton" on-click="saveFile"><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
-						<button id="closeFileButton" on-click="closeFile"><iron-icon class="toolbar-icon" icon="icons:close"></iron-icon><span>Close</span></button>
+						<button id="saveFileButton" on-click="saveFileListener"><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
+<!-- 						<button id="closeFileButton" on-click="closeFileListener"><iron-icon class="toolbar-icon" icon="icons:close"></iron-icon><span>Close</span></button> -->
 					</div>
 				</div>
 			</onion-app-toolbar>
@@ -140,7 +141,9 @@
 						<bootstrap-pills selected="{{currentTab}}">
 							<template is="dom-repeat" items="{{openFiles}}">
 								<bootstrap-pill>
-									<span>{{item.name}}<iron-icon on-click="fileCloseIconListener" class="fileCloseIcon" icon="icons:close"></iron-icon></span>
+									<span>{{item.name}}
+												<iron-icon on-click="fileCloseIconListener" hidden$="{{showClose(index,currentTab)}}" class="fileCloseIcon" icon="icons:close"></iron-icon>
+									</span>
 								</bootstrap-pill>
 							</template>
 						</bootstrap-pills>
@@ -170,6 +173,17 @@
 				}
 			};
 
+			var showClose = function(index,currTab){
+				console.log("showClose Gets Called");
+				console.log("index", index);
+				console.log("currTab", currTab);
+				if(index == currTab){
+					return false;
+				}else{
+					return true;
+				}
+			};
+
 			var backsplash = null;
 			var extSymbol = null;
 
@@ -189,22 +203,22 @@
 
 			var hideFileButtons = function(){
 				this.$.saveFileButton.disabled=true;
-				this.$.closeFileButton.disabled=true;
+				// this.$.closeFileButton.disabled=true;
 				this.$.renameFileButton.disabled=true;
 				this.$.deleteFileButton.disabled=true;
 				this.$.saveFileButton.hidden=true;
-				this.$.closeFileButton.hidden=true;
+				// this.$.closeFileButton.hidden=true;
 				this.$.renameFileButton.hidden=true;
 				this.$.deleteFileButton.hidden=true;
 			};
 
 			var showFileButtons = function(){
 				this.$.saveFileButton.disabled=false;
-				this.$.closeFileButton.disabled=false;
+				// this.$.closeFileButton.disabled=false;
 				this.$.renameFileButton.disabled=false;
 				this.$.deleteFileButton.disabled=false;
 				this.$.saveFileButton.hidden=false;
-				this.$.closeFileButton.hidden=false;
+				// this.$.closeFileButton.hidden=false;
 				this.$.renameFileButton.hidden=false;
 				this.$.deleteFileButton.hidden=false;
 			};
@@ -221,8 +235,7 @@
 			};
 
 			var fileCloseIconListener = function(e){
-				console.log(e);
-				console.log(this.currentTab);
+				this.closeFileListener();
 			};
 
 			var enterPressed = function(e){
@@ -266,7 +279,7 @@
 				this.getFileCode(fileObj.absolutePath,function(code){
 					console.log(code);
 					fileObj.code = code;
-					fileObj.selected = true;
+					fileObj.selected = false;
 					fileObj.bSave = false;
 					fileObj.language = this.getLang(fileObj.name);
 					this.isFileNameSame(fileObj,this.openFiles,function(isSame){
@@ -461,60 +474,74 @@
 				}
 			};
 
-
+			var closeFileListener = function(){
+				var index = this.currentTab;
+				this.closeFile(index)
+			};
 			
-			var closeFile = function (callback) {
+			var closeFile = function (index,callback){
 				if(typeof callback != 'function'){
 					callback = this.noop;
 				}
-				this.saveFile(function(response){
+				this.saveFile(index,function(response){
 					if(response.status == 'failure'){
 						//DoNothing, if save fails
 						return;
 					}else if(response.status == 'success' || response =="SaveNotNecessary" || response =="ChoseNotToSave"){
 						//remove file From OpenFile List
 						console.log("Length of openFilesArray before splice",this.openFiles.length);
-						this.splice('openFiles',this.currentTab,1);
+						this.splice('openFiles',index,1);
 						console.log("Length of openFilesArray after splice",this.openFiles.length);
-						console.log(this.currentTab);
-						var newCurrentTab = this.openFiles.length - 1;
-						console.log((this.openFiles.length -1));
-						if(this.openFiles.length == 0){
-							console.log("the length is 0");
-							this.fileIndex = null;
-							this.currentTab = null;
+						if(this.isClosing){
 							callback();
-						}else{
-							console.log(" openFiles length is > 0");
-							if(this.currentTab == newCurrentTab){
-								console.log("currentTab equals newCurrentTab")
-								this.fileIndex = newCurrentTab;
-								this.currentTabChange();
-								callback()
-							}else{
-								console.log("currentTab does not equal new currentTab");
-								this.fileIndex = newCurrentTab;
-								this.currentTab = newCurrentTab;	
-								callback()
-							}
+						}
+						else{
+							this.selectOpenFile(callback);
 						}
 						//change currentTab
 						//
 					}
 				}.bind(this));
-
 				//this.$.fileEditor.editor.session.setValue('');
 			};
+
+			var selectOpenFile = function(callback){
+				var newCurrentTab = this.openFiles.length - 1;
+				if(this.openFiles.length == 0){
+					console.log("the length is 0");
+					this.fileIndex = null;
+					this.currentTab = null;
+					callback();
+				}else{
+					console.log(" openFiles length is > 0");
+					if(this.currentTab == newCurrentTab){
+						console.log("currentTab equals newCurrentTab")
+						this.fileIndex = newCurrentTab;
+						this.currentTabChange();
+						callback();
+					}else{
+						console.log("currentTab does not equal new currentTab");
+						this.fileIndex = newCurrentTab;
+						this.currentTab = newCurrentTab;	
+						callback();
+					}
+				}
+			};
+
+			var saveFileListener = function(e){
+				var index = this.currentTab;
+				this.saveFile(index);
+			};
 			
-			var saveFile = function (callback) {
+			var saveFile = function (index,callback) {
 				console.log(callback);
 				if(typeof callback != 'function'){
 					callback = this.noop;
 				}
 			    if(this.sessionProvider.isAlive() == true){
-			    	this.saveUpdate(this.currentTab,function(){
-			    		if(this.openFiles[this.currentTab].bSave){
-			    			this.updateSaveDialogueButtons(callback,function(){
+			    	this.saveUpdate(index,function(){
+			    		if(this.openFiles[index].bSave){
+			    			this.updateSaveDialogueButtons(index,callback,function(){
 			    				this.$.confirmDialogue.open();
 			    			}.bind(this));
 			    		} else{
@@ -682,7 +709,7 @@
 						console.log("Inside the index if statement");
 						this.openFiles[index].bSave = false;
 						this.currentTab = index;
-						this.closeFile(function(){
+						this.closeFile(index,function(){
 							console.log("Inside closeFile Callback")
 							this.deleteFile(absoluteFilePath,function(response){
 								this.hideAllButtons();
@@ -797,7 +824,7 @@
 												dummyObj.name = newFileName;
 												dummyObj.language = this.getLang(newFileName);
 												//this.splice('openFiles',index,1);
-												this.closeFile(function(){
+												this.closeFile(index,function(){
 													setTimeout(function(){
 														this.openFile(dummyObj);
 													}.bind(this),300);
@@ -895,48 +922,56 @@
 
 
 			var saveUpdate = function(ind,callback){
-				console.log("The saveUpdate index is",ind);
-				var currentCode;
-				this.openFiles.forEach(function(element,index){
-					if(index == ind){
-						currentCode = this.$.fileEditor.editor.session.getValue();
-						if(currentCode == this.openFiles[ind].code){
-							console.log("The codes are the same and do not need to be saved");
-							this.openFiles[ind].bSave = false;
-							callback();
-						}else{
-							console.log("The codes are not the same and a save is necessary")
-							this.openFiles[ind].bSave = true;
-							this.openFiles[ind].code = currentCode;
-							callback();
-						}
-					}
-				}.bind(this));
+				console.log("INSIDE THE saveUpdate Function");
+				var currentCode = this.$.fileEditor.editor.session.getValue();
+				if(currentCode == this.openFiles[ind].code){
+					console.log("The codes are the same and do not need to be saved");
+					this.openFiles[ind].bSave = false;
+					callback();
+				}else{
+					console.log("The codes are not the same and a save is necessary")
+					this.openFiles[ind].bSave = true;
+					this.openFiles[ind].code = currentCode;
+					callback();
+				}
 			};
 
-			var currentTabChange = function(){
+			var currentTabChange = function(e,y,z){
+				console.log(e);
 				console.log("Inside currentTabChange");
 				console.log("this.currentTab",this.currentTab);
 				console.log("this.fileIndex",this.fileIndex);
-				if(this.fileIndex == null){
-					//First Iteration
-					this.fileIndex = this.currentTab
-					console.log("Current Tab observer has been called");
-					console.log("currentTab",this.currentTab);
-					console.log("fileIndex",this.fileIndex);
-					// this.saveUpdate(this.fileIndex);
-					this.loadOpenFile(this.openFiles,this.currentTab);
-					this.fileIndex = this.currentTab;
-				} else if((this.currentTab == this.fileIndex) && (this.currentTab != null)){
-					this.loadOpenFile(this.openFiles,this.currentTab);
-				} else{
-					console.log("Current Tab observer has been called");
-					console.log("currentTab",this.currentTab);
-					console.log("fileIndex",this.fileIndex);
-					this.saveUpdate(this.fileIndex,function(){
+				if(this.closing){
+					// this.closing = false;
+					if(e<y){
+						this.oldIndex = y - 1;
+					}else if(e>y){
+						this.oldIndex = y;
+					}
+					return;
+				}else{
+					if(this.fileIndex == null){
+						//First Iteration
+						this.fileIndex = this.currentTab
+						console.log("Current Tab observer has been called");
+						console.log("currentTab",this.currentTab);
+						console.log("fileIndex",this.fileIndex);
+						// this.saveUpdate(this.fileIndex);
 						this.loadOpenFile(this.openFiles,this.currentTab);
 						this.fileIndex = this.currentTab;
-					}.bind(this));
+					} else if((this.currentTab == this.fileIndex) && (this.currentTab != null)){
+						console.log("CurrentTab Observer Gets Called");
+						console.log("Inside the second else if statement");
+						this.loadOpenFile(this.openFiles,this.currentTab);
+					} else{
+						console.log("Current Tab observer has been called");
+						console.log("currentTab",this.currentTab);
+						console.log("fileIndex",this.fileIndex);
+						this.saveUpdate(this.fileIndex,function(){
+							this.loadOpenFile(this.openFiles,this.currentTab);
+							this.fileIndex = this.currentTab;
+						}.bind(this));
+					}
 				}
 			};
 
@@ -964,13 +999,13 @@
 
 			};
 
-			var updateSaveDialogueButtons = function(callback,realCallBack){
+			var updateSaveDialogueButtons = function(ind,callback,realCallBack){
 				this.$.textField.hidden=true;
 				this.$.noButton.hidden=false;
 				this.$.yesButton.hidden=false;
 				this.yesButtonText = "Save";
 				this.noButtonText = "Don't Save";
-				var fileObj = this.openFiles[this.currentTab];
+				var fileObj = this.openFiles[ind];
 				this.$.confirmDialogue.title="Confirm File Save: " + fileObj.absolutePath;
 				this.yesButtonListener = function(e){
 					this.fileProvider.saveContent(null,fileObj.absolutePath,fileObj.code,false,function(response){
@@ -1031,6 +1066,7 @@
 				textEnter: textEnter,
 				createFolder: createFolder,
 				closeFile: closeFile,
+				closeFileListener: closeFileListener,
 				saveFile: saveFile,
 				launchUploadFile: launchUploadFile,
 				rename: rename,
@@ -1063,6 +1099,7 @@
 				updateRenameFolderDialogueButtons:updateRenameFolderDialogueButtons,
 				updateRenameFileDialogueButtons:updateRenameFileDialogueButtons,
 				noop: noop,
+				showClose: showClose,
 				isFolderPresent: isFolderPresent,
 				fileCloseIconListener: fileCloseIconListener,
 				genAbsolutePath: genAbsolutePath,
@@ -1072,8 +1109,10 @@
 				showFolderButtons: showFolderButtons,
 				currentFolderObserver: currentFolderObserver,
 				updateDeleteFileDialogueButtons: updateDeleteFileDialogueButtons,
+				saveFileListener: saveFileListener,
 				isFileNameSame: isFileNameSame,
 				modFileName: modFileName,
+				selectOpenFile: selectOpenFile,
 				observers : ['openFilesObserver(openFiles.splices)'],
 				properties:{
 					fileName: String,
@@ -1123,6 +1162,11 @@
 					noButtonText:{
 						type:String,
 						value:"",
+						notify:true
+					},
+					oldIndex:{
+						type: Number,
+						value:null,
 						notify:true
 					}
 				}
