@@ -598,12 +598,12 @@
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
 											this.openFolder({absolutePath:this.currentFolder});
-										}.bind(this),4000);
+										}.bind(this),1000);
 									}else{
 										this.$.confirmDialogue.title = "Cannot Create Folder, Pleae Try Again!";
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
-										}.bind(this),4000);
+										}.bind(this),1000);
 									}
 								}.bind(this));
 							}
@@ -672,7 +672,7 @@
 								this.$.confirmDialogue.title = "File already Exists, Please Choose A Different Name!";
 								setTimeout(function(){
 									this.newFolderDialog();
-								}.bind(this),5000);
+								}.bind(this),3000);
 							}else{
 								var folderPath = genAbsolutePath(this.currentFolder,folderName);
 								this.createFile(filePath,function(response){
@@ -681,12 +681,12 @@
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
 											this.openFolder({absolutePath:parentPath});
-										}.bind(this),4000);
+										}.bind(this),1000);
 									}else{
 										this.$.confirmDialogue.title = "Cannot Create File, Pleae Try Again!";
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
-										}.bind(this),4000);
+										}.bind(this),1000);
 									}
 								}.bind(this));
 							}
@@ -731,12 +731,12 @@
 									setTimeout(function(){
 										this.$.confirmDialogue.close();
 										this.openFolder(newFolderObj);
-									}.bind(this),4000)
+									}.bind(this),1000)
 								}else{
 									this.$.confirmDialogue.title = "Could Not Delete File"
 									setTimeout(function(){
 										this.$.confirmDialogue.close();
-									}.bind(this),4000)
+									}.bind(this),1000)
 								}
 							}.bind(this));
 						}.bind(this));
@@ -776,12 +776,12 @@
 							setTimeout(function(){
 								this.$.confirmDialogue.close();
 								this.openFolder(newFolderObj);
-							}.bind(this),4000)
+							}.bind(this),1000)
 						}else{
 							this.$.confirmDialogue.title = "Could Not Delete Folder"
 							setTimeout(function(){
 								this.$.confirmDialogue.close();
-							}.bind(this),4000)
+							}.bind(this),1000)
 						}
 					}.bind(this));
 				};
@@ -818,7 +818,7 @@
 								this.$.confirmDialogue.title = "New File Name already Exists, Please Choose A Different Name!";
 								setTimeout(function(){
 									this.renameFileDialog();
-								}.bind(this),5000);
+								}.bind(this),3000);
 							}else{
 								this.rename(origAbsoluteFilePath,newAbsoluteFilePath,function(response){
 									if(response.status == 'success'){
@@ -842,12 +842,12 @@
 													}.bind(this),300);
 												}.bind(this));
 											}.bind(this));
-										}.bind(this),4000);
+										}.bind(this),1000);
 									}else{
 										this.$.confirmDialogue.title = "Cannot Rename File, Pleae Try Again!";
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
-										}.bind(this),4000);
+										}.bind(this),1000);
 									}
 								}.bind(this));
 							}
@@ -879,7 +879,7 @@
 								this.$.confirmDialogue.title = "New Folder already Exists, Please Choose A Different Name!";
 								setTimeout(function(){
 									this.renameFolderDialog();
-								}.bind(this),5000);
+								}.bind(this),3000);
 							}else{
 								var folderPath = this.genAbsolutePath(this.getParentFolder(origPath),folderName);
 								this.rename(origPath,folderPath,function(response){
@@ -888,12 +888,12 @@
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
 											this.openFolder({absolutePath:folderPath});
-										}.bind(this),4000);
+										}.bind(this),1000);
 									}else{
 										this.$.confirmDialogue.title = "Cannot Rename Folder, Pleae Try Again!";
 										setTimeout(function(){
 											this.$.confirmDialogue.close();
-										}.bind(this),4000);
+										}.bind(this),1000);
 									}
 								}.bind(this));
 							}
@@ -1027,14 +1027,14 @@
 							setTimeout(function(){
 								this.$.confirmDialogue.close();
 								callback({status:"success"});
-							}.bind(this),2000);
+							}.bind(this),1000);
 						}else{
 							//Save unsuccessful, maybe do something.
 							this.$.confirmDialogue.title = "Save unSuccessful";
 							setTimeout(function(){
 								this.$.confirmDialogue.close();
 								callback({status:"failure"});
-							}.bind(this),2000);
+							}.bind(this),1000);
 						}
 					}.bind(this));
 				};
