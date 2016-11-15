@@ -19,7 +19,6 @@
 			color: var(--bootstrap-link-color, #373a3c);
 			background-color: var(--bootstrap-pill-background-color, #f2f2f2);
 		}
-
 		.nav-link.active,
 		.nav-link.active:focus,
 		.nav-link.active:hover,
@@ -31,11 +30,14 @@
 			background-color: var(--bootstrap-active-pill-background-color, #fff);
 			text-align: var(--bootstrap-pill-text-align, center);
 		}
+		.opaque{
+			opacity: 0;
+		}
 	</style>
 
 	<template>
 		<li class="nav-item">
-			<a class$="[[_computeClass(ariaSelected)]]">
+			<a class$="[[_computeClass(ariaSelected,opaque)]]">
 				<content></content>
 			</a>
 		</li>		
@@ -45,8 +47,11 @@
 		'use strict';
 
 		(function () {
-			var _computeClass = function (ariaSelected) {
-				return 'nav-link' + (ariaSelected ? ' active' : '');
+			var _computeClass = function (ariaSelected,opaque) {
+				console.log("opaque",opaque)
+				var stringClass = ('nav-link' + (ariaSelected ? ' active' : '') + (opaque ? ' opaque' : ''));
+				console.log(stringClass);
+				return stringClass;
 			};
 
 			Polymer({
@@ -54,6 +59,11 @@
 				_computeClass: _computeClass,
 				properties: {
 					ariaSelected: {
+						type: Boolean,
+						value: false,
+						notify: true
+					},
+					opaque:{
 						type: Boolean,
 						value: false,
 						notify: true

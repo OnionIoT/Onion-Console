@@ -18,8 +18,8 @@
 			width: 100%;
 			--bootstrap-pill-border-radius: 3px;
 			--bootstrap-pill-color: #373a3c;
-			--bootstrap-pill-min-width: 150px;
-			--bootstrap-pill-text-align:center;
+			--bootstrap-pill-min-width: 130px;
+			--bootstrap-pill-text-align:left;
 			--bootstrap-pill-padding:.2em 1em;
 		}
 
@@ -42,7 +42,9 @@
 		.fileCloseIcon{
 			width: 15px;
 			height: 15px;
-			margin-left: 10px;
+			margin: 5px;
+			float: right;
+			margin-right: 0px;
 		}
 
 		.fileCloseIcon:hover{
@@ -96,6 +98,9 @@
 		:host ::content .ace_search_field {
 			color: #333!important;
 		}
+		#placeHolderPill > li{
+			opacity: 0;
+		}
 	</style>
 	<template>
 		<onion-app app-name="Editor" toolbar-background="#34495e" toolbar-color="#fff">
@@ -112,7 +117,6 @@
 					</div>
 					<div>
 						<button id="saveFileButton" on-click="saveFileListener"><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
-<!-- 						<button id="closeFileButton" on-click="closeFileListener"><iron-icon class="toolbar-icon" icon="icons:close"></iron-icon><span>Close</span></button> -->
 					</div>
 				</div>
 			</onion-app-toolbar>
@@ -142,12 +146,15 @@
 <!-- 								</form> -->
 							</modal-body>
 						</bootstrap-modal>
+						<bootstrap-pill opaque id="placeHolderPill">
+							<span>PlaceHolder</span>
+						</bootstrap-pill>
 						<bootstrap-pills selected="{{currentTab}}">
 							<template is="dom-repeat" items="{{openFiles}}">
 								<bootstrap-pill>
 									<span>{{item.name}}
-												<iron-icon on-click="fileCloseIconListener" hidden$="{{showClose(index,currentTab)}}" class="fileCloseIcon" icon="icons:close"></iron-icon>
 									</span>
+									<iron-icon on-click="fileCloseIconListener" hidden$="{{showClose(index,currentTab)}}" class="fileCloseIcon" icon="icons:close"></iron-icon>
 								</bootstrap-pill>
 							</template>
 						</bootstrap-pills>
@@ -993,8 +1000,10 @@
 				if(this.openFiles.length == 0){
 					console.log(" hide file Buttons");
 					this.hideFileButtons();
+					this.$.placeHolderPill.hidden = false;
 				}else {
 					console.log("ShowFileButtons");
+					this.$.placeHolderPill.hidden = true;
 					this.showFileButtons();
 				}
 			};
