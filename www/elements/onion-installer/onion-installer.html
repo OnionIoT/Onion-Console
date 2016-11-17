@@ -1,27 +1,8 @@
 <link rel="import" href="../../lib/polymer/polymer.html">
-<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="../../lib/iron-pages/iron-pages.html">
-<link rel="import" href="../../elements/onion-app/onion-app.html">
-
-
 <link rel="import" href="../../elements/onion-loading/onion-loading.html">
-<link rel="import" href="../../lib/Onion-Console/bootstrap-styles/bootstrap-styles.html">
-<link rel="import" href="../../elements/onion-styles/onion-styles.html">
-<link rel="import" href="../../elements/onion-taskbar/onion-taskbar.html">
-<link rel="import" href="../../elements/onion-notification/onion-notification.html">
 
 <dom-module id="onion-installer">
 	<style>
-		:host {
-			display: block;
-			height: 100%;
-			width: 100%;
-			overflow: hidden;
-
-			background-image: url('/images/bg/a.jpg');
-		    background-attachment: fixed;
-			background-size: cover;
-		}
 
 	</style>
 
@@ -40,6 +21,7 @@
 
 		(function () {
 			var created = function () {
+
 			};
 
 			var ready = function(){
@@ -103,20 +85,9 @@
 				showApp: showApp,
 				checkForApp: checkForApp,
 				properties: {
-					apps: Array,
 					installName: String,
 					installId: String,
-					infoText: String,
-					runningApps: {
-						type: Array,
-						notify: true,
-						value: []
-					},
-					currentApp: {
-						type: String,
-						notify: true,
-						value: ''
-					}
+					infoText: String
 				},
 			});
 		})();
