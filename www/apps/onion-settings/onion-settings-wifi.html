@@ -132,7 +132,7 @@
 		<bootstrap-modal id="newWifiDlg" title="New WiFi Network" modal>
 			<modal-body>
 				<form id="wifi-form">
-					<fieldset disabled="{{!enableWifi}}">
+					<fieldset>
 						<div class="form-group row">
 							<!-- Detected networks -->
 							<label for="wifi-select" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Detected Networks</label>
@@ -140,7 +140,7 @@
 								<select class="form-control c-select" id="wifi-select" autocomplete="off" on-change="selectSsid" selected=0>
 									<!-- optional message on menu -->
 									<template is="dom-if" if="{{wifiScanMsgEn}}">
-										<option value="" disabled selected>{{wifiScanMsg}}</option>
+										<option value="" selected>{{wifiScanMsg}}</option>
 									</template>
 									<!-- list out the wifi networks -->
 									<template is="dom-repeat" items="{{networks}}">
@@ -282,7 +282,29 @@
 				// this = this;
 			};
 
+			var ready = function () {
+				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+					this.deviceProvider = deviceProvider;
+					deviceProvider.callService(null, 'uci', 'get', {
+						config: 'wireless',
+						section: '@wifi-iface[0]'
+					}, function(err, response){
+						this.currentNetworkSsid = response.values.ApCliSsid;
+					}.bind(this));
+					onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+						console.log("DeviceProvider:",deviceProvider);
+						console.log("err:",err);
+						this.deviceProvider = deviceProvider;
+						deviceProvider.getDeviceType('', function(result){
+							console.log(result);
+							this.device = result;
+						}.bind(this));
+					}.bind(this));
+				}.bind(this));
+			}
+
 			var attached = function () {
+
 				this.networks 	= [];
 				this.networkId	= -1;
 
@@ -303,6 +325,7 @@
      //                    this.wifiProvider = wifiProvider;
 					// });
      //            };
+     			this._findEnabledNetwork();
 			};
 
 			var init = function () {
@@ -379,7 +402,7 @@
 				this.networkSsid = selectedNetwork.ssid;
 
 				// translate the authentication type
-				if (selectedNetwork.encryption === 'none') {
+				if (selectedNetwork.encryption === 'none' || selectedNetwork.encryption === 'NONE') {
 					this.networkAuth = 'none';
 				} else if (selectedNetwork.encryption.indexOf('WPA2') !== -1) {
 					this.networkAuth = 'psk2';
@@ -513,27 +536,47 @@
 				}
 			};
 
-			var isEnabled = function (network) {
-				return !(network.disabled==='1')
-			};
-
 
 			//// functions that use the list of networks ////
 			// find the enabled network, returns null if none are enabled
 			var _findEnabledNetwork = function () {
 				var enabledNetwork 	= null;
+				if (this.device === 'Onion Omega2') {
+				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+					this.deviceProvider = deviceProvider;
+					deviceProvider.callService(null, 'uci', 'get', {
+						config: 'wireless',
+						section: '@wifi-iface[0]'
+					}, function(err, response){
+						this.currentNetworkSsid = response.values.ApCliSsid;
+						for (var key in this.savedNetworks) {
+							var network = this.savedNetworks[key];
 
+							if (network.ssid === this.currentNetworkSsid) {
+								enabledNetwork = this.savedNetworks[key];
+								break;
+							}
+						}
+					}.bind(this));
+				}.bind(this))
+				} else {
+					for (var key in this.savedNetworks) {
+						var network = this.savedNetworks[key];
+
+						if (network.disabled == null || network.disabled === '0') {
+							enabledNetwork = this.savedNetworks[key];
+							break;
+						}
+					}
+				}
 				// loop through the list and look for enabled networks
-				for (var key in this.savedNetworks) {
-            		var network = this.savedNetworks[key];
-
-            		if (network.disabled == null || network.disabled === '0') {
-            			enabledNetwork = this.savedNetworks[key];
-            			break;
-            		}
-            	}
 
 				return enabledNetwork;
+			};
+
+			var isEnabled = function (network) {
+
+				return (network.ssid === this.currentNetworkSsid)
 			};
 
 			// find the network's index in the network array
@@ -614,6 +657,7 @@
 				is: 'onion-settings-wifi',
 				created: created,
 				attached: attached,
+				ready: ready,
 				init: init,
 				onLoading: onLoading,
 				showScanMessage: showScanMessage,
@@ -662,9 +706,19 @@
 						notify: true
 					},
 					showPassword: {
-		    			notify: true,
-				        type: Boolean,
-				        value: false
+						notify: true,
+						type: Boolean,
+						value: false
+					},
+					device:{
+						type: String,
+						value: '',
+						notify: true
+		    		},
+		    		currentNetworkSsid:{
+						type: String,
+						value: '',
+						notify: true
 		    		}
 				}
 			});
