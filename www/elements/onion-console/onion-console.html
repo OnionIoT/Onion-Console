@@ -28,6 +28,7 @@
 		}
 		
 		#taskbar {
+			z-index: 35;
 /* 			position: fixed; */
 /* 			bottom: 0; */
 /* 			width: 100%; */
@@ -42,6 +43,32 @@
 			z-index: 1000;
 			height: 100%;
 		}
+
+		#loadingScreen {
+			position: absolute;
+			z-index: 30;
+			width: 100%;
+			height: 100%;
+			background-image: url('../../images/bg/a.jpg');
+			background-size: cover;
+			/*Original background colour*/
+			/*background-color: #E6E9ED;*/
+			color: rgb(130,70,110);
+		}
+		
+		#loadingScreen onion-loading {
+			height: 200px;
+			width: 200px;
+		}
+
+		.fadeLoadingScreen {
+		    -webkit-animation: fadeOut 2s;
+		    -moz-animation: fadeOut 2s;
+		    -o-animation: fadeOut 2s;
+		    animation: fadeOut 2s;
+		    animation-fill-mode: forwards;
+		}
+
 		@-webkit-keyframes fadeOut {
 			from { opacity: 1; }
 			to { opacity: 0; }
@@ -67,7 +94,11 @@
 	<template>
 		
 		<div id="serviceContainer" class="hidden"></div>
-		
+<!-- 		Loading Screen -->
+			<div id="loadingScreen" class="layout horizontal center-center" hidden="true">
+				<onion-loading loading="true" icon="icons:settings"></onion-loading>
+			</div>
+
 <!-- 		UI Elements -->
 			<div class="console layout horizontal center">
 				<div id="serviceContainer" class="hidden"></div>
@@ -149,9 +180,69 @@
 			};
 
 			var launchApp = function (appId, relaunch, fileName) {
+				var loadingScreen = document.getElementById('loadingScreen');
+				var classNameNoFade = loadingScreen.className;
+				loadingScreen.hidden = false;
 				this.set('currentApp', appId);
 				console.log("Inside launchApp appID:" + appId);
+				if (appId !== 'onion-editor' || appId === 'onion-settings' || appId === 'onion-webcam' || appId === 'onion-terminal' || appId === 'onion-login') {
+					if (this.$.appContainer.querySelector(appId)) {
+						loadingScreen.hidden = true;
+						console.log("Inside first if statement for launchApp");
+						this.$.appContainer.querySelector(appId).fg();
+
+						if (relaunch) {
+							console.log("Inside the if(relauch) statuement");
+							this.$.appContainer.querySelector(appId).start();
+						}
+						
+						if (typeof fileName !== 'undefined') {
+							this.$.appContainer.querySelector(appId).fileName = fileName;
+							this.$.appContainer.querySelector(appId).openFolder(fileName);
+						}
+					} else {
+						console.log("Inside the first else statement");
+						// get the app object by the id
+						// var appObj = this.appsProvider.getApp(appId);
+						// var classNameNoFade = loadingScreen.className
+						// loadingScreen.className = loadingScreen.className + ' fadeLoadingScreen';
+						
+			
+						this.importHref(['apps/' + appId + '/' + appId + '.html?r=a2'], function () {
+							console.log("Inside the callback for the this.importHref");
+							var appElement = document.createElement(appId);
+							console.log("App element:", appId);
+							appElement.setAttribute('id', appId);
+							Polymer.dom(this.$.appContainer).appendChild(appElement);
+							this.set('currentApp', appId);
+							setTimeout (function(){
+								loadingScreen.className = loadingScreen.className + ' fadeLoadingScreen';
+								setTimeout (function(){
+									loadingScreen.className = classNameNoFade;
+									loadingScreen.hidden = true;
+								}, 2000);
+							}, 2000);
+							if (typeof fileName !== 'undefined') {
+								appElement.fileName=fileName;
+							}
+						}.bind(this));
+
+						if(this.appsProvider){
+							this.appsProvider.getApp(appId, function(appObj){
+								console.log(appObj);
+								if (appId!=='onion-login' && appId!=='onion-launcher'){
+									this.push('runningApps', appObj);
+								}
+							}.bind(this));
+						}
+						// add to running app list for taskbar
+						// if (appId!=='onion-login' && appId!=='onion-launcher'){
+						// 	this.push('runningApps', appId);
+						// }
+					}
+				}
 				if (appId === 'onion-login' || appId === 'onion-settings'){
+					loadingScreen.hidden = true;
 					if (this.$.appContainer.querySelector(appId)) {
 						console.log("Inside first if statement for launchApp");
 						this.$.appContainer.querySelector(appId).fg();
@@ -168,6 +259,7 @@
 					} else {
 						console.log("Inside the first else statement");
 						
+						// loadingScreen.className = loadingScreen.className + ' fadeLoadingScreen';
 						// get the app object by the id
 						// var appObj = this.appsProvider.getApp(appId);
 
@@ -179,7 +271,6 @@
 							appElement.setAttribute('id', appId);
 							Polymer.dom(this.$.appContainer).appendChild(appElement);
 							this.set('currentApp', appId);
-
 							if (typeof fileName !== 'undefined') {
 								appElement.fileName=fileName;
 							}
@@ -200,6 +291,7 @@
 					}
 				} else {
 					if (this.$.appContainer.querySelector(appId)) {
+						loadingScreen.hidden = true;
 						console.log("Inside first if statement for launchApp");
 						this.$.appContainer.querySelector(appId).fg();
 
@@ -214,11 +306,12 @@
 						}
 					} else {
 						console.log("Inside the first else statement");
-						
 						// get the app object by the id
 						// var appObj = this.appsProvider.getApp(appId);
-
-							
+						// var classNameNoFade = loadingScreen.className
+						// loadingScreen.className = loadingScreen.className + ' fadeLoadingScreen';
+						
+			
 						this.importHref(['apps/' + appId + '/index.html?r=a2'], function () {
 							console.log("Inside the callback for the this.importHref");
 							var appElement = document.createElement(appId + '-installer');
@@ -226,7 +319,13 @@
 							appElement.setAttribute('id', appId + '-installer');
 							Polymer.dom(this.$.appContainer).appendChild(appElement);
 							this.set('currentApp', appId + '-installer');
-
+							setTimeout (function(){
+								loadingScreen.className = loadingScreen.className + ' fadeLoadingScreen';
+								setTimeout (function(){
+									loadingScreen.className = classNameNoFade;
+									loadingScreen.hidden = true;
+								}, 2000);
+							}, 2000);
 							if (typeof fileName !== 'undefined') {
 								appElement.fileName=fileName;
 							}
