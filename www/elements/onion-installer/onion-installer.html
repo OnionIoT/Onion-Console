@@ -37,6 +37,9 @@
 						this.fileProvider = fileProvider;
 					}
 				}.bind(this));
+				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
+					this.sessionProvider = sessionProvider;
+				}.bind(this));
 			};
 
 			var showApp = function (installId) {
@@ -88,14 +91,20 @@
 				console.log("Inside checkForApp, appId", appId);
 				var self = this;
 				if(appId == 'onion-terminal'){
-					this.appPackage = 'onion-console-terminal';
-					this.checkInstallInterval = setInterval(this.checkInstallFunction,10000);
+					self.appPackage = 'onion-console-terminal';
+					self.checkInstallInterval = setInterval(function(){
+						self.checkInstallFunction
+					}.bind(self),10000);
 				}else if(appId == 'onion-editor'){
-					this.appPackage = 'onion-console-editor';
-					this.checkInstallInterval = setInterval(this.checkInstallFunction,10000);
+					self.appPackage = 'onion-console-editor';
+					self.checkInstallInterval = setInterval(function(){
+						self.checkInstallFunction
+					}.bind(self),10000);
 				}else if(appId == 'onion-webcam'){
-					this.appPackage = 'onion-console-webcam';
-					this.checkInstallInterval = setInterval(this.checkInstallFunction,10000);
+					self.appPackage = 'onion-console-webcam';
+					self.checkInstallInterval = setInterval(function(){
+						self.checkInstallFunction
+					}.bind(self),10000);
 				}
 			};
 
@@ -113,21 +122,24 @@
 			var checkInstallFunction = function(){
 				console.log("Inside checkInstallFunction");
 				console.log("this",this);
+				console.log(self);
 				onionConsole.getService('onion-file-provider',function(err,fProvider){
 					if(!err){
 						fProvider.execCommand(null,'opkg',['list-installed'],function(err,data){
 							console.log("Inside the checkInstall Callback");
 							console.log("Err",err);
 							console.log("data",data);
-							if(data.code == '0'){
+							if(data.code == '0' || (typeof data.stderr == 'undefined')) {
 								var result = new String(data.stdout);
-								if(result.indexOf(this.appPackage) > 0){
-									this.appFound = true;
+								console.log(self);
+								if(typeof result.stderr == 'undefined'){
+									clearInterval(self.checkInstallInterval);
+									self.appFound = true;
 								}else{
-									this.appFound = false;
+									self.appFound = false;
 								}
 							}
-						}.bind(this));
+						}.bind(self));
 					}
 				})
 			};
@@ -144,7 +156,6 @@
 				properties: {
 					installName: String,
 					installId: String,
-<<<<<<< HEAD
 					appFound:{
 						type:Boolean,
 						value:false,
@@ -170,10 +181,7 @@
 						notify: true,
 						value: ''
 					}
-=======
-					infoText: String
->>>>>>> origin/dev
-				},
+				}
 			});
 		})();
 	</script>
