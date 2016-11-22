@@ -45,6 +45,16 @@
 			var ready = function(){
 				var app = this.installId;
 				this.showApp(app);
+				onionConsole.getService('onion-device-provider', function (err,deviceProvider){
+					if(!err){
+						this.deviceProvider = deviceProvider;
+					}
+				}.bind(this));
+				onionConsole.getService('onion-file-provider', function (err,fileProvider){
+					if(!err){
+						this.fileProvider = fileProvider;
+					}
+				}.bind(this));
 			};
 
 			var showApp = function (installId) {
@@ -65,35 +75,80 @@
 				var params = {};
 				var key = this.installName.toLowerCase();
 				params[key] = "1"
-
-				onionConsole.getService('onion-device-provider', (function (err, deviceProvider) {
-
-					this.deviceProvider = deviceProvider;
-					this.deviceProvider.callService('', 'uci', 'set', {
-						config: 'onion',
-						section: 'console',
-						values: params
-					}, function (err,result) {
-						if (!err) {
-							this.deviceProvider.callService('', 'uci', 'commit', {
-								config: 'onion'
-							}, function (err, result) {
-								if (!err) {
-									// resolve('App install status changed successfully.');
-									// checkForApp(this.installId);
-								}
-							});
-						} else {
-							reject(Error('Unable to set the install status.'));
-						}
-					}.bind(this));
-				}).bind(this));
-			}
+				this.deviceProvider.callService('', 'uci', 'set', {
+					config: 'onion',
+					section: 'console',
+					values: params
+				}, function (err,result) {
+					if (!err) {
+						this.deviceProvider.callService('', 'uci', 'commit', {
+							config: 'onion'
+						}, function (err, result) {
+							if (!err) {
+								// resolve('App install status changed successfully.');
+								// checkForApp(this.installId);
+								this.fileProvider.execBackgroundCommand(null,'console-install-tool',[],function(err,result){
+									console.log("err",err);
+									console.log('resut',result);
+									console.log("InstallId",this.installId);
+									this.checkForApp(this.installId);
+								}.bind(this));
+							}
+						}.bind(this));
+					} else {
+						reject(Error('Unable to set the install status.'));
+					}
+				}.bind(this));
+			};
 			
-			var checkForApp = function(appId) {setInterval(function(){
-				showApp(appId);
-				},10000);
-			}
+
+			var checkForApp = function (appId){
+				console.log("Inside checkForApp, appId", appId);
+				var self = this;
+				if(appId == 'onion-terminal'){
+					this.appPackage = 'onion-console-terminal';
+					this.checkInstallInterval = setInterval(this.checkInstallFunction,10000);
+				}else if(appId == 'onion-editor'){
+					this.appPackage = 'onion-console-editor';
+					this.checkInstallInterval = setInterval(this.checkInstallFunction,10000);
+				}else if(appId == 'onion-webcam'){
+					this.appPackage = 'onion-console-webcam';
+					this.checkInstallInterval = setInterval(this.checkInstallFunction,10000);
+				}
+			};
+
+			var appFoundObserver = function(e,y){
+				//e is the new value
+				//y is the old value
+				console.log("appFoundObserver gets called");
+				console.log(e);
+				if(e){
+					//clear the interval
+					clearInterval(this.checkInstallInterval);
+				}
+			};
+
+			var checkInstallFunction = function(){
+				console.log("Inside checkInstallFunction");
+				console.log("this",this);
+				onionConsole.getService('onion-file-provider',function(err,fProvider){
+					if(!err){
+						fProvider.execCommand(null,'opkg',['list-installed'],function(err,data){
+							console.log("Inside the checkInstall Callback");
+							console.log("Err",err);
+							console.log("data",data);
+							if(data.code == '0'){
+								var result = new String(data.stdout);
+								if(result.indexOf(this.appPackage) > 0){
+									this.appFound = true;
+								}else{
+									this.appFound = false;
+								}
+							}
+						}.bind(this));
+					}
+				})
+			};
 
 			Polymer({
 				is: 'onion-installer',
@@ -101,18 +156,34 @@
 				ready: ready,
 				installApp: installApp,
 				showApp: showApp,
+				appFoundObserver: appFoundObserver,
 				checkForApp: checkForApp,
+				checkInstallFunction: checkInstallFunction,
 				properties: {
 					apps: Array,
 					installName: String,
 					installId: String,
-					infoText: String,
+					appFound:{
+						type:Boolean,
+						value:false,
+						notify:true,
+						observer: 'appFoundObserver'
+					},
+					infoText: {
+						type:String,
+						notify:true,
+						value:""},
 					runningApps: {
 						type: Array,
 						notify: true,
 						value: []
 					},
 					currentApp: {
+						type: String,
+						notify: true,
+						value: ''
+					},
+					appPackage:{
 						type: String,
 						notify: true,
 						value: ''

@@ -252,6 +252,16 @@
 			this.deviceApi.callService(devId,'file', 'exec', params, callback);
 		};
 
+		var execBackgroundCommand = function(devId, command, parameters, callback){
+			//params should be an array!
+			callback = callback || this.callbackReturn;
+			var params = {
+				command:command,
+				params: parameters
+			};
+			this.deviceApi.callService(devId,'onion-helper','background',params, callback);
+		};
+
 
 
 		// HANDLER FUNCTION FOR RESPONSES
@@ -498,6 +508,7 @@
 				getFolderPath: getFolderPath,
 				getFileName: getFileName,
 				execCommand: execCommand,
+				execBackgroundCommand: execBackgroundCommand,
 				getFile: getFile,
 				getFolderContent: getFolderContent,
 		  		getFileList: getFileList,
