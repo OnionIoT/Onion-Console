@@ -12,7 +12,7 @@
 			<h3>
 				{{infoText}}
 			</h3>
-			<bootstrap-button color-scheme="success" on-tap="installApp">Click here to install the {{installName}} App!</bootstrap-button>
+			<bootstrap-button id="installButton" color-scheme="success" on-tap="installApp">Click here to install the {{installName}} App!</bootstrap-button>
 		</div>
 	</template>
 
@@ -42,19 +42,32 @@
 				}.bind(this));
 			};
 
-			var showApp = function (installId) {
-				onionConsole.importHref(['./apps/' + installId + '/' + installId + '.html?r=a2'], function () {
-					console.log("Inside the callback for the this.importHref");
-					var appElement = document.createElement(installId);
-					console.log("App element:", installId);
-					appElement.setAttribute('id', installId);
-					Polymer.dom(onionConsole.$.appContainer).appendChild(appElement); 
-					onionConsole.set('currentApp', installId);
-					if (typeof fileName !== 'undefined') {
-						appElement.fileName=fileName;
-					}
-				});
-			}
+			var showApp = function (installId,bShow) {
+				console.log("Inside the showApp function appId:", installId);
+				var id = installId + '-installer';
+				if(bShow){
+					console.log("Should quit the app then relaunch it");
+					// onionConsole.quitApp(id);
+					// onionConsole.launchApp(installId);
+					clearInterval(this.launchAppInterval)
+				}
+				// onionConsole.importHref(['./apps/' + installId + '/' + installId + '.html?r=a2'], function () {
+				// 	console.log("Inside the callback for the this.importHref");
+				// 	clearInterval(this.launchAppInterval);
+				// 	var appElement = document.createElement(installId);
+				// 	console.log("App element:", installId);
+				// 	appElement.setAttribute('id', installId);
+				// 	Polymer.dom(onionConsole.$.appContainer).appendChild(appElement); 
+				// 	onionConsole.set('currentApp', installId);
+				// 	if (typeof fileName !== 'undefined') {
+				// 		appElement.fileName=fileName;
+				// 	}
+				// }.bind(this),
+				// function(e,y){
+				// 	console.log("onError function for the import heref",e);
+				// 	console.log(y);
+				// }.bind(this));
+			};
 			
 			var installApp = function () {
 				var params = {};
@@ -86,26 +99,14 @@
 				}.bind(this));
 			};
 			
+			var launchAppInterval = null;
 
 			var checkForApp = function (appId){
 				console.log("Inside checkForApp, appId", appId);
-				var self = this;
-				if(appId == 'onion-terminal'){
-					self.appPackage = 'onion-console-terminal';
-					self.checkInstallInterval = setInterval(function(){
-						self.checkInstallFunction
-					}.bind(self),10000);
-				}else if(appId == 'onion-editor'){
-					self.appPackage = 'onion-console-editor';
-					self.checkInstallInterval = setInterval(function(){
-						self.checkInstallFunction
-					}.bind(self),10000);
-				}else if(appId == 'onion-webcam'){
-					self.appPackage = 'onion-console-webcam';
-					self.checkInstallInterval = setInterval(function(){
-						self.checkInstallFunction
-					}.bind(self),10000);
-				}
+				this.checkInstallInterval = setInterval(function(){
+					console.log("this",this)
+					this.checkInstallFunction()
+					}.bind(this),10000);
 			};
 
 			var appFoundObserver = function(e,y){
@@ -113,36 +114,43 @@
 				//y is the old value
 				console.log("appFoundObserver gets called");
 				console.log(e);
-				if(e){
-					//clear the interval
-					clearInterval(this.checkInstallInterval);
-				}
+				// if(e){
+				// 	//clear the interval
+				// 	clearInterval(this.checkInstallInterval);
+				// }
 			};
 
 			var checkInstallFunction = function(){
 				console.log("Inside checkInstallFunction");
 				console.log("this",this);
-				console.log(self);
 				onionConsole.getService('onion-file-provider',function(err,fProvider){
 					if(!err){
 						fProvider.execCommand(null,'opkg',['list-installed'],function(err,data){
 							console.log("Inside the checkInstall Callback");
 							console.log("Err",err);
 							console.log("data",data);
-							if(data.code == '0' || (typeof data.stderr == 'undefined')) {
+							if(data.code == '0' && (typeof data.stderr == 'undefined')) {
 								var result = new String(data.stdout);
-								console.log(self);
 								if(typeof result.stderr == 'undefined'){
-									clearInterval(self.checkInstallInterval);
-									self.appFound = true;
+									clearInterval(this.checkInstallInterval);
+									delete this.checkInstallInterval;
+									this.appFound = true;
+									this.infoText = "The App has been installed! Please Refresh the page."
+									this.$.installButton.hidden = true;
+									this.launchAppInterval = setInterval(function(){
+										this.showApp(this.installId,true);
+									}.bind(this),5000);
+									// onionConsole.launchApp(this.installId);
 								}else{
-									self.appFound = false;
+									this.appFound = false;
 								}
 							}
-						}.bind(self));
+						}.bind(this));
 					}
-				})
+				}.bind(this));
 			};
+
+			var checkInstallInterval = null;
 
 			Polymer({
 				is: 'onion-installer',
@@ -153,6 +161,7 @@
 				appFoundObserver: appFoundObserver,
 				checkForApp: checkForApp,
 				checkInstallFunction: checkInstallFunction,
+				checkInstallInterval: checkInstallInterval,
 				properties: {
 					installName: String,
 					installId: String,
