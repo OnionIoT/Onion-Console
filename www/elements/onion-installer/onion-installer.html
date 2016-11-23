@@ -51,22 +51,22 @@
 					// onionConsole.launchApp(installId);
 					clearInterval(this.launchAppInterval)
 				}
-				// onionConsole.importHref(['./apps/' + installId + '/' + installId + '.html?r=a2'], function () {
-				// 	console.log("Inside the callback for the this.importHref");
-				// 	clearInterval(this.launchAppInterval);
-				// 	var appElement = document.createElement(installId);
-				// 	console.log("App element:", installId);
-				// 	appElement.setAttribute('id', installId);
-				// 	Polymer.dom(onionConsole.$.appContainer).appendChild(appElement); 
-				// 	onionConsole.set('currentApp', installId);
-				// 	if (typeof fileName !== 'undefined') {
-				// 		appElement.fileName=fileName;
-				// 	}
-				// }.bind(this),
-				// function(e,y){
-				// 	console.log("onError function for the import heref",e);
-				// 	console.log(y);
-				// }.bind(this));
+				onionConsole.importHref(['./apps/' + installId + '/' + installId + '.html?r=a2'], function () {
+					console.log("Inside the callback for the this.importHref");
+					clearInterval(this.launchAppInterval);
+					var appElement = document.createElement(installId);
+					console.log("App element:", installId);
+					appElement.setAttribute('id', installId);
+					Polymer.dom(onionConsole.$.appContainer).appendChild(appElement); 
+					onionConsole.set('currentApp', installId);
+					if (typeof fileName !== 'undefined') {
+						appElement.fileName=fileName;
+					}
+				}.bind(this),
+				function(e,y){
+					console.log("onError function for the import heref",e);
+					console.log(y);
+				}.bind(this));
 			};
 			
 			var installApp = function () {
