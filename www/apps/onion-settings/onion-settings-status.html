@@ -146,7 +146,7 @@
                     </div>
                     <div class="card-block">
                         <p><span>{{displayProcessorName(device)}}</span><br><strong>Processor</strong></p>
-                        <p><span>{{displayMemorySize(device)}}</span><span> MB 400 MHz DDR2</span><br><strong>Memory</strong></p>
+                        <p><span>{{displayMemorySize(device)}}</span></span><br><strong>Memory</strong></p>
                         <p><span>{{displayStorageSize(device, diskTotal)}}</span><span> MB Flash Memory</span><br><strong>Storage</strong></p>
                     </div>
                 </div>
@@ -428,11 +428,11 @@
 			var displayMemorySize = function (device) {
 				// TO DO: replace this with a calculation
 				if (this.device === 'Onion Omega') {
-					return '64';
+					return '64MB 400MHz DDR2';
 				} else if (this.device === 'Onion Omega2') {
-					return '64';
+					return '64MB 580MHz DDR2';
 				} else if (this.device === 'Onion Omega2+') {
-					return '128';
+					return '128MB 580MHz DDR2';
 				}
 			};
 
