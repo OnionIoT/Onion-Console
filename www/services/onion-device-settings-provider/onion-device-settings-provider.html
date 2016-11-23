@@ -18,7 +18,7 @@
 						this.device 	= type;
 						if (type === 'Onion Omega') {
 							this.deviceRadio = 'wlan0';
-						} else if (type === 'Onion Omega2') {
+						} else if (type === 'Onion Omega2' || type === 'Onion Omega2+') {
 							this.deviceRadio = 'ra0';
 						}
 					}).bind(this));
@@ -115,7 +115,7 @@
 					this.getDeviceType(devId, function (deviceType) {
 						var deviceRadio	= 'wlan0';
 						// find radio type based on device
-						if (deviceType === 'Onion Omega2') {
+						if (deviceType === 'Onion Omega2' || deviceType === 'Onion Omega2+') {
 							deviceRadio = 'ra0';
 						}
 						var radioInfo = result[deviceRadio];
@@ -224,7 +224,7 @@
 				this.getDeviceType(devId,(function(deviceType) {
 					var deviceRadio	= 'wlan0';
 					// find radio type based on device
-					if (deviceType === 'Onion Omega2') {
+					if (deviceType === 'Onion Omega2' || deviceType === 'Onion Omega2+') {
 						deviceRadio = 'ra0';
 					}
 
@@ -248,7 +248,7 @@
 				this.getDeviceType(devId, (function(deviceType) {
 					var deviceRadio	= 'wlan0';
 					// find radio type based on device
-					if (deviceType === 'Onion Omega2') {
+					if (deviceType === 'Onion Omega2' || deviceType === 'Onion Omega2+') {
 						deviceRadio = 'apcli0';
 					}
 					

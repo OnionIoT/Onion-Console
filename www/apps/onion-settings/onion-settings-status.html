@@ -274,7 +274,7 @@
 			}
 
 			var isOmega2 = function (device){
-				if(device ==='Onion Omega2'){
+				if(device ==='Onion Omega2' || device === 'Onion Omega2+'){
 					return true;
 				}else{
 					return false;
@@ -420,23 +420,29 @@
 			var displayProcessorName = function (device) {
 				if (this.device === 'Onion Omega') {
 					return '400 MHz Atheros AR9331 MIPS';
-				} else if (this.device === 'Onion Omega2') {
+				} else if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 					return '580 MHz Ralink MT-7688 MIPS';
 				}
 			};
 
 			var displayMemorySize = function (device) {
 				// TO DO: replace this with a calculation
-				return '16';
+				if (this.device === 'Onion Omega') {
+					return '64';
+				} else if (this.device === 'Onion Omega2') {
+					return '64';
+				} else if (this.device === 'Onion Omega2+') {
+					return '128';
+				}
 			};
 
 			var displayStorageSize = function (device, diskTotal) {
-				if (diskTotal > 16) {
-					return '32';
-				} else if (diskTotal > 0) {
+				if (this.device === 'Onion Omega') {
 					return '16';
-				} else {
-					return '-';
+				} else if (this.device === 'Onion Omega2') {
+					return '16';
+				} else if (this.device === 'Onion Omega2+') {
+					return '32';
 				}
 			};
 

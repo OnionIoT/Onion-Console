@@ -28,7 +28,7 @@
 						this.device = result;
 						if (result === 'Onion Omega') {
 							this.deviceRadio = 'wlan0';
-						} else if (result === 'Onion Omega2') {
+						} else if (result === 'Onion Omega2' || result === 'Onion Omega2+') {
 							this.deviceRadio = 'ra0';
 						}
 					}.bind(this));
@@ -49,7 +49,7 @@
 			// parse uci get wireless and return an array of either 'ap' or 'sta' networks
 			var parseWirelessSetup = function (data, type) {
 				var result 	= [];
-				if (this.device === 'Onion Omega2') {
+				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 					for (var key in data.values) {
 						var section 	= data.values[key];
 						
@@ -72,7 +72,7 @@
 
 			// get all the current wifi networks that are setup, return based on the type ('ap' or 'sta')
 			var getWirelessSetup = function (devId, bApNetwork) {
-				if (this.device === 'Onion Omega2') {
+				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 					var promise = new Promise(function (resolve, reject) {
 						var type 	= 'sta'
 						if (bApNetwork) {
@@ -183,7 +183,7 @@
 				if (uciId == null) {
 					var uciId 			= -1;
 				}
-				if (this.device === 'Onion Omega2') {
+				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 					var wifiSectionName = '@wifi-config[' + uciId + ']'
 				}else{
 					var wifiSectionName = '@wifi-iface[' + uciId + ']'
@@ -289,7 +289,7 @@
 				var params = {};
 
 				// set the basic info
-				if (this.device === 'Onion Omega2') {
+				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 					params.ssid 		= ssid;
 
 					// generate the values to set based on the encryption type
@@ -352,7 +352,7 @@
 
 			// add a placeholder for a wireless network  
 			var addWirelessNetwork = function (devId) {
-				if (this.device === 'Onion Omega2') {
+				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 					var promise = new Promise(function (resolve, reject) {
 
 						onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
@@ -411,7 +411,7 @@
 
 			// set all of the parameters for a wireless network
 			var setWirelessNetwork = function (devId, sectionName, params) {
-				if (this.device === 'Onion Omega2') {
+				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 					var promise = new Promise(function (resolve, reject) {
 						onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
 							this.deviceProvider = deviceProvider;
@@ -479,7 +479,7 @@
 				if (bEnable) {
 					optionValue = '0';	// enable
 				}
-				if (this.device === 'Onion Omega2') {
+				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 					if (optionValue) {
 						var promise = new Promise(function (resolve, reject) {
 								onionConsole.getService('onion-device-provider', function (err, deviceProvider) {

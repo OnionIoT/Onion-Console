@@ -541,7 +541,7 @@
 			// find the enabled network, returns null if none are enabled
 			var _findEnabledNetwork = function () {
 				var enabledNetwork 	= null;
-				if (this.device === 'Onion Omega2') {
+				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
 					this.deviceProvider = deviceProvider;
 					deviceProvider.callService(null, 'uci', 'get', {

@@ -298,10 +298,12 @@
             var getDeviceName = function (device){
             	console.log("Inside getDeviceName");
             	console.log(device)
-            	if(this.isOmega(device)){
+            	if(device === 'Onion Omega'){
             		return 'Omega';
-            	}else{
+            	}else if(device === 'Onion Omega2'){
             		return 'Omega2';
+            	}else if(device === 'Onion Omega2+'){
+            		return 'Omega2+'
             	}
             };
 
@@ -336,7 +338,7 @@
             }
 
             var isOmega2 = function(device){
-            	if(device === 'Onion Omega2'){
+            	if(device === 'Onion Omega2' || device === 'Onion Omega2+'){
             		return true;
             	}else{
             		return false;
