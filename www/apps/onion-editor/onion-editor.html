@@ -125,7 +125,7 @@
 				<div class="horizontal layout">
 					<div id="side-bar">
 <!-- 					    <div id="current-folder">{{currentFolder}}</div> -->
-						<onion-file-list id="fileList" on-open="fileClick" files="{{files}}" current-folder="{{currentFolder}}">No File</onion-file-list>
+						<onion-file-list on-renamefile="rcRenameFile" on-renamefolder="rcRenameFolder" on-openfile="rcOpenFile" on-openfolder="rcOpenFolder" on-deletefile="rcDeleteFile" on-deletefolder="rcDeleteFolder" id="fileList" on-open="fileClick" files="{{files}}" current-folder="{{currentFolder}}">No File</onion-file-list>
 					</div>
 					<div id="editor-container" class="flex vertical-layout-center-center">
 						<bootstrap-modal id="fileUploadDialog" title="Upload A File!">
@@ -175,6 +175,59 @@
 
 			var submitUpload = function(){
 				// console.log(this.$.fileSelectionInput.value);
+			};
+
+			var rcRenameFolder = function(e){
+				console.log("Right Click RenameFolderEvent Has Been Fired");
+				console.log(e);
+				var fileObj = e.detail;
+				this.debounce('click',function(){
+					this.updateRenameFileDialogueButtons(fileObj.absolutePath);
+				}.bind(this),1000);
+
+			};
+
+			var rcRenameFile = function(e){
+				console.log("Right Click RenameFileEvent Has Been Fired");
+				console.log(e);
+				var fileObj = e.detail;
+				this.debounce('click',function(){
+					this.updateRenameFileDialogueButtons(fileObj.absolutePath);
+				}.bind(this),1000);
+			};
+
+			var rcOpenFile = function(e){
+				console.log("Right Click OpenFileEvent Has Been Fired");
+				console.log(e);
+				var fileObj = e.detail
+				this.fileClick(e);
+			};
+
+			var rcOpenFolder = function(e){
+				console.log("Right Click OpenFolderEvent Has Been Fired");
+				console.log(e);	
+				var fileObj = e.detail;
+				this.fileClick(e);	
+			};
+
+
+			var rcDeleteFolder = function(e){
+				console.log("Right Click DeleteFolerEvent Has Been Fired");
+				console.log(e);
+				var fileObj = e.detail;
+				this.debounce('click',function(){
+					this.updateDeleteFolderDialogueButtons(fileObj.absolutePath);
+				}.bind(this),1000);				
+			};
+
+
+			var rcDeleteFile = function(e){
+				console.log("Right Click DeleteFileEvent Has Been Fired");
+				console.log(e);
+				var fileObj = e.detail;
+				this.debounce('click',function(){
+					this.updateDeleteFileDialogueButtons(fileObj.absolutePath);
+				}.bind(this),1000);		
 			};
 
 			var textEnter = function(e){
@@ -1079,6 +1132,12 @@
 
 			Polymer({
 				is: 'onion-editor',
+				rcDeleteFolder: rcDeleteFolder,
+				rcDeleteFile: rcDeleteFile,
+				rcOpenFolder: rcOpenFolder,
+				rcOpenFile: rcOpenFile,
+				rcRenameFolder: rcRenameFolder,
+				rcRenameFile: rcRenameFile,
 				created: created,
 				ready: ready,
 				behaviors: [Onion.AppBehavior],

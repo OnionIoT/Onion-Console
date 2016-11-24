@@ -1,5 +1,6 @@
 <link rel="import" href="../../lib/polymer/polymer.html">
 <link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../../lib/l2t-context-menu/l2t-context-menu.html">
 <dom-module id="onion-file-list">
 	<style>
@@ -8,6 +9,11 @@
 			height: 100%;
 			width: 100%;
 			font-size: 13px;
+		}
+
+		.menuButton:hover{
+			cursor: pointer;
+			background-color:white;
 		}
 
 		.file-row {
@@ -82,26 +88,22 @@
 			</div>
 
 			<l2t-context-menu parentclass="folderClass" class="orange">
-			  <li><b>First List Items:</b></li>
-			  <span><b>Rename</b></span>
-			  <span><b>Open</b></span>
-			  <span><b>Delete</b></span>
+			  <li><b>Folder RC Menu</b></li>
+			  <span class="menuButton" on-click="renameFolderClick"><b>Rename</b></span>
+			  <br class="menuButton">
+			  <span class="menuButton" on-click="openFolderClick"><b>Open</b></span>
+			  <br>
+			  <span class="menuButton" on-click="deleteFolderClick"><b>Delete</b></span>
 			</l2t-context-menu>
 
 			<l2t-context-menu parentclass="fileClass" class="orange">
-			  <li><b>First List Items:</b></li>
-			  <span><b>Rename</b></span>
-			  <span><b>Open</b></span>
-			  <span><b>Delete</b></span>
+			  <li><b>File RC Menu</b></li>
+			  <span class="menuButton" on-click="renameFileClick"><b>Rename</b></span>
+			  <br>
+			  <span class="menuButton" on-click="openFileClick"><b>Open</b></span>
+			  <br>
+			  <span class="menuButton" on-click="deleteFileClick"><b>Delete</b></span>
 			</l2t-context-menu>
-<!-- 			<l2t-context-menu parentclass="specialcase" class="orange">
-			  <li><b>First List Items:</b></li>
-			  <paper-item><a href="#">Item 1</a></paper-item>
-			  <paper-item><a href="#">Item 2</a></paper-item>
-			  <hr>
-			  <li><b>More Items:</b></li>
-			  <paper-item><a href="#">Item 3</a></paper-item>
-			</l2t-context-menu> -->
 		</template>
 	</template>
 
@@ -111,11 +113,67 @@
 		(function () {
 			// var this = null;
 
+			var constructFileObj = function(e){
+				var item = e.model.__data__.item;
+				var currFolder = this.currentFolder;
+				if(this.currentFolder == '/'){
+					var absolutePath = this.currentFolder + item.name;
+				}else{
+					var absolutePath = this.currentFolder + '/' + item.name;
+				}
+				var fileObj = {};
+				fileObj.name = item.name;
+				fileObj.absolutePath = absolutePath;
+				fileObj.parentFolder = this.currentFolder;
+				return fileObj;
+			}
+
+			var renameFileClick = function(e){
+				console.log("renameFileClick was called");
+				console.log(e);
+				var fileObj = this.constructFileObj(e);
+				this.fire('renamefile',fileObj);
+			};
+
+			var renameFolderClick = function(e){
+				console.log("renameFolderClick was called");
+				console.log(e);
+				var fileObj = this.constructFileObj(e);
+				this.fire('renamefolder',fileObj);
+			};
+
+			var openFileClick = function(e){
+				console.log("openfileClick was called");
+				console.log(e);
+				var fileObj = this.constructFileObj(e);
+				this.fire('openfile',fileObj);
+			};
+
+			var openFolderClick = function(e){
+				console.log("openfolderClick was called");
+				console.log(e);
+				var fileObj = this.constructFileObj(e);
+				this.fire('openfolder',fileObj);
+			};
+
+			var deleteFileClick = function(e){
+				console.log("deletefileClick was called");
+				console.log(e);
+				var fileObj = this.constructFileObj(e);
+				this.fire('deletefile',fileObj);
+			};
+
+			var deleteFolderClick = function(e){
+				console.log("deleteFolderClick was called");
+				console.log(e);
+				var fileObj = this.constructFileObj(e);
+				this.fire('deletefolder',fileObj);
+			};
 			var computeRowClass = function(item){
 				console.log("Inside computeRowClass item is:", item);
-				if(item.preview == 'file'){
+				if(item.type == 'file'){
 					return 'file-row fileClass';
-				}else if(item.preview == 'folder'){
+				}else if(item.type == 'directory'){
 					return 'file-row folderClass';
 				}else{
 					return 'file-row';
@@ -293,10 +351,17 @@
 					}
 				},
 				created: created,
+				renameFileClick: renameFileClick,
+				renameFolderClick: renameFolderClick,
+				openFileClick: openFileClick,
+				openFolderClick: openFolderClick,
+				deleteFileClick: deleteFileClick,
+				deleteFolderClick: deleteFolderClick,
 				_filesChanged: _filesChanged,
 				computeRowClass: computeRowClass,
 				_sortOnChanged: _sortOnChanged,
 				_updateFileList: _updateFileList,
+				constructFileObj: constructFileObj,
 				reverseSort: reverseSort,
 				filter: filter,
 				open: open,
