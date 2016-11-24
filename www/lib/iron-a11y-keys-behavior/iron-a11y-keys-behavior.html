@@ -66,6 +66,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     };
 
     /**
+     * KeyboardEvent.key is mostly represented by printable character made by
+     * the keyboard, with unprintable keys labeled nicely.
+     *
+     * However, on OS X, Alt+char can make a Unicode character that follows an
+     * Apple-specific mapping. In this case, we fall back to .keyCode.
+     */
+    var KEY_CHAR = /[a-z0-9*]/;
+
+    /**
      * Matches a keyIdentifier string.
      */
     var IDENT_CHAR = /U\+/;
@@ -81,14 +90,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      */
     var SPACE_KEY = /^space(bar)?/;
 
-    function transformKey(key) {
+    /**
+     * Matches ESC key.
+     *
+     * Value from: http://w3c.github.io/uievents-key/#key-Escape
+     */
+    var ESC_KEY = /^escape$/;
+
+    /**
+     * Transforms the key.
+     * @param {string} key The KeyBoardEvent.key
+     * @param {Boolean} [noSpecialChars] Limits the transformation to
+     * alpha-numeric characters.
+     */
+    function transformKey(key, noSpecialChars) {
       var validKey = '';
       if (key) {
         var lKey = key.toLowerCase();
         if (lKey === ' ' || SPACE_KEY.test(lKey)) {
           validKey = 'space';
+        } else if (ESC_KEY.test(lKey)) {
+          validKey = 'esc';
         } else if (lKey.length == 1) {
-          validKey = lKey;
+          if (!noSpecialChars || KEY_CHAR.test(lKey)) {
+            validKey = lKey;
+          }
         } else if (ARROW_KEY.test(lKey)) {
           validKey = lKey.replace('arrow', '');
         } else if (lKey == 'multiply') {
@@ -128,10 +154,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           validKey = 'f' + (keyCode - 112);
         } else if (keyCode >= 48 && keyCode <= 57) {
           // top 0-9 keys
-          validKey = String(48 - keyCode);
+          validKey = String(keyCode - 48);
         } else if (keyCode >= 96 && keyCode <= 105) {
           // num pad 0-9
-          validKey = String(96 - keyCode);
+          validKey = String(keyCode - 96);
         } else {
           validKey = KEY_CODE[keyCode];
         }
@@ -139,17 +165,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       return validKey;
     }
 
-    function normalizedKeyForEvent(keyEvent) {
-      // fall back from .key, to .keyIdentifier, to .keyCode, and then to
-      // .detail.key to support artificial keyboard events
-      return transformKey(keyEvent.key) ||
-        transformKeyIdentifier(keyEvent.keyIdentifier) ||
-        transformKeyCode(keyEvent.keyCode) ||
-        transformKey(keyEvent.detail.key) || '';
+    /**
+      * Calculates the normalized key for a KeyboardEvent.
+      * @param {KeyboardEvent} keyEvent
+      * @param {Boolean} [noSpecialChars] Set to true to limit keyEvent.key
+      * transformation to alpha-numeric chars. This is useful with key
+      * combinations like shift + 2, which on FF for MacOS produces
+      * keyEvent.key = @
+      * To get 2 returned, set noSpecialChars = true
+      * To get @ returned, set noSpecialChars = false
+     */
+    function normalizedKeyForEvent(keyEvent, noSpecialChars) {
+      // Fall back from .key, to .detail.key for artifical keyboard events,
+      // and then to deprecated .keyIdentifier and .keyCode.
+      if (keyEvent.key) {
+        return transformKey(keyEvent.key, noSpecialChars);
+      }
+      if (keyEvent.detail && keyEvent.detail.key) {
+        return transformKey(keyEvent.detail.key, noSpecialChars);
+      }
+      return transformKeyIdentifier(keyEvent.keyIdentifier) ||
+        transformKeyCode(keyEvent.keyCode) || '';
     }
 
-    function keyComboMatchesEvent(keyCombo, event, eventKey) {
-      return eventKey === keyCombo.key &&
+    function keyComboMatchesEvent(keyCombo, event) {
+      // For combos with modifiers we support only alpha-numeric keys
+      var keyEvent = normalizedKeyForEvent(event, keyCombo.hasModifiers);
+      return keyEvent === keyCombo.key &&
         (!keyCombo.hasModifiers || (
           !!event.shiftKey === !!keyCombo.shiftKey &&
           !!event.ctrlKey === !!keyCombo.ctrlKey &&
@@ -198,12 +240,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * and uses an expressive syntax to filter key presses.
      *
      * Use the `keyBindings` prototype property to express what combination of keys
-     * will trigger the event to fire.
+     * will trigger the callback. A key binding has the format
+     * `"KEY+MODIFIER:EVENT": "callback"` (`"KEY": "callback"` or
+     * `"KEY:EVENT": "callback"` are valid as well). Some examples:
      *
-     * Use the `key-event-target` attribute to set up event handlers on a specific
+     *      keyBindings: {
+     *        'space': '_onKeydown', // same as 'space:keydown'
+     *        'shift+tab': '_onKeydown',
+     *        'enter:keypress': '_onKeypress',
+     *        'esc:keyup': '_onKeyup'
+     *      }
+     *
+     * The callback will receive with an event containing the following information in `event.detail`:
+     *
+     *      _onKeydown: function(event) {
+     *        console.log(event.detail.combo); // KEY+MODIFIER, e.g. "shift+tab"
+     *        console.log(event.detail.key); // KEY only, e.g. "tab"
+     *        console.log(event.detail.event); // EVENT, e.g. "keydown"
+     *        console.log(event.detail.keyboardEvent); // the original KeyboardEvent
+     *      }
+     *
+     * Use the `keyEventTarget` attribute to set up event handlers on a specific
      * node.
-     * The `keys-pressed` event will fire when one of the key combinations set with the
-     * `keys` property is pressed.
+     *
+     * See the [demo source code](https://github.com/PolymerElements/iron-a11y-keys-behavior/blob/master/demo/x-key-aware.html)
+     * for an example.
      *
      * @demo demo/index.html
      * @polymerBehavior
@@ -211,7 +272,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer.IronA11yKeysBehavior = {
       properties: {
         /**
-         * The HTMLElement that will be firing relevant KeyboardEvents.
+         * The EventTarget that will be firing relevant KeyboardEvents. Set it to
+         * `null` to disable the listeners.
+         * @type {?EventTarget}
          */
         keyEventTarget: {
           type: Object,
@@ -250,6 +313,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         '_resetKeyEventListeners(keyEventTarget, _boundKeyHandlers)'
       ],
 
+
+      /**
+       * To be used to express what combination of keys  will trigger the relative
+       * callback. e.g. `keyBindings: { 'esc': '_onEscPressed'}`
+       * @type {!Object}
+       */
       keyBindings: {},
 
       registered: function() {
@@ -284,11 +353,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._resetKeyEventListeners();
       },
 
+      /**
+       * Returns true if a keyboard event matches `eventString`.
+       *
+       * @param {KeyboardEvent} event
+       * @param {string} eventString
+       * @return {boolean}
+       */
       keyboardEventMatchesKeys: function(event, eventString) {
         var keyCombos = parseEventString(eventString);
-        var eventKey = normalizedKeyForEvent(event);
         for (var i = 0; i < keyCombos.length; ++i) {
-          if (keyComboMatchesEvent(keyCombos[i], event, eventKey)) {
+          if (keyComboMatchesEvent(keyCombos[i], event)) {
             return true;
           }
         }
@@ -351,6 +426,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _listenKeyEventListeners: function() {
+        if (!this.keyEventTarget) {
+          return;
+        }
         Object.keys(this._keyBindings).forEach(function(eventName) {
           var keyBindings = this._keyBindings[eventName];
           var boundKeyHandler = this._onKeyBindingEvent.bind(this, keyBindings);
@@ -388,11 +466,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return;
         }
 
-        var eventKey = normalizedKeyForEvent(event);
         for (var i = 0; i < keyBindings.length; i++) {
           var keyCombo = keyBindings[i][0];
           var handlerName = keyBindings[i][1];
-          if (keyComboMatchesEvent(keyCombo, event, eventKey)) {
+          if (keyComboMatchesEvent(keyCombo, event)) {
             this._triggerKeyHandler(keyCombo, handlerName, event);
             // exit the loop if eventDefault was prevented
             if (event.defaultPrevented) {

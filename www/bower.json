@@ -26,7 +26,8 @@
     "juicy-ace-editor": "Juicy/juicy-ace-editor#polymer_1.0",
     "polymer": "~1.2.1",
     "iron-menu-behavior": "PolymerElements/iron-menu-behavior#latest",
-    "iron-range-behavior": "PolymerElements/iron-range-behavior#~1.0.4"
+    "iron-range-behavior": "PolymerElements/iron-range-behavior#~1.0.4",
+    "l2t-context-menu": "^1.0.4"
   },
   "resolutions": {
     "polymer": "^1.2.1"
