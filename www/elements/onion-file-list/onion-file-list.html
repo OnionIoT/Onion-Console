@@ -1,6 +1,6 @@
 <link rel="import" href="../../lib/polymer/polymer.html">
 <link rel="import" href="../../lib/iron-icons/iron-icons.html">
-
+<link rel="import" href="../../lib/l2t-context-menu/l2t-context-menu.html">
 <dom-module id="onion-file-list">
 	<style>
 		:host {
@@ -59,6 +59,11 @@
 			padding-left: 20px;
 			font-size: 20px;
 		}
+		.orange {
+			--context-background-color: #F57C00;
+			--context-text-color: #FFF;
+			--context-link-text-color: #FFE0B2;
+		}
 	</style>
 
 	<template>
@@ -67,13 +72,36 @@
 		</div>
 		<div class="current-folder">[[currentFolder]]</div>
 		<template is="dom-repeat" items="{{_files}}">
-			<div class="file-row">
+
+			<div class$="{{computeRowClass(item)}}" >
 				<iron-icon icon="{{item.preview}}" class="clickable" on-click="open"></iron-icon>
-				<span class="clickable nameDisplay responsiveText" title$="{{item.name}}" on-click="open">{{item.name}}</span>
+				<span class="clickable nameDisplay responsiveText" title$="{{item.name}}" on-click="open" class="folderClass">{{item.name}}</span>
 				<span class="nameEdit">
 					<input type="text" value="{{item.name}}" on-blur="saveRename" on-keydown="saveRename">
 				</span>
 			</div>
+
+			<l2t-context-menu parentclass="folderClass" class="orange">
+			  <li><b>First List Items:</b></li>
+			  <span><b>Rename</b></span>
+			  <span><b>Open</b></span>
+			  <span><b>Delete</b></span>
+			</l2t-context-menu>
+
+			<l2t-context-menu parentclass="fileClass" class="orange">
+			  <li><b>First List Items:</b></li>
+			  <span><b>Rename</b></span>
+			  <span><b>Open</b></span>
+			  <span><b>Delete</b></span>
+			</l2t-context-menu>
+<!-- 			<l2t-context-menu parentclass="specialcase" class="orange">
+			  <li><b>First List Items:</b></li>
+			  <paper-item><a href="#">Item 1</a></paper-item>
+			  <paper-item><a href="#">Item 2</a></paper-item>
+			  <hr>
+			  <li><b>More Items:</b></li>
+			  <paper-item><a href="#">Item 3</a></paper-item>
+			</l2t-context-menu> -->
 		</template>
 	</template>
 
@@ -82,6 +110,17 @@
 
 		(function () {
 			// var this = null;
+
+			var computeRowClass = function(item){
+				console.log("Inside computeRowClass item is:", item);
+				if(item.preview == 'file'){
+					return 'file-row fileClass';
+				}else if(item.preview == 'folder'){
+					return 'file-row folderClass';
+				}else{
+					return 'file-row';
+				}
+			};
 
 			var created = function () {
 				// this = this;
@@ -255,6 +294,7 @@
 				},
 				created: created,
 				_filesChanged: _filesChanged,
+				computeRowClass: computeRowClass,
 				_sortOnChanged: _sortOnChanged,
 				_updateFileList: _updateFileList,
 				reverseSort: reverseSort,
