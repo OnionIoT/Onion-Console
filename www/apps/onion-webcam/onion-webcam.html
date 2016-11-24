@@ -141,16 +141,16 @@ e<link rel="import" href="../../lib/polymer/polymer.html">
 
 				// get the device ip address and start the stream
 				onionConsole.getService('onion-device-settings-provider', function (err, deviceProvider) {
-					deviceProvider.getIP(function (result) {
-						top.ipAddr = result[1].ip;
+					deviceProvider.getIpAddr(null,function (result) {
+						this.ipAddr = result;
 						console.log('Device ip addr: ' + top.ipAddr);
 
 						setTimeout(function(){
-							top.$.stream.src = "http://" + top.ipAddr + ":8080/?action=stream";
-						},500);
+							this.$$("#stream").src = "http://" + top.ipAddr + ":8080/?action=stream";
+						}.bind(this),500);
 						
-					});
-				});
+					}.bind(this));
+				}.bind(this));
 			}
 
 			var _StreamingStop = function () {
