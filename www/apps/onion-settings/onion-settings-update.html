@@ -76,8 +76,8 @@
 			<h4>Firmware Upgrade</h4>
 			<div class="card card-block">
 				<bootstrap-alert warning no-close>
-					<h6>Attention!</h6>
-					<p>Firmware upgrade will erase all files outside of the <code>/etc</code> directory. Please backup any custom files before proceeding.</p>
+					<h4>Attention!</h4>
+					<p>Firmware upgrade will erase all files outside of the <code>/root</code> and <code>/etc</code> directories. Please backup any custom files before proceeding.</p>
 				</bootstrap-alert>
 
 				<table class="table">
@@ -200,9 +200,11 @@
 
 			// make sense of the firmware info data
 			var checkFirmwareInfo = function () {
+				this.$.upgradeLoading.hidden = false;
 				var checkDataReadyInterval = setInterval((function () {
 					if (this.dataReady === 1) {
 						// stop the loop after this code
+						this.$.upgradeLoading.hidden = true;
 						clearInterval(checkDataReadyInterval);
 
 						// current omega firmware:
@@ -290,7 +292,7 @@
 									
 									alertElement.setAttribute('info', true);
 									alertElement.setAttribute('no-close', true);
-									Polymer.dom(alertElement).innerHTML = '<p>Firmware upgrade has started! Please be patient, this can take up to 3 minutes. When the Omega has rebooted, the firmware upgrade will be complete.</p><p><strong>Do NOT unplug the Omega during this process.</strong></p><p>Once the update is complete, your Omega will stop flashing.</p>';
+									Polymer.dom(alertElement).innerHTML = '<p>Firmware upgrade has started! Please be patient, this can take up to 3 minutes. When the Omega has rebooted, the firmware upgrade will be complete.</p><p><strong>Do NOT unplug the Omega during this process.</strong></p>';
 
 									Polymer.dom(this.$.upgradeAlerts).appendChild(alertElement);
 									Polymer.dom.flush();
