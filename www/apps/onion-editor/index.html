@@ -63,15 +63,20 @@
 		    to { opacity: 0; }
 		}
 
+		onion-app-body {
+			background: url('../../images/bg/a.jpg') no-repeat;
+			background-attachment: fixed;
+			background-size: cover;
+		}
+
 	</style>
 
 	<template>
 
-		<onion-app app-name="Onion Editor Installer" toolbar-background="#34495e" toolbar-color="#fff">
-			<onion-app-toolbar page-id="home">
-			</onion-app-toolbar>
+		<onion-app app-name="" toolbar-background="transparent">
+
 			<onion-app-body page-id="home">
-						<onion-installer install-name="Editor" install-id="onion-editor" info-text="The Editor App allows you to create, edit, and manage the files on your Omega. You can even upload files from your device to the Omega using this app."></onion-installer>
+						<onion-installer install-color="#2a3f50" install-name="Editor" install-id="onion-editor" info-text="The Editor App allows you to create, edit, and manage the files on your Omega. You can even upload files from your device to the Omega using this app."></onion-installer>
 			</onion-app-body>
 		</onion-app>
 	</template>

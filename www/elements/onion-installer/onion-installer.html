@@ -1,18 +1,140 @@
 <link rel="import" href="../../lib/polymer/polymer.html">
 <link rel="import" href="../../elements/onion-loading/onion-loading.html">
+<link rel="import" href="../../elements/onion-loading/onion-loading.html">
 
 <dom-module id="onion-installer">
 	<style>
+	.centeredCard {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		max-width: 420px;
+	}
+
+	.installIcon {
+		position: relative;
+		left:50%;
+		transform: translate(-50%, 0);
+		height: 100px;
+		width: 100px;
+		z-index: 500;
+	}
+
+	.movingIcon {
+		position: absolute;
+		left:50%;
+		transform: translate(-50%, 0%);
+		height: 100px;
+		width: 100px;
+		z-index: 500;
+	}
+
+	.installInProgress {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		height: 100px;
+		width: 100px;
+		transform: translate(-50%, -50%);
+		z-index: 500;
+	}
+
+	.hiddenClass {
+		display: none;
+	}
+
+	.installInProgressHeight {
+		height: 350px;
+		min-width: 420px;
+	}
+
+	#loadingIcon {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 300;
+		height: 200px;
+		width: 200px;
+	}
+
+	.shiftDown{
+	    -webkit-animation: slideDown 1s;
+	    -moz-animation: slideDown 1s;
+	    -o-animation: slideDown 1s;
+	    animation: slideDown 1s;
+	    animation-fill-mode: forwards;
+	    -webkit-animation-timing-function: ease;
+	}
+
+	@keyframes slideDown {
+	    from{ top: 0%; 
+	    	transform: translate(-50%, 0%); }
+	    to{ top: 50%;
+	    	transform: translate(-50%, -50%); }
+	}
+	@-webkit-keyframes slideDown {
+	    from{ top: 0%; 
+	    	transform: translate(-50%, 0%); }
+	    to{ top: 50%;
+	    	transform: translate(-50%, -50%); }
+	}
+	@-moz-keyframes slideDown {
+	    from{ top: 0%; 
+	    	transform: translate(-50%, 0%); }
+	    to{ top: 50%;
+	    	transform: translate(-50%, -50%); }
+	}
+	@-o-keyframes slideDown {
+	    from{ top: 0%; 
+	    	transform: translate(-50%, 0%); }
+	    to{ top: 50%;
+	    	transform: translate(-50%, -50%); }
+	}
+
+	.fadeLoadingIcon {
+	    -webkit-animation: fadeIn 1s;
+	    -moz-animation: fadeIn 1s;
+	    -o-animation: fadeIn 1s;
+	    animation: fadeIn 1s;
+	    animation-fill-mode: forwards;
+	}
+
+	@-webkit-keyframes fadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	@-moz-keyframes fadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	@-o-keyframes fadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	#installButton:hover {
+		opacity: 0.9;
+	}
+
 
 	</style>
 
 	<template>
 
-		<div>
-			<h3>
-				{{infoText}}
-			</h3>
-			<bootstrap-button id="installButton" color-scheme="success" on-tap="installApp">Click here to install the {{installName}} App!</bootstrap-button>
+		<div id="card" class="card card-block centeredCard">
+			<img id="iconImage" class="installIcon" src=""></img>
+			<p>{{infoText}}</p>
+			<onion-loading id="loadingIcon" class="hiddenClass" loading="true" icon="icons:settings"></onion-loading>
+			<button id="installButton" type="button" class="btn btn-block" on-tap="installApp">Install</button>
 		</div>
 	</template>
 
@@ -26,6 +148,8 @@
 
 			var ready = function(){
 				var app = this.installId;
+				this.$$('#installButton').style="background-color: " + this.installColor + ";border-color: " + this.installColor + ";"
+				this.$$('#iconImage').src=_findAppIcon(app)
 				this.showApp(app);
 				onionConsole.getService('onion-device-provider', function (err,deviceProvider){
 					if(!err){
@@ -41,6 +165,10 @@
 					this.sessionProvider = sessionProvider;
 				}.bind(this));
 			};
+
+			var _findAppIcon = function (installId) {
+				return "/console/apps/" + installId + "/icon.png"
+			}
 
 			var showApp = function (installId,bShow) {
 				console.log("Inside the showApp function appId:", installId);
@@ -70,6 +198,15 @@
 			};
 			
 			var installApp = function () {
+				this.$$('#iconImage').className = 'style-scope onion-installer movingIcon shiftDown'
+				this.$$('#installButton').className = this.$$('#installButton').className + ' hiddenClass'
+				this.$$('#card').className = this.$$('#card').className + ' installInProgressHeight'
+				this.infoText = ""
+				setTimeout(function() {
+					this.$$('#iconImage').className = 'style-scope onion-installer installInProgress'
+					this.$$('#loadingIcon').className = 'style-scope onion-installer fadeLoadingIcon'
+					this.infoText = "Please wait while the " + this.installName + " App is installed."
+				}.bind(this), 1000)
 				var params = {};
 				var key = this.installName.toLowerCase();
 				params[key] = "1"
@@ -136,7 +273,7 @@
 									delete this.checkInstallInterval;
 									this.appFound = true;
 									this.infoText = "The App has been installed! Please Refresh the page."
-									this.$.installButton.hidden = true;
+									this.$$('#loadingIcon').className = 'style-scope onion-installer hiddenClass'
 									this.launchAppInterval = setInterval(function(){
 										this.showApp(this.installId,true);
 									}.bind(this),5000);
@@ -157,12 +294,14 @@
 				created: created,
 				ready: ready,
 				installApp: installApp,
+				_findAppIcon: _findAppIcon,
 				showApp: showApp,
 				appFoundObserver: appFoundObserver,
 				checkForApp: checkForApp,
 				checkInstallFunction: checkInstallFunction,
 				checkInstallInterval: checkInstallInterval,
 				properties: {
+					installColor: String,
 					installName: String,
 					installId: String,
 					appFound:{

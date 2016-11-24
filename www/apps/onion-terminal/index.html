@@ -34,15 +34,18 @@
 			height: 100%;
 			width: 100%;
 		}
+		onion-app-body {
+			background: url('../../images/bg/a.jpg') no-repeat;
+			background-attachment: fixed;
+			background-size: cover;
+		}
 	</style>
 	<template>
 
-		<onion-app app-name="Onion Terminal Installer" toolbar-background="#34495e" toolbar-color="#fff">
-			<onion-app-toolbar page-id="home">
+		<onion-app app-name="" toolbar-background="transparent">
 
-			</onion-app-toolbar>
 			<onion-app-body page-id="home">
-				<onion-installer install-name="Terminal" install-id="onion-terminal" info-text="The Terminal App gives you access to the Omega's command line in your browser."></onion-installer>
+				<onion-installer install-color="#505050" install-name="Terminal" install-id="onion-terminal" info-text="The Terminal App gives you access to the Omega's command line in your browser."></onion-installer>
 			</onion-app-body>
 		</onion-app>
 	</template>
