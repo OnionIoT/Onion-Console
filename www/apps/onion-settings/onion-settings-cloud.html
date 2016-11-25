@@ -1,101 +1,162 @@
 <link rel="import" href="../../lib/polymer/polymer.html">
 <link rel="import" href="../../elements/bootstrap-alert/bootstrap-alert-container.html">
+<link rel="import" href="../../elements/bootstrap-styles/bootstrap-styles.html">
 
 <dom-module id="onion-settings-cloud">
 	<style>
-		.container {
+		.iframeContainer {
 			width: 100%;
+			height: 100%;
 			margin: 0 auto;
 		}
-        
-        #iframe-div
-        {
-            width    : auto;
-            height   : 100vh;
-            /*overflow : hidden;*/
-            position : relative;
-        }
-         
-        #iframe
-        {
-            position : absolute;
-            /*left     : -350px;*/
-        }
+		
 	</style>
 
 	<template>
-
-		<div class="container">
-            <div id="iframe-div">
-                <iframe id="iframe" src="https://registerdevice.onion.io" style="width:100%;height:100%;"></iframe>
-            </div>
+		<div id="connected" hidden="{{!hasDeviceId}}">
+			<div><p>Your device is registered with the Onion Cloud. Check out <a href="http://cloud.onion.io/" target="_blank">cloud.onion.io</a> to get started!</p></div>
+			<div>
+				<table class="table table-bordered">
+					<thead>
+					  <td>
+						<th>Device Id</th>
+						<th id="devIdText">{{deviceId}}</th>
+					  </td>
+					</thead>
+			  </table>
+			</div>
+			<button type="button" class="btn btn-info btn-block" on-tap="openCloudModal">Register device again as a new device (not recommended)</button>
 		</div>
+		<div id="notConnected" hidden="{{hasDeviceId}}">
+			<div><p>Click the button below to register your Omega on the Onion Cloud!</p>
+			<p>Using the Onion Cloud, you can remotely manage and control your device, use the Cloud Compile service, and use apps to interact with your device.</p></div>
+			<button type="button" class="btn btn-info btn-block" on-tap="openCloudModal">Register Device on Cloud</button>
+		</div>
+		
+
+		
+
+		<!-- Modal -->
+		<bootstrap-modal id="cloudModal" style="height:85%;width:50%;" close-button>
+		<!-- <modal-content style="width:100%;height:100%;"> -->
+
+			<!-- Modal content-->
+				<modal-body style="width:100%;height:100%;padding:0;">
+					<iframe id="iframe" src="" frameborder="0" style="width:100%;height:100%;"></iframe>
+				</modal-body>
+		<!-- </modal-content> -->
+		</bootstrap-modal>
 
 	</template>
 
-    <script>
+	<script>
 		'use strict';
 
 		(function() {
-			var ready = function () {
-				window.addEventListener("message", receiveMessage); //Listening for message from modal
+			var created = function () {
+				// this = this;
 			};
-            
-            var receiveMessage= function (result) {
-                if (result.origin !== "https://registerdevice.onion.io")
-	            return;
-                
-                var params = {
-                    deviceId: result.data.content.deviceId,
-                    secret: result.data.content.deviceSecret
-                };
-                
-                // send UCI command
-                var promise = new Promise(function (resolve, reject) {
+
+			var ready = function () {
+				window.addEventListener("message", receiveDeviceId); //Listening for message from modal
+				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+					this.deviceProvider = deviceProvider;
+					this.deviceProvider.callService(null,'uci', 'get', {
+						config: 'onion',
+						section: 'cloud'
+					}, function (err,result) {
+						if(result){
+							this.deviceId=result.values.deviceId;
+							this.secret=result.values.secret;
+							this.hasDeviceId=true;
+						}else{
+							this.deviceId='';
+							this.secret='';
+							this.hasDeviceId=false;
+						}
+					}.bind(this));
+				}.bind(this));
+			};
+
+			var _hasDeviceId = function () {
+
+			}
+			var waitForConnect = function(result) {
+				if (result.origin !== "https://registerdevice.onion.io")
+				return;
+				this.document.getElementById('cloudModal').close();
+				if (this.deviceId === undefined || this.deviceId === '') {
+					this.document.getElementById('notConnected').hidden=false;
+					this.document.getElementById('connected').hidden=true;
+					this.hasDeviceId=false;
+				}else{
+					this.document.getElementById('connected').hidden=false;
+					this.document.getElementById('notConnected').hidden=true;
+					this.document.getElementById('devIdText').innerText=this.deviceId;
+					this.hasDeviceId=true;
+				}
+
+				window.removeEventListener("message", waitForConnect);
+				window.addEventListener("message", receiveDeviceId);
+			};
+			
+			var receiveDeviceId= function (result) {
+				if (result.origin !== "https://registerdevice.onion.io")
+				return;
+				this.deviceId = result.data.content.deviceId;
+				this.secret = result.data.content.deviceSecret;
+				var params = {
+					deviceId: result.data.content.deviceId,
+					secret: result.data.content.deviceSecret
+			};
+				
+				// send UCI command
+				var promise = new Promise(function (resolve, reject) {
 					onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
 						this.deviceProvider = deviceProvider;
 						// this.deviceProvider.callService(null,'uci', 'set', {
-                        this.deviceProvider.callService(null,'uci', 'add', {
+						this.deviceProvider.callService(null,'uci', 'add', {
 							config: 'onion',
 							type: 'cloud',
 							name: 'cloud'
 						}, function (err,result) {
 							console.log('uci add onion cloud result:', result);
 							if (!err) {
-                                this.deviceProvider.callService(null, 'uci', 'set', {
-                                    config: 'onion',
-                                    section: 'cloud',
-                                    values: params
-                                }, function (err, result) {
-                                    if (!err) {
-                                        this.deviceProvider.callService(null,'uci', 'commit', {
-        									config: 'onion'
-        								}, function (err, result) {
-        									if (!err) {
-                                                console.log('uci commit onion result: ', result);
-                                                
-                                                // restart the device client
-                                                this.deviceProvider.callService(null, 'file', 'exec', {
-                                                    command: '/etc/init.d/device-client',
-                                                    params: ['restart']
-                								}, function (err, result) {
-                									if (!err) {
-                                                        console.log('file exec result: ', result);
-                                                        resolve();
-                                                    }
-                                                    else {
-                                                        reject(Error('Unable to restart device client.'));
-                                                    }
-                                                }.bind(this));
-        										
-        									} else {
-        										reject(Error('Unable to set Onion Cloud configuration.'));
-        									}
-        								}.bind(this));
-                                    } else {
-                                        reject(Error('Unable to set Onion Cloud configuration.'));
-                                    }
-                                }.bind(this));
+								this.deviceProvider.callService(null, 'uci', 'set', {
+									config: 'onion',
+									section: 'cloud',
+									values: params
+								}, function (err, result) {
+									if (!err) {
+										this.deviceProvider.callService(null,'uci', 'commit', {
+											config: 'onion'
+										}, function (err, result) {
+											if (!err) {
+												console.log('uci commit onion result: ', result);
+												window.removeEventListener("message", receiveDeviceId);
+												window.addEventListener("message", waitForConnect);
+												// restart the device client
+												this.deviceProvider.callService(null, 'file', 'exec', {
+													command: '/etc/init.d/device-client',
+													params: ['restart']
+												}, function (err, result) {
+													if (!err) {
+														console.log('file exec result: ', result);
+														resolve();
+													}
+													else {
+														reject(Error('Unable to restart device client.'));
+													}
+												}.bind(this));
+												
+											} else {
+												reject(Error('Unable to set Onion Cloud configuration.'));
+											}
+										}.bind(this));
+									} else {
+										reject(Error('Unable to set Onion Cloud configuration.'));
+									}
+								}.bind(this));
 							} else {
 								reject(Error('Unable to set Onion Cloud configuration.'));
 							}
@@ -103,13 +164,36 @@
 					}.bind(this));
 				}.bind(this));
 				return promise;
-            };
+			};
 			
+			var openCloudModal = function () {
+				this.$.iframe.src="https://registerdevice.onion.io"
+				this.$.cloudModal.open();
+			};
+
 			Polymer({
 				is: 'onion-settings-cloud',
+				created: created,
 				ready: ready,
+				_hasDeviceId: _hasDeviceId,
+				waitForConnect: waitForConnect,
+				receiveDeviceId: receiveDeviceId,
+				openCloudModal: openCloudModal,
 				properties: {
-                    
+					secret:{
+						type:String,
+						value:'',
+						notify:true
+					},
+					deviceId:{
+						type:String,
+						value:'',
+						notify:true
+					},
+					hasDeviceId: {
+						type: Boolean,
+						value: false
+					}
 				}
 			});
 		})();
