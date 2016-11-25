@@ -11,9 +11,12 @@
 			font-size: 13px;
 		}
 
-		.menuButton:hover{
+		.menuButtonRow:hover{
 			cursor: pointer;
 			background-color:white;
+		}
+		.menuButton{
+			color:black;
 		}
 
 		.file-row {
@@ -66,15 +69,38 @@
 			font-size: 20px;
 		}
 		.orange {
-			--context-background-color: #F57C00;
+			--context-background-color: #34495e;
 			--context-text-color: #FFF;
 			--context-link-text-color: #FFE0B2;
+		}
+		.folderButton{
+			margin: 5px;
+		}
+		#buttonRow:hover{
+			background-color: inherit;
 		}
 	</style>
 
 	<template>
 		<div hidden$="{{_hasElements(_files)}}">
 			<content></content>
+		</div>
+		<div id="buttonRow" class="file-row horizontal layout center-center">
+			<button class="folderButton" on-click="uploadFileClick">
+				<div class="vertical layout center">
+					<iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>Upload File</span>
+				</div>
+			</button>
+			<button class="folderButton" on-click="newFileClick">
+				<div class="vertical layout center">
+					<iron-icon class="toolbar-icon" id="newFileButton" icon="icons:note-add"></iron-icon><span>New File</span>
+				</div>
+			</button>
+			<button class="folderButton" on-click="newFolderClick">
+				<div class="vertical layout center">
+					<iron-icon class="toolbar-icon" id="newFolderButton" icon="icons:folder"></iron-icon><span>New Folder</span>
+				</div>
+			</button>		
 		</div>
 		<div class="current-folder">[[currentFolder]]</div>
 		<template is="dom-repeat" items="{{_files}}">
@@ -87,22 +113,34 @@
 				</span>
 			</div>
 
-			<l2t-context-menu parentclass="folderClass" class="orange">
-			  <li><b>Folder RC Menu</b></li>
-			  <span class="menuButton" on-click="renameFolderClick"><b>Rename</b></span>
-			  <br class="menuButton">
-			  <span class="menuButton" on-click="openFolderClick"><b>Open</b></span>
-			  <br>
-			  <span class="menuButton" on-click="deleteFolderClick"><b>Delete</b></span>
+			<l2t-context-menu context-info="{{rcFolderEvent}}" parentclass="folderClass" class="orange">
+			  <li><b>Folder Menu</b></li>
+			  <div class="menuButtonRow">
+			  	<span class="menuButton" on-click="renameFolderClick"><b>Rename</b></span>
+			  </div>
+<!-- 			  <br> -->
+			  <div class="menuButtonRow">
+			  	<span class="menuButton" on-click="openFolderClick"><b>Open</b></span>
+			  </div>
+<!-- 			  <br> -->
+			  <div class="menuButtonRow">
+			  	<span class="menuButton" on-click="deleteFolderClick"><b>Delete</b></span>
+			  </div>
 			</l2t-context-menu>
 
-			<l2t-context-menu parentclass="fileClass" class="orange">
-			  <li><b>File RC Menu</b></li>
-			  <span class="menuButton" on-click="renameFileClick"><b>Rename</b></span>
-			  <br>
-			  <span class="menuButton" on-click="openFileClick"><b>Open</b></span>
-			  <br>
-			  <span class="menuButton" on-click="deleteFileClick"><b>Delete</b></span>
+			<l2t-context-menu context-info="{{rcFileEvent}}" parentclass="fileClass" class="orange">
+			  <li><b>File Menu</b></li>
+			  <div class="menuButtonRow">
+			  	<span class="menuButton" on-click="renameFileClick"><b>Rename</b></span>
+			  </div>
+<!-- 			  <br> -->
+			  <div class="menuButtonRow">
+			  	<span class="menuButton" on-click="openFileClick"><b>Open</b></span>
+			  </div>
+<!-- 			  <br> -->
+			  <div class="menuButtonRow">
+			  	<span class="menuButton" on-click="deleteFileClick"><b>Delete</b></span>
+			</div>
 			</l2t-context-menu>
 		</template>
 	</template>
@@ -113,20 +151,47 @@
 		(function () {
 			// var this = null;
 
+			var uploadFileClick = function(e){
+				this.fire('uploadfile',e);
+			};
+
+			var newFileClick = function(e){
+				this.fire('newfile',e);
+			};
+
+			var newFolderClick = function(e){
+				this.fire('newfolder',e);
+			};
+
 			var constructFileObj = function(e){
 				var item = e.model.__data__.item;
 				var currFolder = this.currentFolder;
 				if(this.currentFolder == '/'){
-					var absolutePath = this.currentFolder + item.name;
+					var absolutePath = this.currentFolder + this.rcFileEvent;
 				}else{
-					var absolutePath = this.currentFolder + '/' + item.name;
+					var absolutePath = this.currentFolder + '/' + this.rcFileEvent;
 				}
 				var fileObj = {};
-				fileObj.name = item.name;
+				fileObj.name = this.rcFileEvent;
 				fileObj.absolutePath = absolutePath;
 				fileObj.parentFolder = this.currentFolder;
 				return fileObj;
-			}
+			};
+
+			var constructFolderObj = function(e){
+				var item = e.model.__data__.item;
+				var currFolder = this.currentFolder;
+				if(this.currentFolder == '/'){
+					var absolutePath = this.currentFolder + this.rcFolderEvent;
+				}else{
+					var absolutePath = this.currentFolder + '/' + this.rcFolderEvent;
+				}
+				var fileObj = {};
+				fileObj.name = this.rcFolderEvent;
+				fileObj.absolutePath = absolutePath;
+				fileObj.parentFolder = this.currentFolder;
+				return fileObj;
+			};
 
 			var renameFileClick = function(e){
 				console.log("renameFileClick was called");
@@ -348,6 +413,16 @@
 						type:String,
 						notify: true,
 						value: ""
+					},
+					rcFolderEvent:{
+						type: Object,
+						value:{},
+						notify:true
+					},
+					rcFileEvent:{
+						type: Object,
+						value: {},
+						notify: true
 					}
 				},
 				created: created,
@@ -363,6 +438,7 @@
 				_updateFileList: _updateFileList,
 				constructFileObj: constructFileObj,
 				reverseSort: reverseSort,
+				constructFolderObj, constructFolderObj,
 				filter: filter,
 				open: open,
 				saveRename: saveRename,
@@ -370,7 +446,10 @@
 				_hasClass: _hasClass,
 				_getParentRow: _getParentRow,
 				_hasElements: _hasElements,
-				_comparator: _comparator 
+				_comparator: _comparator,
+				uploadFileClick: uploadFileClick,
+				newFileClick: newFileClick,
+				newFolderClick: newFolderClick
 			});
 		})();
 	</script>

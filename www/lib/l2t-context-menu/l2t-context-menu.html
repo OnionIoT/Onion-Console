@@ -115,6 +115,11 @@ Custom property | Description | Default
         value: 'default',
         notify: true
         },
+        contextInfo:{
+          type:Object,
+          value:{},
+          notify:true
+        },
         /** 
         * Boolean for storing value
         * for menu state
@@ -188,6 +193,9 @@ Custom property | Description | Default
         var taskItemInContext,
         $this = this;
         document.addEventListener("contextmenu",function(e){
+          console.log("This is the information about the right-click event");
+          console.log(e);
+          $this.contextInfo = e.srcElement.innerHTML;
           taskItemInContext=$this._clickInsideElement(e, $this.parentclass),
           taskItemInContext?(e.preventDefault(),$this._toggleMenuOn(),$this._positionMenu(e)):(taskItemInContext=null,$this._toggleMenuOff())
         })
