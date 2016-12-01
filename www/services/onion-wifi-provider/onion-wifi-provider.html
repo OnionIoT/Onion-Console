@@ -420,11 +420,11 @@
 							this.deviceProvider = deviceProvider;
 							this.deviceProvider.callService(devId,'uci', 'set', {
 								config: 'wireless',
-								section: '@wifi-iface[0]',
+								section: '@wifi-config[-1]',
 								values: {
-									ApCliSsid: params.ssid,
-									ApAuthMode: params.encryption,
-									ApCliPassWord: params.key
+									ssid: params.ssid,
+									encryption: params.encryption,
+									key: params.key
 								}
 							}, function (err,result) {
 								console.log('uci set wireless result:', result);
@@ -483,7 +483,7 @@
 					optionValue = '0';	// enable
 				}
 				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
-					if (optionValue) {
+					if (optionValue === '1') {
 						var promise = new Promise(function (resolve, reject) {
 								onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
 									this.deviceProvider = deviceProvider;
@@ -522,7 +522,7 @@
 											ApCliEnable: '1',
 										}
 									}, function (err,result) {
-									this.deviceprovider.callService(devId, 'uci', 'get', {
+									this.deviceProvider.callService(devId, 'uci', 'get', {
 										config: 'wireless',
 										section: sectionName
 									}, function(err, response){
