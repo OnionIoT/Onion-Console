@@ -52,8 +52,11 @@
 				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 					for (var key in data.values) {
 						var section 	= data.values[key];
-						
-						if (section['.type'] === 'wifi-config') {
+						if(type === 'ap'){
+							if (section['.type'] === 'wifi-iface' && section.mode === type) {
+								result.push(section);
+							}
+						} else if (section['.type'] === 'wifi-config') {
 							result.push(section);
 						}
 					}

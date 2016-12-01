@@ -189,7 +189,7 @@
 
 			var init = function () {
 				// grab the required info
-                var getWifiSetupPromise = this.wifiProvider.getWirelessSetup(true);
+                var getWifiSetupPromise = this.wifiProvider.getWirelessSetup(null,true);
                 var getApStaticIpAddrPromise 	= this.wifiProvider.getApStaticIpAddr();
 
                 getWifiSetupPromise.then(function (result) {
