@@ -252,11 +252,11 @@
 				if (verifyResult === 'OK') {
 			        if (this.sessionProvider.isAlive() === true) {
 			        	// if necessary add a uci wireless section for the AP
-			        	var apPreparePromise	= this.wifiProvider.prepareWifiNetwork(devId, this.uciId);
+			        	var apPreparePromise	= this.wifiProvider.prepareWifiNetwork(null, this.uciId);
 
 			        	apPreparePromise.then(function () {
 			        		// populate the AP uci wireless section
-			        		var apSetupPromise = this.wifiProvider.setupAp(devId, this.enableAP, this.apSsid, this.apPassword, this.apAuth, this.apIp, this.uciId);
+			        		var apSetupPromise = this.wifiProvider.setupAp(null, this.enableAP, this.apSsid, this.apPassword, this.apAuth, this.apIp, this.uciId);
 
 				        	apSetupPromise.then(function () {
 				        		this.init();

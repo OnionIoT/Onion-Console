@@ -296,24 +296,44 @@
 					params.ssid 		= ssid;
 
 					// generate the values to set based on the encryption type
-					if (auth === 'wep') {
-						params.encryption 	= auth;
-						params.key 		= '1';
-						params.key1 	= password;
-					}
-					else if (auth === 'psk') {
-						params.encryption 	= 'WPA1PSK';
-						params.key 		= password;
-					}
-					else if (auth === 'psk2') {
-						params.encryption 	= 'WPA2PSK';
-						params.key 		= password;
-					}
-					else {
-						params.encryption 	= 'NONE';
-						params.key 		= '';
-					}
 
+					if(bApNetwork){
+						if (auth === 'wep') {
+							params.encryption 	= auth;
+							params.key 		= '1';
+							params.key1 	= password;
+						}
+						else if (auth === 'psk') {
+							params.encryption 	= auth;
+							params.key 		= password;
+						}
+						else if (auth === 'psk2') {
+							params.encryption 	= auth;
+							params.key 		= password;
+						}
+						else {
+							params.encryption 	= 'none';
+							params.key 		= '';
+						}
+					}else{
+						if (auth === 'wep') {
+							params.encryption 	= auth;
+							params.key 		= '1';
+							params.key1 	= password;
+						}
+						else if (auth === 'psk') {
+							params.encryption 	= 'WPA1PSK';
+							params.key 		= password;
+						}
+						else if (auth === 'psk2') {
+							params.encryption 	= 'WPA2PSK';
+							params.key 		= password;
+						}
+						else {
+							params.encryption 	= 'NONE';
+							params.key 		= '';
+						}
+					}
 				}else{
 					params.device 		= 'radio0'
 	
@@ -420,7 +440,7 @@
 							this.deviceProvider = deviceProvider;
 							this.deviceProvider.callService(devId,'uci', 'set', {
 								config: 'wireless',
-								section: '@wifi-config[-1]',
+								section: sectionName,
 								values: {
 									ssid: params.ssid,
 									encryption: params.encryption,
