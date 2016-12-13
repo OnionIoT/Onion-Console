@@ -75,6 +75,10 @@
 		#taskIcons::-webkit-scrollbar {
 			display: none;
 		}
+
+		.hidden {
+			display: none;
+		}
 		
 		taskbar-tools {
 			height: auto;
@@ -86,20 +90,22 @@
 	<template>
 
 		<div id="taskFrame" class$="{{getTaskFrameClass(currentApp)}}">
+		<iron-icon class$="{{getTaskFrameClass(currentApp)}}" icon="onion:cloud-logo" id="launcher-button" on-tap="onLauncher" tour-id="launcher-tour-home-button"></iron-icon>
+
 			<div id="taskIcons" class="flex layout vertical center">
 				<template  is="dom-repeat" items="{{runningApps}}">
 					<template is="dom-if" if="{{item.icon}}">
 						<div class$="{{_isActive(item,currentApp)}}" on-click="launch" >
-							<template is="dom-if" if$="{{getToolsTheme(currentApp)}}">
+							<!-- <template is="dom-if" if$="{{getToolsTheme(currentApp)}}"> -->
 								<iron-image sizing="contain" src$="{{_computeIconUrl(item)}}"></iron-image>
-							</template>
+							<!-- </template> -->
 						</div>
 					</template>
 				</template>
 			</div>
-			<template is="dom-if" if$="{{getToolsTheme(currentApp)}}">
-				<taskbar-tools dark$="{{getToolsTheme(currentApp)}}"></taskbar-tools>
-			</template>
+			<!-- <template is="dom-if" if$="{{getToolsTheme(currentApp)}}"> -->
+				<taskbar-tools class$="{{getTaskFrameClass(currentApp)}}" dark$="{{getToolsTheme(currentApp)}}"></taskbar-tools>
+			<!-- </template> -->
 		</div>
 	</template>
 
@@ -135,6 +141,8 @@
 				var hiddenClass = 'hidden';
 				if (currentApp === 'onion-login' || currentApp === ''){
 					return hiddenClass;
+				}else if(currentApp === 'onion-launcher'){
+					return baseClass;
 				}else{
 					return baseClass + " solid";
 				}
@@ -142,7 +150,7 @@
 			
 			var getToolsTheme = function(currentApp){
 				var baseClass = 'layout vertical center';
-				if (currentApp === 'onion-login' || currentApp === ''){
+				if (currentApp === 'onion-launcher' || currentApp === ''){
 					return false;
 				}else{
 					return true;

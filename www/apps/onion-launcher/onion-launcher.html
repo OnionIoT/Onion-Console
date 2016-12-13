@@ -119,6 +119,13 @@
 			flex-wrap: wrap-reverse;
 		}
 
+		#appIconsContainer {
+			position: absolute;
+			margin-left: 50%;
+			transform: translate(-50%, 0%);
+			width: 100%;
+		}
+
  	</style>
 
 	<template>
@@ -130,7 +137,7 @@
 		<iron-signals on-iron-signal-installed-apps-changed="refresh"></iron-signals>
 		
 		<about-onion id="aboutOnion"></about-onion>
-		<launcher-tour></launcher-tour>
+		<!-- <launcher-tour></launcher-tour> -->
 
 		<onion-app app-name="Launcher" hide-title hide-toolbar background="transparent" toolbar-background="transparent">
 			<onion-app-body page-id="home">
@@ -191,29 +198,31 @@
 
 			var start = function () {
 				console.log("Inside onion-launcher start function");
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-					var params = {
-						config: 'system',
-						section: '@system[0]',
-						option: 'hostname'
-					};
 
-					ubus.request('uci', 'get', params, (function (result) {
-						if (result[0] === 0) {
-							this.hostname = result[1].value;
-						}
-					}).bind(this));
-				}).bind(this));
+				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+					deviceProvider.callService(devId,'uci', 'get', {
+							config: 'system',
+							section: '@system[0]',
+							option: 'hostname'
+						}, function (err,result) {
+							if (!err) {
+								this.hostname = result[1].value;
+							} else {
+								reject(Error('Unable to get the hostname.'));
+							}
+						}.bind(this));
+					});
+
 				this.refresh();
 			};
 
 			var attached = function () {
-				var setAppIconsWidth = (function () {
-					this.$.appIcons.style.width = Math.floor((window.innerWidth - 48) / 248) * 248 + 'px';
-				}).bind(this);
+				// var setAppIconsWidth = (function () {
+					// this.$.appIcons.style.width = Math.floor((window.innerWidth - 48) / 248) * 248 + 'px';
+				// }).bind(this);
 
-				window.addEventListener('resize', setAppIconsWidth, true);
-				setAppIconsWidth();
+				// window.addEventListener('resize', setAppIconsWidth, true);
+				// setAppIconsWidth();
 			};
 
 			var searchFilter = function (filterString) {
@@ -237,7 +246,7 @@
 
 			var appIconURL = function (id) {
 				console.log("Inside appIconURL, id=",id);
-				return '/apps/' + id.id + '/icon.png';
+				return '../console/apps/' + id.id + '/icon.png';
 			};
 
 			var filterEscapeWatcher = function (e) {
