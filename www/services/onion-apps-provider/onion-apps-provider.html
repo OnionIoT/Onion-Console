@@ -45,6 +45,19 @@ import shared service
             };
 
             var getApps = function(callback) {
+                console.log("Inside reload", this.ubus);
+                
+
+                // onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+                //     deviceProvider.callService(null, 'onion-console', 'app-list', {}, function (err,result) {
+                //         if (result) {
+                //             this.set('apps',result[1].apps);
+                //             callback(null, result[1].apps);
+                //         } else {
+                //             callback("ubus service error", null);
+                //         }
+                //     }.bind(this));
+                // }.bind(this));
 
                 this.ubus.request('onion-console', 'app-list', {}, function (result) {
                     if (result.length === 2 && result[1].exists) {
@@ -55,20 +68,20 @@ import shared service
                         callback("ubus service error", null);
                     }
                 }.bind(this));
-            }
+            };
 
             var reload = function () {
-                console.log("Inside reload",this.ubus);
-                this.ubus.request('onion-console', 'app-list', {}, function (result) {
-                    if (result.length === 2 && result[1].exists) {
-                        this.apps = []; 
-                        console.log("Inside reload if statement");
-                        for (var i = 0; i < result[1].apps.length; i++) {
-                            this.apps.push(result[1].apps[i]);
-                            console.log(this.apps);
-                        }
-                    }
-                }.bind(this));
+                // console.log("Inside reload", this.ubus);
+                // this.ubus.request('onion-console', 'app-list', {}, function (result) {
+                //     if (result.length === 2 && result[1].exists) {
+                //         this.apps = []; 
+                //         console.log("Inside reload if statement");
+                //         for (var i = 0; i < result[1].apps.length; i++) {
+                //             this.apps.push(result[1].apps[i]);
+                //             console.log(this.apps);
+                //         }
+                //     }
+                // }.bind(this));
             };
 			
 			// pass in id of an app, get the whole object back

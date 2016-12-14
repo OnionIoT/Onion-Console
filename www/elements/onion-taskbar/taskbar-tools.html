@@ -86,8 +86,8 @@
 <!-- 					<iron-icon icon="social:share" on-click="onSocialShare"></iron-icon> -->
 					<bootstrap-dropup for="statusDropdown">
 					<li class="_statusDropdown" on-tap="logout">Logout</li>
-					<li class="_statusDropdown" on-tap="shutdown">Shutdown</li>
 					<li class="_statusDropdown" on-tap="restart">Restart</li>
+					<li class="_statusDropdown" on-tap="shutdown">Shutdown</li>
 					</bootstrap-dropup>
 					<div id="statusDropdown">
 						<iron-icon icon="icons:power-settings-new">Logout</iron-icon>
@@ -145,17 +145,6 @@
 			};
 			
 			var restart = function () {
-				if (confirm('Are you sure you want to restart your Omega?')) {
-					onionConsole.getService('onion-device-settings-provider', (function (err, deviceSettingsProvider) {
-								this.deviceSettingsProvider = deviceSettingsProvider;
-								this.deviceSettingsProvider.rebootSystem("",(function () {
-									this.logout();
-								}).bind(this) );
-						}).bind(this));
-				}
-			};
-			
-			var shutdown = function () {
 				if (confirm('Are you sure you want to shutdown your Omega?')) {
 					onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 						ubus.request('rpc-sys', 'reboot', {})
@@ -165,6 +154,19 @@
 							});
 						});
 					}).bind(this));
+				}
+			};
+			
+			var shutdown = function () {
+				if (confirm('Are you sure you want to shutdown your Omega?')) {
+					onionConsole.getService('onion-device-settings-provider', function (err, device) {
+						device.shutdown()
+						.then(function () {
+							onionConsole.getService('onion-session-provider', function (err, session) {
+								session.logout();
+							});
+						});
+					});
 				}
 			};
 			

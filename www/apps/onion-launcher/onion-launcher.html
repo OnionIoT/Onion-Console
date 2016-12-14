@@ -199,21 +199,21 @@
 			var start = function () {
 				console.log("Inside onion-launcher start function");
 
-				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
-					deviceProvider.callService(devId,'uci', 'get', {
-							config: 'system',
-							section: '@system[0]',
-							option: 'hostname'
-						}, function (err,result) {
-							if (!err) {
-								this.hostname = result[1].value;
-							} else {
-								reject(Error('Unable to get the hostname.'));
-							}
-						}.bind(this));
-					});
+				// onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+				// 	deviceProvider.callService(null, 'uci', 'get', {
+				// 			config: 'system',
+				// 			section: '@system[0]',
+				// 			option: 'hostname'
+				// 		}, function (err,result) {
+				// 			if (!err) {
+				// 				this.hostname = result[1].value;
+				// 			} else {
+				// 				reject(Error('Unable to get the hostname.'));
+				// 			}
+				// 		}.bind(this));
+				// 	});
 
-				this.refresh();
+				// this.refresh();
 			};
 
 			var attached = function () {
@@ -223,6 +223,16 @@
 
 				// window.addEventListener('resize', setAppIconsWidth, true);
 				// setAppIconsWidth();
+			};
+
+			var ready = function () {
+				onionConsole.getService('onion-apps-provider')
+				.then( (function (appsProvider) {
+					appsProvider.getApps((function(err, apps){
+						this.set('apps', apps);
+						console.log("Inside callback for getApps provider, apps=",apps);
+					}).bind(this));
+				}).bind(this));
 			};
 
 			var searchFilter = function (filterString) {
@@ -318,13 +328,14 @@
 						this.set('apps', apps);
 						console.log("Inside callback for getApps provider, apps=",apps);
 					}).bind(this));
-				} ).bind(this) );
+				}).bind(this));
 			};
 
 			Polymer({
 				is: 'onion-launcher',
 				start: start,
 				attached: attached,
+				ready: ready,
 				behaviors: [Onion.AppBehavior],
 				searchFilter: searchFilter,
 				appIconURL: appIconURL,
