@@ -134,7 +134,6 @@
 			var services = {};
 
 			var loggedIn = function (callback){
-				console.log("loggedIn gets called");
 				this.getService('onion-apps-provider',function(err,appsProvider){
 					if(!err){
 						this.appsProvider = appsProvider;
@@ -145,7 +144,7 @@
 						callback();
 					}
 				}.bind(this));
-				this.refresh();
+				// this.refresh();
 			};
 
 			var attached = function () {
@@ -227,15 +226,7 @@
 								}
 							}.bind(this));
 
-							if(this.appsProvider){
-								this.appsProvider.getApp(appId, function(appObj){
-									console.log(appObj);
-									if (appId !== 'onion-login' && appId !== 'onion-launcher'){
-										this.push('runningApps', appObj);
-									}
-								}.bind(this));
-							}
-							
+
 						} else {
 							this.importHref(['apps/' + appId + '/' + appId + '.html?r=a2'], function () {
 								console.log("Inside the callback for the this.importHref");
@@ -257,18 +248,39 @@
 							}.bind(this));
 
 
-							if(this.appsProvider){
-								this.appsProvider.getApp(appId, function(appObj){
-									console.log(appObj);
-									if (appId !== 'onion-login' && appId !== 'onion-launcher'){
-										this.push('runningApps', appObj);
-									}
-								}.bind(this));
-							}
+							// if(this.appsProvider){
+							// 	this.appsProvider.getApp(appId, function(appObj){
+							// 		console.log(appObj);
+							// 		if (appId !== 'onion-login' && appId !== 'onion-launcher'){
+							// 			this.push('runningApps', appObj);
+							// 		}
+							// 	}.bind(this));
+							// }
 
 						}
 			
-					
+						if(this.appsProvider){
+							console.log('help me pls APPSPROVIDER NO WORK')
+							this.appsProvider.getApp(appId, function(appObj){
+								console.log(appObj);
+								if (appId !== 'onion-login' && appId !== 'onion-launcher'){
+									if (this.runningApps.length === 0) {
+										this.push('runningApps', appObj);
+									}else{
+										for (var i = this.runningApps.length - 1; i >= 0; i--) { // Checking if appId is in runningApps
+											if(appId === this.runningApps[i].id){
+												break;
+											} 
+											if(i === 0) {
+												this.push('runningApps', appObj);
+												break;
+											}
+										};
+									}
+								};
+							}.bind(this));
+						};
+						
 
 
 						// add to running app list for taskbar

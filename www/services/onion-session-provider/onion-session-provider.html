@@ -49,6 +49,9 @@
 
 		                    sessionStorage.setItem('_omega_session_token', token);
 						    this.ubus.token = token;
+						    onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+						    	ubus.token = this.ubus.token
+						    }.bind(this));
 						    this.ubus.isAlive = true;
 						    this.startHeartbeat(10000);
 						    callback({success: true});

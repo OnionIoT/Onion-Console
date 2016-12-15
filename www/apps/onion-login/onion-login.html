@@ -11,84 +11,84 @@
 			width: 360px;
 		}
 		.shakeClass{
-		    -webkit-animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
-		    -moz-animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
-		    -o-animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
-		    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
-		    transform: translate3d(0, 0, 0);
-		    backface-visibility: hidden;
-		    perspective: 1000px;
+			-webkit-animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+			-moz-animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+			-o-animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+			animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+			transform: translate3d(0, 0, 0);
+			backface-visibility: hidden;
+			perspective: 1000px;
 		}
 
 		@keyframes shake {
 		  10%, 90% {
-		    transform: translate3d(-1px, 0, 0);
+			transform: translate3d(-1px, 0, 0);
 		  }
 		  
 		  20%, 80% {
-		    transform: translate3d(2px, 0, 0);
+			transform: translate3d(2px, 0, 0);
 		  }
 
 		  30%, 50%, 70% {
-		    transform: translate3d(-4px, 0, 0);
+			transform: translate3d(-4px, 0, 0);
 		  }
 
 		  40%, 60% {
-		    transform: translate3d(4px, 0, 0);
+			transform: translate3d(4px, 0, 0);
 		  }
 		}
 
 		@-webkit-keyframes shake {
 		  10%, 90% {
-		    transform: translate3d(-1px, 0, 0);
+			transform: translate3d(-1px, 0, 0);
 		  }
 		  
 		  20%, 80% {
-		    transform: translate3d(2px, 0, 0);
+			transform: translate3d(2px, 0, 0);
 		  }
 
 		  30%, 50%, 70% {
-		    transform: translate3d(-4px, 0, 0);
+			transform: translate3d(-4px, 0, 0);
 		  }
 
 		  40%, 60% {
-		    transform: translate3d(4px, 0, 0);
+			transform: translate3d(4px, 0, 0);
 		  }
 		}
 
 		@-moz-keyframes shake {
 		  10%, 90% {
-		    transform: translate3d(-1px, 0, 0);
+			transform: translate3d(-1px, 0, 0);
 		  }
 		  
 		  20%, 80% {
-		    transform: translate3d(2px, 0, 0);
+			transform: translate3d(2px, 0, 0);
 		  }
 
 		  30%, 50%, 70% {
-		    transform: translate3d(-4px, 0, 0);
+			transform: translate3d(-4px, 0, 0);
 		  }
 
 		  40%, 60% {
-		    transform: translate3d(4px, 0, 0);
+			transform: translate3d(4px, 0, 0);
 		  }
 		}
 
 		@-o-keyframes shake {
 		  10%, 90% {
-		    transform: translate3d(-1px, 0, 0);
+			transform: translate3d(-1px, 0, 0);
 		  }
 		  
 		  20%, 80% {
-		    transform: translate3d(2px, 0, 0);
+			transform: translate3d(2px, 0, 0);
 		  }
 
 		  30%, 50%, 70% {
-		    transform: translate3d(-4px, 0, 0);
+			transform: translate3d(-4px, 0, 0);
 		  }
 
 		  40%, 60% {
-		    transform: translate3d(4px, 0, 0);
+			transform: translate3d(4px, 0, 0);
 		  }
 		}
 	</style>
@@ -131,35 +131,35 @@
 
 			var ready = function () {
 				onionConsole.getService('onion-session-provider', function (err, session) {
-	            	this.session = session;
-                    var defaultApp = this.defaultApp;
-                    
-	            	this.session.checkToken(function (hasToken) {
-	            		if (hasToken) {
-	            			// Added true, don't know what that will do
-	            			console.log("Inside the ready for onion-login");
-	            			this.$.username.value = '';
+					this.session = session;
+					var defaultApp = this.defaultApp;
+					
+					this.session.checkToken(function (hasToken) {
+						if (hasToken) {
+							// Added true, don't know what that will do
+							console.log("Inside the ready for onion-login");
+							this.$.username.value = '';
 							this.$.password.value = '';
 							onionConsole.loggedIn(function(){
-								onionConsole.launchApp(defaultApp);
+								onionConsole.launchApp(defaultApp, true);
 							});
-		            		// console.log(this.$.loginDialog);
-		            		// var backdrop = document.getElementsByTagName("iron-overlay-backdrop");
-		            		// setTimeout(function(){
-		            		// 	console.log("The backdrop is :", backdrop);
-		            		// 	console.log("The backdrop[0] is:", backdrop[0]);
-		            		// 	console.log("The parentNode of backdrop[0]:", backdrop[0].parentNode);
-		            		// 	// backdrop[0].parentNode.removeChild(backdrop[0]);
-		            		// 	Polymer.dom(backdrop[0].parentNode).removeChild(backdrop[0]);
-		            		// },1500);
-		            		// console.log("The backdrop is :", backdrop);
-		            		// console.log("The backdrop[0] is:", backdrop[0]);
-		            		// backdrop[0].parentNode.removeChild(backdrop[0]);		            			
-		            		// this.$.loginDialog.close();
-		            		this.quit();
-		            	}
-	            	}.bind(this));
-	            }.bind(this));
+							// console.log(this.$.loginDialog);
+							// var backdrop = document.getElementsByTagName("iron-overlay-backdrop");
+							// setTimeout(function(){
+							// 	console.log("The backdrop is :", backdrop);
+							// 	console.log("The backdrop[0] is:", backdrop[0]);
+							// 	console.log("The parentNode of backdrop[0]:", backdrop[0].parentNode);
+							// 	// backdrop[0].parentNode.removeChild(backdrop[0]);
+							// 	Polymer.dom(backdrop[0].parentNode).removeChild(backdrop[0]);
+							// },1500);
+							// console.log("The backdrop is :", backdrop);
+							// console.log("The backdrop[0] is:", backdrop[0]);
+							// backdrop[0].parentNode.removeChild(backdrop[0]);		            			
+							// this.$.loginDialog.close();
+							this.quit();
+						}
+					}.bind(this));
+				}.bind(this));
 			};
 
 			var checkUsernameKey = function (e) {
@@ -191,7 +191,7 @@
 
 			var login = function (e) {
 				// e.preventDefault();
-                var defaultApp = this.defaultApp;
+				var defaultApp = this.defaultApp;
 				var username = this.$.username.value;
 				var password = this.$.password.value;
 
@@ -222,24 +222,24 @@
 			Polymer({
 				is: 'onion-login',
 				behaviors: [Onion.AppBehavior],
-                properties: {
-                    defaultApp: {
-                        type: String,
-                        value: 'onion-launcher',
-                        notify: false,
-                        readOnly: true
-                    }
-                },
 				created: created,
 				ready: ready,
-	            login: login,
-	            attached: start,
-	            start: start,
-	            fg: start,
-	            quit: quit,
-	            checkUsernameKey: checkUsernameKey,
-				checkPasswordKey: checkPasswordKey
+				login: login,
+				attached: start,
+				start: start,
+				fg: start,
+				quit: quit,
+				checkUsernameKey: checkUsernameKey,
+				checkPasswordKey: checkPasswordKey,
+				properties: {
+					defaultApp: {
+						type: String,
+						value: 'onion-launcher',
+						notify: false,
+						readOnly: true
+					}
+				}
 			});
-        })();
+		})();
 	</script>
 </dom-module>
