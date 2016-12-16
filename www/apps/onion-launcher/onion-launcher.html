@@ -129,11 +129,11 @@
  	</style>
 
 	<template>
-		<bootstrap-dropdown for="statusDropdown">
+<!-- 		<bootstrap-dropdown for="statusDropdown">
 			<li class="devDropDown" on-tap="_onLogout">Log Out</li>
 			<li class="devDropDown" on-tap="_onShutdown">Shutdown</li>
 			<li class="devDropDown" on-tap="_onRestart">Restart</li>
-		</bootstrap-dropdown>
+		</bootstrap-dropdown> -->
 		<iron-signals on-iron-signal-installed-apps-changed="refresh"></iron-signals>
 		
 		<about-onion id="aboutOnion"></about-onion>
@@ -213,7 +213,7 @@
 				// 		}.bind(this));
 				// 	});
 
-				// this.refresh();
+				this.refresh();
 			};
 
 			var attached = function () {
@@ -226,13 +226,13 @@
 			};
 
 			var ready = function () {
-				onionConsole.getService('onion-apps-provider')
-				.then( (function (appsProvider) {
-					appsProvider.getApps((function(err, apps){
-						this.set('apps', apps);
-						console.log("Inside callback for getApps provider, apps=",apps);
-					}).bind(this));
-				}).bind(this));
+				// onionConsole.getService('onion-apps-provider')
+				// .then( (function (appsProvider) {
+				// 	appsProvider.getApps((function(err, apps){
+				// 		this.set('apps', apps);
+				// 		console.log("Inside callback for getApps provider, apps=",apps);
+				// 	}).bind(this));
+				// }).bind(this));
 			};
 
 			var searchFilter = function (filterString) {

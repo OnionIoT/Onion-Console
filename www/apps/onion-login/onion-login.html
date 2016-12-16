@@ -1,7 +1,7 @@
 <link rel="import" href="../../lib/polymer/polymer.html">
 <link rel="import" href="../../lib/iron-signals/iron-signals.html">
 <link rel="import" href="../../elements/onion-app/onion-app.html">
-<link rel="import" href="../../elements/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
 <link rel="import" href="../../elements/bootstrap-button/bootstrap-button.html">
 <link rel="import" href="../../elements/bootstrap-alert/bootstrap-alert-container.html">
 
@@ -141,7 +141,7 @@
 							this.$.username.value = '';
 							this.$.password.value = '';
 							onionConsole.loggedIn(function(){
-								onionConsole.launchApp(defaultApp, true);
+								onionConsole.launchApp(defaultApp);
 							});
 							// console.log(this.$.loginDialog);
 							// var backdrop = document.getElementsByTagName("iron-overlay-backdrop");
