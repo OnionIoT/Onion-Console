@@ -9,30 +9,42 @@
 			height: 100%;
 			margin: 0 auto;
 		}
+		.container {
+			width: 600px;
+			margin: 0 auto;
+		}
+
+		.card {
+			margin-top: 15px;
+			background-color: #fff;
+		}
 		
 	</style>
 
 	<template>
-		<div id="connected" hidden="{{!hasDeviceId}}">
-			<div><p>Your device is registered with the Onion Cloud. Check out <a href="http://cloud.onion.io/" target="_blank">cloud.onion.io</a> to get started!</p></div>
-			<div>
-				<table class="table table-bordered">
-					<thead>
-					  <td>
-						<th>Device Id</th>
-						<th id="devIdText">{{deviceId}}</th>
-					  </td>
-					</thead>
-			  </table>
+	<div class="container">
+		<div class="card card-block">
+			<div id="connected" hidden="{{!hasDeviceId}}">
+				<div><p>Your device is registered with the Onion Cloud. Check out <a href="http://cloud.onion.io/" target="_blank">cloud.onion.io</a> to get started!</p></div>
+				<div>
+					<table class="table table-bordered">
+						<thead>
+						  <td>
+							<th>Device Id</th>
+							<th id="devIdText">{{deviceId}}</th>
+						  </td>
+						</thead>
+				  </table>
+				</div>
+				<button type="button" class="btn btn-info btn-block" on-tap="openCloudModal">Register device again as a new device (not recommended)</button>
 			</div>
-			<button type="button" class="btn btn-info btn-block" on-tap="openCloudModal">Register device again as a new device (not recommended)</button>
+			<div id="notConnected" hidden="{{hasDeviceId}}">
+				<div><p>Click the button below to register your Omega on the Onion Cloud!</p>
+				<p>Using the Onion Cloud, you can remotely manage and control your device, use the Cloud Compile service, and use apps to interact with your device.</p></div>
+				<button type="button" class="btn btn-info btn-block" on-tap="openCloudModal">Register Device on Cloud</button>
+			</div>
 		</div>
-		<div id="notConnected" hidden="{{hasDeviceId}}">
-			<div><p>Click the button below to register your Omega on the Onion Cloud!</p>
-			<p>Using the Onion Cloud, you can remotely manage and control your device, use the Cloud Compile service, and use apps to interact with your device.</p></div>
-			<button type="button" class="btn btn-info btn-block" on-tap="openCloudModal">Register Device on Cloud</button>
-		</div>
-		
+	</div>
 
 		
 
