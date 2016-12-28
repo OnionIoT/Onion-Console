@@ -185,7 +185,7 @@
 				loadingScreen.hidden = false;
 				this.set('currentApp', appId);
 				console.log("Inside launchApp appID:" + appId);
-				if (appId !== 'onion-editor' || appId !== 'onion-settings' || appId !== 'onion-webcam' || appId !== 'onion-terminal' || appId !== 'onion-login' || appId !== 'onion-node-red') {
+				if (appId !== 'onion-editor' || appId !== 'onion-settings' || appId !== 'onion-webcam' || appId !== 'onion-terminal' || appId !== 'onion-login') {
 					if (this.$.appContainer.querySelector(appId)) {
 						loadingScreen.hidden = true;
 						console.log("Inside first if statement for launchApp");
