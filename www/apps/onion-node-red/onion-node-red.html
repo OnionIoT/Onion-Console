@@ -36,7 +36,7 @@
 
 			<onion-app-body page-id="home" id="mainAppBody">
 				<!-- App Tour -->
-				<iframe style="height:inherit;width:inherit;" src="{{noderedUrl}}"></iframe>
+				<iframe style="height:100%;width:100%;" src="{{noderedUrl}}"></iframe>
 			</onion-app-body>
 		</onion-app>
 
@@ -57,10 +57,10 @@
 						// 	console.log("response:",response);
 						// });
 					}
-				});
+				}.bind(this));
 				setTimeout(function(){
 					this.noderedUrl = "http://192.168.3.1:1880/";
-				}.bind(this),120000);
+				}.bind(this),3000);
 			};
 
 
