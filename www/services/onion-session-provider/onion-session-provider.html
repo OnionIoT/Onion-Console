@@ -14,6 +14,7 @@
 					this.checkToken(function (hasToken) {
 						if (hasToken) {
 							this.ubus.token = sessionStorage.getItem('_omega_session_token');
+						    ubus.token = sessionStorage.getItem('_omega_session_token');
 							this.ubus.isAlive = true;
 						} else {
 							this.ubus.isAlive = false;
@@ -49,6 +50,9 @@
 
 		                    sessionStorage.setItem('_omega_session_token', token);
 						    this.ubus.token = token;
+						    onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+						    	ubus.token = this.ubus.token
+						    }.bind(this));
 						    this.ubus.isAlive = true;
 						    this.startHeartbeat(10000);
 						    callback({success: true});

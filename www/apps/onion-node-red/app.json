@@ -1,5 +1,5 @@
 {
 	"id": "onion-node-red",
 	"name": "Node Red",
-	"icon": true
+	"icon": false
 }

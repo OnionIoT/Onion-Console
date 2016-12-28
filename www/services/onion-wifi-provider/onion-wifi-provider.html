@@ -52,8 +52,11 @@
 				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
 					for (var key in data.values) {
 						var section 	= data.values[key];
-						
-						if (section['.type'] === 'wifi-config') {
+						if(type === 'ap'){
+							if (section['.type'] === 'wifi-iface' && section.mode === type) {
+								result.push(section);
+							}
+						} else if (section['.type'] === 'wifi-config') {
 							result.push(section);
 						}
 					}
@@ -293,24 +296,44 @@
 					params.ssid 		= ssid;
 
 					// generate the values to set based on the encryption type
-					if (auth === 'wep') {
-						params.encryption 	= auth;
-						params.key 		= '1';
-						params.key1 	= password;
-					}
-					else if (auth === 'psk') {
-						params.encryption 	= 'WPA1PSK';
-						params.key 		= password;
-					}
-					else if (auth === 'psk2') {
-						params.encryption 	= 'WPA2PSK';
-						params.key 		= password;
-					}
-					else {
-						params.encryption 	= 'NONE';
-						params.key 		= '';
-					}
 
+					if(bApNetwork){
+						if (auth === 'wep') {
+							params.encryption 	= auth;
+							params.key 		= '1';
+							params.key1 	= password;
+						}
+						else if (auth === 'psk') {
+							params.encryption 	= auth;
+							params.key 		= password;
+						}
+						else if (auth === 'psk2') {
+							params.encryption 	= auth;
+							params.key 		= password;
+						}
+						else {
+							params.encryption 	= 'none';
+							params.key 		= '';
+						}
+					}else{
+						if (auth === 'wep') {
+							params.encryption 	= auth;
+							params.key 		= '1';
+							params.key1 	= password;
+						}
+						else if (auth === 'psk') {
+							params.encryption 	= 'WPA1PSK';
+							params.key 		= password;
+						}
+						else if (auth === 'psk2') {
+							params.encryption 	= 'WPA2PSK';
+							params.key 		= password;
+						}
+						else {
+							params.encryption 	= 'NONE';
+							params.key 		= '';
+						}
+					}
 				}else{
 					params.device 		= 'radio0'
 	
@@ -417,11 +440,11 @@
 							this.deviceProvider = deviceProvider;
 							this.deviceProvider.callService(devId,'uci', 'set', {
 								config: 'wireless',
-								section: '@wifi-iface[0]',
+								section: sectionName,
 								values: {
-									ApCliSsid: params.ssid,
-									ApAuthMode: params.encryption,
-									ApCliPassWord: params.key
+									ssid: params.ssid,
+									encryption: params.encryption,
+									key: params.key
 								}
 							}, function (err,result) {
 								console.log('uci set wireless result:', result);
@@ -480,7 +503,7 @@
 					optionValue = '0';	// enable
 				}
 				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
-					if (optionValue) {
+					if (optionValue === '1') {
 						var promise = new Promise(function (resolve, reject) {
 								onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
 									this.deviceProvider = deviceProvider;
@@ -519,7 +542,7 @@
 											ApCliEnable: '1',
 										}
 									}, function (err,result) {
-									this.deviceprovider.callService(devId, 'uci', 'get', {
+									this.deviceProvider.callService(devId, 'uci', 'get', {
 										config: 'wireless',
 										section: sectionName
 									}, function(err, response){

@@ -275,6 +275,17 @@
 				this.$.upgradeLoading.hidden = false;
 				this.$['download-progress'].hidden = false;
 				this.upgradeButtonDisabled = true;
+				var fileSize = null;
+
+				onionConsole.getService('onion-ubus-provider', function (err, ubus){
+					ubus.request('onion', 'oupgrade', {
+						params: {
+							check: ''
+						}
+					}, function (data) {
+						fileSize = data[1].image.size;
+					})
+				})
 
 				// get the ubus service
 				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
@@ -283,9 +294,9 @@
 							path: this.binName
 						}, (function (data) {
 							if (data && data.length === 2) {
-								this.downloadProgress = Math.floor(data[1].size / 16252928 * 100);
+								this.downloadProgress = Math.floor(data[1].size / fileSize * 100);
 
-								if (data[1].size === 16252928) {
+								if (data[1].size >= fileSize) {
 									clearInterval(checkDownloadInterval);
 									this.upgradeButtonDisabled = true;
 									var alertElement = document.createElement('bootstrap-alert');

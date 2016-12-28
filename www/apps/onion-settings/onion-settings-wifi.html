@@ -125,6 +125,11 @@
 		#wifi-message {
 			color: red;
 		}
+
+		#newWifiDlg {
+			min-width: 525px;
+		}
+		
 	</style>
 
 	<template>
@@ -351,6 +356,8 @@
                 	}
 
                 	// set the checkbox
+                	console.log('the enabled network is: ', enabledNetwork)
+                	console.log('the enable value is: ', bEnabled)
                 	this.set('enableWifi', bEnabled);
                 	this.bInitComplete	= true;
                 }.bind(this));
@@ -531,7 +538,28 @@
 						}
 					}
 					else {
-						// Lazar: turn on wifi
+						this.deviceProvider.callService(null,'uci', 'set', {
+								config: 'wireless',
+								section: '@wifi-iface[0]',
+								values: {
+									ApCliEnable: '1',
+								}
+							}, function (err,result) {
+								console.log('uci set wireless result:', result);
+								if (!err) {
+									this.deviceProvider.callService(null,'uci', 'commit', {
+											config: 'wireless'
+									}, function (err, result) {
+										if (!err) {
+											console.log('Enabled WiFi');
+										} else {
+											console.log('WiFi could not be enabled! Error message: ', err);
+										}
+									});
+								} else {
+									console.log('Unable to edit wireless network settings.');
+								}
+						}.bind(this));
 					}
 				}
 			};
@@ -542,23 +570,24 @@
 			var _findEnabledNetwork = function () {
 				var enabledNetwork 	= null;
 				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
-				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
-					this.deviceProvider = deviceProvider;
-					deviceProvider.callService(null, 'uci', 'get', {
-						config: 'wireless',
-						section: '@wifi-iface[0]'
-					}, function(err, response){
-						this.currentNetworkSsid = response.values.ApCliSsid;
-						for (var key in this.savedNetworks) {
-							var network = this.savedNetworks[key];
+					onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+						this.deviceProvider = deviceProvider;
+						deviceProvider.callService(null, 'uci', 'get', {
+							config: 'wireless',
+							section: '@wifi-iface[0]'
+						}, function(err, response){
+							this.currentNetworkSsid = response.values.ApCliSsid;
+							for (var key in this.savedNetworks) {
+								var network = this.savedNetworks[key];
 
-							if (network.ssid === this.currentNetworkSsid) {
-								enabledNetwork = this.savedNetworks[key];
-								break;
+								if (network.ssid === this.currentNetworkSsid) {
+									enabledNetwork = this.savedNetworks[key];
+									this.enableWifi = true;
+									return enabledNetwork;
+								}
 							}
-						}
-					}.bind(this));
-				}.bind(this))
+						}.bind(this));
+					}.bind(this))
 				} else {
 					for (var key in this.savedNetworks) {
 						var network = this.savedNetworks[key];
