@@ -36,7 +36,7 @@
 
 			<onion-app-body page-id="home" id="mainAppBody">
 				<!-- App Tour -->
-				<iframe style="height:100%;width:100%;" src="{{noderedUrl}}"></iframe>
+				<iframe id="iframe" style="height:100%;width:100%;" src="{{noderedUrl}}"></iframe>
 			</onion-app-body>
 		</onion-app>
 
@@ -52,22 +52,43 @@
 					if(fileProvider){
 						this.fileProvider = fileProvider;
 						//Send command to start onion-node-red
-						// this.fileProvider.execCommand(null,"node",["usr/bin/onion-node-red/node_modules/node-red/red.js"],function(err,response){
-						// 	console.log("err",err);
-						// 	console.log("response:",response);
-						// });
+						this.fileProvider.execBackgroundCommand(null,"node-red",[],function(err,response){
+							console.log("err",err);
+							console.log("response:",response);
+						});
 					}
 				}.bind(this));
-				setTimeout(function(){
-					this.noderedUrl = "http://192.168.3.1:1880/";
-				}.bind(this),3000);
+				this.reloadIframe = setInterval(function(){
+					console.log("Inside set Interval");
+					this.checkPort();
+					this.bClear = true;
+				}.bind(this),5000);
 			};
 
+			var reloadIframe = null;
 
+			var checkPort = function(){
+				var command = "netstat"
+				var param = ['-l','|','grep','1880']
+				this.fileProvider.execCommand(null,command,param,function(err,response){
+					if(err){
+						console.log(err);
+					}else{
+						console.log(response);
+						var resStr = new String(response.stdout);
+						if(resStr.indexOf('1880') != -1){
+							clearInterval(this.reloadIframe);
+							this.$.iframe.src = "http://192.168.3.1:1880/";
+						}
+					}
+				}.bind(this));
+			};
 
+			var bClear = false;
 			Polymer({
 				is: 'onion-node-red',
 				ready: ready,
+				checkPort: checkPort,
 				behaviors: [Onion.AppBehavior],
 				properties: {
 					noderedUrl:{
