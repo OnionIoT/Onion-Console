@@ -260,7 +260,8 @@
 															if(response.list[i].name == 'node-red'){
 																clearInterval(checkNodeRedInstall);
 																//Install app 
-																this.fileProvider.execBackgroundCommand(null,'opkg',['install','/root/onion-console-node-red-0.3-1-mipsel-24kc.ipk'],function(err,result){
+																console.log("Bout to opkg install node-red");
+																this.fileProvider.execBackgroundCommand(null,'opkg',['install','onion-console-node-red'],function(err,result){
 																	if(err){
 																		console.log("could not install App");
 																	}else{
@@ -281,23 +282,6 @@
 							}.bind(this),1500);
 						}
 					}.bind(this));
-
-						//TimeBreak
-
-					// Check if connected to internet
-						// if no, change infoText!
-							//leave function
-
-						// if yes,
-							// Check if any USB is present
-
-								// if no change Info Text!
-									//leave function
-
-								// if yes
-									//start-background installation process
-									//start opkg install process
-
 
 					//
 				}else{
