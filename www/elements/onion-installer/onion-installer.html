@@ -159,6 +159,9 @@
 				onionConsole.getService('onion-file-provider', function (err,fileProvider){
 					if(!err){
 						this.fileProvider = fileProvider;
+						this.fileProvider.execBackgroundCommand(null,'opkg',['update'],function(err,result)){
+							console.log("Update Opkg For Installations");
+						};
 					}
 				}.bind(this));
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
@@ -214,6 +217,7 @@
 			};
 			
 			var installApp = function () {
+
 				this.$$('#iconImage').className = 'style-scope onion-installer movingIcon shiftDown'
 				this.$$('#installButton').className = this.$$('#installButton').className + ' hiddenClass'
 				this.$$('#card').className = this.$$('#card').className + ' installInProgressHeight'
