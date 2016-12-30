@@ -196,6 +196,22 @@
 					console.log(y);
 				}.bind(this));
 			};
+
+			var checkOnline = function(callback){
+				this.fileProvider.execCommand(null,'wget',['--spider','http://repo.onion.io/omega2/images'],function(err,result){
+					if(err){
+						console.log(err);
+						callback(false);
+					}else{
+						console.log(result);
+						if(result.code==0){
+							callback(true);
+						}else{
+							callback(false);
+						}
+					}
+				});
+			};
 			
 			var installApp = function () {
 				this.$$('#iconImage').className = 'style-scope onion-installer movingIcon shiftDown'
@@ -207,33 +223,96 @@
 					this.$$('#loadingIcon').className = 'style-scope onion-installer fadeLoadingIcon'
 					this.infoText = "Please wait while the " + this.installName + " App is installed."
 				}.bind(this), 1000)
-				var params = {};
-				var key = this.installName.toLowerCase();
-				params[key] = "1"
-				this.deviceProvider.callService('', 'uci', 'set', {
-					config: 'onion',
-					section: 'console',
-					values: params
-				}, function (err,result) {
-					if (!err) {
-						this.deviceProvider.callService('', 'uci', 'commit', {
-							config: 'onion'
-						}, function (err, result) {
-							if (!err) {
-								// resolve('App install status changed successfully.');
-								// checkForApp(this.installId);
-								this.fileProvider.execBackgroundCommand(null,'console-install-tool',[],function(err,result){
-									console.log("err",err);
-									console.log('resut',result);
-									console.log("InstallId",this.installId);
-									this.checkForApp(this.installId);
+				if(this.installName.toLowerCase() == "node-red"){
+					this.fileProvider.execBackgroundCommand(null,'mountd',[],function(err,result){
+						if(err){
+							console.log(err);
+						}else{
+							console.log(result);
+						}
+					});
+
+					this.checkOnline(function(onlineStatus){
+						if(onlineStatus != true){
+							this.infoText = "Unable to Perform Installation. Please make sure your Omega is connected to the Internet";
+						}else{
+							setTimeout(function(){
+								this.fileProvider.getFolderContent(null,'/tmp/mounts/',function(response){
+									console.log(response);
+									if(response.status == 'failure'){
+										console.log("Unable to Find USBs");
+										this.infoText = "Unable to find any Usb Storage! Please connect a USB and try again";
+										return;
+									}else{
+										console.log(response);
+										if(response.list.length < 1){
+											this.infoText = "Unable to find any Usb Storage! Please connect a USB and try again";
+										}else{
+											//Usb storage found time to launch node-red-install tool.
+											this.fileProvider.execBackgroundCommand(null,'node-red-install-tool',[],function(err,result){
+												console.log("launched node-red-install-tool");
+											});
+
+											var checkNodeRedInstall = setInterval(function(){
+												this.fileProvider.getFolderContent(null,'/usr/bin/',function(response){
+													if(response.status = 'success'){
+														for (var i = 0; i < response.list.length; i++){
+															if(response.list[i].name == 'node-red'){
+																clearInterval(checkNodeRedInstall);
+																//Install app 
+																console.log("Bout to opkg install node-red");
+																this.fileProvider.execBackgroundCommand(null,'opkg',['install','onion-console-node-red'],function(err,result){
+																	if(err){
+																		console.log("could not install App");
+																	}else{
+																		this.checkForApp(this.installId);
+																	}
+																}.bind(this));
+															}else{
+																continue;
+															}
+														}
+													}
+												}.bind(this));
+											}.bind(this),2000);
+
+										}										
+									}
 								}.bind(this));
-							}
-						}.bind(this));
-					} else {
-						reject(Error('Unable to set the install status.'));
-					}
-				}.bind(this));
+							}.bind(this),1500);
+						}
+					}.bind(this));
+
+					//
+				}else{
+					var params = {};
+					var key = this.installName.toLowerCase();
+					params[key] = "1"
+					this.deviceProvider.callService('', 'uci', 'set', {
+						config: 'onion',
+						section: 'console',
+						values: params
+					}, function (err,result) {
+						if (!err) {
+							this.deviceProvider.callService('', 'uci', 'commit', {
+								config: 'onion'
+							}, function (err, result) {
+								if (!err) {
+									// resolve('App install status changed successfully.');
+									// checkForApp(this.installId);
+									this.fileProvider.execBackgroundCommand(null,'console-install-tool',[],function(err,result){
+										console.log("err",err);
+										console.log('resut',result);
+										console.log("InstallId",this.installId);
+										this.checkForApp(this.installId);
+									}.bind(this));
+								}
+							}.bind(this));
+						} else {
+							reject(Error('Unable to set the install status.'));
+						}
+					}.bind(this));
+				}
 			};
 			
 			var launchAppInterval = null;
@@ -300,6 +379,7 @@
 				checkForApp: checkForApp,
 				checkInstallFunction: checkInstallFunction,
 				checkInstallInterval: checkInstallInterval,
+				checkOnline: checkOnline,
 				properties: {
 					installColor: String,
 					installName: String,
