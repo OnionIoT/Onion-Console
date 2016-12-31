@@ -159,9 +159,9 @@
 				onionConsole.getService('onion-file-provider', function (err,fileProvider){
 					if(!err){
 						this.fileProvider = fileProvider;
-						this.fileProvider.execBackgroundCommand(null,'opkg',['update'],function(err,result)){
+						this.fileProvider.execBackgroundCommand(null,'opkg',['update'],function(err,result){
 							console.log("Update Opkg For Installations");
-						};
+						});
 					}
 				}.bind(this));
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
@@ -245,11 +245,11 @@
 									console.log(response);
 									if(response.status == 'failure'){
 										console.log("Unable to Find USBs");
-										this.infoText = "Unable to find any Usb Storage! Please connect a USB and try again";
+										this.infoText = "Unable to find any Usb Storage! Please connect a USB, refresh and try again";
 										return;
 									}else{
 										console.log(response);
-										if(response.list.length < 1){
+										if(response.list.length <= 1){
 											this.infoText = "Unable to find any Usb Storage! Please connect a USB and try again";
 										}else{
 											//Usb storage found time to launch node-red-install tool.
