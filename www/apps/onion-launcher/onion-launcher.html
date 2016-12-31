@@ -119,18 +119,25 @@
 			flex-wrap: wrap-reverse;
 		}
 
+		#appIconsContainer {
+			position: absolute;
+			margin-left: 50%;
+			transform: translate(-50%, 0%);
+			width: 100%;
+		}
+
  	</style>
 
 	<template>
-		<bootstrap-dropdown for="statusDropdown">
+<!-- 		<bootstrap-dropdown for="statusDropdown">
 			<li class="devDropDown" on-tap="_onLogout">Log Out</li>
 			<li class="devDropDown" on-tap="_onShutdown">Shutdown</li>
 			<li class="devDropDown" on-tap="_onRestart">Restart</li>
-		</bootstrap-dropdown>
+		</bootstrap-dropdown> -->
 		<iron-signals on-iron-signal-installed-apps-changed="refresh"></iron-signals>
 		
 		<about-onion id="aboutOnion"></about-onion>
-		<launcher-tour></launcher-tour>
+		<!-- <launcher-tour></launcher-tour> -->
 
 		<onion-app app-name="Launcher" hide-title hide-toolbar background="transparent" toolbar-background="transparent">
 			<onion-app-body page-id="home">
@@ -147,16 +154,16 @@
 						<input id="search-bar" class="form-control" placeholder="Search" value="{{filterString::input}}" on-keydown="filterEscapeWatcher">
 					</div>
 
-					<div id="header" class="layout horizontal center">
-						<div class="flex-2 layout horizontal"></div>
+					<!-- <div id="header" class="layout horizontal center"> -->
+						<!-- <div class="flex-2 layout horizontal"></div> -->
 						<!-- DropDown to Power Device On and Off -->
-						<div  class="layout horizontal center end-justified">
-							<div id="statusDropdown">
-								<span id="status">&bull;</span><span>{{hostname}}</span>
-								<span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span>
-							</div>
-						</div>
-					</div>
+						<!-- <div  class="layout horizontal center end-justified"> -->
+							<!-- <div id="statusDropdown"> -->
+								<!-- <span id="status">&bull;</span><span>{{hostname}}</span> -->
+								<!-- <span><iron-icon icon="icons:arrow-drop-down"></iron-icon></span> -->
+							<!-- </div> -->
+						<!-- </div> -->
+					<!-- </div> -->
 
 				</div>
 				
@@ -191,29 +198,41 @@
 
 			var start = function () {
 				console.log("Inside onion-launcher start function");
-				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
-					var params = {
-						config: 'system',
-						section: '@system[0]',
-						option: 'hostname'
-					};
 
-					ubus.request('uci', 'get', params, (function (result) {
-						if (result[0] === 0) {
-							this.hostname = result[1].value;
-						}
-					}).bind(this));
-				}).bind(this));
+				// onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+				// 	deviceProvider.callService(null, 'uci', 'get', {
+				// 			config: 'system',
+				// 			section: '@system[0]',
+				// 			option: 'hostname'
+				// 		}, function (err,result) {
+				// 			if (!err) {
+				// 				this.hostname = result[1].value;
+				// 			} else {
+				// 				reject(Error('Unable to get the hostname.'));
+				// 			}
+				// 		}.bind(this));
+				// 	});
+
 				this.refresh();
 			};
 
 			var attached = function () {
-				var setAppIconsWidth = (function () {
-					this.$.appIcons.style.width = Math.floor((window.innerWidth - 48) / 248) * 248 + 'px';
-				}).bind(this);
+				// var setAppIconsWidth = (function () {
+					// this.$.appIcons.style.width = Math.floor((window.innerWidth - 48) / 248) * 248 + 'px';
+				// }).bind(this);
 
-				window.addEventListener('resize', setAppIconsWidth, true);
-				setAppIconsWidth();
+				// window.addEventListener('resize', setAppIconsWidth, true);
+				// setAppIconsWidth();
+			};
+
+			var ready = function () {
+				// onionConsole.getService('onion-apps-provider')
+				// .then( (function (appsProvider) {
+				// 	appsProvider.getApps((function(err, apps){
+				// 		this.set('apps', apps);
+				// 		console.log("Inside callback for getApps provider, apps=",apps);
+				// 	}).bind(this));
+				// }).bind(this));
 			};
 
 			var searchFilter = function (filterString) {
@@ -237,7 +256,7 @@
 
 			var appIconURL = function (id) {
 				console.log("Inside appIconURL, id=",id);
-				return '/apps/' + id.id + '/icon.png';
+				return '../console/apps/' + id.id + '/icon.png';
 			};
 
 			var filterEscapeWatcher = function (e) {
@@ -309,13 +328,14 @@
 						this.set('apps', apps);
 						console.log("Inside callback for getApps provider, apps=",apps);
 					}).bind(this));
-				} ).bind(this) );
+				}).bind(this));
 			};
 
 			Polymer({
 				is: 'onion-launcher',
 				start: start,
 				attached: attached,
+				ready: ready,
 				behaviors: [Onion.AppBehavior],
 				searchFilter: searchFilter,
 				appIconURL: appIconURL,
