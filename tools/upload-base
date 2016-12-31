@@ -26,6 +26,7 @@ rm -rf dist
 mkdir dist
 cp -r www/elements www/apps www/fonts www/images www/index.html www/lib www/services dist
 rm -rf dist/lib/juicy-ace-editor/
+rm -rf dist/apps/onion-node-red/onion-node-red.html
 
 find dist -name "*bower*" -exec rm -rf {} \; 2>/dev/null
 find dist -name "demo" -exec rm -rf {} \; 2>/dev/null
