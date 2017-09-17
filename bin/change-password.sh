@@ -23,7 +23,7 @@ ChangePassword () {
 	if [ "$2" == "$3" ]
 	then
 		# passwords match, perform the password change
-		echo "$1:$2" | chpasswd
+                echo -e "$2\n$3" | (passwd $1)
 	else
 		# do not perform password change
 		echo "New passwords don't match!!"
