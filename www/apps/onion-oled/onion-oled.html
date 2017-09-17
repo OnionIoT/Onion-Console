@@ -24,11 +24,11 @@
 			--bootstrap-dropdown-toggle-padding: 0 10px;
 			--bootstrap-dropdown-toggle-hover-bg: rgba(255, 255, 255, 0.5);
 		}
-		
+
 		onion-app-body{
 			@apply(--layout-vertical);
 		}
-		
+
 		onion-app-body > div {
 			height: 100%;
 			width: 100%;
@@ -50,45 +50,45 @@
 			background-color: #fff;
 			border-radius: 3px;
 		}
-		
+
 		#side-bar {
 			width: 150px;
 			height: 100%;
 			position: relative;
 			background-color: #f2f2f2;
 		}
-		
+
 		#side-bar bootstrap-pill iron-icon {
 			margin-right: 5px;
 		}
-		
+
 		#content {
 			padding: 25px;
 		}
-		
+
 		iron-pages {
 			width: 100%;
 			height: 100%;
 		}
-		
+
 		iron-pages > div {
 			padding: 25px;
 		}
-		
+
 		onion-app-toolbar button {
 			padding: 0 10px;
 			background-color: transparent;
 		}
-		
+
 		onion-app-toolbar button:hover {
 			background-color: rgba(255, 255, 255, 0.5);
 		}
-		
+
 		onion-app-toolbar button iron-icon,
 		onion-app-toolbar bootstrap-dropdown-toggle iron-icon {
 			margin-right: 5px;
 		}
-		
+
 		.oled-exp {
 			position: relative;
 			background-image: url('./img/oled-exp-bg.jpg');
@@ -100,7 +100,7 @@
 			background-position: center center;
 			margin: 0 auto 25px auto;
 		}
-		
+
 		#oled-text,
 		#oled-image-display {
 			position: absolute;
@@ -111,7 +111,7 @@
 			height: 169px;
 			width: 335px;
 		}
-		
+
 		#oled-text {
 			resize: none;
 			color: #fff;
@@ -134,7 +134,7 @@
 			/* Newer versions of Chrome/Safari*/
 			word-break: break-all;
 		}
-		
+
 		#oled-image-data {
 			display: none;
 		}
@@ -281,11 +281,11 @@
 
 			var _calculateOledContainerClass = function (tabs, currentTab, bDisplaySaveImage) {
 				var currentTabName 	= tabs[currentTab];
-				
+
 				var ret 	= 'oled-container';
 				if (currentTabName === 'image' && bDisplaySaveImage) {
 					var ret 	= 'oled-container-long';
-				} 
+				}
 
 				return ret;
 			};
@@ -302,8 +302,8 @@
 					_sendNotification('[Error]: Unable to communicate with Oled Expansion');
 				} else if (response.error) {
 					_sendNotification('[Error]: Unable to communicate with selected device');
-				} 
-				
+				}
+
 				this.bDeviceCommunication 	= false;	// disable device communication icon
 			};
 
@@ -354,7 +354,7 @@
 
 				// hide the save image button
 				this.set('bDisplaySaveImage', false);
-			
+
 				// clear the physical OLED
 				var deviceId = this.$.deviceListDropdown.selectedId;
 				this._deviceCall(deviceId, (function () {
@@ -440,7 +440,7 @@
 
 								// create a temporary file on the device
 								// this.fileProvider.createTempFile(hexDump, (function (filename) {
-								// 	// display the file on the OLED 
+								// 	// display the file on the OLED
 								// 	this._deviceCall(deviceId, (function () {
 								// 		this.expApi.oledDraw(deviceId, filename, {clear: true}, (function (err, response) {
 								// 			console.log('_loadImage expApi response: ', response);
@@ -453,8 +453,8 @@
 									if(response.status != 'success'){
 										_sendNotification('[Error]: could not create file on Device');
 									} else{
-										var path = response.data;
-										this.fileProvider.saveContent(deviceId, path, hexDump, false, (function(response){
+										this.imageFile = response.data;
+										this.fileProvider.saveContent(deviceId, this.imageFile, hexDump, false, (function(response){
 											console.log(response);
 											if(response.status != 'success'){
 												_sendNotification('[Error]: could not save file on Device');
@@ -463,8 +463,8 @@
 												// var p = path.toString();
 												// p = p.replace(/(\r\n|\n|\r)/gm,"");
 												// p +='?';
-												console.log(path);
-												this.expApi.oledDraw(deviceId, path, {clear: true}, (function (err, response) {
+												console.log('image file: ', this.imageFile);
+												this.expApi.oledDraw(deviceId, this.imageFile, {clear: true}, (function (err, response) {
 													console.log('_loadImage expApi response: ', response);
 													this._handleExpApiResponse(err, response);
 												}).bind(this));
@@ -481,28 +481,29 @@
 								_sendNotification('[Error]: Select Target Device!');
 							}
 						}).bind(this);
-						
+
 						img.src = e.target.result;
 					}).bind(this);
 
 					fr.readAsDataURL(this.$['image-file'].files[0]);
-				} 
+				}
 			};
 
 			var _saveImage = function () {
 				var top 		= this;
-				var savePath 	= '/root/image.lcd'
+				var savePath 	= '/root/image.lcd';
+				var deviceId = this.$.deviceListDropdown.selectedId;
 
 				if (this.imageSavePath != null) {
 					savePath 	= this.imageSavePath;
 				}
 
-				this.fileProvider.copyFile(this.fileProvider.getTempFile(), savePath);
+				this.fileProvider.copy(deviceId, this.imageFile, savePath);
 			};
 
 			var _processImage = function (canvas, context, img, bg) {
 				context.clearRect(0, 0, canvas.width, canvas.height);
-				var ratio = img.width / img.height, 
+				var ratio = img.width / img.height,
 					adjustedWidth, adjustedHeight, originX, originY;
 
 				if (img.height <= img.width / 2) {
@@ -634,6 +635,10 @@
 						type: Boolean,
 						value: false,
 						notify: true
+					},
+					imageFile: {
+						type: String,
+						value: ''
 					}
 				},
 				_currentTab: _currentTab,
