@@ -19,7 +19,7 @@
                                 ],
                                 "onion-console": [
                                         "app-list",
-					"wifi-info"
+                                        "wifi-info"
                                 ],
                                 "system": [
                                         "info",
@@ -83,6 +83,10 @@
                                 "system": [
                                         "info",
                                         "hostname"
+                                ],
+                                "rpc-sys": [
+                                        "reboot",
+                                        "password_set"
                                 ]
                         },
                         "uci": [

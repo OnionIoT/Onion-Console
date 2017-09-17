@@ -316,7 +316,7 @@
 			var _onRestart = function () {
 				if (confirm('Are you sure you want to restart your Omega?')) {
 					onionConsole.getService('onion-device-settings-provider', function (err, device) {
-						device.reboot()
+						device.rebootSystem()
 						.then(function () {
 							onionConsole.getService('onion-session-provider', function (err, session) {
 								session.logout();

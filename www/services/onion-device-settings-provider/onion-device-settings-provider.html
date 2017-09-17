@@ -67,7 +67,7 @@
 
 			// var setMACResult = function (result) {
 			// 	var returnCode = result[0];
-			// 	if (returnCode === 0) { 
+			// 	if (returnCode === 0) {
 			// 		if (result[1] !== null && result[1].results[0] !== null && result[1].results[0].mac !== null) {
 			// 			var mac = result[1].results[0].mac;
 
@@ -77,7 +77,7 @@
 			// 		} else {
 			// 			macResult({
 			// 				mac: ''
-			// 			});    
+			// 			});
 			// 		}
 			// 	} else {
 			// 		console.log('Failed to get MAC address!')
@@ -90,11 +90,11 @@
 			var getSystem = function (devId,callback) {
 				this.deviceProvider.callService(devId, 'system', 'info', {}, callback);
 			};
-			
+
 			var rebootSystem = function (devId,callback) {
 				this.deviceProvider.callService(devId, 'rpc-sys', 'reboot', {}, callback);
 			};
-			
+
 			var getRxTx = function (devId, callback) {
 				var params =  {};
 				callback = callback || this.noop;
@@ -111,7 +111,7 @@
 				if (!err) {
 					var receivedkB = 0;
 					var transmittedkB = 0;
-					
+
 					this.getDeviceType(devId, function (deviceType) {
 						var deviceRadio	= 'wlan0';
 						// find radio type based on device
@@ -137,7 +137,7 @@
 					callback([{received: ''}, {transmitted: ''}]);
 				}
 			};
-			
+
 			// deprecated
 			// var getIP = function (callback) {
 			// 	var params =  {
@@ -153,7 +153,7 @@
 			// 	var ip = '-';
 			// 	var netmask = '-';
 			// 	console.log(result);
-			// 	if (result[0] === 0 && result[1].code === 0) { 
+			// 	if (result[0] === 0 && result[1].code === 0) {
 			// 		var wlanIndex = result[1].stdout.indexOf('wlan0');
 			// 		if (wlanIndex > 0) {
 			// 			available = true;
@@ -169,7 +169,7 @@
 			// 	} else {
 			// 		console.log('Failed to execute IP address command!');
 			// 	}
-				
+
 			// 	ipResult([{available: available}, {ip: ip}, {netmask: netmask}]);
 			// };
 
@@ -212,7 +212,7 @@
 			// 	console.log(result);
 			// 	// if(result[0]===0){
 			// 	// 	console.log(result[1].ipv4-address[0].address);
-			// 	// 	ip = 
+			// 	// 	ip =
 			// 	// }
 			// 	var returnCode = result[0];
 			// 	var available = false;
@@ -251,7 +251,7 @@
 					if (deviceType === 'Onion Omega2' || deviceType === 'Onion Omega2+') {
 						deviceRadio = 'apcli0';
 					}
-					
+
 					this.deviceProvider.callService(devId, 'network.device','status',
 						{
 							name: deviceRadio
@@ -265,8 +265,8 @@
 					});
 				}).bind(this));
 			}
-			
-			
+
+
 
 			var changePassword = function (devId, passwordCurrent, passwordNew, passwordNewVerify) {
 				var promise = new Promise(function (resolve, reject) {
@@ -395,12 +395,12 @@
 
 				return promise;
 			};
-			
+
 			var shutdown = function (devId) {
 				var shutdownPromise = new Promise(function (resolve, reject) {
 				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
 						deviceProvider.callService(devId,'file', 'exec', {
-							command: 'power-down', 
+							command: 'power-down',
 							params: [
 								'-f'
 							]
@@ -422,9 +422,9 @@
 				var rebootPromise = new Promise(function (resolve, reject) {
 				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
 						deviceProvider.callService(devId,'file', 'exec', {
-							command: 'reboot', 
+							command: 'reboot',
 							params: [
-								'-d', 
+								'-d',
 								'5',
 								'&'
 							]
@@ -452,13 +452,13 @@
 				checkLogin: checkLogin,
 				// getMAC: getMAC,
 				// setMACResult: setMACResult,
-				
+
 				getSystem: getSystem,
 				rebootSystem: rebootSystem,
-				
+
 				getRxTx: getRxTx,
 				setRxTxResult: setRxTxResult,
-				
+
 				// getIP: getIP,
 				// setIPResult: setIPResult,
 				
@@ -469,7 +469,7 @@
 				getMacAddr: getMacAddr,
 
 				// setIPAddrResult: setIPAddrResult,
-				
+
 				changePassword: changePassword,
 				changeHostname: changeHostname,
 				changeTimezone: changeTimezone,
