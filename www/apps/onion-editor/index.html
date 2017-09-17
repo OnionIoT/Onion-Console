@@ -1,0 +1,115 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../lib/iron-pages/iron-pages.html">
+<link rel="import" href="../../elements/onion-installer/onion-installer.html">
+<link rel="import" href="../../elements/onion-app/onion-app.html">
+
+<link rel="import" href="../../elements/onion-loading/onion-loading.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-styles/bootstrap-styles.html">
+<link rel="import" href="../../elements/onion-styles/onion-styles.html">
+<link rel="import" href="../../elements/onion-taskbar/onion-taskbar.html">
+<link rel="import" href="../../elements/onion-notification/onion-notification.html">
+
+<dom-module id="onion-editor-installer">
+	<style>
+		:host {
+			display: block;
+			height: 100%;
+			width: 100%;
+			overflow: hidden;
+
+			background-image: url('/images/bg/a.jpg');
+		    background-attachment: fixed;
+			background-size: cover;
+		}
+		
+/*		<!-- #installedApp { -->
+			<!-- width: auto; -->
+			<!-- height: 100%; -->
+		<!-- } -->*/
+		
+		#taskbar {
+/* 			position: fixed; */
+/* 			bottom: 0; */
+/* 			width: 100%; */
+/* 			height: 100%; */
+		}
+		
+		#serviceContainer {
+			display: none;
+		}
+		.console {
+			width: 100%;
+			z-index: 1000;
+			height: 100%;
+		}
+		@-webkit-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@-moz-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@-o-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@keyframes fadeOut {
+			from { opacity: 1; }
+		    to { opacity: 0; }
+		}
+
+		onion-app-body {
+			background: url('../../images/bg/a.jpg') no-repeat;
+			background-attachment: fixed;
+			background-size: cover;
+		}
+
+	</style>
+
+	<template>
+
+		<onion-app app-name="" toolbar-background="transparent">
+
+			<onion-app-body page-id="home">
+						<onion-installer install-color="#2a3f50" install-name="Editor" install-id="onion-editor" info-text="The Editor App allows you to create, edit, and manage the files on your Omega. You can even upload files from your device to the Omega using this app."></onion-installer>
+			</onion-app-body>
+		</onion-app>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var created = function () {
+			};
+
+			var ready = function(){
+			};
+
+			Polymer({
+				is: 'onion-editor-installer',
+				created: created,
+				ready: ready,
+				behaviors: [Onion.AppBehavior],
+				properties: {
+					apps: Array,
+					runningApps: {
+						type: Array,
+						notify: true,
+						value: []
+					},
+					currentApp: {
+						type: String,
+						notify: true,
+						value: ''
+					}
+				},
+			});
+		})();
+	</script>
+</dom-module>

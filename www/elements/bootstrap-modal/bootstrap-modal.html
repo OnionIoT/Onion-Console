@@ -1,8 +1,8 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-overlay-behavior/iron-overlay-behavior.html">
-<link rel="import" href="/elements/bootstrap-styles/bootstrap-styles.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="../../elements/bootstrap-styles/bootstrap-styles.html">
 
-<dom-module id="bootstrap-modal">
+<dom-module id="bootstrap-modal-console">
 	<style>
 		:host {
 			widows: 100%;
@@ -10,8 +10,16 @@
 		
 		.modal-content {
 			min-width: 400px;
+			height: 100%;
+			width: 100%;
+			overflow: hidden;
 		}
-	
+
+		.modal-body {
+			height: 100%;
+			width: 100%;
+		}
+
 	</style>
 	<template>
 		
@@ -61,7 +69,7 @@
 			}
 
 			Polymer({
-				is: 'bootstrap-modal',
+				is: 'bootstrap-modal-console',
 				behaviors: [Polymer.IronOverlayBehavior],
 				hostAttributes: {
 					role: 'dialog',

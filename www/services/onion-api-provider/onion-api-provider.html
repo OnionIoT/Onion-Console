@@ -1,0 +1,60 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-ajax/iron-ajax.html">
+
+<dom-module id="onion-api-provider">
+	<script>
+		'use strict';
+
+		(function () {
+			var ready = function () {
+				onionConsole.getService('onion-session-provider', (function (err, session) {
+					this.session = session;
+				}).bind(this));
+			};
+
+
+			var request = function (method, path, body, callback) {
+				if (typeof callback === 'undefined') {
+					callback = body;
+					body = {};
+				}
+
+				var baseUrl = 'https://api.onion.io/v1';
+				// var requestId = requestCounter++;
+
+				var ajax = document.createElement('iron-ajax');
+
+				ajax.contentType = 'application/json';
+				ajax.headers = {'Authorization': 'Bearer ' + this.session.accessToken};
+				ajax.url = baseUrl + path;
+				ajax.method = method;
+				// ajax.onResponse=callback;
+				ajax.handleAs = 'json';
+
+				if (method !== 'GET') {
+					ajax.body = JSON.stringify(body); 
+				}
+
+				ajax.addEventListener('response', function (request) {
+					var response = request.detail.response;
+					callback(response);
+					ajax.remove();
+				});
+
+				ajax.generateRequest();
+			};
+
+			Polymer({
+				is: 'onion-api-provider',
+				ready: ready,
+	            properties: {
+					isAlive: {
+					    type: Boolean,
+						value: false
+					}
+	            },
+	            request: request,
+			});
+        })();
+	</script>
+</dom-module>

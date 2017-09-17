@@ -1,5 +1,5 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
 
 <dom-module id="onion-file-list">
 	<style>
@@ -53,12 +53,19 @@
 			display: none;
 			z-index: 1;
 		}
+		.current-folder {
+			display: flex;
+			position: relative;
+			padding-left: 20px;
+			font-size: 20px;
+		}
 	</style>
 
 	<template>
 		<div hidden$="{{_hasElements(_files)}}">
 			<content></content>
 		</div>
+		<div class="current-folder">[[currentFolder]]</div>
 		<template is="dom-repeat" items="{{_files}}">
 			<div class="file-row">
 				<iron-icon icon="{{item.preview}}" class="clickable" on-click="open"></iron-icon>
@@ -74,14 +81,15 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			// var this = null;
 
 			var created = function () {
-				self = this;
+				// this = this;
 			};
 
 			var _filesChanged = function () {
-				self._sortOnChanged();
+				console.log("the files List",this._files);
+				this._sortOnChanged();
 			};
 
 			var _sortOnChanged = function () {
@@ -91,47 +99,57 @@
 					preview: true,
 					type: true
 				};
-				if (!sortFields.hasOwnProperty(self.sortOn)) {
-					self.sortOn = 'name';
+				if (!sortFields.hasOwnProperty(this.sortOn)) {
+					this.sortOn = 'name';
 				}
-				self.files = self.files.sort(self._comparator.bind(self));
-				self._updateFileList();
+				this.files = this.files.sort(this._comparator.bind(this));
+				this._updateFileList();
 			};
 
 			var _updateFileList = function () {
-				self._files = self.files.slice(0);
-				self.filter(self._keyword || "");
+				this._files = this.files.slice(0);
+				this.filter(this._keyword || "");
 			};
 
 			var reverseSort = function () {
-				self._reversed = !self._reversed;
-				self.files.reverse();
-				self._updateFileList();
+				this._reversed = !this._reversed;
+				this.files.reverse();
+				this._updateFileList();
 			};
 
 			var filter = function (keyword) {
 				keyword = keyword.trim().toLowerCase() || "";
-				self._keyword = keyword;
-				self._files = self.files.filter(function(item){
+				this._keyword = keyword;
+				this._files = this.files.filter(function(item){
 					return !item.name.toLowerCase().indexOf(keyword) || !item.type.toLowerCase().indexOf(keyword);
 				});
 			};
 
 			var open = function(e) {
-				self.fire('open', e.model.__data__.item)
+				this.debounce('click',function(){
+					console.log(e);
+					var fileObj = e.model.__data__.item;
+					if(this.currentFolder == "/"){
+						fileObj.absolutePath = this.currentFolder + fileObj.name;
+					}else{
+						fileObj.absolutePath = this.currentFolder + '/' + fileObj.name;
+					}
+					fileObj.parentDir = this.currentFolder;
+					this.fire('open', fileObj);
+				}.bind(this),1000)
 			};
 
 			var saveRename = function(e) {
 				if (e.keyCode && e.keyCode != 27 && e.keyCode != 13) {
 					return;
 				}
-				var display, edit, row = self._getParentRow(e.target);
+				var display, edit, row = this._getParentRow(e.target);
 				for (var i = 0; i < row.childElementCount; i++) {
-						if (self._hasClass(row.children[i], 'nameDisplay')) {
+						if (this._hasClass(row.children[i], 'nameDisplay')) {
 							display = row.children[i];
 							i++;
 						}
-						if (self._hasClass(row.children[i], 'nameEdit')) {
+						if (this._hasClass(row.children[i], 'nameEdit')) {
 							edit = row.children[i];
 						}
 						if (edit && display) {
@@ -146,30 +164,30 @@
 				}
 				var newName = edit.children[0].value.trim();
 				if (newName && newName != display.textContent.trim()) {
-					for (i = 0; i < self.files.length; i++) {
-						if (self.files[i].name == display.textContent) {
+					for (i = 0; i < this.files.length; i++) {
+						if (this.files[i].name == display.textContent) {
 							e.model.set('item.name', newName);
-							self.files[i].name = newName;
-							self._updateFileList();
+							this.files[i].name = newName;
+							this._updateFileList();
 							break;
 						}
 					}
-					self._sortOnChanged();
-					if (self._reversed) {
-						self.reverseSort();
+					this._sortOnChanged();
+					if (this._reversed) {
+						this.reverseSort();
 					}
-					self.fire('rename', e.model.__data__.item)
+					this.fire('rename', e.model.__data__.item)
 				}
 			};
 
 			var rename = function (e) {
-				var display, edit, row = self._getParentRow(e.target);
+				var display, edit, row = this._getParentRow(e.target);
 				for (var i = 0; i < row.childElementCount; i++) {
-						if (self._hasClass(row.children[i], 'nameDisplay')) {
+						if (this._hasClass(row.children[i], 'nameDisplay')) {
 							display = row.children[i];
 							i++;
 						}
-						if (self._hasClass(row.children[i], 'nameEdit')) {
+						if (this._hasClass(row.children[i], 'nameEdit')) {
 							edit = row.children[i];
 						}
 						if (edit && display) {
@@ -188,7 +206,7 @@
 			};
 
 			var _getParentRow = function (node) {
-				while (node.parentNode && !self._hasClass(node, 'file-row')) {
+				while (node.parentNode && !this._hasClass(node, 'file-row')) {
 					node = node.parentNode;
 				}
 				return node;
@@ -199,9 +217,9 @@
 			};
 
 			var _comparator = function (a, b) {
-				if (a[self.sortOn].toLowerCase() < b[self.sortOn].toLowerCase()) {
+				if (a[this.sortOn].toLowerCase() < b[this.sortOn].toLowerCase()) {
 					return -1;
-				} else if(b[self.sortOn].toLowerCase() < a[self.sortOn].toLowerCase()) {
+				} else if(b[this.sortOn].toLowerCase() < a[this.sortOn].toLowerCase()) {
 					return 1;
 				} else {
 					return 0;
@@ -228,6 +246,11 @@
 					_reversed: {
 						type: Boolean,
 						value: false
+					},
+					currentFolder:{
+						type:String,
+						notify: true,
+						value: ""
 					}
 				},
 				created: created,

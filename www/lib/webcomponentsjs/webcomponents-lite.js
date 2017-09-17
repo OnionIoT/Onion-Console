@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.18
+// @version 0.7.24
 (function() {
   window.WebComponents = window.WebComponents || {
     flags: {}
@@ -165,7 +165,7 @@
           this._fragment = "#";
           state = "fragment";
         } else {
-          if (EOF != c && "	" != c && "\n" != c && "\r" != c) {
+          if (EOF != c && "\t" != c && "\n" != c && "\r" != c) {
             this._schemeData += percentEscape(c);
           }
         }
@@ -296,7 +296,7 @@
           seenAt = true;
           for (var i = 0; i < buffer.length; i++) {
             var cp = buffer[i];
-            if ("	" == cp || "\n" == cp || "\r" == cp) {
+            if ("\t" == cp || "\n" == cp || "\r" == cp) {
               err("Invalid whitespace in authority.");
               continue;
             }
@@ -330,7 +330,7 @@
             state = "relative path start";
           }
           continue;
-        } else if ("	" == c || "\n" == c || "\r" == c) {
+        } else if ("\t" == c || "\n" == c || "\r" == c) {
           err("Invalid whitespace in file host.");
         } else {
           buffer += c;
@@ -354,7 +354,7 @@
             break loop;
           }
           continue;
-        } else if ("	" != c && "\n" != c && "\r" != c) {
+        } else if ("\t" != c && "\n" != c && "\r" != c) {
           if ("[" == c) {
             seenBracket = true;
           } else if ("]" == c) {
@@ -382,7 +382,7 @@
           }
           state = "relative path start";
           continue;
-        } else if ("	" == c || "\n" == c || "\r" == c) {
+        } else if ("\t" == c || "\n" == c || "\r" == c) {
           err("Invalid code point in port: " + c);
         } else {
           invalid.call(this);
@@ -427,7 +427,7 @@
             this._fragment = "#";
             state = "fragment";
           }
-        } else if ("	" != c && "\n" != c && "\r" != c) {
+        } else if ("\t" != c && "\n" != c && "\r" != c) {
           buffer += percentEscape(c);
         }
         break;
@@ -436,13 +436,13 @@
         if (!stateOverride && "#" == c) {
           this._fragment = "#";
           state = "fragment";
-        } else if (EOF != c && "	" != c && "\n" != c && "\r" != c) {
+        } else if (EOF != c && "\t" != c && "\n" != c && "\r" != c) {
           this._query += percentEscapeQuery(c);
         }
         break;
 
        case "fragment":
-        if (EOF != c && "	" != c && "\n" != c && "\r" != c) {
+        if (EOF != c && "\t" != c && "\n" != c && "\r" != c) {
           this._fragment += c;
         }
         break;
@@ -912,14 +912,44 @@ if (typeof WeakMap === "undefined") {
   }
 })(self);
 
-if (typeof HTMLTemplateElement === "undefined") {
-  (function() {
-    var TEMPLATE_TAG = "template";
+(function() {
+  var needsTemplate = typeof HTMLTemplateElement === "undefined";
+  if (/Trident/.test(navigator.userAgent)) {
+    (function() {
+      var importNode = document.importNode;
+      document.importNode = function() {
+        var n = importNode.apply(document, arguments);
+        if (n.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+          var f = document.createDocumentFragment();
+          f.appendChild(n);
+          return f;
+        } else {
+          return n;
+        }
+      };
+    })();
+  }
+  var needsCloning = function() {
+    if (!needsTemplate) {
+      var t = document.createElement("template");
+      var t2 = document.createElement("template");
+      t2.content.appendChild(document.createElement("div"));
+      t.content.appendChild(t2);
+      var clone = t.cloneNode(true);
+      return clone.content.childNodes.length === 0 || clone.content.firstChild.content.childNodes.length === 0;
+    }
+  }();
+  var TEMPLATE_TAG = "template";
+  var TemplateImpl = function() {};
+  if (needsTemplate) {
     var contentDoc = document.implementation.createHTMLDocument("template");
     var canDecorate = true;
-    HTMLTemplateElement = function() {};
-    HTMLTemplateElement.prototype = Object.create(HTMLElement.prototype);
-    HTMLTemplateElement.decorate = function(template) {
+    var templateStyle = document.createElement("style");
+    templateStyle.textContent = TEMPLATE_TAG + "{display:none;}";
+    var head = document.head;
+    head.insertBefore(templateStyle, head.firstElementChild);
+    TemplateImpl.prototype = Object.create(HTMLElement.prototype);
+    TemplateImpl.decorate = function(template) {
       if (template.content) {
         return;
       }
@@ -928,6 +958,9 @@ if (typeof HTMLTemplateElement === "undefined") {
       while (child = template.firstChild) {
         template.content.appendChild(child);
       }
+      template.cloneNode = function(deep) {
+        return TemplateImpl.cloneNode(this, deep);
+      };
       if (canDecorate) {
         try {
           Object.defineProperty(template, "innerHTML", {
@@ -940,7 +973,7 @@ if (typeof HTMLTemplateElement === "undefined") {
             },
             set: function(text) {
               contentDoc.body.innerHTML = text;
-              HTMLTemplateElement.bootstrap(contentDoc);
+              TemplateImpl.bootstrap(contentDoc);
               while (this.content.firstChild) {
                 this.content.removeChild(this.content.firstChild);
               }
@@ -954,23 +987,23 @@ if (typeof HTMLTemplateElement === "undefined") {
           canDecorate = false;
         }
       }
-      HTMLTemplateElement.bootstrap(template.content);
+      TemplateImpl.bootstrap(template.content);
     };
-    HTMLTemplateElement.bootstrap = function(doc) {
+    TemplateImpl.bootstrap = function(doc) {
       var templates = doc.querySelectorAll(TEMPLATE_TAG);
       for (var i = 0, l = templates.length, t; i < l && (t = templates[i]); i++) {
-        HTMLTemplateElement.decorate(t);
+        TemplateImpl.decorate(t);
       }
     };
     document.addEventListener("DOMContentLoaded", function() {
-      HTMLTemplateElement.bootstrap(document);
+      TemplateImpl.bootstrap(document);
     });
     var createElement = document.createElement;
     document.createElement = function() {
       "use strict";
       var el = createElement.apply(document, arguments);
-      if (el.localName == "template") {
-        HTMLTemplateElement.decorate(el);
+      if (el.localName === "template") {
+        TemplateImpl.decorate(el);
       }
       return el;
     };
@@ -993,12 +1026,66 @@ if (typeof HTMLTemplateElement === "undefined") {
     function escapeData(s) {
       return s.replace(escapeDataRegExp, escapeReplace);
     }
-  })();
-}
+  }
+  if (needsTemplate || needsCloning) {
+    var nativeCloneNode = Node.prototype.cloneNode;
+    TemplateImpl.cloneNode = function(template, deep) {
+      var clone = nativeCloneNode.call(template, false);
+      if (this.decorate) {
+        this.decorate(clone);
+      }
+      if (deep) {
+        clone.content.appendChild(nativeCloneNode.call(template.content, true));
+        this.fixClonedDom(clone.content, template.content);
+      }
+      return clone;
+    };
+    TemplateImpl.fixClonedDom = function(clone, source) {
+      if (!source.querySelectorAll) return;
+      var s$ = source.querySelectorAll(TEMPLATE_TAG);
+      var t$ = clone.querySelectorAll(TEMPLATE_TAG);
+      for (var i = 0, l = t$.length, t, s; i < l; i++) {
+        s = s$[i];
+        t = t$[i];
+        if (this.decorate) {
+          this.decorate(s);
+        }
+        t.parentNode.replaceChild(s.cloneNode(true), t);
+      }
+    };
+    var originalImportNode = document.importNode;
+    Node.prototype.cloneNode = function(deep) {
+      var dom = nativeCloneNode.call(this, deep);
+      if (deep) {
+        TemplateImpl.fixClonedDom(dom, this);
+      }
+      return dom;
+    };
+    document.importNode = function(element, deep) {
+      if (element.localName === TEMPLATE_TAG) {
+        return TemplateImpl.cloneNode(element, deep);
+      } else {
+        var dom = originalImportNode.call(document, element, deep);
+        if (deep) {
+          TemplateImpl.fixClonedDom(dom, element);
+        }
+        return dom;
+      }
+    };
+    if (needsCloning) {
+      HTMLTemplateElement.prototype.cloneNode = function(deep) {
+        return TemplateImpl.cloneNode(this, deep);
+      };
+    }
+  }
+  if (needsTemplate) {
+    window.HTMLTemplateElement = TemplateImpl;
+  }
+})();
 
 (function(scope) {
   "use strict";
-  if (!window.performance) {
+  if (!(window.performance && window.performance.now)) {
     var start = Date.now();
     window.performance = {
       now: function() {
@@ -1143,6 +1230,7 @@ window.HTMLImports = window.HTMLImports || {
     if (importCount) {
       for (var i = 0, imp; i < importCount && (imp = imports[i]); i++) {
         if (isImportLoaded(imp)) {
+          newImports.push(this);
           parsedCount++;
           checkDone();
         } else {
@@ -1594,7 +1682,7 @@ window.HTMLImports.addModule(function(scope) {
       if (doc && this._mayParse.indexOf(doc) < 0) {
         this._mayParse.push(doc);
         var nodes = doc.querySelectorAll(this.parseSelectorsForNode(doc));
-        for (var i = 0, l = nodes.length, p = 0, n; i < l && (n = nodes[i]); i++) {
+        for (var i = 0, l = nodes.length, n; i < l && (n = nodes[i]); i++) {
           if (!this.isParsed(n)) {
             if (this.hasResource(n)) {
               return nodeIsImport(n) ? this.nextToParseInDoc(n.__doc, n) : n;
@@ -2159,6 +2247,9 @@ window.CustomElements.addModule(function(scope) {
       definition.prototype = Object.create(HTMLElement.prototype);
     }
     definition.__name = name.toLowerCase();
+    if (definition.extends) {
+      definition.extends = definition.extends.toLowerCase();
+    }
     definition.lifecycle = definition.lifecycle || {};
     definition.ancestry = ancestry(definition.extends);
     resolveTagName(definition);
@@ -2331,21 +2422,6 @@ window.CustomElements.addModule(function(scope) {
   }
   wrapDomMethodToForceUpgrade(Node.prototype, "cloneNode");
   wrapDomMethodToForceUpgrade(document, "importNode");
-  if (isIE) {
-    (function() {
-      var importNode = document.importNode;
-      document.importNode = function() {
-        var n = importNode.apply(document, arguments);
-        if (n.nodeType == n.DOCUMENT_FRAGMENT_NODE) {
-          var f = document.createDocumentFragment();
-          f.appendChild(n);
-          return f;
-        } else {
-          return n;
-        }
-      };
-    })();
-  }
   document.registerElement = register;
   document.createElement = createElement;
   document.createElementNS = createElementNS;

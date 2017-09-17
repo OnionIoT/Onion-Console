@@ -1,0 +1,281 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-pages/iron-pages.html">
+<link rel="import" href="../../lib/iron-selector/iron-selector.html">
+<link rel="import" href="../../lib/iron-image/iron-image.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../lib/iron-overlay-behavior/iron-overlay-behavior.html">
+
+<link rel="import" href="../../elements/onion-icons/onion-icons.html">
+
+<link rel="import" href="../../lib/iron-a11y-keys/iron-a11y-keys.html">
+
+<dom-module id="app-tour">
+	<style>
+		.modal-dialog{
+			width: 400px;
+			margin: 0;
+		}
+		.tour-title{
+			min-width: 100px;
+			font-size: 1.2em;
+			font-weight: bold;
+		}
+		
+		:host::content tour-content img.full-width {
+			width: 100%;
+		}
+		
+		:host ::content .modal-content {
+			-webkit-box-shadow: none;
+			box-shadow: none;
+		}
+		
+		:host ::content .modal-header {
+/* 			background-color: #5D9CEC; */
+			color: #434A54;
+			padding: 10px 10px;
+		}
+		
+		:host ::content .modal-footer {
+			color: #434A54;
+			padding: 5px 10px;
+		}
+		
+		:host ::content .modal-footer.btn {
+			padding: 2px 5px;
+		}
+		
+		.page-selector {
+			padding-left: 5px;
+			height: 15px;
+			width: 15px;
+			cursor: pointer;
+			opacity: 0.5;
+		}
+		
+		.page-selector.iron-selected{
+			opacity: 1;
+		}
+		
+		.tour-arrow{
+			color: white;
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+		
+		.tour-container {
+			position: fixed;
+			min-width: 424px;
+		}
+		
+		.exit-link {
+			display: block;
+			position: absolute;
+			float: left;
+			margin-top: 5px;
+			margin-left: 5px;
+			color: #AAB2BD;
+		}
+		.exit-link:hover {
+			color: #4A89DC;
+		}
+		
+	</style>
+
+	<template>
+
+		<!-- Iron-a11y-keys: change pages using arrows -->
+		<iron-a11y-keys id="keyNext" keys="right" on-keys-pressed="nextPage"></iron-a11y-keys>
+		<iron-a11y-keys id="keyPrev" keys="left"  on-keys-pressed="prevPage"></iron-a11y-keys>
+		<iron-a11y-keys id="keyEsc"  keys="esc"   on-keys-pressed="close"></iron-a11y-keys>
+
+		<div id="tourContainer" class="tour-container layout horizontal">
+			<iron-icon icon="onion:arrow-left" class="tour-arrow" hidden="{{!isEqual(arrow, 'left')}}"></iron-icon>
+
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header layout horizontal center">
+						<div class="tour-title">
+							<iron-pages attr-for-selected="page-id" selected="{{currentPage}}">
+								<content select="tour-title"></content>
+							</iron-pages>
+						</div>
+
+						<iron-selector class="flex layout horizontal end-justified"  
+									 attr-for-selected="page-id" selected="{{currentPage}}">
+							<template is="dom-repeat" items="{{numToArray(pageCount)}}">
+								<iron-icon page-id="{{item}}" class="page-selector" icon="onion:page-circle"></iron-icon>
+							</template>
+						</iron-selector>
+
+					</div>
+					<div class="modal-body layout vertical">
+						<iron-pages on-iron-items-changed="onContentChanged" 
+									on-iron-select="updatePosition"
+									attr-for-selected="page-id" selected="{{currentPage}}">
+							<content select="tour-content"></content>
+						</iron-pages>
+
+					</div>
+
+					<div class="modal-footer">
+						<a href="" class="exit-link" on-tap="close">Exit Tour</a>
+							
+						<template is="dom-if" if="{{!isEqual(currentPage, 1)}}">
+							<button type="button" class="btn" on-tap="prevPage">Prev</button>
+						</template>
+
+						<template is="dom-if" if="{{!isEqual(currentPage, pageCount)}}">
+							<button type="button" class="btn btn-primary" on-tap="nextPage">Next</button>
+						</template>
+
+						<template is="dom-if" if="{{isEqual(currentPage, pageCount)}}">
+							<button type="button" class="btn btn-primary" on-tap="close">Done</button>
+						</template>
+					</div>
+
+
+				</div>
+			</div>
+			
+			<iron-icon icon="onion:arrow-right" class="tour-arrow" hidden="{{!isEqual(arrow, 'right')}}"></iron-icon>
+			
+		</div>
+	</template>
+
+	<script>
+		'use strict';
+		(function () {
+
+			var ready = function () {
+				this.noCancelOnOutsideClick = true;
+				this.noCancelOnEscKey = true;
+				this.withBackdrop = true;
+				
+			};
+			
+			var numToArray = function (n) {
+				var result = [];
+				for (var i=0;i<n;i++){
+					result.push(i+1);
+				}
+				return result;
+			};
+			
+			var isEqual = function(a,b){
+				return a===b;
+			}
+			
+			var prevPage = function(){
+				if (this.currentPage > 1) this.currentPage -= 1;
+			};
+			
+			var nextPage = function(){
+				if (this.currentPage < this.pageCount) this.currentPage += 1;
+			};
+
+			var updatePosition = function (e) {
+				
+				// No target element. show tour in the center of the screen
+				if (!e.target.selectedItem.attributes.for){
+					this.arrow = null;
+					this.$.tourContainer.style.top = '50px';
+					this.$.tourContainer.style.left = '50%';
+					this.$.tourContainer.style['margin-left'] = '-200px';
+				}else{
+					// Tour page is bound to an element
+					this.$.tourContainer.style['margin-left'] = '0';
+					
+					var target = e.target.selectedItem.attributes.for.value;
+					target = document.querySelector('[tour-id="'+target+'"]');
+					var tour = this.$.tourContainer;
+					var targetRect = target.getBoundingClientRect();
+					var tourRect = tour.getBoundingClientRect();
+					var backdropRect = this.backdropElement.getBoundingClientRect();
+					
+					// TODO: programatically determine if overlap is required;
+// 					var wDiff = (targetRect.left + tourRect.width) - backdropRect.;
+					
+					// assume box on the right pointing to the left
+					var edgeRight = targetRect.right + tourRect.width;
+					var edgeLeft = targetRect.left - tourRect.width;
+					if ( edgeRight < backdropRect.right ){
+						this.$.tourContainer.style.left = targetRect.right + 'px';
+						this.arrow = 'left';
+					}else if ( edgeLeft > 0 ){
+						// assume box on the left pointing to the right
+						this.$.tourContainer.style.left = (targetRect.left - tourRect.width) + 'px';
+						this.arrow = 'right';
+					}else {
+						this.$.tourContainer.style.left = (targetRect.left + 100) + 'px';
+						this.arrow = 'left';
+					}
+					
+					// programatically determine if the bottom of tour page is off screen 
+					// adjust hight accordingly  
+					var hDiff = (targetRect.top + tourRect.height) - backdropRect.bottom;
+					if ( hDiff > 0 ){
+						// adjust tour content
+						this.$.tourContainer.style.top =  (backdropRect.bottom - tourRect.height) + 'px';
+						// adjust arrow
+						var arrows = this.getElementsByClassName('tour-arrow');
+						for (var i = 0; i < arrows.length; i++) {
+							arrows[i].style['margin-top'] = (10 + hDiff )+ 'px';
+						}
+					}else {
+						this.$.tourContainer.style.top = targetRect.top + 'px';
+						var arrows = this.getElementsByClassName('tour-arrow');
+						for (var i = 0; i < arrows.length; i++) {
+							arrows[i].style['margin-top'] = '10px';
+						}
+					}
+					
+					
+				}
+			};
+			
+			var onContentChanged = function(e) {
+				this.set('pageCount', e.target.items.length);
+			};
+			
+			var onOpen = function () {
+				this.currentPage = 1;
+			};
+			
+			Polymer({
+				is: 'app-tour',
+				behaviors: [Polymer.IronOverlayBehavior],
+				ready: ready,
+				nextPage: nextPage,
+				prevPage: prevPage,
+				numToArray: numToArray,
+				onContentChanged: onContentChanged,
+				isEqual: isEqual,
+				updatePosition: updatePosition,
+				onOpen: onOpen,
+				properties: {
+					arrow: {
+						type: String,
+						value: null,
+						notify: true
+					},
+					pageCount: {
+						type: Number,
+						notify: true
+					},
+					currentPage: {
+						type: Number,
+						value: 1,
+						notify: true
+					},
+					opened: {
+						type: Boolean,
+						notify: true,
+						observer: 'onOpen'
+					}
+				}
+			});
+		})();
+	</script>
+
+</dom-module>

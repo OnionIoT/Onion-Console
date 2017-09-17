@@ -1,0 +1,54 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-menu-behavior/iron-menu-behavior.html">
+<link rel="import" href="../bootstrap-styles/bootstrap-styles.html">
+<link rel="import" href="./bootstrap-pill.html">
+
+<dom-module id="bootstrap-tabs">
+  
+  <style>
+    .match{
+      background:inherit;
+    }
+  </style>
+  
+	<template>
+		<ul class$="[[_computeClass(stacked)]]">
+			<content></content>
+		</ul>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var _computeClass = function (stacked) {
+				if (stacked) {
+					return 'match nav nav-tabs nav-stacked horizontal layout';
+				} else {
+					return 'match nav nav-tabs horizontal layout';
+				}
+			};
+
+			Polymer({
+				is: 'bootstrap-tabs',
+ 				behaviors: [Polymer.IronMenuBehavior],
+				_computeClass: _computeClass,
+				properties: {
+					stacked: {
+						type: Boolean,
+						value: false
+					},
+					selected: {
+						type: String,
+						notify: true
+					},
+					selectable: {
+						type: String,
+						value: 'bootstrap-pill'
+					},
+				}
+			});
+        })();
+	</script>
+
+</dom-module>

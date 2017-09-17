@@ -1,0 +1,138 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
+<!-- <link rel="import" href="../../elements/bootstrap-alert/bootstrap-alert.html"> -->
+<link rel="import" href="../../lib/iron-ajax/iron-ajax.html">
+
+<dom-module id="bug-report-dlg">
+	<style>
+		.form-group {
+			display: block;
+		}
+
+		.c-select {
+			border-color: #aab2bd;
+			border-radius: .25rem;
+		}
+
+		modal-body {
+			display: block;
+			padding-top: 15px;
+		}
+	</style>
+
+	<template>
+		<iron-ajax id="feedbackAjax" url="https://api.onion.io/util/cloud/feedback" handle-as="json" on-response="_handleAjaxResponse" debounce-duration="300" method="POST" content-type="application/json"></iron-ajax>
+
+		<bootstrap-modal id="dlg" title="We love your feedback!">
+			<modal-body>
+				<formset class="form-group">
+					<label for="feedback-type">Feedback Type</label>
+					<div></div>
+					<select class="c-select" id="feedback-type" value="{{feedbackType::input}}">
+						<option value="bug">Bug Report</option>
+						<option value="feature">Feature Suggestion</option>
+						<option value="chore">Contact Us</option>
+					</select>
+				</formset>
+
+				<formset class="form-group">
+					<label for="feedback-description">Description</label>
+					<textarea id="feedback-description" class="form-control" value="{{feedbackDescription::input}}" rows="3" placeholder="[[_computeDescPH(feedbackType)]]"></textarea>
+				</formset>
+
+				<div id="messageContainer"></div> 
+			</modal-body>
+		
+			<modal-footer>
+				<button type="button" class="btn btn-primary" on-click="_onSend" disabled="{{!feedbackDescription}}">[[_computeSendButtonLabel(feedbackType)]]</button>
+			</modal-footer>
+		</bootstrap-modal>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var open = function () {
+				this.$.dlg.open();
+			};
+
+			var _computeDescPH = function (feedbackType) {
+				if (feedbackType === 'bug') return 'Please describe the problem you are experiencing...';
+				else if (feedbackType === 'feature') return 'Please tell us your idea!';
+				else if (feedbackType === 'chore') return 'How can we help you today?';
+			};
+
+			var _computeSendButtonLabel = function (feedbackType) {
+				if (feedbackType === 'bug') return 'Submit Bug Report';
+				else if (feedbackType === 'feature') return 'Share Idea!';
+				else if (feedbackType === 'chore') return 'Send Message';
+			};
+
+			var _onSend = function () {
+				console.log(onionConsole.currentApp);
+				this.$.feedbackAjax.body = {
+					type: this.feedbackType,
+					title: this.feedbackDescription.substring(0, 32),
+					user: this.user.name + ' <' + this.user.email + '>',
+					description: this.feedbackDescription,
+					app: onionConsole.currentApp
+				};
+
+				this.$.feedbackAjax.generateRequest();
+			};
+
+			var _handleAjaxResponse = function (request) {
+				console.log(request.detail.response);
+
+				if (request.detail.response && !request.detail.response.error) {
+					this.feedbackDescription = '';
+					onionConsole.sendNotification(
+						{
+							title: "User Feedback",
+							message: "Thank you for your feedback!",
+							image: "../../images/icon.png"
+						}
+					);
+				} else {
+					onionConsole.sendNotification(
+						{
+							title: "User Feedback",
+							message: "An error occurred. Please try again later.",
+							image: "../../images/icon.png"
+						}
+					);
+				}
+			};
+
+			Polymer({
+				is: 'bug-report-dlg',
+				open: open,
+				_onSend: _onSend,
+				_computeDescPH: _computeDescPH,
+				_computeSendButtonLabel: _computeSendButtonLabel,
+				_handleAjaxResponse: _handleAjaxResponse,
+				properties: {
+					feedbackDescription: {
+						type: String,
+						value: '',
+						notify: true
+					},
+					feedbackType: {
+						type: String,
+						notify: true,
+						value: 'bug'
+					},
+					user: {
+						type: Object,
+						value: {
+							name: '',
+							email: ''
+						}
+					}
+				}
+			});
+		})();
+	</script>
+
+</dom-module>

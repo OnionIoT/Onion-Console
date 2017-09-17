@@ -1,9 +1,13 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/lib/iron-pages/iron-pages.html">
-<link rel="import" href="/elements/onion-taskbar/onion-taskbar.html">
-<link rel="import" href="/elements/onion-notification/onion-notification.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../lib/iron-pages/iron-pages.html">
+
+
+<link rel="import" href="../../elements/onion-loading/onion-loading.html">
 <link rel="import" href="../../lib/Onion-Console/bootstrap-styles/bootstrap-styles.html">
+<link rel="import" href="../onion-styles/onion-styles.html">
+<link rel="import" href="../onion-taskbar/onion-taskbar.html">
+<link rel="import" href="../onion-notification/onion-notification.html">
 
 <dom-module id="onion-console">
 	<style>
@@ -13,32 +17,96 @@
 			width: 100%;
 			overflow: hidden;
 
-			background-image: url('/images/bg/a.jpg');
+			background-image: url('../../images/bg/a.jpg');
 		    background-attachment: fixed;
-		    background-size: cover;
+			background-size: cover;
 		}
-
+		
 		#appContainer {
+			width: auto;
+			height: 100%;
+		}
+		
+		#taskbar {
+			z-index: 35;
+/* 			position: fixed; */
+/* 			bottom: 0; */
+/* 			width: 100%; */
+/* 			height: 100%; */
+		}
+		
+		#serviceContainer {
+			display: none;
+		}
+		.console {
 			width: 100%;
+			z-index: 1000;
 			height: 100%;
 		}
 
-		#taskbar {
-			position: fixed;
-			bottom: 0;
+		#loadingScreen {
+			position: absolute;
+			z-index: 30;
 			width: 100%;
-			z-index: 1000;
+			height: 100%;
+			background-image: url('../../images/bg/a.jpg');
+			background-size: cover;
+			/*Original background colour*/
+			/*background-color: #E6E9ED;*/
+			color: rgb(130,70,110);
 		}
+		
+		#loadingScreen onion-loading {
+			height: 200px;
+			width: 200px;
+		}
+
+		.fadeLoadingScreen {
+		    -webkit-animation: fadeOut 2s;
+		    -moz-animation: fadeOut 2s;
+		    -o-animation: fadeOut 2s;
+		    animation: fadeOut 2s;
+		    animation-fill-mode: forwards;
+		}
+
+		@-webkit-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@-moz-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@-o-keyframes fadeOut {
+			from { opacity: 1; }
+			to { opacity: 0; }
+		}
+
+		@keyframes fadeOut {
+			from { opacity: 1; }
+		    to { opacity: 0; }
+		}
+
 	</style>
 
 	<template>
-		<template is="dom-if" if="{{_showTaskbar(runningApps, currentApp)}}">
-			<onion-taskbar id="taskbar" running-apps="{{runningApps}}" current-app="{{currentApp}}"></onion-taskbar>
-		</template>
 		
-		<iron-pages id="appContainer" attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
 		<div id="serviceContainer" class="hidden"></div>
-		<onion-notification id='notification'></onion-notification>
+<!-- 		Loading Screen -->
+			<div id="loadingScreen" class="layout horizontal center-center" hidden="true">
+				<onion-loading loading="true" icon="icons:settings"></onion-loading>
+			</div>
+
+<!-- 		UI Elements -->
+			<div class="console layout horizontal center">
+				<div id="serviceContainer" class="hidden"></div>
+				<onion-taskbar id="taskbar" running-apps="{{runningApps}}" current-app="{{currentApp}}"></onion-taskbar>
+				<iron-pages id="appContainer" class='flex' attr-for-selected="id" selected="{{currentApp}}"></iron-pages>
+				<onion-notification id='notification'></onion-notification>
+			</div>
+		
 		
 	</template>
 
@@ -46,104 +114,268 @@
 		'use strict';
 
 		(function () {
-			var self = {};
-
 			var created = function () {
-				self = this;
+				this.rootDir = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
 				window.onionConsole = this;
-				// this.runningApps = [];
+			};
+
+			var ready = function(){
+				// this.getService('onion-apps-provider',function(err,appsProvider){
+				// 	if(!err){
+				// 		this.appsProvider = appsProvider;
+				// 		console.log("Inside the getService callback appsProvider",appsProvider);
+				// 		// this.appsProvider.getApps(function(){
+				// 		// 	//Does nothing on purpose, just meant to initialize the apps array internally. 
+				// 		// })
+				// 	}
+				// }.bind(this));
 			};
 
 			var services = {};
 
-			var launchService = function (serviceId, callback) {
-				callback = callback || self.noop;
-
-				if (!services[serviceId]) {
-					self.importHref(['/services/' + serviceId + '/' + serviceId+ '.html?r=a2'], function () {
-						var serviceElement = document.createElement(serviceId);
-						Polymer.dom(self.$.serviceContainer).appendChild(serviceElement);
-
-						services[serviceId] = serviceElement;
-
-						callback(serviceElement);
-					});
-				}
-			};
-
-			var launchApp = function (appId, relaunch, fileName) {
-				self.set("currentApp", appId);
-
-				if (self.$.appContainer.querySelector(appId)) {
-
-					self.$.appContainer.querySelector(appId).fg();
-
-					
-
-					if (relaunch) {
-						self.$.appContainer.querySelector(appId).start();
+			var loggedIn = function (callback){
+				this.getService('onion-apps-provider',function(err,appsProvider){
+					if(!err){
+						this.appsProvider = appsProvider;
+						console.log("Inside the getService callback appsProvider",appsProvider);
+						// this.appsProvider.getApps(function(){
+						// 	//Does nothing on purpose, just meant to initialize the apps array internally. 
+						// })
+						callback();
 					}
-					
-					if (typeof fileName !== 'undefined') {
-					    self.$.appContainer.querySelector(appId).fileName=fileName;
-					    self.$.appContainer.querySelector(appId).openFolder(fileName);
-					}
-				} else {
-					self.importHref(['/apps/' + appId + '/' + appId + '.html?r=a2'], function () {
-						var appElement = document.createElement(appId);
-						appElement.setAttribute('id', appId);
-						Polymer.dom(self.$.appContainer).appendChild(appElement); 
-
-						if (typeof fileName !== 'undefined') {
-						    appElement.fileName=fileName;
-						}
-					});
-
-					if (appId!=="onion-login" && appId!=="onion-launcher"){
-						
-						self.push("runningApps", appId);
-					}
-				}
+				}.bind(this));
+				// this.refresh();
 			};
 
 			var attached = function () {
-				self.launchApp('onion-login');
-				self.getService('onion-intent-provider');
+				this.launchApp('onion-login');
+				this.getService('onion-device-provider');
+				this.getService('onion-intent-provider');
+				this.getService('onion-session-provider');
+				// TO DO: implement something like this
+				// this.getService('onion-session-provider')
+				// .then((function (session) {
+				// 	this.session = session;
+				// 	return true;
+				// }).bind(this))
+				// .then((function () {
+				// 	// Start other services
+				// 	return Promise.all([
+				// 		this.getService('onion-device-provider'),
+				// 		this.getService('onion-ubus-provider'),
+				// 	]);
+				// }).bind(this))
+				// .spread((function (deviceProvider, ubusProvider) {
+				// 	this.deviceProvider 	= deviceProvider;
+				// 	this.ubus 				= ubusProvider;
 
-
+				// 	this.launchApp('onion-login');
+				// 	this.getService('onion-intent-provider');
+				// }).bind(this))
+				// .catch((function (err) {
+				// 	console.log('console attached error!');
+				// 	console.log(err.message);
+				// 	console.log(err.stack);
+				// }).bind(this));
 			};
+
+			var launchApp = function (appId, relaunch, fileName) {
+				var loadingScreen = document.getElementById('loadingScreen');
+				var classNameNoFade = loadingScreen.className;
+				loadingScreen.hidden = false;
+				this.set('currentApp', appId);
+				console.log("Inside launchApp appID:" + appId);
+					if (this.$.appContainer.querySelector(appId)) {
+						loadingScreen.hidden = true;
+						console.log("Inside first if statement for launchApp");
+						this.$.appContainer.querySelector(appId).fg();
+
+						if (relaunch) {
+							console.log("Inside the if(relauch) statuement");
+							this.$.appContainer.querySelector(appId).start();
+						}
+						
+						if (typeof fileName !== 'undefined') {
+							this.$.appContainer.querySelector(appId).fileName = fileName;
+							this.$.appContainer.querySelector(appId).openFolder(fileName);
+						}
+					} else {
+						console.log("Inside the first else statement");
+						// get the app object by the id
+						// var appObj = this.appsProvider.getApp(appId);
+						// var classNameNoFade = loadingScreen.className
+						// loadingScreen.className = loadingScreen.className + ' fadeLoadingScreen';
+						
+						if (appId === 'onion-editor' || appId === 'onion-terminal' || appId === 'onion-webcam') {
+
+							this.importHref(['apps/' + appId + '/index.html?r=a2'], function () {
+								console.log("Inside the callback for the this.importHref");
+								var appElement = document.createElement(appId + '-installer');
+								console.log("App element:", appId + '-installer');
+								appElement.setAttribute('id', appId + '-installer');
+								Polymer.dom(this.$.appContainer).appendChild(appElement);
+								this.set('currentApp', appId + '-installer');
+								setTimeout (function(){
+									loadingScreen.className = loadingScreen.className + ' fadeLoadingScreen';
+									setTimeout (function(){
+										loadingScreen.className = classNameNoFade;
+										loadingScreen.hidden = true;
+									}, 2000);
+								}, 2000);
+								if (typeof fileName !== 'undefined') {
+									appElement.fileName=fileName;
+								}
+							}.bind(this));
+
+
+						} else {
+							this.importHref(['apps/' + appId + '/' + appId + '.html?r=a2'], function () {
+								console.log("Inside the callback for the this.importHref");
+								var appElement = document.createElement(appId);
+								console.log("App element:", appId);
+								appElement.setAttribute('id', appId);
+								Polymer.dom(this.$.appContainer).appendChild(appElement);
+								this.set('currentApp', appId);
+								setTimeout (function(){
+									loadingScreen.className = loadingScreen.className + ' fadeLoadingScreen';
+									setTimeout (function(){
+										loadingScreen.className = classNameNoFade;
+										loadingScreen.hidden = true;
+									}, 2000);
+								}, 2000);
+								if (typeof fileName !== 'undefined') {
+									appElement.fileName=fileName;
+								}
+							}.bind(this));
+
+
+							// if(this.appsProvider){
+							// 	this.appsProvider.getApp(appId, function(appObj){
+							// 		console.log(appObj);
+							// 		if (appId !== 'onion-login' && appId !== 'onion-launcher'){
+							// 			this.push('runningApps', appObj);
+							// 		}
+							// 	}.bind(this));
+							// }
+
+						}
+			
+						if(this.appsProvider){
+							this.appsProvider.getApp(appId, function(appObj){
+								console.log(appObj);
+								if (appId !== 'onion-login' && appId !== 'onion-launcher'){
+									if (this.runningApps.length === 0) {
+										this.push('runningApps', appObj);
+									}else{
+										for (var i = this.runningApps.length - 1; i >= 0; i--) { // Checking if appId is in runningApps
+											if(appId === this.runningApps[i].id){
+												break;
+											} 
+											if(i === 0) {
+												this.push('runningApps', appObj);
+												break;
+											}
+										};
+									}
+								};
+							}.bind(this));
+						};
+						
+
+
+						// add to running app list for taskbar
+						// if (appId!=='onion-login' && appId!=='onion-launcher'){
+						// 	this.push('runningApps', appId);
+						// }
+					}
+			};
+
+			var quitApp = function (appId) {
+				if (appId !== 'onion-launcher'){
+					// this.$.appContainer.querySelector(appId).quit();
+
+					// var idx = (this.runningApps).findIndex(function (element) {
+					// 	return element.id === appId;
+					// });
+					// var idx = this.runningApps.indexOf(appId);
+					// if (idx >= 0) {
+					// 	this.splice('runningApps', idx, 1);
+					// }
+
+					for( var i=0; i < this.runningApps.length ; i++){
+						if(appId === this.runningApps[i].id){
+							this.splice('runningApps',i, 1);
+						}
+					}
+					
+					this.$.appContainer.querySelector(appId).quit();
+
+					this.set('currentApp', 'onion-launcher');
+
+					Polymer.dom(this.$.appContainer).removeChild(this.$$(appId));
+
+				} else {
+					this.set('currentApp', 'onion-launcher');
+				}
+			}
 
 			var getService = function (serviceId, callback) {
-				if (serviceId in services) {
-					callback(services[serviceId]);
-				} else {
-					self.launchService(serviceId,callback);
-				}
+				return new Promise((function (resolve, reject) {
+					if (serviceId in services) {
+						resolve(services[serviceId]);
+					} else {
+						this.importHref(['services/' + serviceId + '/' + serviceId+ '.html?r=a2'], (function () {
+							var serviceElement = document.createElement(serviceId);
+							Polymer.dom(this.$.serviceContainer).appendChild(serviceElement);
+
+							services[serviceId] = serviceElement;
+
+							resolve(serviceElement);
+						}).bind(this), function (err) {
+							reject(err);
+						});
+					}
+				}).bind(this)).nodeify(callback);
 			};
 
+			var refresh = function(){
+				console.log("Inside onion-launcher refresh function");
+				this.getService('onion-apps-provider')
+				.then( (function (appsProvider) {
+					appsProvider.getApps((function(err, apps){
+						this.set('apps', apps);
+						console.log("Inside callback for getApps provider, apps=",apps);
+					}).bind(this));
+				} ).bind(this) );
+			};
+			
 			var _showTaskbar = function (runningApps, currentApp) {
-				if (runningApps.length > 0 && currentApp!=='onion-login' && currentApp!=='onion-launcher'){
+				if (runningApps.length > 0 && currentApp !== 'onion-login' && currentApp !== 'onion-launcher') {
 					return true;
-				}else{
+				} else {
 					return false;
 				}
 			}
 
 			var sendNotification = function(n){
-				self.$.notification.notify(n);
+				this.$.notification.notify(n);
 			}
 
 			Polymer({
 				is: 'onion-console',
 				noop: function () {},
 				created: created,
+				ready:ready,
 				attached: attached,
 				launchApp: launchApp,
-				launchService: launchService,
+				quitApp: quitApp,
 				getService: getService,
 				_showTaskbar: _showTaskbar,
 				sendNotification: sendNotification,
+				loggedIn: loggedIn,
+				refresh: refresh,
 				properties: {
+					apps: Array,
 					runningApps: {
 						type: Array,
 						notify: true,
@@ -152,7 +384,7 @@
 					currentApp: {
 						type: String,
 						notify: true,
-						value: ""
+						value: ''
 					}
 				},
 			});

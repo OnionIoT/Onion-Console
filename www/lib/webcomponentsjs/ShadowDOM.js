@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.18
+// @version 0.7.24
 if (typeof WeakMap === "undefined") {
   (function() {
     var defineProperty = Object.defineProperty;
@@ -163,10 +163,24 @@ window.ShadowDOMPolyfill = {};
       return this.__impl4cf1e782hg__[name].apply(this.__impl4cf1e782hg__, arguments);
     };
   }
+  // HOTFIX as per https://github.com/webcomponents/webcomponentsjs/issues/617
+  // function getDescriptor(source, name) {
+  //   try {
+  //     if (source === window && name === "showModalDialog") {
+  //       return dummyDescriptor;
+  //     }
+  //     return Object.getOwnPropertyDescriptor(source, name);
+  //   } catch (ex) {
+  //     return dummyDescriptor;
+  //   }
+  // }
   function getDescriptor(source, name) {
     try {
-      return Object.getOwnPropertyDescriptor(source, name);
+      return Object.getOwnPropertyDescriptor(source, name) || dummyDescriptor;
     } catch (ex) {
+      // JSC and V8 both use data properties instead of accessors which can
+      // cause getting the property desciptor to throw an exception.
+      // https://bugs.webkit.org/show_bug.cgi?id=49739
       return dummyDescriptor;
     }
   }
@@ -306,6 +320,7 @@ window.ShadowDOMPolyfill = {};
       });
     });
   }
+  scope.addForwardingProperties = addForwardingProperties;
   scope.assert = assert;
   scope.constructorTable = constructorTable;
   scope.defineGetter = defineGetter;
@@ -2741,7 +2756,7 @@ window.ShadowDOMPolyfill = {};
       enumerable: true
     });
   }
-  [ "getBoundingClientRect", "getClientRects", "scrollIntoView" ].forEach(methodRequiresRendering);
+  [ "focus", "getBoundingClientRect", "getClientRects", "scrollIntoView" ].forEach(methodRequiresRendering);
   registerWrapper(OriginalHTMLElement, HTMLElement, document.createElement("b"));
   scope.wrappers.HTMLElement = HTMLElement;
   scope.getInnerHTML = getInnerHTML;
@@ -3295,6 +3310,7 @@ window.ShadowDOMPolyfill = {};
 
 (function(scope) {
   "use strict";
+  var addForwardingProperties = scope.addForwardingProperties;
   var mixin = scope.mixin;
   var registerWrapper = scope.registerWrapper;
   var setWrapper = scope.setWrapper;
@@ -3319,6 +3335,10 @@ window.ShadowDOMPolyfill = {};
       unsafeUnwrap(this).texSubImage2D.apply(unsafeUnwrap(this), arguments);
     }
   });
+  var OriginalWebGLRenderingContextBase = Object.getPrototypeOf(OriginalWebGLRenderingContext.prototype);
+  if (OriginalWebGLRenderingContextBase !== Object.prototype) {
+    addForwardingProperties(OriginalWebGLRenderingContextBase, WebGLRenderingContext.prototype);
+  }
   var instanceProperties = /WebKit/.test(navigator.userAgent) ? {
     drawingBufferHeight: null,
     drawingBufferWidth: null
@@ -3364,6 +3384,7 @@ window.ShadowDOMPolyfill = {};
   var setInnerHTML = scope.setInnerHTML;
   var unsafeUnwrap = scope.unsafeUnwrap;
   var unwrap = scope.unwrap;
+  var wrap = scope.wrap;
   var shadowHostTable = new WeakMap();
   var nextOlderShadowTreeTable = new WeakMap();
   function ShadowRoot(hostWrapper) {
@@ -3399,6 +3420,22 @@ window.ShadowDOMPolyfill = {};
     },
     getSelection: function() {
       return document.getSelection();
+    },
+    get activeElement() {
+      var unwrappedActiveElement = unwrap(this).ownerDocument.activeElement;
+      if (!unwrappedActiveElement || !unwrappedActiveElement.nodeType) return null;
+      var activeElement = wrap(unwrappedActiveElement);
+      while (!this.contains(activeElement)) {
+        while (activeElement.parentNode) {
+          activeElement = activeElement.parentNode;
+        }
+        if (activeElement.host) {
+          activeElement = activeElement.host;
+        } else {
+          return null;
+        }
+      }
+      return activeElement;
     }
   });
   scope.wrappers.ShadowRoot = ShadowRoot;
@@ -4063,6 +4100,7 @@ window.ShadowDOMPolyfill = {};
   var ShadowRoot = scope.wrappers.ShadowRoot;
   var TreeScope = scope.TreeScope;
   var cloneNode = scope.cloneNode;
+  var defineGetter = scope.defineGetter;
   var defineWrapGetter = scope.defineWrapGetter;
   var elementFromPoint = scope.elementFromPoint;
   var forwardMethodsToWrapper = scope.forwardMethodsToWrapper;
@@ -4086,6 +4124,22 @@ window.ShadowDOMPolyfill = {};
   defineWrapGetter(Document, "documentElement");
   defineWrapGetter(Document, "body");
   defineWrapGetter(Document, "head");
+  defineGetter(Document, "activeElement", function() {
+    var unwrappedActiveElement = unwrap(this).activeElement;
+    if (!unwrappedActiveElement || !unwrappedActiveElement.nodeType) return null;
+    var activeElement = wrap(unwrappedActiveElement);
+    while (!this.contains(activeElement)) {
+      while (activeElement.parentNode) {
+        activeElement = activeElement.parentNode;
+      }
+      if (activeElement.host) {
+        activeElement = activeElement.host;
+      } else {
+        return null;
+      }
+    }
+    return activeElement;
+  });
   function wrapMethod(name) {
     var original = document[name];
     Document.prototype[name] = function() {

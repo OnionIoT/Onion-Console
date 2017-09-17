@@ -126,7 +126,7 @@ ShellinaboxCtrl () {
 ########################
 ##### Main Program #####
 
-appLocation="/www/apps"
+appLocation="/www/console/apps"
 
 cmdAppList="app-list"
 cmdShellinabox="shellinabox"

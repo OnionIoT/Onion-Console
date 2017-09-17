@@ -1,194 +1,386 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
 
 <dom-module id="onion-app">
 	<style>
 		:host {
-			display: block;
 			height: 100%;
 			width: 100%;
 		}
-
-		:host ::content onion-app-toolbar {
-			width: 100%;
+		
+		:host::content onion-app-body {
+			@apply(--layout-flex);
 		}
 
-			:host ::content onion-app-toolbar button {
-				border: none;
-				height: 50px;
-				line-height: 24px;
-				background-color: transparent;
-			}
-				:host ::content onion-app-toolbar button > * {
-					vertical-align: middle;
-				}
+		:host::content onion-app-toolbar button {
+			border: none;
+			height: 50px;
+			line-height: 24px;
+			background-color: transparent;
+		}
+		
+		:host::content onion-app-toolbar button:hover {
+			background-color: rgba(255, 255, 255, 0.5);
+		}
+		
+		:host::content onion-app-toolbar button > * {
+			vertical-align: middle;
+		}
+		
+		#appToolbar > button {
+			border: none;
+			height: 50px;
+			line-height: 24px;
+			background-color: transparent;
+		}
+		
+		#appToolbar > button:hover {
+			background-color: rgba(255, 255, 255, 0.5);
+		}
+		
+		#appToolbar > button > * {
+			vertical-align: middle;
+		}
+		
+		#backButton {
+			border: none;
+			height: 50px;
+			line-height: 24px;
+			padding: 0 10px;
+			background-color: transparent;
+		}
+		
+		#backButton:hover {
+			background-color: rgba(255, 255, 255, 0.5);
+		}
 
-		:host ::content onion-app-body {
+		#appFrame {
 			width: 100%;
 			height: 100%;
 		}
-
-		#appContainer {
-			display: block;
-			position: relative;
-			height: 100%;
-			width: 100%;
-			padding-top: 50px;
-		}
-			#appContainer.hide-toolbar {
-				padding-top: 0;
-			}
-
+		
 		#appToolbar {
-	    	height: 50px;
-	    	width: 100%;
-	    	position: absolute;
-	    	top: 0;
-	    	padding: 0 15px;
-	    }
+			height: 50px;
+			padding: 0 15px;
+			/*position: absolute;*/
+			/*top: 0;*/
+		}
 
-	    #launcher-button {
-	    	cursor: pointer;
-	    	--iron-icon-height: 32px;
-    		--iron-icon-width: 32px;
-	    }
+		#appBody {
+			width: 100%;
+			/*width: 100%;
+			height: 100%;*/
+			overflow-y: scroll;
+		}
 
-	    #app-name {
-	    	font-size: 20px;
-	    	margin-left: 5px;
-	    	margin-right: 50px;
-	    	white-space: nowrap;
-	    }
+		#appBody > iron-pages {
+			/*height: 100%;*/
+			@apply(--layout-flex);
+			@apply(--layout-vertical);
+		}
+		
+		#app-name {
+			font-size: 20px;
+			white-space: nowrap;
+			margin-right: 2rem;
+		}
+		
+		#appBody::-webkit-scrollbar {
+			display: none;
+		}
 	</style>
 
 	<template>
-		<div id="appContainer" class$="{{appContainerClass(hideToolbar)}}">
-			<div id="appToolbar" class="layout horizontal center" hidden="{{hideToolbar}}">
-				<div hidden="{{hideLauncher}}">
-					<iron-icon icon="icons:apps" id="launcher-button" on-tap="onLauncher"></iron-icon>
-				</div>
+		<div id="appFrame" class="appFrame layout vertical center">
+			
 
+			
+			<!-- App toolbar -->
+			<div id="appToolbar" class="self-stretch layout horizontal center" hidden="{{hideToolbar}}">
 				<div id="app-name" hidden="{{hideTitle}}">{{appName}}</div>
-
-				<content class="flex" select="onion-app-toolbar"></content>
+				
+				<template is="dom-if" if="{{showBackButton(currentPage)}}">
+					<button id="backButton" on-click="onBack">
+						<iron-icon class="toolbar-icon" icon="icons:arrow-back"></iron-icon>
+						<span>Back</span>
+					</button>
+				</template>
+				
+				
+				<div class="flex"></div>
+				
+				
+				<iron-pages attr-for-selected="page-id" selected="{{currentPage}}">
+					<content select="onion-app-toolbar"></content>
+				</iron-pages>
+				
+				<template is="dom-repeat" items="{{toolbarButtons}}">
+					<button on-tap="onToolbarButton" handler="{{item.handler}}">{{item.title}}</button>
+				</template>
+				
 			</div>
-
-			<content select="onion-app-body"></content>
+			
+			<!-- App body -->
+			<div id="appBody" class="flex layout vertical">
+				<template is="dom-if" if="{{isIframeApp}}">
+					<iframe class="flex" id="appIFrame" frameBorder="0" scrolling="no" src="{{iframeSrc}}"></iframe>
+				</template>
+				
+				<template is="dom-if" if="{{!isIframeApp}}">
+					<iron-pages attr-for-selected="page-id" selected="{{currentPage}}">
+						<content select="onion-app-body"></content>
+					</iron-pages>
+				</template>
+			</div>
 		</div>
 	</template>
 
 	<script>
 		'use strict';
 
-		(function () {
-			var self = null;
+		(function() {
+			var created = function() {};
 
-			var created = function () {
-				self = this;
+			var ready = function() {
+				this.$.appBody.style.color = this.color;
+				this.$.appBody.style.background = this.background;
+
+				this.$.appToolbar.style.color = this.toolbarColor;
+				this.$.appToolbar.style.background = this.toolbarBackground;
 			};
 
-			var ready = function () {
-				self.$.appContainer.style.color = self.color;
-				self.$.appContainer.style.background = self.background;
+			var showBackButton = function (currentPage) {
+				if (this.pageHistoryQueue) {
+					return (this.pageHistoryQueue.length > 0);
+				}
+				return false;
+			};
+			
+			// switch to the previous page in the page history queue
+			var onBack = function () {
+				var prevPage 	= this.pageHistoryQueue.pop();
+				if (prevPage) {
+					this.set('currentPage', prevPage);
+				} else {
+					this.onHome();
+				}
+			}
 
-				self.$.appToolbar.style.color = self.toolbarColor;
-				self.$.appToolbar.style.background = self.toolbarBackground;
+			var onClose = function() {
+				onionConsole.quitApp(onionConsole.currentApp);
 			};
 
-			var onLauncher = function (e) {
-				onionConsole.launchApp('onion-launcher');
-			};
+			// switch back to the home page and clear the page history queue
+			var onHome = function () {
+				this.pageHistoryQueue 	= [];	// clear the queue
+				this.set('currentPage', 'home');	
+			}
+			
+			// add the current page to the page history queue and switch to the selected page 
+			var switchPage = function (pageId) {		
+				this.pageHistoryQueue.push(this.currentPage);	// add current page to queue
+				this.set('currentPage', pageId);
+			}
 
-			var appContainerClass = function (hideToolbar) {
-				return hideToolbar ? 'hide-toolbar' : '';
-			};
+			var onToolbarButton = function (e) {
+				this.sendEvent("Onion.CDK.onToolbarButton", e.target.handler, {session: {token: onionConsole.session.accessToken}});
+			}
+			
+					// initialize iframe
+			var initFrame = function(url){
+				console.log(url);
+				var appIFrame = this.set('iframeSrc', url);
+				
+				this.eventHandlers = { 
+					addToolbarButton: this.onEventAddButton
+				}
+				window.addEventListener("message", (this.messageEventHandler).bind(this), false);
+			}
+			
+			var messageEventHandler = function(e) {
+				if(!e.data.event) return;
+				if (e.data.event.indexOf('Onion.CDK') > -1) {
+					var event = e.data.event.replace('Onion.CDK.', '');
+					var eventId = e.data.eventId;
+					var content = e.data.content;
+					
+					if ( event in this.eventHandlers) {
+						(this.eventHandlers[event]).bind(this)(content);
+					}
 
+				}
+			}
+			
+			var onEventAddButton = function (button) {
+				this.push('toolbarButtons', button);
+				console.log(button);
+			}
+			
+			var sendEvent = function(event, eventId, content) {
+				this.$$('#appIFrame').contentWindow.postMessage({
+					event: event,
+					eventId: eventId,
+					content: content
+				}, "*");
+			}
 
 			Polymer({
 				is: 'onion-app',
 				created: created,
 				ready: ready,
-	            onLauncher: onLauncher,
-	            appContainerClass: appContainerClass,
-	            properties: {
-	            	hideToolbar: Boolean,
-	            	hideLauncher: Boolean,
-	            	hideTitle: Boolean,
-	            	color: {
-	            		type: String,
-	            		value: '#333'
-	            	},
-	            	background: {
-	            		type: String,
-	            		value: '#fff'
-	            	},
-	            	toolbarColor: {
-	            		type: String,
-	            		value: '#fff'
-	            	},
-	            	toolbarBackground: {
-	            		type: String,
-	            		value: 'rgba(0, 0, 0, 0.25)'
-	            	},
-	            	appName: String
-	            }
+				showBackButton: showBackButton,
+				onBack: onBack,
+				onClose: onClose,
+				onHome: onHome,
+				switchPage: switchPage,
+				onToolbarButton: onToolbarButton,
+				initFrame: initFrame,
+				onEventAddButton: onEventAddButton,
+				sendEvent: sendEvent,
+				messageEventHandler: messageEventHandler,
+				properties: {
+					hideToolbar: {
+						type: Boolean,
+						value: false
+					},
+					hideTitle: Boolean,
+					color: {
+						type: String,
+						value: '#333'
+					},
+					background: {
+						type: String,
+						value: '#fff'
+					},
+					toolbarColor: {
+						type: String,
+						value: '#fff'
+					},
+					toolbarBackground: {
+						type: String,
+						value: 'rgba(0, 0, 0, 0.25)'
+					},
+					appName: String,
+					currentPage: {
+						type: String,
+						value: 'home'
+					},
+					pageHistoryQueue: {
+						type: Array,
+						value: [],
+						notify: true
+					},
+					isIframeApp: {
+						type: Boolean,
+						value: false,
+						notify: true
+					},
+					iframeSrc: {
+						type: String,
+						value: '',
+						notify: true
+					},
+					toolbarButtons: {
+						type: Array,
+            value: [],
+            notify: true
+					},
+					eventHandlers: {
+						type: Object,
+            value: {},
+            notify: true
+					}
+				}
 			});
-        })();
+		})();
 
-        (function () {
-        	var Onion = window.Onion = window.Onion || {};
+		(function() {
+			var Onion = window.Onion = window.Onion || {};
 
-        	var self = null;
+			var ready = function () {
+				onionConsole.getService('onion-socket-provider')
+				.then((function (socketProvider) {
+					this.socket = socketProvider;
+					this.start();
+				}).bind(this));
 
-			var created = function () {
-				self = this;
+				this.appName = this.$$('onion-app').appName || this.appName;
 			};
 
-        	var attached = function () {
-        		self.start();
-        	};
+			var start = function() {
+				console.log('Starting ' + this.appName);
+				this.socket.event(this.nodeName + ';s');
+			};
 
-        	var ready = function () {
-        		self.appName = self.$$('onion-app').appName || self.appName;
-        	};
+			var fg = function() {
+				console.log('Moving ' + this.appName + ' to the foreground');
+				this.socket.event(this.nodeName + ';f');
+			};
 
-        	var start = function () {
-        		console.log('Starting ' + self.appName);
-        	};
+			var bg = function() {
+				console.log('Moving ' + this.appName + ' to the background');
+				this.socket.event(this.nodeName + ';b');
+			};
 
-        	var fg = function () {
-        		console.log('Moving ' + self.appName + ' to the foreground');
-        	};
+			var quit = function() {
+				console.log('Quitting ' + this.appName);
+				this.socket.event(this.nodeName + ';q');
+			};
+			
+			// switch to the selected page
+			var switchPage = function (pageId) {
+				var appFrame = this.getElementsByTagName('onion-app')[0];
+				if (pageId !== 'home') {
+					appFrame.switchPage (pageId) ;
+				} else {
+					// switch to the home page
+					appFrame.onHome();
+				}
+			};
 
-        	var bg = function () {
-        		console.log('Moving ' + self.appName + ' to the background');
-        	};
+			// switch back to the page before the current one
+			var switchPageBack = function () {
+				var appFrame = this.getElementsByTagName('onion-app')[0];
+				appFrame.onBack () ;
+			};
 
-        	var quit = function () {
-        		console.log('Quitting ' + self.appName);
-        	};
+			// switch to the home page
+			var switchPageHome = function () {
+				var appFrame = this.getElementsByTagName('onion-app')[0];
+				appFrame.onHome () ;
+			};
+			
+			
+	
 
-        	Onion.AppBehavior = {
-        		properties: {
-        			appName: {
-        				type: String,
-        				value: 'Unnamed App'
-        			},
+			Onion.AppBehavior = {
+				properties: {
+					appName: {
+						type: String,
+						value: 'Unnamed App'
+					},
 					fileName: {
-					    type: String,
+						type: String,
 						value: ''
+					},
+					currentPage: {
+						type: String,
+						value: 'home'
 					}
-        		},
-        		created: created,
-        		attached: attached,
-        		ready: ready,
-        		start: start,
-        		fg: fg,
-        		bg: bg,
-        		quit: quit
-        	};
-        })();
+				},
+				ready: ready,
+				start: start,
+				fg: fg,
+				bg: bg,
+				quit: quit,
+				switchPage: switchPage,
+				switchPageBack: switchPageBack,
+				switchPageHome: switchPageHome,
+			};
+
+			
+		})();
 	</script>
 
 </dom-module>

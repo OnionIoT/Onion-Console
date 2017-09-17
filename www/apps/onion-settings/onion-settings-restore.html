@@ -1,6 +1,6 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/elements/bootstrap-alert/bootstrap-alert.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../elements/bootstrap-alert/bootstrap-alert.html">
 
 <dom-module id="onion-settings-restore">
 	<style>
@@ -76,7 +76,7 @@
 			<h4>Factory Reset</h4>
 			<div class="card card-block">
 				<bootstrap-alert danger no-close>
-					<h6>Attention!</h6>
+					<h4>Attention!</h4>
 					<p>This will erase everything on the Omega and reset the device to factory default settings. Please backup any custom files on the device before proceeding.</p>
 					<p><strong>Once the reset is done, your Omega will stop flashing.</strong></p>
 				</bootstrap-alert>
@@ -105,7 +105,7 @@
 				this.resetButtonDisabled = true;
 				
 				// get the ubus service
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
+				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
 					var params = {
 						set_trigger: 'timer'
 					};

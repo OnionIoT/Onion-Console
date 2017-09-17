@@ -1,20 +1,101 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-signals/iron-signals.html">
-<link rel="import" href="/elements/onion-app/onion-app.html">
-<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
-<link rel="import" href="/elements/bootstrap-button/bootstrap-button.html">
-<link rel="import" href="/elements/bootstrap-alert/bootstrap-alert-container.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-signals/iron-signals.html">
+<link rel="import" href="../../elements/onion-app/onion-app.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="../../elements/bootstrap-button/bootstrap-button.html">
+<link rel="import" href="../../elements/bootstrap-alert/bootstrap-alert-container.html">
 
 <dom-module id="onion-login">
 	<style>
-		bootstrap-modal ::shadow .modal-dialog {
+		:bootstrap-modal::shadow .modal-dialog {
 			width: 360px;
+		}
+		.shakeClass{
+			-webkit-animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+			-moz-animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+			-o-animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+			animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+			transform: translate3d(0, 0, 0);
+			backface-visibility: hidden;
+			perspective: 1000px;
+		}
+
+		@keyframes shake {
+		  10%, 90% {
+			transform: translate3d(-1px, 0, 0);
+		  }
+		  
+		  20%, 80% {
+			transform: translate3d(2px, 0, 0);
+		  }
+
+		  30%, 50%, 70% {
+			transform: translate3d(-4px, 0, 0);
+		  }
+
+		  40%, 60% {
+			transform: translate3d(4px, 0, 0);
+		  }
+		}
+
+		@-webkit-keyframes shake {
+		  10%, 90% {
+			transform: translate3d(-1px, 0, 0);
+		  }
+		  
+		  20%, 80% {
+			transform: translate3d(2px, 0, 0);
+		  }
+
+		  30%, 50%, 70% {
+			transform: translate3d(-4px, 0, 0);
+		  }
+
+		  40%, 60% {
+			transform: translate3d(4px, 0, 0);
+		  }
+		}
+
+		@-moz-keyframes shake {
+		  10%, 90% {
+			transform: translate3d(-1px, 0, 0);
+		  }
+		  
+		  20%, 80% {
+			transform: translate3d(2px, 0, 0);
+		  }
+
+		  30%, 50%, 70% {
+			transform: translate3d(-4px, 0, 0);
+		  }
+
+		  40%, 60% {
+			transform: translate3d(4px, 0, 0);
+		  }
+		}
+
+		@-o-keyframes shake {
+		  10%, 90% {
+			transform: translate3d(-1px, 0, 0);
+		  }
+		  
+		  20%, 80% {
+			transform: translate3d(2px, 0, 0);
+		  }
+
+		  30%, 50%, 70% {
+			transform: translate3d(-4px, 0, 0);
+		  }
+
+		  40%, 60% {
+			transform: translate3d(4px, 0, 0);
+		  }
 		}
 	</style>
 
 	<template>
 		<onion-app app-name="Login" hide-toolbar background="transparent">
-			<onion-app-body>
+			<onion-app-body page-id="home">
 				<bootstrap-modal id="loginDialog" title="Login" no-close-button modal>
 					<modal-body>
 						<form on-submit="login">
@@ -24,7 +105,7 @@
 							</fieldset>
 							<fieldset class="form-group">
 								<label for="password">Password</label>
-								<input type="password" class="form-control" id="password">
+								<input type="password" class="form-control" id="password" on-keydown="checkPasswordKey">
 							</fieldset>
 							<div id="messageContainer"></div> 
 							<button type="submit" hidden></button>
@@ -42,65 +123,100 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			// var this = null;
 
 			var created = function () {
-				self = this;
+				// this = this;
 			};
 
 			var ready = function () {
-				onionConsole.getService('onion-session-provider', function (session) {
-	            	self.session = session;
-
-	            	self.session.checkToken(function (hasToken) {
-	            		if (hasToken) {
-		            		onionConsole.launchApp('onion-launcher');
-		            		self.quit();
-		            	}
-	            	});
-	            });
+				onionConsole.getService('onion-session-provider', function (err, session) {
+					this.session = session;
+					var defaultApp = this.defaultApp;
+					
+					this.session.checkToken(function (hasToken) {
+						if (hasToken) {
+							// Added true, don't know what that will do
+							console.log("Inside the ready for onion-login");
+							this.$.username.value = '';
+							this.$.password.value = '';
+							onionConsole.loggedIn(function(){
+								onionConsole.launchApp(defaultApp);
+							});
+							// console.log(this.$.loginDialog);
+							// var backdrop = document.getElementsByTagName("iron-overlay-backdrop");
+							// setTimeout(function(){
+							// 	console.log("The backdrop is :", backdrop);
+							// 	console.log("The backdrop[0] is:", backdrop[0]);
+							// 	console.log("The parentNode of backdrop[0]:", backdrop[0].parentNode);
+							// 	// backdrop[0].parentNode.removeChild(backdrop[0]);
+							// 	Polymer.dom(backdrop[0].parentNode).removeChild(backdrop[0]);
+							// },1500);
+							// console.log("The backdrop is :", backdrop);
+							// console.log("The backdrop[0] is:", backdrop[0]);
+							// backdrop[0].parentNode.removeChild(backdrop[0]);		            			
+							// this.$.loginDialog.close();
+							this.quit();
+						}
+					}.bind(this));
+				}.bind(this));
 			};
 
 			var checkUsernameKey = function (e) {
 				if (e.which === 13) {
 					e.preventDefault();
-					self.$.password.focus();
+					this.$.password.focus();
 				}
 			};
-
+			
+			var checkPasswordKey = function (e) {
+				if (e.which === 13) {
+					e.preventDefault();
+					this.login();
+				}
+			};
+			
 			var start = function () {
-				setTimeout(function () {
-					self.$.loginDialog.open();
-				}, 1000);
+				setTimeout((function () {
+					this.$.loginDialog.open();
+				}.bind(this)), 1000);
 			};
 
 			var quit = function () {
-				setTimeout(function () {
-					self.$.loginDialog.close();
-				}, 1000);
+				setTimeout((function () {
+					this.$.loginDialog.close();
+					console.log("callback of setTimeout,inside quit is executed");
+				}.bind(this)), 1500);
 			};
 
 			var login = function (e) {
-				e.preventDefault();
+				// e.preventDefault();
+				var defaultApp = this.defaultApp;
+				var username = this.$.username.value;
+				var password = this.$.password.value;
 
-				var username = self.$.username.value;
-				var password = self.$.password.value;
-
-				self.session.login(username, password, function (result) {
+				this.session.login(username, password, function (result) {
 					if (result.success) {
-						self.$.username.value = '';
-						self.$.password.value = '';
-						onionConsole.launchApp('onion-launcher', true);
-						self.quit();
+						this.$.username.value = '';
+						this.$.password.value = '';
+						console.log("Inside login function(onion-login),about to start ", defaultApp);
+						onionConsole.loggedIn(function(){
+							onionConsole.launchApp(defaultApp, true);
+						});
+						this.quit();
 					} else {
 						var alertElement = document.createElement('bootstrap-alert');
 						alertElement.setAttribute('warning', true);
 						Polymer.dom(alertElement).innerHTML = 'Login failed.';
-
-						Polymer.dom(self.$.messageContainer).appendChild(alertElement);
+						Polymer.dom(this.$.messageContainer).appendChild(alertElement);
 						Polymer.dom.flush();
+						this.$.loginDialog.classList.remove('shakeClass');
+						setTimeout(function(){
+							this.$.loginDialog.classList.add('shakeClass');
+						}.bind(this),100);
+
 					}
-				});
+				}.bind(this));
 			};
 			
 			Polymer({
@@ -108,13 +224,22 @@
 				behaviors: [Onion.AppBehavior],
 				created: created,
 				ready: ready,
-	            login: login,
-	            attached: start,
-	            start: start,
-	            fg: start,
-	            quit: quit,
-	            checkUsernameKey: checkUsernameKey
+				login: login,
+				attached: start,
+				start: start,
+				fg: start,
+				quit: quit,
+				checkUsernameKey: checkUsernameKey,
+				checkPasswordKey: checkPasswordKey,
+				properties: {
+					defaultApp: {
+						type: String,
+						value: 'onion-launcher',
+						notify: false,
+						readOnly: true
+					}
+				}
 			});
-        })();
+		})();
 	</script>
 </dom-module>

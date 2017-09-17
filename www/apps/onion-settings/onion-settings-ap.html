@@ -1,5 +1,5 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
 
 <dom-module id="onion-settings-ap">
 	<style>
@@ -162,30 +162,35 @@
 		'use strict';
 
 		(function () {
-			var self = null;
+			// var this = null;
 
 			var created = function () {
-				self = this;
+				// this = this;
 			};
 			
 			var ready = function () {				
-				onionConsole.getService('onion-session-provider', function (sessionProvider) {
-                    self.sessionProvider = sessionProvider;
-                });
+				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
+                    this.sessionProvider = sessionProvider;
+	                // if (this.sessionProvider.isAlive() === true) {
+	                    onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
+	                        this.wifiProvider = wifiProvider;
+						}.bind(this));
+	                // };
+                }.bind(this));
 				
-                if (self.sessionProvider.isAlive() === true) {
-                    onionConsole.getService('onion-wifi-provider', function (wifiProvider) {
-                        self.wifiProvider = wifiProvider;
-					});
-                };
+     //            if (this.sessionProvider.isAlive() === true) {
+     //                onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
+     //                    this.wifiProvider = wifiProvider;
+					// });
+     //            };
 
-                self.uciId 	= -1;
+                this.uciId 	= -1;
 			};
 
 			var init = function () {
 				// grab the required info
-                var getWifiSetupPromise = self.wifiProvider.getWirelessSetup(true);
-                var getApStaticIpAddrPromise 	= self.wifiProvider.getApStaticIpAddr();
+                var getWifiSetupPromise = this.wifiProvider.getWirelessSetup(null,true);
+                var getApStaticIpAddrPromise 	= this.wifiProvider.getApStaticIpAddr();
 
                 getWifiSetupPromise.then(function (result) {
                 	console.log('getWifiSetupPromise', result);
@@ -195,74 +200,74 @@
 
                 		console.log("AP exists");
                 		if (data.disabled === '0') {
-                			self.set('enableAP', true);
+                			this.set('enableAP', true);
                 		}
                 		else if (data.disabled === '1') {
-                			self.set('enableAP', false);
+                			this.set('enableAP', false);
                 		}
                 		else {
-                			self.set('enableAP', true);
+                			this.set('enableAP', true);
                 		}
 
-                		self.set('apSsid', 		data.ssid);
-	                	self.set('apAuth', 		data.encryption);
+                		this.set('apSsid', 		data.ssid);
+	                	this.set('apAuth', 		data.encryption);
 	                	if (data.encryption === 'wep') {
-	                		self.set('apPassword', 	data.key1);	
+	                		this.set('apPassword', 	data.key1);	
 	                	} else if (data.encryption === 'psk' || data.encryption === 'psk2') {
-	                		self.set('apPassword', 	data.key);
+	                		this.set('apPassword', 	data.key);
 	                	}
 
-	                	self.uciId 	= data['.index'] - 1;
+	                	this.uciId 	= data['.index'] - 1;
                 	}
                 	else {
-                		self.set('enableAP', false);
+                		this.set('enableAP', false);
                 	}
 
-                	//console.log('uci index is ', self.uciId);
-                });
+                	//console.log('uci index is ', this.uciId);
+                }.bind(this));
 
                 getApStaticIpAddrPromise.then(function (result) {
                 	//console.log('getApStaticIpAddrPromise', result);
-                	self.set('apIp', result);
-                });				
+                	this.set('apIp', result);
+                }.bind(this));				
 			};
 
 			var onAppIcon = function (e) {
-				self.onionConsole.launchApp(e.target);
+				this.onionConsole.launchApp(e.target);
 			};
 
 			var setupAP = function () {
-				self.$.configureLoading.hidden = false;
-		    	self.$['ap-config-button'].disabled = true;
+				this.$.configureLoading.hidden = false;
+		    	this.$['ap-config-button'].disabled = true;
 
 		    	setTimeout(function () {
-		    		self.$.configureLoading.hidden = true;
-		    		self.$['ap-config-button'].disabled = false;
-		    	}, 10000);
+		    		this.$.configureLoading.hidden = true;
+		    		this.$['ap-config-button'].disabled = false;
+		    	}.bind(this), 10000);
 		    	
-			    self.apMessage = '';
+			    this.apMessage = '';
 
-			    var verifyResult = self.wifiProvider.verifyKey(self.apPassword, self.apAuth);
+			    var verifyResult = this.wifiProvider.verifyKey(this.apPassword, this.apAuth);
 				
 				if (verifyResult === 'OK') {
-			        if (self.sessionProvider.isAlive() === true) {
+			        if (this.sessionProvider.isAlive() === true) {
 			        	// if necessary add a uci wireless section for the AP
-			        	var apPreparePromise	= self.wifiProvider.prepareWifiNetwork(self.uciId);
+			        	var apPreparePromise	= this.wifiProvider.prepareWifiNetwork(null, this.uciId);
 
 			        	apPreparePromise.then(function () {
 			        		// populate the AP uci wireless section
-			        		var apSetupPromise = self.wifiProvider.setupAp(self.enableAP, self.apSsid, self.apPassword, self.apAuth, self.apIp, self.uciId);
+			        		var apSetupPromise = this.wifiProvider.setupAp(null, this.enableAP, this.apSsid, this.apPassword, this.apAuth, this.apIp, this.uciId);
 
 				        	apSetupPromise.then(function () {
-				        		self.init();
-				        	}, 
+				        		this.init();
+				        	}.bind(this), 
 				        	function (err) {
 				        		console.error(err);
 				        	});
-			        	});
+			        	}.bind(this));
 				    }
 				} else {
-				    self.apMessage = verifyResult;
+				    this.apMessage = verifyResult;
 				}
 			};
 

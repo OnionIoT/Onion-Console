@@ -1,0 +1,145 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../elements/onion-help/app-tour.html">
+
+<dom-module id="oled-tour">
+	<style>
+
+		.tour-button-container{
+			position: absolute;
+			bottom: 105px;
+			left: 12px;
+			
+			
+		}
+		.tour-button {
+			color: #5D9CEC;
+			
+			cursor: pointer;
+		}
+		
+		
+		
+		.tour-button:hover {
+			color: #4A89DC;
+		}
+
+		.tour-app-icon {
+			width: 80px;
+			height: 80px;
+			position: relative;
+			left: 50%;
+			margin-left: -40px;
+		}
+		
+		
+		
+		.tour-button-tip{
+			animation-name: fade;
+			animation-duration: 30s;
+			animation-iteration-count: infinite;
+		}
+		
+		.tour-button-tip-arrow {
+			color: white;
+			padding-right: -1px;
+		}
+		
+		.tour-button-tip-text {
+			background-color: white;
+			padding: 5px 10px;
+			color: #434a54;
+			border-radius: 5px;
+		}
+	</style>
+
+	<template>
+    <div class="tour-button-container  layout horizontal center">
+		<iron-icon class="tour-button" on-tap="showTour" icon="icons:info"></iron-icon>
+      <div class="tour-button-tip layout horizontal center">
+			<iron-icon class="tour-button-tip-arrow" icon="onion:arrow-left"></iron-icon>
+			<div class="tour-button-tip-text">Click Here for App Tour!</div>
+		  </div>
+		</div>
+		<app-tour id="oled-tour">
+			
+			<tour-title page-id="1">OLED Expansion Control</tour-title>
+			<tour-content page-id="1">
+				<p>
+					This App allows you to control the <a target='_blank' href="https://wiki.onion.io/Tutorials/Expansions/Using-the-OLED-Expansion">OLED Expansion</a> on any of your Omegas through the Cloud.
+				</p>
+			</tour-content>
+<!-- 
+			<tour-title page-id="2">Select your device</tour-title>
+			<tour-content page-id="2" for="oled-select-device">
+				<p> 
+					Select the Device to which the OLED Expansion is connected.
+				</p>
+			</tour-content>
+			 -->
+			<tour-title page-id="2">Write Text Here</tour-title>
+			<tour-content page-id="2" for="write-text">
+				<p>
+					Write text to display on the OLED screen inside this box.
+				</p>
+			</tour-content>
+			
+			<tour-title page-id="3">Display on OLED</tour-title>
+			<tour-content page-id="3" for="display-text">
+				<p> 
+					Click the button to display your message on the screen.
+				</p>
+			</tour-content>
+      
+			<tour-title page-id="4">Clear Screen</tour-title>
+			<tour-content page-id="4" for="clear-screen">
+				<p> 
+					Click here to clear the display.
+				</p>
+			</tour-content>
+      
+			<tour-title page-id="5">Toggle Invert </tour-title>
+			<tour-content page-id="5" for="toggle-invert">
+				<p> 
+					Click here to invert the display color.
+				</p>
+			</tour-content>
+			
+			<tour-title page-id="6">Toggle Dim </tour-title>
+			<tour-content page-id="6" for="toggle-dim">
+				<p> 
+				  Click here to toggle the display dimness setting. 
+				</p>
+			</tour-content>
+
+			<tour-title page-id="7">Scroll </tour-title>
+			<tour-content page-id="7" for="scroll">
+				<p> 
+					To scroll your screen, click one of the scroll options from the dropdown.
+				</p>
+			</tour-content>
+			
+			
+		</app-tour>
+		
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var showTour = function () {
+				this.$['oled-tour'].open();
+			};
+			
+		
+			Polymer({
+				is: 'oled-tour',
+				showTour: showTour,
+				properties: {
+				}
+			});
+		})();
+	</script>
+
+</dom-module>

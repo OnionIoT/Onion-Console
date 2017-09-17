@@ -1,4 +1,4 @@
-<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
 
 <dom-module id="onion-launcher-icon">
 	<style>
@@ -15,7 +15,7 @@
 			box-shadow: 0 0 50px rgba(0, 0, 0, 0.25);
 			cursor: pointer;
 		}
-  
+
 		#app-name {
 			width: 150px;
 			text-overflow: ellipsis;
@@ -27,7 +27,39 @@
 			color: white;
 			text-shadow: 0 0 50px rgba(0, 0, 0, 0.25);
 			cursor: pointer;
-            font-weight: 400;
+			font-weight: 400;
+		}
+
+		@media only screen and (max-width: 768px) {
+			:host {
+				padding: 25px;
+			}
+		}
+
+		@media only screen and (max-width: 415px) {
+			:host {
+				padding: 10px;
+			}
+
+			.icon-image {
+				height: 64px;
+				width: 64px;
+				border-radius: 64px;
+				box-shadow: 0 0 50px rgba(0, 0, 0, 0.25);
+				cursor: pointer;
+			}
+
+			#app-name {
+				font-size: 14px;
+				margin-top: 5px;
+			}
+
+		}
+
+		@media only screen and (max-width: 339px) {
+			:host {
+				padding: 0px;
+			}
 		}
 	</style>
 

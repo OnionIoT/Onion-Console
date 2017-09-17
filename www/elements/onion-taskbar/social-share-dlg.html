@@ -1,0 +1,50 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
+<!-- Go to www.addthis.com/dashboard to customize your tools -->
+<!-- <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-551d73b41e02c584"></script> -->
+
+<dom-module id="social-share-dlg">
+	<style>
+		form {
+			padding: 15px;
+		}
+		
+		bootstrap-modal {
+			width: 400px;
+		}
+	</style>
+
+	<template>
+		<bootstrap-modal id="dlg" title="Help us spread the words">
+			<modal-body>
+				<div class="addthis_sharing_toolbox"></div>
+			</modal-body>
+		</bootstrap-modal>
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var open = function () {
+				this.$.dlg.open();
+			};
+
+			Polymer({
+				is: 'social-share-dlg',
+				open: open,
+				properties: {
+					name: {
+						type: String,
+						value: "",
+					},
+					newDeviceDescription: {
+						type: String,
+						value: "",
+					},
+				}
+			});
+		})();
+	</script>
+
+</dom-module>

@@ -1,0 +1,72 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
+
+<dom-module id="about-onion">
+	<style>
+	.sizing {
+		text-align: center;
+	}
+	.onionIcon {
+		height: 120px;
+		width: 120px;
+		padding: 5px;
+	}
+
+	.about-button-container {
+		position: absolute;
+		bottom: 110px;
+		left: 12px;	
+	}
+	.about-button {
+		color: #FFFFFF;
+	}
+	.about-button:hover {
+		color: #4A89DC;
+	}
+
+	</style>
+
+	<template>
+		<!-- About Button -->
+		<div class="about-button-container layout horizontal center">
+			<iron-icon class="about-button" on-tap="open" icon="icons:copyright"></iron-icon>
+		</div>
+
+		<!-- About Dialogue -->
+		<bootstrap-modal id="aboutOnion" title="Onion Cloud">
+			<iron-ajax id="version-info" auto url="{{versionInfoPath}}" last-response="{{versionData}}"></iron-ajax>
+
+			<modal-body>
+				<div class="sizing">
+					<div><img src="../../images/icon.png" class="onionIcon" alt="Onion Corporation"></div>
+					Version <span>{{versionData.version}}</span>, Build <span>{{versionData.build}}</span>
+					<br><br>
+					<b>© 2016 Onion Corporation</b><br>All Rights Reserved.<br>
+					<a target='_blank' href="https://onion.io/tos" style="color:black">Terms of Service</a> | <a target='_blank' href="https://onion.io/privacy-policy" style="color:black">Privacy Policy</a>
+				</div>
+			</modal-body>
+			<modal-footer>
+			</modal-footer>
+		</bootstrap-modal>
+	</template>
+
+	<script>
+		'use strict';
+		(function () {
+			var open = function () {
+				this.$.aboutOnion.open();
+			};
+			Polymer({
+				is: 'about-onion',
+				open: open,
+				properties: {
+					versionInfoPath: {
+						type: String,
+						value: '/console/info.json'
+					}
+				},
+			});
+		})();
+
+	</script>
+</dom-module>

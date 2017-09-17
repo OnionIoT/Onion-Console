@@ -1,0 +1,191 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../elements/bootstrap-styles/bootstrap-styles.html">
+
+<dom-module id="bootstrap-dropup">
+	<style>
+		.dropdown-toggle::after {
+			margin: none;
+			border: none;	
+		}
+		.dropdown-menu ::content > li > a,
+		.dropdown-menu ::content > a {
+		    display: block;
+		    padding: 3px 20px;
+		    font-weight: 400;
+		    line-height: 1.42857143;
+		    white-space: nowrap;
+		    min-width: 80px;
+		}
+		.hidden {
+			display:none !important;
+		}
+
+		:host ::content li {
+			padding: 0px 20px;
+			cursor: pointer;
+		}
+
+		:host ::content li:hover {
+			background-color: #ECEEEF;
+		}
+	</style>
+
+	<template>
+		<div class="">
+			<div id="backdrop" class="dropdown-backdrop hidden"></div>
+          	<ul id="dropdown" class="dropdown-menu" role="menu">
+	            <content></content>
+          	</ul>
+        </div>
+	</template>
+
+	<script>
+		'use strict';
+		(function () {			
+			Polymer({
+				is: 'bootstrap-dropup',
+				hostAttributes: {
+			        role: 'dropup',
+			        tabindex: -1
+		      	},
+				properties: {
+					position: {
+			          	type: String,
+			          	value: 'top'
+			        },
+			        for: {
+			        	type: String,
+			        	observer: '_forChanged'
+			        },
+			        offset: {
+			          	type: Number,
+	         			value: 2
+			        },
+			        _showing: {
+		            	type: Boolean,
+		          		value: false
+			        },
+			        isSub: {
+			        	type: Boolean,
+			        	value: false
+			        }
+				},
+		      	get target () {
+		      		var ownerRoot = Polymer.dom(this).getOwnerRoot();
+	      			var target;
+		      		
+		      		target = Polymer.dom(ownerRoot).querySelector('#' + this.for);
+		      		console.log(this.position);
+			        return target;
+		      	},
+		      	domReady: function() {
+			        this.windowResize();
+			    },
+		      	windowResize: function() {
+		      		this.updatePosition();
+		      	},
+		      	ready: function() {
+		      		console.log("res");
+		      		var that = this;
+			        if (document.readyState != 'loading') {
+			            this.domReady();
+			        } else {
+			            window.addEventListener('DOMContentLoaded', function () { that.domReady(); });
+			        }
+		      		window.addEventListener("resize", function() { that.windowResize(); });
+		      	},
+		      	attached: function() {
+			        this._target = this.target;
+			        console.log(this.isSub);
+			        if (this._target) {
+			        	if(this.isSub) {
+				        	this.listen(this._target, 'mouseenter', 'show');
+				        	this.listen(this._target, 'mouseleave', 'hide');
+			        		this.listen(this._target, 'focus', 'show');
+			        		this.listen(this.$.backdrop, 'mouseenter', 'hide');
+				        } else {
+				        	this.listen(this._target, 'tap', 'show');
+				        	this.listen(this.$.dropdown, 'tap', 'hide');
+				        	this.listen(this.$.backdrop, 'tap', 'hide');
+				        }			        	
+			        }
+		      	},		      	
+		      	detached: function() {
+			        if (this._target) {
+				        if(this.isSub) {
+				        	this.unlisten(this._target, 'mouseenter', 'show');
+				        	this.unlisten(this._target, 'mouseleave', 'hide');
+			        		this.unlisten(this._target, 'focus', 'show');
+			        		this.unlisten(this.$.backdrop, 'mouseenter', 'hide');
+				        } else {
+				        	this.unlisten(this._target, 'tap', 'show');
+				        	this.unlisten(this.$.dropdown, 'tap', 'hide');
+				        	this.unlisten(this.$.backdrop, 'tap', 'hide');
+				        }
+			        }
+		      	},
+		      	show: function() {
+		      		console.log("show");
+		      		if(this._showing) {
+		      			return;
+		      		}
+			        this._showing = true;
+			        this.toggleClass('open', true, Polymer.dom(this).firstChild.parentElement.parentElement);
+			        this.toggleClass('hidden', false, this.$.backdrop);
+			        this.updatePosition();
+		      	},
+		      	hide: function() {
+		      		console.log("hide");
+		      		if(!this._showing) {
+		      			return;
+		      		}
+			        this._showing = false;
+			        this.toggleClass('open', false, Polymer.dom(this).firstChild.parentElement.parentElement);
+			        this.toggleClass('hidden', true, this.$.backdrop);
+			        this.updatePosition();
+		      	},
+		      	hide2: function() {
+		      	},
+		      	_forChanged: function() {
+			        this._target = this.target;
+			    },
+		      	updatePosition: function() {
+			        if (!this._target || !this.offsetParent) {
+			          	return;
+			        }
+			        var offset = this.offset;
+			        var parentRect = this.offsetParent.getBoundingClientRect();
+			        var targetRect = this._target.getBoundingClientRect();
+			        var thisRect = this.$.dropdown.getBoundingClientRect();
+			        var horizontalCenterOffset = (targetRect.width - thisRect.width) / 2;
+			        var verticalCenterOffset = (targetRect.height - thisRect.height) / 2;
+			        var targetLeft = targetRect.left - parentRect.left;
+			        var targetTop = targetRect.top - parentRect.top;
+			        var dropdownLeft, dropdownTop;
+			        var thisWidth = thisRect.right - thisRect.left;
+			        var targetWidth = targetRect.right - targetRect.left;
+			        switch (this.position) {
+			          	case 'top':
+				            dropdownLeft = targetLeft; //+ horizontalCenterOffset;
+				            dropdownTop = targetTop - thisRect.height - offset;
+				            break;
+			          	case 'bottom':
+				            dropdownLeft = targetLeft; // + horizontalCenterOffset;
+				            dropdownTop = targetTop + targetRect.height + offset;
+				            break;
+			          	case 'left':
+				            dropdownLeft = targetLeft - thisWidth;
+				            dropdownTop = targetTop; // + verticalCenterOffset;
+				            break;
+			          	case 'right':
+				            dropdownLeft = targetLeft + targetWidth;
+				            dropdownTop = targetTop; // + verticalCenterOffset;
+				            break;
+			        }
+		          	this.$.dropdown.style.left = dropdownLeft + 'px';
+		          	this.$.dropdown.style.top = dropdownTop + 'px';		        
+		      	}
+			});
+		})();
+	</script>
+</dom-module>

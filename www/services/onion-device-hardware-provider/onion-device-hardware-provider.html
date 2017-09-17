@@ -1,0 +1,400 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+
+<dom-module id="onion-device-hardware-provider">
+	<script>
+		'use strict';
+
+		(function () {
+
+			var ready = function (){
+				onionConsole.getService('onion-device-provider', (function (err, api) {
+					this.deviceApi = api;
+				}).bind(this));		
+			};
+
+			/// RELAY EXPANSION FUNCTIONS ///
+			var relayGetChannelState = function (deviceId, channel, address, callback) {
+				return new Promise((function (resolve, reject) {
+					// console.log('Running relayGetChannelState w/ ', channel, address, ' on device: ', deviceId);
+					this.deviceApi.callService(deviceId,'i2c_exp', 'relay-exp', {
+						command: 'get',
+						params: {
+							channel: channel,
+							address: address
+						}
+					}, (function (err,data) {
+
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var relaySetChannelState = function (deviceId, channel, state, address, callback) {
+				return new Promise((function (resolve, reject) {
+					//console.log("i2c_Address:",address);
+					//console.log('Running relaySetChannelState w/ ', channel, state, address, ' on device: ', deviceId);
+					this.deviceApi.callService(deviceId,'i2c_exp', 'relay-exp', {
+						command: 'set',
+						params: {
+							channel: channel,
+							state: state,
+							address: address
+						}
+					}, (function (err,data) {
+						 console.log('relaySetChannel return:', data);
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var relayComputeI2cAddr = function (s1, s2, s3) {
+				return '0x' + (0x20 + (s1 ? 1 : 0) + (s2 ? 2 : 0) + (s3 ? 4 : 0)).toString(16);
+			};
+
+			var relayComputeSwitchString = function (s1, s2, s3) {
+				return (s1 ? '0' : '1') + (s2 ? '0' : '1') + (s3 ? '0' : '1');
+			};
+
+			/// SERVO EXPANSION FUNCTIONS ///
+			var pwmGetDefaultFrequency = function () {
+				return (50);
+			};
+
+			var pwmSleep = function (deviceId, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'pwm-exp', {
+						command: 'sleep'
+					}, (function (err,data) {
+						console.log(data);
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var pwmWake = function (deviceId, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'pwm-exp', {
+						command: 'init'
+					}, (function (err,data) {
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var pwmSetChannelDutyCycle = function (deviceId, channel, duty, options, callback) {
+				return new Promise((function (resolve, reject) {
+					// populate the params object
+					var paramsObj	= {
+						channel: channel,
+						duty: duty
+					}
+
+					// if options is a function, use that as the callback
+					if (typeof options === "function") {
+						callback = options;
+					} else {
+						// options is an object 
+						if ('delay' in options && options.delay) {
+							paramsObj.delay 	= options.delay;
+						}
+						if ('frequency' in options && options.frequency) {
+							paramsObj.frequency = options.frequency;
+						}
+					}
+					// console.log('pwmSetChannelDutyCycle:: sending ', paramsObj);
+
+					// make the call to the device
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'pwm-exp', {
+						command: 'set',
+						params: paramsObj
+					}, (function (err,data) {
+						// console.log('pwm-exp call returned: ', data);
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var pwmSetChannelPwm = function (deviceId, channel, pulseWidth, period, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'pwm-exp', {
+						command: 'set-period',
+						params: {
+							channel: channel,
+							pulse: pulseWidth,
+							period: period
+						}
+					}, (function (err,data) {
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+
+			/// OLED EXPANSION FUNCTIONS ///
+			var oledInit = function (deviceId, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'oled-exp', {
+						command: 'set',
+						option: 'i',
+						params: {}
+					}, (function (err,data) {
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var oledClear = function (deviceId, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'oled-exp', {
+						command: 'set',
+						option: 'c',
+						params: {}
+					}, (function (err,data) {
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var oledInvert = function (deviceId, bInvert, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'oled-exp', {
+						command: 'set',
+						params: {
+							invert: bInvert === true ? 'on' : 'off'
+						}
+					}, (function (err,data) {
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var oledDim = function (deviceId, bDim, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'oled-exp', {
+						command: 'set',
+						params: {
+							dim: bDim === true ? 'on' : 'off'
+						}
+					}, (function (err,data) {
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var oledScroll = function (deviceId, scrollDirection, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'oled-exp', {
+						command: 'set',
+						params: {
+							scroll: scrollDirection
+						}
+					}, (function (err,data) {
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var oledWrite = function (deviceId, text, options, callback) {
+				return new Promise((function (resolve, reject) {
+					// if options is a function, use that as the callback
+					var optionText		= '';
+					if (typeof options === "function") {
+						callback = options;
+					} else {
+						// options is an object: check for init and clear
+						if ('init' in options && options.init) {
+							optionText	= 'i';
+						}
+						if ('clear' in options && options.clear) {
+							optionText	= 'c';
+						}
+					}
+					// make any changes to the text as required
+					var textModified = text.replace(/\n/g, '\\\\\n').replace(/'/g, '').replace(/"/g, '')
+
+					// make the call to the device
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'oled-exp', {
+						command: 'set',
+						option: optionText,
+						params: {
+							write: textModified
+						}
+					}, (function (err,data) {
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var oledDraw = function (deviceId, filename, options, callback) {
+				return new Promise((function (resolve, reject) {
+					// if options is a function, use that as the callback
+					var optionText		= '';
+					if (typeof options === "function") {
+						callback = options;
+					} else {
+						// options is an object: check for init and clear
+						if ('init' in options && options.init) {
+							optionText	= 'i';
+						}
+						if ('clear' in options && options.clear) {
+							optionText	= 'c';
+						}
+					}
+
+					// make the call to the device
+					this.deviceApi.callService(deviceId, 'i2c_exp', 'oled-exp', {
+						command: 'set',
+						option: optionText,
+						params: {
+							draw: filename
+						}
+					}, (function (err,data) {
+						console.log('oled-exp set draw ubus response:', data);
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+
+
+			/// GPIO FUNCTIONS ///
+			var gpioGetPinStatus = function (deviceId, gpio, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId,'onion', 'gpio', {
+						command:'status',
+						params: {
+							gpio: gpio
+						}
+					}, (function (err,data) {
+						console.log(data);
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var gpioSetPin = function (deviceId, gpio, value, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId,'onion', 'gpio', {
+						command: 'set',
+						params: {
+							gpio: gpio, 
+							value: value
+						}
+					}, (function (err,data) {
+						console.log(data)
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+			var gpioSetPinDirection = function (deviceId, gpio, direction, callback) {
+				return new Promise((function (resolve, reject) {
+					this.deviceApi.callService(deviceId,'onion', 'gpio', {
+						command: 'set-direction',
+						params: {
+							gpio: gpio, 
+							value: direction
+						}
+					}, (function (data) {
+						console.log(err,data)
+						if (err) {
+							reject(data);
+						} else {
+							resolve(data);
+						}
+					}).bind(this));
+				}).bind(this)).nodeify(callback);
+			};
+
+
+
+			Polymer({
+				is: 'onion-device-hardware-provider',
+				ready: ready,
+
+				relayGetChannelState: relayGetChannelState,
+				relaySetChannelState: relaySetChannelState,
+				relayComputeI2cAddr: relayComputeI2cAddr,
+				relayComputeSwitchString: relayComputeSwitchString,
+
+				pwmSleep: pwmSleep,
+				pwmWake: pwmWake,
+				pwmSetChannelDutyCycle: pwmSetChannelDutyCycle,
+				pwmSetChannelPwm: pwmSetChannelPwm,
+
+				oledInit: oledInit,
+				oledClear: oledClear,
+				oledInvert: oledInvert,
+				oledDim: oledDim,
+				oledScroll: oledScroll,
+				oledWrite: oledWrite,
+				oledDraw: oledDraw,
+
+				gpioGetPinStatus: gpioGetPinStatus,
+				gpioSetPin: gpioSetPin,
+				gpioSetPinDirection: gpioSetPinDirection,
+
+			});
+		})();
+	</script>
+</dom-module>

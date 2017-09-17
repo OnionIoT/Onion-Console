@@ -7,13 +7,22 @@
         <meta name="description" content="Home page for Onion Corporation" />
         <meta name="author" content="Onion Corporation" />
 		<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-		<link rel="icon" type="image/png" href="/images/icon.png">
+		<link rel="icon" type="image/png" href="./images/icon.png">
 
-		<script src="/lib/webcomponentsjs/webcomponents.js"></script>
-		<link rel="import" href="/elements/onion-styles/onion-styles.html">
-		<link rel="import" href="/elements/onion-console/onion-console.html?r=a2">
+		<script src="./lib/webcomponentsjs/webcomponents.js"></script>
+		<link rel="import" href="./elements/onion-styles/onion-styles.html">
+		<script src="./lib/bluebird/bluebird.min.js"></script>
+		<script>
+		Promise.config({
+			warnings: false
+		});
+		</script>
+		<link rel="import" href="./elements/onion-console/onion-console.html?r=a2">
 	</head>
 	<body class="fullbleed">
 		<onion-console></onion-console>
 	</body>
+	
 </html>
+
+

@@ -40,6 +40,9 @@
                                 ],
                                 "uci": [
                                         "*"
+                                ],
+                                "onion-helper": [
+                                        "*"
                                 ]
                         },
                         "uci": [
@@ -93,7 +96,12 @@
                                 "network",
                                 "onion",
                                 "mjpg-streamer"
-                        ]
+                        ],
+                        "cgi-io": {
+                                "upload": [
+                                        "write"
+                                ]
+                        }
                 }
         }
 

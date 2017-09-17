@@ -1,10 +1,13 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/lib/juicy-ace-editor/src/juicy-ace-editor.html">
-<link rel="import" href="/lib/iron-icons/iron-icons.html">
-<link rel="import" href="/elements/onion-app/onion-app.html">
-<link rel="import" href="/elements/bootstrap-modal/bootstrap-modal.html">
-<link rel="import" href="/elements/onion-file-list/onion-file-list.html">
+<link rel="import" href="../../elements/bootstrap-pills/bootstrap-pills.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../lib/juicy-ace-editor/src/juicy-ace-editor.html">
+<link rel="import" href="../../lib/iron-icons/iron-icons.html">
+<link rel="import" href="../../elements/onion-app/onion-app.html">
+<link rel="import" href="../../lib/Onion-Console/bootstrap-modal/bootstrap-modal.html">
+<link rel="import" href="../../elements/onion-file-list/onion-file-list.html">
+<link rel="import" href="../../elements/onion-loading/onion-loading.html">
+<link rel="import" href="../../elements/onion-upload/onion-upload.html">
 
 <dom-module id="onion-editor">
 	<style>
@@ -12,9 +15,19 @@
 		    display: block;
 	  	    height: 100%;
 			width: 100%;
+			--bootstrap-pill-border-radius: 3px;
+			--bootstrap-pill-color: #373a3c;
+			--bootstrap-pill-min-width: 130px;
+			--bootstrap-pill-text-align:left;
+			--bootstrap-pill-padding:.2em 1em;
 		}
 
 		onion-app-body > div {
+			height: 100%;
+			width: 100%;
+		}
+
+		onion-app-body{
 			height: 100%;
 			width: 100%;
 		}
@@ -25,30 +38,33 @@
 			position: relative;
 		}
 
-			#current-folder {
-				font-size: 13px;
-				position: absolute;
-				top: 0;
-				width: 100%;
-			    color: black;
-			    background-color: #bdc3c7;
-				font-family: monospace;
-				padding: 10px;
-	            line-height: 20px;
-	            z-index: 10;
-			}
+		.fileCloseIcon{
+			width: 15px;
+			height: 15px;
+			margin: 5px;
+			float: right;
+			margin-right: 0px;
+		}
 
-			onion-file-list {
-				width: 100%;
-				height: 100%;
-				padding-top: 40px;
-				background-color: #ecf0f1;
-				overflow: scroll;
-			}
+		.fileCloseIcon:hover{
+			cursor: pointer;
+			border: solid;
+			border-width: thin;
+		}
+
+		onion-file-list {
+			width: 100%;
+			height: 100%;
+			padding-top: 20px;
+			background-color: #ecf0f1;
+			overflow-y:scroll;
+		}
 
 		#editor-container {
 		    width: 100%;
 			height: 100%;
+			background-color:#373a3c;
+			overflow: hidden;
 		}
 
 	    #fileEditor {
@@ -71,9 +87,9 @@
 			padding: 0 10px;
 			background-color: transparent;
 		}
-			onion-app-toolbar button:hover {
-				background-color: rgba(255, 255, 255, 0.5);
-			}
+		onion-app-toolbar button:hover {
+			background-color: rgba(255, 255, 255, 0.5);
+		}
 		onion-app-toolbar button > iron-icon {
 			margin-right: 5px;
 		}
@@ -81,35 +97,67 @@
 		:host ::content .ace_search_field {
 			color: #333!important;
 		}
+		#placeHolderPill > li{
+			opacity: 0;
+		}
 	</style>
 	<template>
 		<onion-app app-name="Editor" toolbar-background="#34495e" toolbar-color="#fff">
-			<onion-app-toolbar>
+			<onion-app-toolbar page-id="home">
 				<div class="layout horizontal">
 					<div class="flex">
-						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>New Folder</span></button>
-						<button on-click="newFileDialog"><iron-icon class="toolbar-icon" icon="icons:note-add"></iron-icon><span>New File</span></button>
-						<button on-click="deleteFolderDialog" disabled="disabled" id="deleteFolderButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
-						<button on-click="deleteFileDialog" disabled="disabled" id="deleteFileButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon></span><span>Delete File</span></button>
-						<button on-click="renameFolderDialog" disabled="disabled" id="renameFolderButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename Folder</span></button>
-					    <button on-click="renameFileDialog" disabled="disabled" id="renameFileButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename File</span></button>
+						<button on-click="launchUploadFile" id="uploadFileButton"><iron-icon class="toolbar-icon" icon="icons:folder"></iron-icon><span>Upload File</span></button>
+						<button on-click="newFolderDialog"><iron-icon class="toolbar-icon" id="newFolderButton" icon="icons:folder"></iron-icon><span>New Folder</span></button>
+						<button on-click="newFileDialog"><iron-icon class="toolbar-icon" id="newFileButton" icon="icons:note-add"></iron-icon><span>New File</span></button>
+						<button on-click="deleteFolderDialog" id="deleteFolderButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon><span>Delete Folder</span></button>
+						<button on-click="deleteFileDialog" id="deleteFileButton"><iron-icon class="toolbar-icon" icon="icons:delete"></iron-icon></span><span>Delete File</span></button>
+						<button on-click="renameFolderDialog" id="renameFolderButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename Folder</span></button>
+					    <button on-click="renameFileDialog"  id="renameFileButton"><iron-icon class="toolbar-icon" icon="icons:create"></iron-icon></span><span>Rename File</span></button>
 					</div>
 					<div>
-						<button on-click="saveFile"><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
-						<button on-click="closeFile"><iron-icon class="toolbar-icon" icon="icons:close"></iron-icon><span>Close</span></button>
+						<button id="saveFileButton" on-click="saveFileListener"><iron-icon class="toolbar-icon" icon="icons:check"></iron-icon><span>Save</span></button>
 					</div>
 				</div>
 			</onion-app-toolbar>
 
-			<onion-app-body>
+			<onion-app-body page-id="home">
 				<div class="horizontal layout">
 					<div id="side-bar">
-					    <div id="current-folder">{{currentFolder}}</div>
-						<onion-file-list id="fileList">No File</onion-file-list>
+<!-- 					    <div id="current-folder">{{currentFolder}}</div> -->
+						<onion-file-list id="fileList" on-open="fileClick" files="{{files}}" current-folder="{{currentFolder}}">No File</onion-file-list>
 					</div>
-
-					<div id="editor-container" class="flex">
-					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px">{{currentCode}}</juicy-ace-editor>
+					<div id="editor-container" class="flex vertical-layout-center-center">
+						<bootstrap-modal id="fileUploadDialog" title="Upload A File!">
+							<modal-body>
+								<onion-upload session-id="{{sessionId}}" current-folder="{{currentFolder}}" on-reload="refreshFolder" on-close="closeModal"></onion-upload>
+							</modal-body>
+						</bootstrap-modal>
+						<bootstrap-modal id="confirmDialogue" title="">
+							<modal-body class="vertical layout center-center">
+<!-- 								<form id="confirmForm"> -->
+								<div id="textInputContainer">
+									<input type="text" id="textField" value={{textInput::input}} on-keyup="textEnter"></input>
+								</div>
+								<div id="dialogueButtonContainer" class="horizontal layout center-center">
+									<input type="button" id="noButton" on-click="noButtonListener" value={{noButtonText::input}}></input>
+									<input type="button" id="yesButton" on-click="yesButtonListener" value={{yesButtonText::input}}></input>
+								</div>
+<!-- 								</form> -->
+							</modal-body>
+						</bootstrap-modal>
+						<bootstrap-pill opaque id="placeHolderPill">
+							<span>PlaceHolder</span>
+						</bootstrap-pill>
+						<bootstrap-pills selected="{{currentTab}}">
+							<template is="dom-repeat" items="{{openFiles}}">
+								<bootstrap-pill>
+									<span>{{item.name}}
+									</span>
+									<iron-icon on-click="fileCloseIconListener" hidden$="{{showClose(index,currentTab)}}" class="fileCloseIcon" icon="icons:close"></iron-icon>
+								</bootstrap-pill>
+							</template>
+						</bootstrap-pills>
+					    <juicy-ace-editor id="fileEditor" theme="ace/theme/monokai" mode="ace/mode/text" fontsize="13px"></juicy-ace-editor>
 					</div>
 				</div>
 			</onion-app-body>
@@ -118,409 +166,1036 @@
 	<script>
 		'use strict';
 		(function () {
-			var self = null;
+			// var this = null;
 
 			var created = function () {
-				self = this;
+				// this = this;
 			};
 
-			var folderFileInfo = null,
-				backsplash = null,
-				extSymbol = null;
+			var submitUpload = function(){
+				// console.log(this.$.fileSelectionInput.value);
+			};
+
+			var textEnter = function(e){
+				console.log(e);
+				if(e.code=="Enter" && e.key=="Enter"){
+					this.yesButtonListener(e);
+				}
+			};
+
+			var showClose = function(index,currTab){
+				console.log("showClose Gets Called");
+				console.log("index", index);
+				console.log("currTab", currTab);
+				if(index == currTab){
+					return false;
+				}else{
+					return true;
+				}
+			};
+			var closeModal = function() {
+				this.$.fileUploadDialog.close();
+			};
+
+			var backsplash = null;
+			var extSymbol = null;
+
+			var launchUploadFile = function(){
+				this.$.fileUploadDialog.open();
+			};
+
+			var hideFolderButtons = function(){
+				this.$.renameFolderButton.hidden = true;
+				this.$.deleteFolderButton.hidden = true;
+			};
+
+			var showFolderButtons = function(){
+				this.$.renameFolderButton.hidden = false;
+				this.$.deleteFolderButton.hidden = false;
+			};
+
+			var hideFileButtons = function(){
+				this.$.saveFileButton.disabled=true;
+				// this.$.closeFileButton.disabled=true;
+				this.$.renameFileButton.disabled=true;
+				this.$.deleteFileButton.disabled=true;
+				this.$.saveFileButton.hidden=true;
+				// this.$.closeFileButton.hidden=true;
+				this.$.renameFileButton.hidden=true;
+				this.$.deleteFileButton.hidden=true;
+			};
+
+			var showFileButtons = function(){
+				this.$.saveFileButton.disabled=false;
+				// this.$.closeFileButton.disabled=false;
+				this.$.renameFileButton.disabled=false;
+				this.$.deleteFileButton.disabled=false;
+				this.$.saveFileButton.hidden=false;
+				// this.$.closeFileButton.hidden=false;
+				this.$.renameFileButton.hidden=false;
+				this.$.deleteFileButton.hidden=false;
+			};
+
+			var fileClick = function(e){
+				console.log("fileEventClick",e.detail);
+				var fileObj  = e.detail;
+				fileObj.fileName = fileObj.name;
+				if(this.isFile(fileObj)){
+					this.openFile(fileObj);
+				}else{
+					this.openFolder(fileObj);
+				}
+			};
+
+			var fileCloseIconListener = function(e){
+				this.closeFileListener();
+			};
+
+			var enterPressed = function(e){
+				console.log(e);
+				console.log("Enter was pressed");
+				//this.yesButtonListener()
+			};
+
+			var openFile = function(fileObj){
+				//Is fileObj in the openFile Array 
+				this.isFileInArray(fileObj,this.openFiles,function(bPresent){
+					console.log("Is file opened?,:",bPresent);
+					if(bPresent){
+						//Modify the fileName attribute
+						// fileObj.fileName = fileObj.absolutePath;
+						//Bring it to the forefront
+						console.log("file Is in Array, do not add it.");
+						this.getfileIndex(fileObj,this.openFiles,function(index){
+							console.log(index);
+							this.currentTab = index;
+						}.bind(this));
+					} else{
+						//Do need to add it. 
+						console.log("files is not in Array, It needs to be added");
+						this.addFileToArray(fileObj,function(){
+							//And also Bring it to the forefront
+							this.getfileIndex(fileObj,this.openFiles,function(index){
+								console.log(index);
+								this.currentTab = index;
+								console.log(this.currentTab);
+								console.log(this.fileIndex);
+							}.bind(this));
+						}.bind(this));
+					}
+				}.bind(this));
+			};
+
+
+			var addFileToArray = function(fileObj,callback){
+				console.log("addfileToArray gets called, fileObj is:",fileObj);
+				this.getFileCode(fileObj.absolutePath,function(code){
+					console.log(code);
+					fileObj.code = code;
+					fileObj.selected = false;
+					fileObj.bSave = false;
+					fileObj.language = this.getLang(fileObj.name);
+					this.isFileNameSame(fileObj,this.openFiles,function(isSame){
+						console.log("Inside callback of isFileNameSame, isSame",isSame);
+						if(isSame){
+							this.modFileName(fileObj.absolutePath,function(newName){
+								console.log("newName",newName);
+								fileObj.name = newName;
+								console.log("fileObj",fileObj);
+								this.push('openFiles',fileObj);
+								callback();
+							}.bind(this));
+						}else{
+							this.push('openFiles',fileObj);
+							callback();
+						}
+					}.bind(this));
+				}.bind(this));
+				//return the last index of the array
+			};
+
+			var isFileNameSame = function(fileObj,fileArray,callback){
+				var isSame = false;
+				if(fileArray.length == 0){
+					callback(isSame);
+				} else{
+					var lastIndex = fileArray.length -1;
+					fileArray.forEach(function(element,index){
+						if(element.name == fileObj.name){
+							isSame = true;
+						}
+						if(index == lastIndex){
+							callback(isSame)
+						}
+					}.bind(this));
+				}
+			};
+
+			var modFileName = function(absolutePath,callback){
+				var str = String(absolutePath);
+				var strLength = str.length - 1;
+				var modIndex = str.substring(0,str.lastIndexOf('/')).lastIndexOf('/');
+				var modString = str.substring(modIndex,strLength);
+				callback(modString);		
+			};
+
+			var getfileIndex = function(fileObj,array,callback){
+				var ind = array.forEach(function(element,index){
+					if(fileObj.absolutePath == element.absolutePath){
+						callback(index);
+					}
+				});
+			};
+
+			var getFileCode = function(filePath,callback){
+				this.fileProvider.getFile(null,filePath,function (response){
+					if(response.status == 'success'){
+						var code = response.data;
+						callback(code);
+					} else{
+						//Error For Unable to Open the 
+						//Maybe open a modal here;
+					}
+				});
+			};
+
+			var isFileInArray = function(obj,array,callback){
+				console.log("isFileInArray gets called");
+				var length = array.length;
+				var ind = length - 1;
+				var bPress = false;
+				console.log(array);
+				if(array.length == 0){
+					console.log("The array is empty and callback should be called");
+					callback(bPress);
+					return;
+				} else{
+					array.forEach(function(element,index){
+						if(obj.absolutePath == element.absolutePath){
+							bPress = true;
+							console.log(bPress);
+							callback(bPress);
+						} else if(ind == index && obj.absolutePath == element.absolutePath){
+							console.log(bPress)
+							bPress = true;
+							callback(bPress);
+							return;
+						} else if(ind == index){
+							console.log(bPress);
+							callback(bPress);
+						}
+					});
+				}
+			};
+
+			var isFile = function(fileObj){
+				if(fileObj.type == 'directory'){
+					return false;
+				}else{
+					return true;
+				}
+			};
 
 			var ready = function () {
-				backsplash = '/';
-				extSymbol = '.';
-				
-				folderFileInfo = {
-					folder: backsplash, //current folder
-					file: '',           //current file
-					list: null,         
-					fileInEdit: ''      //current folder + current file
-				};
-
-				onionConsole.getService('onion-session-provider', function (sessionProvider) {
-					self.sessionProvider = sessionProvider;
+				// this.$.confirmForm.submit(function(e){
+				// 	e.preventDefault();
+				// });
+				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
+					this.sessionProvider = sessionProvider;
 					if (sessionProvider.isAlive() === true) {   
-						onionConsole.getService('onion-file-provider', function (fileProvider) {
-							self.fileProvider = fileProvider;
-							self.$.fileList.addEventListener('click', function (e) {
-								if (typeof e.target.icon === 'undefined') {
-					                openFolder(e.target.textContent);
-								}
-							});
-							if(self.fileName==='') {
-							    openFolder(backsplash);
-							} else {
-								openFolder(self.fileName);
-							}
-						});
+						onionConsole.getService('onion-file-provider', function (err, fileProvider) {
+							this.fileProvider = fileProvider;
+							this.openFolder({absolutePath:this.currentFolder});
+						}.bind(this));
 					}
-				});	
+				}.bind(this));
+
+				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+					this.ubus = ubus;
+					this.set('sessionId', this.ubus.token);
+				}.bind(this));
 			};
-			 
-			var findTypeById = function (sourceList, name) {
-			    var result = '';
 
-				if (sourceList !== null) {
-				    for (var i = 0; i < sourceList.length; i++) {
-					    if (sourceList[i].name === name) {
-					        result = sourceList[i].type;
-					    }
-				    }
-				}
-
-				return result;
+			var loadOpenFile = function(openFileArray,fileIndex){
+				console.log("The File Index is",fileIndex);
+				console.log(this);
+				setTimeout(function(){
+					if(fileIndex == null){
+						this.$.fileEditor.editor.session.setValue('');
+					}else{
+						openFileArray.forEach(function(element,index){
+							if(index == fileIndex){
+								console.log("Index",index);
+								console.log("Element",element);
+								this.$.fileEditor.editor.session.setMode('ace/mode/' + element.language);
+								this.$.fileEditor.editor.session.setValue(element.code);
+							}
+						}.bind(this));
+					}
+				}.bind(this),300);
 			};
-			 
-			var isFileChanged = function () {
-			    var changed = false;
+			 			 
+			
+			//Keep This Function
+			var getFileExtension = function (fileString) {
+			    return fileString.substring(fileString.lastIndexOf('.') + 1, fileString.length);
+			};
 
-			    if (folderFileInfo.fileInEdit !== '' &&	self.currentCode !== self.$.fileEditor.editor.session.getValue()) {
-				    changed = true;
+			var getLang = function(fileName){
+				console.log(fileName);
+				var extension = this.getFileExtension(fileName);
+				console.log(extension);
+				if(extension == 'js'){
+					return 'javascript';
+				} else if(extension == 'py'){
+					return 'python';
+				} else if(extension == 'html'){
+					return 'html';
+				} else{
+					return 'txt';
 				}
-
-				return changed;
 			};
 			
-			var getFileExtension = function () {
-			    var extension = '';
-
-			    if (folderFileInfo.file !== '') {
-			        extension = folderFileInfo.file.substring(folderFileInfo.file.lastIndexOf(extSymbol) + 1, folderFileInfo.file.length);
-			    }
-
-				return extension;
-			};
-			
-			var openFolder = function (path) {
-                if (self.sessionProvider.isAlive() === true) {
-			        var currentFile = '';
+			var openFolder = function (folderObj) {
+				var currentFile = '';
+                if (this.sessionProvider.isAlive() === true) {
 					var changed = true;
-				    onionConsole.getService('onion-file-provider', function (fileProvider) {
-				 	    self.fileProvider = fileProvider;
-						
-						//launch app with specified file
-						if(self.fileName!=='') {							
-							var loadFolderName=fileProvider.getFolderPath(self.fileName);
-							var loadFileName=fileProvider.getFilename(self.fileName);
-								console.log('Load folder:'+loadFolderName);
-								console.log('Load file:'+loadFileName);
-								folderFileInfo.folder=loadFolderName;
-							
-							fileProvider.getFileList(folderFileInfo.folder, function (result) {
-								if (result.fileList !== '') {
-								    self.currentFolder = folderFileInfo.folder
-									folderFileInfo.list = result.fileList;
-	                                self.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));										
+					console.log("Inside the openFolder Function");
+						this.fileProvider.getFolderContent(null,folderObj.absolutePath, function(result){
+							if(result.status == 'success'){
+								console.log(result);
+								this.files =result.list;
+								if(folderObj.name == '..'){
+									this.currentFolder = getParentFolder(folderObj.parentDir);
+								}else{
+									this.currentFolder = folderObj.absolutePath;
 								}
-							});
-							path=loadFileName;
-							self.fileName='';
-						}
-						
-						if (path.match(/\r?\n|\r/g) !== null) {
-						    console.log("multiple selection, do nothing");
-							return;
-						} else if(path === '..') {
-						    if (folderFileInfo.folder === backsplash || folderFileInfo.folder.lastIndexOf(backsplash) === 0) {
-							    path = backsplash;
-						    } else {
-							    path = folderFileInfo.folder.substring(0, folderFileInfo.folder.lastIndexOf(backsplash));
-                            }
-					    } else {
-						    if (path === folderFileInfo.folder) {
-				                changed = false;   
-							} else if (findTypeById(folderFileInfo.list, path) === 'directory') {
-							    if (folderFileInfo.folder === backsplash) {
-								    path = folderFileInfo.folder + path;
-							    } else {
-								    path = folderFileInfo.folder + backsplash + path;
-							    }
-						    } else {
-							    currentFile = path;
-						    }
-					    }
-						
-					    if (changed === false || currentFile === '') {
-						    folderFileInfo.folder = path;
-							if (folderFileInfo.folder !== backsplash) {
-							    self.$.deleteFolderButton.disabled = false;
-								self.$.renameFolderButton.disabled = false;
-							} else {
-							    self.$.deleteFolderButton.disabled = true;
-								self.$.renameFolderButton.disabled = true;
+							}else{
+								//Handle error, maybe open a modal
 							}
-                            //Get file list			
-                            console.log('onion-editor open folder:'+folderFileInfo.folder);							
-                            fileProvider.getFileList(folderFileInfo.folder, function (result) {
-							    self.currentFolder = folderFileInfo.folder;	
-							    folderFileInfo.list = result.fileList;
-							    self.$.fileList.setAttribute('files', JSON.stringify(folderFileInfo.list));									
-						    });
-					    } else {
-					        folderFileInfo.file = currentFile;
-						    console.log('It\'s a file[' + folderFileInfo.folder + folderFileInfo.file + ']');
-							openFile();
-					    }
-				    });
+						}.bind(this));
+					// }
 				}
 			};
-			
-			var openFile = function () {
-			    closeFile();
 
-			    if (self.sessionProvider.isAlive() === true && folderFileInfo.file !== '') {
-				    var ext = getFileExtension();
-					self.$.fileEditor.editor.session.setMode('ace/mode/' + ext);
-
-                    onionConsole.getService('onion-file-provider', function (fileProvider) {
-					    self.fileProvider = fileProvider;
-					    //Get file list
-
-						fileProvider.getFileContent(folderFileInfo.folder + backsplash + folderFileInfo.file, function (result) {
-						    if (result.fileContent !== null) {
-						        self.currentCode = result.fileContent;
-								folderFileInfo.fileInEdit = folderFileInfo.folder + backsplash + folderFileInfo.file;
-								self.$.deleteFileButton.disabled = false;
-								self.$.renameFileButton.disabled = false
-							} else {    
-							    alert('Failed to open \"' + folderFileInfo.folder + backsplash + folderFileInfo.file + '\"');								
-							}
-					    });
-				    });
-				}
-            };
-			
-			var closeFile = function () {
-			    if (self.sessionProvider.isAlive() === true && folderFileInfo.file !== '') {
-			        if (isFileChanged()) {
-					    if (confirm('Do you want to save \"' + folderFileInfo.fileInEdit + '\" ?')) {
-						    if (typeof saveFile() === 'boolean') {
-							    self.currentCode = '';
-					            folderFileInfo.fileInEdit = '';
-							}
-						}
-				    } else {
-					    self.currentCode = '';
-					    folderFileInfo.fileInEdit = '';
+			var getParentFolder = function(str){
+				if(str != '/'){
+					var base = new String(str);
+					base = base.substring(0,base.lastIndexOf('/')); 
+					if(base == ""){
+						return '/';
+					}else{
+						return base;
 					}
-					self.$.deleteFileButton.disabled=true;
-					self.$.renameFileButton.disabled=true;
+				}else{
+					return '/';
+				}
+			};
+
+			var closeFileListener = function(){
+				var index = this.currentTab;
+				this.closeFile(index)
+			};
+			
+			var closeFile = function (index,callback){
+				if(typeof callback != 'function'){
+					callback = this.noop;
+				}
+				this.saveFile(index,function(response){
+					if(response.status == 'failure'){
+						//DoNothing, if save fails
+						return;
+					}else if(response.status == 'success' || response =="SaveNotNecessary" || response =="ChoseNotToSave"){
+						//remove file From OpenFile List
+						console.log("Length of openFilesArray before splice",this.openFiles.length);
+						this.splice('openFiles',index,1);
+						console.log("Length of openFilesArray after splice",this.openFiles.length);
+						if(this.isClosing){
+							callback();
+						}
+						else{
+							this.selectOpenFile(callback);
+						}
+						//change currentTab
+						//
+					}
+				}.bind(this));
+				//this.$.fileEditor.editor.session.setValue('');
+			};
+
+			var selectOpenFile = function(callback){
+				var newCurrentTab = this.openFiles.length - 1;
+				if(this.openFiles.length == 0){
+					console.log("the length is 0");
+					this.fileIndex = null;
+					this.currentTab = null;
+					callback();
+				}else{
+					console.log(" openFiles length is > 0");
+					if(this.currentTab == newCurrentTab){
+						console.log("currentTab equals newCurrentTab")
+						this.fileIndex = newCurrentTab;
+						this.currentTabChange();
+						callback();
+					}else{
+						console.log("currentTab does not equal new currentTab");
+						this.fileIndex = newCurrentTab;
+						this.currentTab = newCurrentTab;	
+						callback();
+					}
+				}
+			};
+
+			var saveFileListener = function(e){
+				var index = this.currentTab;
+				this.saveFile(index);
+			};
+			
+			var saveFile = function (index,callback) {
+				console.log(callback);
+				if(typeof callback != 'function'){
+					callback = this.noop;
+				}
+			    if(this.sessionProvider.isAlive() == true){
+			    	this.saveUpdate(index,function(){
+			    		if(this.openFiles[index].bSave){
+			    			this.updateSaveDialogueButtons(index,callback,function(){
+			    				this.$.confirmDialogue.open();
+			    			}.bind(this));
+			    		} else{
+			    			callback("SaveNotNecessary");
+			    		}
+			    	}.bind(this));
 			    }
 			};
-			
-			var saveFile = function () {
-			    //var saveResult=true;
-				if (self.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
-				    onionConsole.getService('onion-file-provider', function (fileProvider) {
-					    self.fileProvider = fileProvider;
-					    //Get file list
-						var codeInEdit = self.$.fileEditor.editor.session.getValue();
-					    fileProvider.saveFileContent(folderFileInfo.fileInEdit, codeInEdit, function (result) {
-						    if (result.saveResult === true) {
-							    self.currentCode = codeInEdit;
-						        alert('\"' + folderFileInfo.fileInEdit + '\" saved successfully!!');
-							} else {    
-							    alert('Failed to save \"' + folderFileInfo.fileInEdit + '\"');
-								//saveResult=false;
-							}
-					    });
-				    });
-				}
-				//return saveResult;
-			};
+
 			
 			var newFolderDialog = function () {
-				var folderName = prompt('Please enter new folder name');
+				this.debounce('click',function(){
+					this.updateNewFolderDialogueButtons();
+				}.bind(this),1000);
 				
-				if (folderName !== null) {
-				    createFile('folder', folderName);
-				}
 			};
-			
-			var newFileDialog = function () {
-				var fileName = prompt('Please enter new file name');
 
-				if (fileName !== null) {
-				    createFile('file', fileName);
+			var updateNewFolderDialogueButtons = function(){
+				this.$.confirmDialogue.title = "Please Enter New Folder Name:";
+				//this.$.textField.placeholder = "";
+				this.$.textField.hidden=false;
+				this.$.noButton.hidden=true;
+				this.$.yesButton.hidden=false;
+				this.yesButtonText = "Create Folder";
+				this.textInput = '';
+				this.$.confirmDialogue.open();
+				this.yesButtonListener = function(e){
+					var folderName = this.textInput;
+					console.log(folderName);
+						this.isFolderPresent(folderName,function(filePresent){
+							this.hideAllButtons();
+							if(filePresent){
+								this.$.confirmDialogue.title = "Folder already Exists, Please Choose A Different Name!";
+								setTimeout(function(){
+									this.newFolderDialog();
+								}.bind(this),5000);
+							}else{
+								var folderPath = genAbsolutePath(this.currentFolder,folderName);
+								this.createFolder(folderPath,function(response){
+									if(response.status == 'success'){
+										this.$.confirmDialogue.title = "Folder Successfully Created!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+											this.openFolder({absolutePath:this.currentFolder});
+										}.bind(this),1000);
+									}else{
+										this.$.confirmDialogue.title = "Cannot Create Folder, Pleae Try Again!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+										}.bind(this),1000);
+									}
+								}.bind(this));
+							}
+						}.bind(this));
+				};
+			};
+
+			var hideAllButtons = function(){
+				this.$.yesButton.hidden = true;
+				this.$.noButton.hidden = true;
+				this.$.textField.hidden = true;
+				this.yesButtonText = "";
+				this.noButtonText = "";
+			};
+
+
+			var genAbsolutePath = function(parent,sub){
+				if(parent == "/"){
+					return parent + sub;
+				}else{
+					return parent + '/' + sub;
 				}
 			};
 			
-			var deleteFileDialog = function () {
-                if (self.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
-                    if (confirm('Are you sure that you want to permanently delete \"' + folderFileInfo.fileInEdit + '\" ?')) {
-                        deleteFile('file', folderFileInfo.fileInEdit);			  
-					}	   
-			    }
+			var createFolder = function(folderPath,callback){
+				this.fileProvider.createFolder(null,folderPath,function(response){
+					callback(response);
+				}.bind(this));
 			};
-			
-			var deleteFolderDialog = function () {
-                if (self.sessionProvider.isAlive() === true && folderFileInfo.folder) {
-                    if (folderFileInfo.folder === backsplash) {
-                        alert('Delete all folders and files under root directory will make the system no long in function! Operation aborted!!'); 
-                    } else {
-                        if (confirm('Are you sure that you want to permanently delete \"' + folderFileInfo.folder + '\" folder?\nWarning!! All the folders and files under \"' + folderFileInfo.folder + '\" will be deleted!')) {
-                            deleteFile('folder', folderFileInfo.folder);					   
-                        }
-					}	   
-			    }
-			};
-			
-			var renameFileDialog = function () {
-                if (self.sessionProvider.isAlive() === true && folderFileInfo.fileInEdit !== '') {	
-				    var fileName = prompt('Please enter new file name');
-					if (fileName !== null) {
-                        renameFile('file', fileName);			  	   
+
+			var isFolderPresent = function(folderName,callback){
+				var fPresent = false;
+				var fileLength = this.files.length -1;
+				this.files.forEach(function(element,index){
+					if(element.preview == 'folder' && folderName == element.name){
+						fPresent = true;
+					}if(fileLength == index){
+						callback(fPresent);
 					}
-			    }
+				});
+			}
+
+			var newFileDialog = function () {
+				this.debounce('click',function(){
+					this.updateNewFileDialogueButtons(this.currentFolder);
+				}.bind(this),1000);
+			};
+
+			var updateNewFileDialogueButtons = function(parentPath){
+				this.$.confirmDialogue.title = "Please Enter New File Name:";
+				//this.$.textField.placeholder = "";
+				this.$.textField.hidden=false;
+				this.$.noButton.hidden=true;
+				this.$.yesButton.hidden=false;
+				this.textInput = '';
+				this.yesButtonText = "Create File";
+				this.$.confirmDialogue.open();
+				this.yesButtonListener = function(e){
+					var folderName = this.textInput;
+					var filePath = this.genAbsolutePath(parentPath,folderName);
+					var dummyFileObj = {absolutePath:filePath};
+					console.log(filePath);
+						this.isFileInArray(dummyFileObj,this.files,function(filePresent){
+							this.hideAllButtons();
+							if(filePresent){
+								this.$.confirmDialogue.title = "File already Exists, Please Choose A Different Name!";
+								setTimeout(function(){
+									this.newFolderDialog();
+								}.bind(this),3000);
+							}else{
+								var folderPath = genAbsolutePath(this.currentFolder,folderName);
+								this.createFile(filePath,function(response){
+									if(response.status == 'success'){
+										this.$.confirmDialogue.title = "File Successfully Created!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+											this.openFolder({absolutePath:parentPath});
+										}.bind(this),1000);
+									}else{
+										this.$.confirmDialogue.title = "Cannot Create File, Pleae Try Again!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+										}.bind(this),1000);
+									}
+								}.bind(this));
+							}
+						}.bind(this));
+				};
+			};
+
+			var deleteFileDialog = function () {
+				var path = this.openFiles[this.currentTab].absolutePath;
+				this.debounce('click',function(){
+					this.updateDeleteFileDialogueButtons(path);
+				}.bind(this),1000);
+			};
+			
+			var updateDeleteFileDialogueButtons = function(absoluteFilePath,callback){
+				if(typeof callback == 'function'){
+					callback = this.noop;
+				}
+				this.$.confirmDialogue.title = "Delete File: " + absoluteFilePath;
+				this.$.textField.hidden = true;
+				this.$.yesButton.hidden = false;
+				this.$.noButton.hidden = false;
+				this.yesButtonText = "Delete";
+				this.noButtonText = "Cancel";
+				this.$.confirmDialogue.open();
+				var dummyFileObj = {absolutePath:absoluteFilePath};
+				this.yesButtonListener = function(e){
+					//close the file!.
+					this.getfileIndex(dummyFileObj,this.openFiles,function(index){
+						console.log("Inside the yesButtonListener");
+						console.log(index);
+						console.log("Inside the index if statement");
+						this.openFiles[index].bSave = false;
+						this.currentTab = index;
+						this.closeFile(index,function(){
+							console.log("Inside closeFile Callback")
+							this.deleteFile(absoluteFilePath,function(response){
+								this.hideAllButtons();
+								if(response.status == 'success'){
+									this.$.confirmDialogue.title = "Successfully Deleted File"
+									var newFolderObj = {absolutePath:this.getParentFolder(absoluteFilePath)};
+									setTimeout(function(){
+										this.$.confirmDialogue.close();
+										this.openFolder(newFolderObj);
+									}.bind(this),1000)
+								}else{
+									this.$.confirmDialogue.title = "Could Not Delete File"
+									setTimeout(function(){
+										this.$.confirmDialogue.close();
+									}.bind(this),1000)
+								}
+							}.bind(this));
+						}.bind(this));
+					}.bind(this));
+				};
+				this.noButtonListener = function(e){
+					this.$.confirmDialogue.close();
+					callback("ChoseNotToDeleteFile");
+				};
+
+			};
+
+			var deleteFolderDialog = function () {
+				this.debounce('click',function(){
+					this.updateDeleteFolderDialogueButtons(this.currentFolder);
+				}.bind(this),1000);
+			};
+			
+			var updateDeleteFolderDialogueButtons = function(folder,callback){
+				if(typeof callback == 'function'){
+					callback = this.noop;
+				}
+				this.$.confirmDialogue.title = "Delete Folder: " + folder;
+				this.$.textField.hidden = true;
+				this.$.yesButton.hidden = false;
+				this.$.noButton.hidden = false;
+				this.yesButtonText = "Delete";
+				this.noButtonText = "Cancel";
+				this.$.confirmDialogue.open();
+				this.yesButtonListener = function(e){
+					var path = folder;
+					this.deleteFile(path,function(response){
+						this.hideAllButtons();
+						if(response.status == 'success'){
+							this.$.confirmDialogue.title = "Successfully Deleted Folder"
+							var newFolderObj = {absolutePath:this.getParentFolder(path)};
+							setTimeout(function(){
+								this.$.confirmDialogue.close();
+								this.openFolder(newFolderObj);
+							}.bind(this),1000)
+						}else{
+							this.$.confirmDialogue.title = "Could Not Delete Folder"
+							setTimeout(function(){
+								this.$.confirmDialogue.close();
+							}.bind(this),1000)
+						}
+					}.bind(this));
+				};
+				this.noButtonListener = function(e){
+					this.$.confirmDialogue.close();
+					callback("ChoseNotToDeleteFoler");
+				};
+			};
+
+			var renameFileDialog = function () {
+				var openAbsolutefilePath = this.openFiles[this.currentTab].absolutePath;
+				this.debounce('click',function(){
+					this.updateRenameFileDialogueButtons(openAbsolutefilePath);
+				}.bind(this),1000);
+			};
+
+			var updateRenameFileDialogueButtons = function(origAbsoluteFilePath){
+				this.$.confirmDialogue.title = "Please Enter new File Name:";
+				//this.$.textField.placeholder = "";
+				this.$.textField.hidden=false;
+				this.$.noButton.hidden=true;
+				this.$.yesButton.hidden=false;
+				this.textInput = '';
+				this.yesButtonText = "Rename";
+				this.$.confirmDialogue.open();
+				this.yesButtonListener = function(e){
+					var newFileName = this.textInput;
+					var newAbsoluteFilePath = this.genAbsolutePath(this.getParentFolder(origAbsoluteFilePath),newFileName);
+					var dummyFileObj = {absolutePath:newAbsoluteFilePath};
+					var oldDummyFileObj = {absolutePath: origAbsoluteFilePath};
+						this.isFileInArray(dummyFileObj,this.files,function(filePresent){
+							this.hideAllButtons();
+							if(filePresent){
+								this.$.confirmDialogue.title = "New File Name already Exists, Please Choose A Different Name!";
+								setTimeout(function(){
+									this.renameFileDialog();
+								}.bind(this),3000);
+							}else{
+								this.rename(origAbsoluteFilePath,newAbsoluteFilePath,function(response){
+									if(response.status == 'success'){
+										this.$.confirmDialogue.title = "File Successfully Renamed!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+											this.openFolder({absolutePath:this.getParentFolder(origAbsoluteFilePath)});
+											this.getfileIndex(oldDummyFileObj,this.openFiles,function(index){
+												console.log(index);
+												this.openFiles[index].bSave = false;
+												var dummyArray = this.openFiles;
+												var dummyObj = dummyArray[index];
+												dummyObj.absolutePath = newAbsoluteFilePath;
+												dummyObj.fileName = newFileName;
+												dummyObj.name = newFileName;
+												dummyObj.language = this.getLang(newFileName);
+												//this.splice('openFiles',index,1);
+												this.closeFile(index,function(){
+													setTimeout(function(){
+														this.openFile(dummyObj);
+													}.bind(this),300);
+												}.bind(this));
+											}.bind(this));
+										}.bind(this),1000);
+									}else{
+										this.$.confirmDialogue.title = "Cannot Rename File, Pleae Try Again!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+										}.bind(this),1000);
+									}
+								}.bind(this));
+							}
+						}.bind(this));
+				};
 			};
 			
 			var renameFolderDialog = function () {
-                if (self.sessionProvider.isAlive() === true && folderFileInfo.folder !== backsplash) {	
-				    var folderName = prompt('Please enter new folder name');
-					if (folderName !== null) {
-                        renameFile('folder', folderName);		
-                    }						
-			    }
+				this.debounce('click',function(){
+					this.updateRenameFolderDialogueButtons(this.currentFolder);
+				}.bind(this),1000);
 			};
-						
-			var deleteFile = function (type, filename) {
-			   if (self.sessionProvider.isAlive() === true ) {
-				    onionConsole.getService('onion-file-provider', function (fileProvider) {
-					    self.fileProvider = fileProvider;
-						fileProvider.execCommand('rm', ['-rf', filename], function (result) {
-						    if (result.execResult === true) {
-							    self.currentCode = '';
-								folderFileInfo.fileInEdit = '';
-								if (type === 'folder') {
-								    if (folderFileInfo.folder === backsplash || folderFileInfo.folder.lastIndexOf(backsplash) === 0) {
-							            folderFileInfo.folder = backsplash;
-						            } else {
-							            folderFileInfo.folder = folderFileInfo.folder.substring(0, folderFileInfo.folder.lastIndexOf(backsplash));
-								    }
-								}
-
-								openFolder(folderFileInfo.folder);
-								alert('\"' + filename + '\" deleted successfully!!');
-					        } else {    
-							    alert('Failed to delete \"' + filename + '\"');
-							}
-					    });
-					});
-				} else {
-				    alert('Session time out! Failed to delete Folder or File!');
-				}
-			};
-			
-			var createFile = function (type, filename) {
-			    if (filename === '') {
-				    alert('Invalid ' + type + ' name!!');
-					return;
-				}
-				
-			    if (self.sessionProvider.isAlive() === true ) {
-				    onionConsole.getService('onion-file-provider', function (fileProvider) {
-
-					    self.fileProvider = fileProvider;
-						var newFilename = '';
-
-						if (folderFileInfo.folder === backsplash) {
-						    newFilename = folderFileInfo.folder + filename;
-						} else {
-							newFilename = folderFileInfo.folder + backsplash + filename;
-					    }
-
-						if (type === 'folder') {
-							fileProvider.execCommand('mkdir', [newFilename], function (result) {
-								if (result.execResult === true) {
-							        openFolder(folderFileInfo.folder);
-							    } else {    
-							        alert('Failed to create \"' + newFilename + '\"');
-							    }
-							});
-						} else {
-						    if (findTypeById(folderFileInfo.list,filename) === '') {
-							    fileProvider.execCommand('touch', [newFilename], function (result) {
-						            if (result.execResult === true) {
-							            openFolder(folderFileInfo.folder);
-							        } else {    
-							            alert('Failed to create \"' + newFilename + '\"');
-							        }	
-					            });
-							} else {
-							   alert('\"' + newFilename + '\" already exist!');
-							}
-						}
-				    });
-				} else {
-				    alert('Session time out! Failed to create Folder or File!');
-				}
-			};
-			
-			var renameFile = function (type,filename) {
-				if (filename === '') {
-				    alert('Invalid ' + type + ' name!!');
-					return;
-				}
-				
-			    if (self.sessionProvider.isAlive() === true) {
-				    onionConsole.getService('onion-file-provider', function (fileProvider) {
-					    self.fileProvider = fileProvider;
-						if (type === 'folder') {
-						    var newFoldername = fileProvider.getFolderPath(folderFileInfo.folder) + backsplash + filename;
-							fileProvider.execCommand('mv', [folderFileInfo.folder,newFoldername], function (result) {
-								if (result.execResult === true) {
-								    var oldFoldername = folderFileInfo.folder;
-								    folderFileInfo.folder = newFoldername;
-							        openFolder(folderFileInfo.folder);
-									alert('\"' + oldFoldername + '\" renamed to \"' + folderFileInfo.folder + '\" successfully!');
-							    } else {    
-							        alert('Failed to rename \"' + folderFileInfo.folder + '\"!');
-							    }
-							});
-						} else {		
-						    var newFilename = fileProvider.getFolderPath(folderFileInfo.fileInEdit) + backsplash + filename;
-							fileProvider.execCommand('mv', [folderFileInfo.fileInEdit, newFilename], function (result) {
-						        if (result.execResult === true) {
-	                                var oldFilename = folderFileInfo.fileInEdit;								
-							        folderFileInfo.fileInEdit = newFilename;
-									if (folderFileInfo.folder === fileProvider.getFolderPath(oldFilename)) {
-							            openFolder(folderFileInfo.folder);
+					
+			var updateRenameFolderDialogueButtons = function(origPath){
+				this.$.confirmDialogue.title = "Please Enter new FolderName:";
+				//this.$.textField.placeholder = "";
+				this.$.textField.hidden=false;
+				this.$.noButton.hidden=true;
+				this.$.yesButton.hidden=false;
+				this.textInput = '';
+				this.yesButtonText = "Rename Folder";
+				this.$.confirmDialogue.open();
+				this.yesButtonListener = function(e){
+					var folderName = this.textInput;
+					console.log(folderName);
+						this.isFolderPresent(folderName,function(filePresent){
+							this.hideAllButtons();
+							if(filePresent){
+								this.$.confirmDialogue.title = "New Folder already Exists, Please Choose A Different Name!";
+								setTimeout(function(){
+									this.renameFolderDialog();
+								}.bind(this),3000);
+							}else{
+								var folderPath = this.genAbsolutePath(this.getParentFolder(origPath),folderName);
+								this.rename(origPath,folderPath,function(response){
+									if(response.status == 'success'){
+										this.$.confirmDialogue.title = "Folder Successfully Renamed!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+											this.openFolder({absolutePath:folderPath});
+										}.bind(this),1000);
+									}else{
+										this.$.confirmDialogue.title = "Cannot Rename Folder, Pleae Try Again!";
+										setTimeout(function(){
+											this.$.confirmDialogue.close();
+										}.bind(this),1000);
 									}
-								    alert('\"' + oldFilename + '\" renamed to \"' + folderFileInfo.fileInEdit + '\" successfully!');
-							    } else {
-							        alert('Failed to rename \"' + folderFileInfo.fileInEdit + '\"!');
-							    }
-					        });
-						}
-				    });
-				} else {
-				    alert('Session time out! Failed to create Folder or File!');
+								}.bind(this));
+							}
+						}.bind(this));
+				};
+
+			};
+
+			var deleteFile = function (path, callback) {
+				if(this.sessionProvider.isAlive()){
+					this.fileProvider.remove(null,path,function(response){
+						callback(response);
+					});
 				}
 			};
 			
+			var createFile = function (path, callback) {
+				if(this.sessionProvider.isAlive()){
+					this.fileProvider.createFile(null,path,function(response){
+						callback(response);
+					})
+				}
+			};
+			
+			var rename = function (origPath,newPath,callback) {
+				if(this.sessionProvider.isAlive()){
+					this.fileProvider.rename(null,origPath,newPath,function(response){
+						callback(response);
+					})
+				};
+			};
+
+			var fileNameFunction = function() {
+				var path = this.$$('#fileSelectionInput').value;
+				var pathName = path.replace(/^.*\\/, "");
+				this.set('fileName', pathName);
+			}
+
+
+			var saveUpdate = function(ind,callback){
+				console.log("INSIDE THE saveUpdate Function");
+				var currentCode = this.$.fileEditor.editor.session.getValue();
+				if(currentCode == this.openFiles[ind].code){
+					console.log("The codes are the same and do not need to be saved");
+					this.openFiles[ind].bSave = false;
+					callback();
+				}else{
+					console.log("The codes are not the same and a save is necessary")
+					this.openFiles[ind].bSave = true;
+					this.openFiles[ind].code = currentCode;
+					callback();
+				}
+			};
+
+			var currentTabChange = function(e,y,z){
+				console.log(e);
+				console.log("Inside currentTabChange");
+				console.log("this.currentTab",this.currentTab);
+				console.log("this.fileIndex",this.fileIndex);
+				if(this.closing){
+					// this.closing = false;
+					if(e<y){
+						this.oldIndex = y - 1;
+					}else if(e>y){
+						this.oldIndex = y;
+					}
+					return;
+				}else{
+					if(this.fileIndex == null){
+						//First Iteration
+						this.fileIndex = this.currentTab
+						console.log("Current Tab observer has been called");
+						console.log("currentTab",this.currentTab);
+						console.log("fileIndex",this.fileIndex);
+						// this.saveUpdate(this.fileIndex);
+						this.loadOpenFile(this.openFiles,this.currentTab);
+						this.fileIndex = this.currentTab;
+					} else if((this.currentTab == this.fileIndex) && (this.currentTab != null)){
+						console.log("CurrentTab Observer Gets Called");
+						console.log("Inside the second else if statement");
+						this.loadOpenFile(this.openFiles,this.currentTab);
+					} else{
+						console.log("Current Tab observer has been called");
+						console.log("currentTab",this.currentTab);
+						console.log("fileIndex",this.fileIndex);
+						this.saveUpdate(this.fileIndex,function(){
+							this.loadOpenFile(this.openFiles,this.currentTab);
+							this.fileIndex = this.currentTab;
+						}.bind(this));
+					}
+				}
+			};
+
+			var openFilesObserver = function(){
+				console.log("openFilesObserver gets called");
+				console.log(this.openFiles.length);
+				if(this.openFiles.length == 0){
+					console.log(" hide file Buttons");
+					this.hideFileButtons();
+					this.$.placeHolderPill.hidden = false;
+				}else {
+					console.log("ShowFileButtons");
+					this.$.placeHolderPill.hidden = true;
+					this.showFileButtons();
+				}
+			};
+
+			var yesButtonListener = function(e){
+
+			};
+
+			var noButtonListener = function(e){
+
+			};
+
+			var noop = function(){
+
+			};
+
+			var updateSaveDialogueButtons = function(ind,callback,realCallBack){
+				this.$.textField.hidden=true;
+				this.$.noButton.hidden=false;
+				this.$.yesButton.hidden=false;
+				this.yesButtonText = "Save";
+				this.noButtonText = "Don't Save";
+				var fileObj = this.openFiles[ind];
+				this.$.confirmDialogue.title="Confirm File Save: " + fileObj.absolutePath;
+				this.yesButtonListener = function(e){
+					this.fileProvider.saveContent(null,fileObj.absolutePath,fileObj.code,false,function(response){
+						this.hideAllButtons();
+						if(response.status == 'success'){
+							this.$.confirmDialogue.title = "Save Successful";
+							setTimeout(function(){
+								this.$.confirmDialogue.close();
+								callback({status:"success"});
+							}.bind(this),1000);
+						}else{
+							//Save unsuccessful, maybe do something.
+							this.$.confirmDialogue.title = "Save unSuccessful";
+							setTimeout(function(){
+								this.$.confirmDialogue.close();
+								callback({status:"failure"});
+							}.bind(this),1000);
+						}
+					}.bind(this));
+				};
+
+				this.noButtonListener = function(e){
+					this.$.confirmDialogue.close();
+					callback("ChoseNotToSave");
+				};
+
+				// realCallBack is the function to be executed after this function has been executed.
+				// first callback is the callback for the listeners buttons. 
+				// 
+				// brute force synchronity for now, change to promise later
+
+				setTimeout(function(){
+					realCallBack();
+				},300);
+			};
+
+			var currentFolderObserver = function(){
+				console.log("currentFolder",this.currentFolder);
+				if(this.currentFolder == '/'){
+					this.hideFolderButtons();
+				}else{
+					this.showFolderButtons();
+				}
+			};
+
+			var refreshFolder = function (folderObj){
+				this.openFolder(folderObj.detail)
+			};
+
+
 			Polymer({
 				is: 'onion-editor',
 				created: created,
 				ready: ready,
 				behaviors: [Onion.AppBehavior],
+				getLang: getLang,
+				closeModal: closeModal,
 				openFolder: openFolder,
+				submitUpload: submitUpload,
 				openFile: openFile,
 				deleteFile: deleteFile,
 				createFile: createFile,
+				textEnter: textEnter,
+				createFolder: createFolder,
 				closeFile: closeFile,
+				closeFileListener: closeFileListener,
 				saveFile: saveFile,
-				renameFile: renameFile,
-				isFileChanged: isFileChanged,
-				findTypeById: findTypeById,
+				launchUploadFile: launchUploadFile,
+				rename: rename,
 				getFileExtension: getFileExtension,
 				newFolderDialog: newFolderDialog,
 				newFileDialog: newFileDialog,
 				deleteFileDialog: deleteFileDialog,
 				deleteFolderDialog: deleteFolderDialog,
 				renameFileDialog: renameFileDialog,
-				renameFolderDialog: renameFolderDialog
+				renameFolderDialog: renameFolderDialog,
+				hideFileButtons: hideFileButtons,
+				showFileButtons: showFileButtons,
+				currentTabChange: currentTabChange,
+				loadOpenFile: loadOpenFile,
+				fileClick: fileClick,
+				isFile: isFile,
+				addFileToArray: addFileToArray,
+				getFileCode:getFileCode,
+				getfileIndex: getfileIndex,
+				openFilesObserver:openFilesObserver,
+				updateDeleteFolderDialogueButtons: updateDeleteFolderDialogueButtons,
+				updateNewFileDialogueButtons: updateNewFileDialogueButtons,
+				isFileInArray: isFileInArray,
+				fileNameFunction: fileNameFunction,
+				saveUpdate: saveUpdate,
+				yesButtonListener: yesButtonListener,
+				noButtonListener: noButtonListener,
+				updateSaveDialogueButtons: updateSaveDialogueButtons,
+				updateNewFolderDialogueButtons: updateNewFolderDialogueButtons,
+				updateRenameFolderDialogueButtons:updateRenameFolderDialogueButtons,
+				updateRenameFileDialogueButtons:updateRenameFileDialogueButtons,
+				noop: noop,
+				showClose: showClose,
+				isFolderPresent: isFolderPresent,
+				fileCloseIconListener: fileCloseIconListener,
+				genAbsolutePath: genAbsolutePath,
+				hideAllButtons: hideAllButtons,
+				getParentFolder: getParentFolder,
+				hideFolderButtons: hideFolderButtons,
+				showFolderButtons: showFolderButtons,
+				currentFolderObserver: currentFolderObserver,
+				updateDeleteFileDialogueButtons: updateDeleteFileDialogueButtons,
+				saveFileListener: saveFileListener,
+				isFileNameSame: isFileNameSame,
+				modFileName: modFileName,
+				selectOpenFile: selectOpenFile,
+				refreshFolder: refreshFolder,
+				observers : ['openFilesObserver(openFiles.splices)'],
+				properties:{
+					fileName: String,
+					files:{
+						type:Array,
+						value:[],
+						notify:true
+					},
+					currentFolder:{
+						type: String,
+						value: '/',
+						notify: true,
+						observer: 'currentFolderObserver'
+					},
+					openFiles:{
+						type: Array,
+						value: [],
+						notify: true,
+						reflectToAttribute:true
+					},
+					oldFilePath:{
+						type: String,
+						value:"",
+						notify: true
+					},
+					currentTab:{
+						type:Number,
+						value:null,
+						notify:true,
+						observer: 'currentTabChange'
+					},
+					fileIndex:{
+						type:Number,
+						value:null,
+						notify:true
+					},
+					textInput:{
+						type: String,
+						value: "",
+						notify: true
+					},
+					yesButtonText:{
+						type:String,
+						value:"",
+						notify:true
+					},
+					noButtonText:{
+						type:String,
+						value:"",
+						notify:true
+					},
+					oldIndex:{
+						type: Number,
+						value:null,
+						notify:true
+					}
+				}
 			});
         })();
 	</script>

@@ -1,6 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-overlay-behavior/iron-overlay-behavior.html">
-<link rel="import" href="../bootstrap-styles/bootstrap-styles.html">
+<link rel="import" href="../../../elements/bootstrap-styles/bootstrap-styles.html">
 
 <dom-module id="bootstrap-modal">
 	<style>
@@ -15,10 +15,11 @@
 	</style>
 	<template>
 		
-		
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" hidden="{{noCloseButton}}" on-click="close">×</button>
+				<template is="dom-if" if="{{!noCloseButton}}">
+					<button type="button" class="close" on-click="close">×</button>
+				</template>
 				<h4 class="modal-title">{{title}}</h4>
 			</div>
 			<div class="modal-body">
@@ -32,31 +33,33 @@
 	</template>
 
 	<script>
-	'use strict';
+		'use strict';
+
 		(function () {
 			var ready = function () {
 				if (this.modal) {
 					this.noCancelOnOutsideClick = true;
 			        this.noCancelOnEscKey = true;
-			        this.withBackdrop = true;
+			        // this.withBackdrop = true;
 				}
 			}
+
 			var onFooterClick = function (event) {
 				if (this.modal) {
 					return;
 				}
 				var target = event.target;
 				
-				if (target.type && target.type.indexOf('button') > -1) {
+				if (target.type.indexOf('button') > -1) {
 					this.close();
 				}
 			};
 			
 			var onClose = function () {
 				console.log('on close');
-				this.fire('close');
 				this.close();
 			}
+
 			Polymer({
 				is: 'bootstrap-modal',
 				behaviors: [Polymer.IronOverlayBehavior],
@@ -78,7 +81,7 @@
 					},
 					withBackdrop: {
 						type: Boolean,
-						value: true
+						value: false
 					},
 					title: {
 						type: String,

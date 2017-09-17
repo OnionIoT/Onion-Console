@@ -1,41 +1,44 @@
-<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
 
 <dom-module id="onion-session-provider">
 	<script>
 		'use strict';
 
 		(function () {
-			var self = null;
-
 			var created = function () {
-				self = this;
 			};
 
 			var ready = function () {
-				onionConsole.getService('onion-ubus-provider', function (ubus) {
-					self.ubus = ubus;
-
-					checkToken(function (hasToken) {
+				onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+					this.ubus = ubus;
+					this.checkToken(function (hasToken) {
 						if (hasToken) {
-							self.ubus.token = sessionStorage.getItem('_omega_session_token');
-							self.ubus.isAlive = true;
+							this.ubus.token = sessionStorage.getItem('_omega_session_token');
+						    ubus.token = sessionStorage.getItem('_omega_session_token');
+							this.ubus.isAlive = true;
 						} else {
-							self.ubus.isAlive = false;
+							this.ubus.isAlive = false;
 						}
-					});
-				});
+					}.bind(this));
+				}.bind(this));
+				this.initPromise = null;
+				this.accessToken = '';
+				this.accessTokenParsed = {};
+				this.refreshToken = '';
+				this.refreshTokenParsed = {};
+				this.developerParsed = {};
 			};
 
 			var login = function (username, password, callback) {				
 				callback = callback || function () {};
 
-				self.ubus.request('session', 'login', {
+				this.ubus.request('session', 'login', {
 					username: username,
 					password: password
 				}, function (result) {
 					if (result !== null && result[0] !== null) {
 					    if ('error' in result) {
-					        self.ubus.isAlive = false;
+					        this.ubus.isAlive = false;
 						    callback({success: false});
 						    return;
 					    }
@@ -46,73 +49,80 @@
 		                    console.log('session token: ' + token);
 
 		                    sessionStorage.setItem('_omega_session_token', token);
-						    self.ubus.token = token;
-						    self.ubus.isAlive = true;
-						    startHeartbeat(10000);
+						    this.ubus.token = token;
+						    onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+						    	ubus.token = this.ubus.token
+						    }.bind(this));
+						    this.ubus.isAlive = true;
+						    this.startHeartbeat(10000);
 						    callback({success: true});
 
 					    } else {
 					        console.log('Login failed!');
-						    self.ubus.isAlive = false;
+						    this.ubus.isAlive = false;
 					        callback({success: false});
 					    }
 					} else {
-				        self.ubus.isAlive = false;
+				        this.ubus.isAlive = false;
 						callback({success: false});
 				    }
-				});
+				}.bind(this));
 			};
 
-			var checkLogin = function (password) {
-				var promise = new Promise(function (resolve, reject) {
-					self.ubus.request('session', 'login', {
-						username: 'root',
-						password: password
-					}, function (data) {
-						if (data.length === 2 && data[0] === 0) {
-							resolve();
-						} else {
-							reject(Error('Incorrect current password.'));
-						}
-					});
-				});
+			// TO DO: RAJIV: move this function to device settings provider
+			// var checkLogin = function (password) {
+			// 	var promise = new Promise(function (resolve, reject) {
+			// 		this.ubus.request('session', 'login', {
+			// 			username: 'root',
+			// 			password: password
+			// 		}, function (data) {
+			// 			if (data.length === 2 && data[0] === 0) {
+			// 				resolve();
+			// 			} else {
+			// 				reject(Error('Incorrect current password.'));
+			// 			}
+			// 		});
+			// 	});
 
-				return promise;
-			};
+			// 	return promise;
+			// };
 		 
 			var heartbeat = function () {
-			    if (isAlive() === true) {
-					self.ubus.request('session', 'access', {}, setAlive);
+			    if (this.isAlive() === true) {
+					this.ubus.request('session', 'access', {}, this.setAlive);
 				} else {
                     logout();   
 				}				
 			};  
 				  
 			var startHeartbeat = function (interval) {
-			    self.heartbeatInterval = setInterval(function () {  
-			    	heartbeat();
-			    }, interval);
+			    this.heartbeatInterval = setInterval((function () {  
+			    	this.heartbeat();
+			    }.bind(this)), interval);
 			};
 			
 			var stopHeartbeat = function () {
-			    clearInterval(self.heartbeatInterval);
-				delete self.heartbeatInterval;
-				self.ubus.isAlive = false;
-                self.ubus.token = '00000000000000000000000000000000';
+			    clearInterval(this.heartbeatInterval);
+				delete this.heartbeatInterval;
+				this.ubus.isAlive = false;
+                this.ubus.token = '00000000000000000000000000000000';
 			};
 
 			var setAlive = function (result) {
-				if (result !== null && result[0] === 0) {
-				    self.ubus.isAlive = true;   
-                    console.log('Alive');					
-				} else {
-				    self.ubus.isAlive = false;
-				    logout();
-				}   
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
+					this.ubus = ubus;
+					if (result !== null && result[0] === 0) {
+						this.ubus.isAlive = true;   
+						console.log('Alive');					
+					} else {
+						this.ubus.isAlive = false;
+						logout();
+					}
+					}).bind(this));
 		    }; 
 			
 			var isAlive = function () {
-			    return 	self.ubus.isAlive;
+			    return 	this.ubus.isAlive;
 			};
 
 			var checkToken = function (callback) {
@@ -121,10 +131,10 @@
 			};
 			
 			var logout = function () {
-				if (self.heartbeatInterval !== null) {
+				if (this.heartbeatInterval !== null) {
 				    console.log('logout');
 				    sessionStorage.removeItem('_omega_session_token');
-					stopHeartbeat();	
+					this.stopHeartbeat();	
                     onionConsole.launchApp('onion-login');					
 			    }
 			};
@@ -135,7 +145,7 @@
 				ready: ready,
 	            login: login,
 				logout: logout,
-				checkLogin: checkLogin,
+				// checkLogin: checkLogin,
 				setAlive: setAlive,
 				heartbeat: heartbeat,
 				startHeartbeat: startHeartbeat,

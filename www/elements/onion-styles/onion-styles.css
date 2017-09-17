@@ -1,5 +1,8 @@
 html, body {
 	overflow: hidden;
+	font-size: 14px;
+	font-weight: normal;
+	font-family: 'Open Sans','Helvetica Neue',Helvetica,Arial,sans-serif;
 }
 
 a:focus,
@@ -32,4 +35,8 @@ button:focus {
 .file input:focus ~ .file-custom {
   -webkit-box-shadow: 0 0 1px #0074d9, 0 0 1px #0074d9, 0 0 1px #0074d9;
           box-shadow: 0 0 1px #0074d9, 0 0 1px #0074d9, 0 0 1px #0074d9;
+}
+
+.c-select {
+	border-radius: .25rem;
 }

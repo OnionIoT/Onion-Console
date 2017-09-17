@@ -1,5 +1,5 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/elements/onion-app/onion-app.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../elements/onion-app/onion-app.html">
 
 <dom-module id="onion-terminal">
 	<style>
@@ -19,17 +19,27 @@
 			background: transparent;
 			border: none;
 			width: 100%;
-			height: 100%;
-			display: block;
+/*			height: 100%;*/
+			height: 1000px;
+/*			display: block;*/
 			margin: 0;
 			padding: 0;
 		}
-		
+		#iframeContainer{
+			height: 100%;
+			width: 100%;
+		}
+		iframe{
+			height: 100%;
+			width: 100%;
+		}
 	</style>
 	<template>
 		<onion-app app-name="Terminal" toolbar-background="#505050">
-			<onion-app-body>
-				<iframe id="shellinabox" src="{{sourceIP}}"></iframe>
+			<onion-app-body page-id="home">
+				<div id="iframeContainer" class="layout horizontal center-justified start">
+					<iframe id="shellinabox" src="{{sourceIP}}"></iframe>
+				</div>
 			</onion-app-body>
 		</onion-app>	
 	</template>
@@ -37,31 +47,31 @@
 		'use strict';
 			
 		(function () {
-			var self = null;
+			// var self = null;
 
 			var created = function () {
-				self = this;
+				// self = this;
 			};
 			
 			var ready = function() {
-				self.title = 'Onion Terminal';
+				this.title = 'Onion Terminal';
 				
-				onionConsole.getService('onion-session-provider', function (sessionProvider) {
-					self.sessionProvider = sessionProvider;
+				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
+					this.sessionProvider = sessionProvider;
 
-					if (self.sessionProvider.isAlive() === true) {
-						onionConsole.getService('onion-device-provider', function (deviceProvider) {
-							self.deviceProvider = deviceProvider;
+					// if (self.sessionProvider.isAlive() === true) {
+						onionConsole.getService('onion-device-settings-provider', function (err, deviceProvider) {
+							this.deviceProvider = deviceProvider;
 							
 							//Get IP Address, NetMask
-							deviceProvider.getIpAddr(function (addr) {
+							deviceProvider.getIpAddr(null, function (addr) {
 								if (addr !== '') {
-									self.sourceIP = '//' + addr + ':4200';
+									this.sourceIP = '//' + addr + ':4200';
 								};
-							});
-						});
-					}
-				});
+							}.bind(this));
+						}.bind(this));
+					// }
+				}.bind(this));
 			};
 			
 			Polymer({

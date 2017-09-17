@@ -1,5 +1,5 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/lib/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-ajax/iron-ajax.html">
 
 <dom-module id="onion-ubus-provider">
 	<template>
@@ -49,7 +49,7 @@
                 if (response !== null) {
  				    if ('error' in response) {
  				    	if (response['error'].code === -32002) {
- 				    		onionConsole.getService('onion-session-provider', function (sessionProvider) {
+ 				    		onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
  				    			sessionProvider.logout();
  				    		});
  				    	}

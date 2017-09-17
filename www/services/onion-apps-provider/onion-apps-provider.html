@@ -1,4 +1,4 @@
-<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
 import shared service
 
 <dom-model id="onion-apps-provider">
@@ -6,50 +6,119 @@ import shared service
         'use strict';
 
         (function () {
-            var self = null;
+            // var self = null;
 
             var created = function () {
-                self = this;
+                // self = this;
             };
 
-            var apps = [];
+            // var apps = [];
 
             var ready = function () {
-                self.reload();
+                onionConsole.getService('onion-ubus-provider', function (err, ubus) {
+                    console.log("Inside the ready callback this =",this);
+                    this.ubus = ubus;
+                    // this.reload();
+                    // this.getApps(function(err,result){
+                    //     if(result){
+                    //         console.log("Inside the ready function of apps-provider, result:",result);
+                    //         this.set('allApps',result);
+                    //         console.log("allApps",this.allApps);
+                    //     } else {
+                    //         console.log("err", err);
+                    //     }
+                    // }.bind(this));
+                }.bind(this));
+
+
+                // this.getApps(function(err,result){
+                //     if(result){
+                //         console.log("Inside the ready function of apps-provider, result:",result);
+                //         this.allApps = result;
+                //         console.log("allApps",this.allApps);
+                //     } else {
+                //         console.log("err", err);
+                //     }
+                // })
+                console.log("Inside ready",this);
+				// this.getApps(function(){});
             };
 
-            var  getApps = function(callback) {
-                onionConsole.getService('onion-ubus-provider', function (ubus) {
-                    ubus.request('onion-console', 'app-list', {}, function (result) {
+            var getApps = function(callback) {
+                onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
+                    this.ubus = sessionProvider.ubus;
+                    this.ubus.request('onion-console', 'app-list', {}, function (result) {
                         if (result.length === 2 && result[1].exists) {
+                            // this.currentApps = result[1].apps;
+                            this.set('apps',result[1].apps);
                             callback(null, result[1].apps);
                         }else{
                             callback("ubus service error", null);
                         }
-                    });
-                });
-            }
+                    }.bind(this));
+                }.bind(this));
+                
+
+                // onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+                //     deviceProvider.callService(null, 'onion-console', 'app-list', {}, function (err,result) {
+                //         if (result) {
+                //             this.set('apps',result[1].apps);
+                //             callback(null, result[1].apps);
+                //         } else {
+                //             callback("ubus service error", null);
+                //         }
+                //     }.bind(this));
+                // }.bind(this));
+
+
+            };
 
             var reload = function () {
-                onionConsole.getService('onion-ubus-provider', function (ubus) {
-                    ubus.request('onion-console', 'app-list', {}, function (result) {
-                        if (result.length === 2 && result[1].exists) {
-                            self.apps = [];                     
-                            for (var i = 0; i < result[1].apps.length; i++) {
-                                self.apps.push(result[1].apps[i]);
-                            }
-                        }
-                    });
-                });
+                // console.log("Inside reload", this.ubus);
+                // this.ubus.request('onion-console', 'app-list', {}, function (result) {
+                //     if (result.length === 2 && result[1].exists) {
+                //         this.apps = []; 
+                //         console.log("Inside reload if statement");
+                //         for (var i = 0; i < result[1].apps.length; i++) {
+                //             this.apps.push(result[1].apps[i]);
+                //             console.log(this.apps);
+                //         }
+                //     }
+                // }.bind(this));
             };
+			
+			// pass in id of an app, get the whole object back
+			var getApp = function (appId,callback) {
+                console.log('this is the getAPP call')
+				this.getApps(function (err,appslist) {
+					for( var i = 0; i < appslist.length; i++){
+                        if(appslist[i].id==appId){
+                            callback(appslist[i]);
+                        }
+                    }
+				});
+                // return targetApp;
+   //                   for( var i = 0; i < apps.length; i++){
+   //                      if(apps[i].id==appId){
+   //                          return apps[i];
+   //                      }
+   //                  }
+			};
 
             Polymer({
                 is: 'onion-apps-provider',
                 created: created,
-                apps: apps,
                 ready: ready,
                 reload: reload,
-                getApps: getApps
+                getApps: getApps,
+				getApp: getApp,
+				properties: {
+					apps: {
+						type: Array,
+						value: [],
+						notify: true
+					}
+				}
             });
         })();
 	</script>

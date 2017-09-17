@@ -1,17 +1,17 @@
-<link rel="import" href="/lib/polymer/polymer.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
 <dom-module id="onion-intent-provider">
 	<script>
 		'use strict';
 		(function () {
-		    var intentProvider = null;
+		    // var intentProvider = null;
 			
             var ready = function() {
-				intentProvider = this;
-				addListener();
+				// intentProvider = this;
+				this.addListener();
 			};
 			
 			var addListener = function () {
-			    intentProvider.addEventListener('onion_intent_launchapp', function (e) {
+			    this.addEventListener('onion_intent_launchapp', function (e) {
 				    console.log('Receive request to launch app['+e.detail.app+'] file parameter['+e.detail.file+']');
                     onionConsole.launchApp(e.detail.app,e.detail.file);
                 });
@@ -19,7 +19,7 @@
 				
 			var startActivity = function(intent, options) {
 			    console.log('Start activity['+intent+']');
-			    intentProvider.fire(intent, options);
+			    this.fire(intent, options);
 			};
 			
 			Polymer({

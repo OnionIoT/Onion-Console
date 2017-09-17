@@ -1,0 +1,150 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+
+<dom-module id="onion-admin-provider">
+	<script>
+		'use strict';
+
+		(function () {
+
+			var ready = function () {
+				onionConsole.getService('onion-api-provider', (function (err, api) {
+					this.api = api;
+				}).bind(this));			
+			};
+
+			/** Devices **/
+
+			var getDevices = function (callback) {
+				this.api.request('GET', '/admin/devices', {}, function (devices) {
+					callback(devices);
+				});
+			};
+
+			var getDevice = function (deviceId, callback) {
+				this.api.request('GET', '/admin/devices/' + deviceId, {}, function (device) {
+					callback(device);
+				});
+			};
+
+			var createDevice = function (name, description, callback) {
+				var body = {
+					name: name,
+					description: description
+				}
+				this.api.request('POST', '/admin/devices', body, function(device){
+					callback(device);
+				});
+			};
+
+			var deleteDevice = function (deviceId, callback) {
+				this.api.request('DELETE', '/admin/devices/' + deviceId, {}, function(device){
+					callback(device);
+				});
+			};
+
+			var updateDevice = function (deviceId, body, callback) {
+				this.api.request('PUT', '/admin/devices/' + deviceId, body, function (device) {
+					callback(device);
+				});
+			};
+			
+			var getDeviceUsers = function (deviceId, callback) {
+				this.api.request('GET', '/admin/devices/' + deviceId + '/users', {}, function(users){
+					callback(users);
+				});
+			};
+			
+			var createDeviceUsers = function (deviceId, email, callback) {
+				this.api.request('POST', '/admin/devices/' + deviceId + '/users', {
+					email: email, 
+					endpoints:['/**']
+				}, function(users){
+					callback(users);
+				});
+			};
+			
+			var updateDeviceUsers = function (deviceId, body, callback) {
+				this.api.request('PUT', '/admin/devices/' + deviceId + '/users', body, function (users) {
+					console.log(users);
+					callback(users);
+				});
+			};
+			
+			var deleteDeviceUsers = function (deviceId, email, callback) {
+				this.api.request('DELETE', '/admin/devices/' + deviceId + '/users', {email: email}, function(users){
+					callback(users);
+				});
+			};
+
+
+			/** Keys **/
+
+			var getKeys = function (callback) {
+				this.api.request('GET', '/admin/keys', {}, function (keys) {
+					callback(keys);
+				});
+			};
+
+			var getKey = function (keyId, callback) {
+				this.api.request('GET', '/admin/keys/' + keyId, {}, function (key) {
+					callback(key);
+				});
+			};
+
+			var createKey = function (name, description, callback) {
+				var body = {
+					name: name,
+					description: description
+				}
+				this.api.request('POST', '/admin/keys', body, function (key) {
+					callback(key);
+				});
+			};
+
+			var deleteKey = function (keyId, callback) {
+				this.api.request('DELETE', '/admin/keys/' + keyId, {}, function (key) {
+					callback(key);
+				});
+			};
+
+			var updateKey = function (keyId, body, callback) {
+				this.api.request('PUT', '/admin/keys/' + keyId, body, function (key) {
+					callback(key);
+				});
+			};
+			
+			var addDeviceToKey = function (deviceId, keyId, callback) {
+				this.api.request('POST', '/admin/keys/' + keyId + '/devices/' + deviceId, function (result) {
+					callback(result);
+				});
+			};
+			
+			var deleteDeviceFromKey = function (deviceId, keyId, callback) {
+				this.api.request('DELETE', '/admin/keys/' + keyId + '/devices/' + deviceId, function (result) {
+					callback(result);
+				});
+			};
+
+			Polymer({
+				is: 'onion-admin-provider',
+				ready: ready,
+				getDevices: getDevices,
+				getDevice: getDevice,
+				createDevice: createDevice,
+				deleteDevice: deleteDevice,
+				updateDevice: updateDevice,
+				getKeys: getKeys,
+				getKey: getKey,
+				createKey: createKey,
+				deleteKey: deleteKey,
+				updateKey: updateKey,
+				addDeviceToKey: addDeviceToKey,
+				deleteDeviceFromKey: deleteDeviceFromKey,
+				getDeviceUsers: getDeviceUsers,
+				createDeviceUsers: createDeviceUsers,
+				updateDeviceUsers: updateDeviceUsers,
+				deleteDeviceUsers: deleteDeviceUsers,
+			});
+		})();
+	</script>
+</dom-module>

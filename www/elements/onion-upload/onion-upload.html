@@ -1,0 +1,94 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+
+
+
+<dom-module id="onion-upload">
+<!-- 	<style>
+		:host {
+
+		}
+	</style> -->
+
+	<template>
+
+		<form id="fileForm" action="/cgi-bin/cgi-upload" method="post" enctype="multipart/form-data">
+			<input type="hidden" id="fileSessionId" name="sessionid" value="{{sessionId}}"></input>
+			<input id="fileNameInput" type="hidden" name="filename" value="{{fileName}}"></input>
+			<input id="fileSelectionInput" type="file" name="file" on-change="fileNameFunction"></input>
+			<button on-click="_submitUpload">Submit</button>
+		</form>
+		<iron-ajax id="ajax" url="/cgi-bin/cgi-upload" method="POST" handle-as="json" on-response="_moveFile"></iron-ajax>
+		
+	</template>
+
+	<script>
+		'use strict';
+
+		(function () {
+			var created = function () {
+
+			};
+
+			var ready = function(){
+				
+			};
+
+			var _submitUpload = function(event){
+				event.preventDefault();
+				var form = document.getElementById('fileForm');
+				var formData = new FormData(form);
+
+					this.$.ajax.body = formData;
+					this.$.ajax.generateRequest();
+					
+			};
+			
+
+			var fileNameFunction = function() {
+				var path = this.$$('#fileSelectionInput').value;
+				var pathName = path.replace(/^.*\\/, "");
+				this.set('fileName', pathName);
+			};
+
+			var _moveFile = function() {
+				var move = [];
+				move[0] ='/www/' + this.fileName;
+				if(this.currentFolder === '/'){
+					move[1] = this.currentFolder + this.fileName;
+				}
+				else{
+					move[1] = this.currentFolder + '/' + this.fileName;
+				}
+				onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+					this.deviceProvider = deviceProvider;
+					this.deviceProvider.callService(null, 'file', 'exec', {
+						command: 'mv',
+						params: move
+					}, function (err, result) {
+						if (!err) {
+							console.log('file exec result: ', result);
+							this.fire('reload', {absolutePath: this.currentFolder});
+							this.fire('close');
+						}
+						else {
+						}
+					}.bind(this));
+				}.bind(this));
+			};
+
+			Polymer({
+				is: 'onion-upload',
+				created: created,
+				ready: ready,
+				_submitUpload: _submitUpload,
+				fileNameFunction: fileNameFunction,
+				_moveFile: _moveFile,
+				properties: {
+					currentFolder: String,
+					fileName: String,
+					sessionId: String
+				},
+			});
+		})();
+	</script>
+</dom-module>

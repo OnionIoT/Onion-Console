@@ -1,8 +1,8 @@
-<link rel="import" href="/lib/polymer/polymer.html">
-<link rel="import" href="/elements/onion-app/onion-app.html">
-<link rel="import" href="/lib/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="/lib/iron-ajax/iron-ajax.html">
-<link rel="import" href="/elements/bootstrap-dropdown/bootstrap-dropdown.html">
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../elements/onion-app/onion-app.html">
+<link rel="import" href="../../lib/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../lib/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../elements/bootstrap-dropdown/bootstrap-dropdown.html">
 
 
 <dom-module id="onion-webcam">
@@ -56,9 +56,7 @@
 			
 
 
-			<onion-app-toolbar>
-				
-
+			<onion-app-toolbar page-id="home">
 				<bootstrap-dropdown for="resolutionDropdown">
 					<li on-tap="_setResolution" data-args="640x480">640x480</li>
 					<li on-tap="_setResolution" data-args="1280x720">1280x720</li>
@@ -92,9 +90,9 @@
 				</div>
 			</onion-app-toolbar>
 
-			<onion-app-body>
+			<onion-app-body page-id="home">
 				<div class="vertical center-justified layout center">
-					 	<img id="stream" src="" onerror="this.src='/apps/onion-webcam/not_available.jpg'">	
+					 	<img id="stream" src="" onerror="this.src='./apps/onion-webcam/not_available.jpg'">	
 
 				</div>
 			</onion-app-body>
@@ -116,7 +114,7 @@
 				this.verbose 			= 0;	
 
 				// check if stream is currently enabled
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'get', {
 						config: 'mjpg-streamer',
 						section: 'core',
@@ -142,17 +140,17 @@
 				var 	top 	= this;
 
 				// get the device ip address and start the stream
-				onionConsole.getService('onion-device-provider', function (deviceProvider) {
-					deviceProvider.getIP(function (result) {
-						top.ipAddr = result[1].ip;
+				onionConsole.getService('onion-device-settings-provider', function (err, deviceProvider) {
+					deviceProvider.getIpAddr(null,function (result) {
+						this.ipAddr = result;
 						console.log('Device ip addr: ' + top.ipAddr);
 
 						setTimeout(function(){
-							top.$.stream.src = "http://" + top.ipAddr + ":8080/?action=stream";
-						},500);
+							this.$$("#stream").src = "http://" + top.ipAddr + ":8080/?action=stream";
+						}.bind(this),500);
 						
-					});
-				});
+					}.bind(this));
+				}.bind(this));
 			}
 
 			var _StreamingStop = function () {
@@ -194,7 +192,7 @@
 			var _StreamingSetupGet = function () {
 				var		top 	= this;
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'get', {
 						config: 'mjpg-streamer',
 						section: 'core',
@@ -209,7 +207,7 @@
 			var _StreamingSetupDeleteAuth = function () {
 				var		top 	= this;
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'delete', {
 						config: 'mjpg-streamer',
 						section: 'core',
@@ -229,7 +227,7 @@
 			var _StreamingSetupScreen = function () {
 				var		top 	= this;
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'set', {
 						config: 'mjpg-streamer',
 						section: 'core',
@@ -248,7 +246,7 @@
 			var _StreamingSetupEnable = function (bEnable) {
 				var		top 	= this;
 
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'set', {
 						config: 'mjpg-streamer',
 						section: 'core',
@@ -265,7 +263,7 @@
 
 			var _StreamingSetupCommit = function () {
 				// commit the changes
-				onionConsole.getService('onion-ubus-provider', (function (ubus) {
+				onionConsole.getService('onion-ubus-provider', (function (err, ubus) {
 					ubus.request('uci', 'commit', {
 						config: 'mjpg-streamer',
 					}, (function (data) {
