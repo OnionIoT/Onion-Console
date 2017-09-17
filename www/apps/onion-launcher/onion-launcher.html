@@ -57,7 +57,7 @@
 			font-weight: lighter;
 /* 			-webkit-backdrop-filter: blur(10px); */
 		}
-		
+
 			#search-bar:focus {
 				border: 1px rgba(255, 255, 255, 0.75) solid;
 				background-color: rgba(255, 255, 255, 0.25);
@@ -71,7 +71,7 @@
 			#search-bar::-moz-placeholder {
 			   color: rgba(255, 255, 255, 0.5);
 			}
-			#search-bar:-ms-input-placeholder {  
+			#search-bar:-ms-input-placeholder {
 			   color: rgba(255, 255, 255, 0.5);
 			}
 
@@ -126,6 +126,13 @@
 			width: 100%;
 		}
 
+		@media only screen and (max-width: 415px) {
+			#topBarContainer {
+				margin-top: 10px;
+				margin-bottom: 10px;
+			}
+		}
+
  	</style>
 
 	<template>
@@ -135,7 +142,7 @@
 			<li class="devDropDown" on-tap="_onRestart">Restart</li>
 		</bootstrap-dropdown> -->
 		<iron-signals on-iron-signal-installed-apps-changed="refresh"></iron-signals>
-		
+
 		<about-onion id="aboutOnion"></about-onion>
 		<!-- <launcher-tour></launcher-tour> -->
 
@@ -166,7 +173,7 @@
 					<!-- </div> -->
 
 				</div>
-				
+
 				<div id="appIconsContainer" class="layout horizontal center-justified start">
 					<div id="appIcons" class="horizontal layout wrap">
 						<template is="dom-repeat" items="{{apps}}" filter="{{searchFilter(filterString)}}">
@@ -185,7 +192,7 @@
 			// var start = function () {
 			// 	onionConsole.getService('onion-socket-provider')
 			// 		.then((function (socketProvider) {
-					
+
 			// 	}).bind(this));
 
 			// 	onionConsole.getService('onion-session-provider')
@@ -265,7 +272,7 @@
 					this.$['search-bar'].blur();
 				}
 			};
-			
+
 			var clearSearch = function(e) {
 				this.set('filterString', '');
 			}
@@ -366,4 +373,3 @@
 	</script>
 
 </dom-module>
-
