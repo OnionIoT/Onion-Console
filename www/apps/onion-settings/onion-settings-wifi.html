@@ -222,7 +222,8 @@
 				<div id="configureLoading" class="loading"></div>
 				<div id="globalControl" class="layout horizontal center">
 					<div class="userInput">Wi-Fi Enabled</div>
-					<input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" class="userInput"/>
+					<!-- lazar@onion.io: TODO: need to figure out a way to give the user the option to disable connecting to STA  -->
+					<input type="checkbox" id="enableWifi" checked="{{enableWifi::change}}" autocomplete="off" class="userInput" disabled/>
 					<div class="flex"></div><!-- space holder -->
 				</div>
 
