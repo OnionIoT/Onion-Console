@@ -8,7 +8,7 @@
 	  		height: 100%;
 			width: 100%;
 		}
-		
+
 		#sshContainer {
 			height: 100%;
 			width: 100%;
@@ -41,39 +41,23 @@
 					<iframe id="shellinabox" src="{{sourceIP}}"></iframe>
 				</div>
 			</onion-app-body>
-		</onion-app>	
+		</onion-app>
 	</template>
 	<script>
 		'use strict';
-			
+
 		(function () {
 			// var self = null;
 
 			var created = function () {
 				// self = this;
 			};
-			
+
 			var ready = function() {
 				this.title = 'Onion Terminal';
-				
-				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
-					this.sessionProvider = sessionProvider;
-
-					// if (self.sessionProvider.isAlive() === true) {
-						onionConsole.getService('onion-device-settings-provider', function (err, deviceProvider) {
-							this.deviceProvider = deviceProvider;
-							
-							//Get IP Address, NetMask
-							deviceProvider.getIpAddr(null, function (addr) {
-								if (addr !== '') {
-									this.sourceIP = '//' + addr + ':4200';
-								};
-							}.bind(this));
-						}.bind(this));
-					// }
-				}.bind(this));
+				this.sourceIP = window.location.origin + ':4200';
 			};
-			
+
 			Polymer({
 				is: 'onion-terminal',
 				created: created,
