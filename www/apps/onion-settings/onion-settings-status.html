@@ -316,11 +316,13 @@
 					this.deviceSettingsProvider = deviceSettingsProvider;
 					setInterval((function () {
 						this.deviceSettingsProvider.getSystem("", (function (err, result) {
-							this.uptime = millisecondsToStr ( result.uptime * 1000 );
-							this.memoryFree		= (result.memory.total / 1024000 - result.memory.free / 1024000).toFixed(3);
-							this.memoryTotal	= (result.memory.total / 1024000).toFixed(3);
-							this.memory = (this.memoryFree) + ' MB / ' + (this.memoryTotal) + ' MB';
-							this.load = (result.load[0] / 100000).toFixed(4) + ' ' + (result.load[1] / 100000).toFixed(4) + ' ' + (result.load[2] / 100000).toFixed(4);
+							if (!err && result) {
+								this.uptime = millisecondsToStr ( result.uptime * 1000 );
+								this.memoryFree		= (result.memory.total / 1024000 - result.memory.free / 1024000).toFixed(3);
+								this.memoryTotal	= (result.memory.total / 1024000).toFixed(3);
+								this.memory = (this.memoryFree) + ' MB / ' + (this.memoryTotal) + ' MB';
+								this.load = (result.load[0] / 100000).toFixed(4) + ' ' + (result.load[1] / 100000).toFixed(4) + ' ' + (result.load[2] / 100000).toFixed(4);
+							}
 						}).bind(this));
 					}).bind(this), 1000);
 
