@@ -32,7 +32,7 @@
 		.loading{
 			height: 20px;
 			width: 20px;
-			margin-left: 15px; 
+			margin-left: 15px;
 			-webkit-animation: rotation 1s infinite linear;
 			-moz-animation: rotation 1s infinite linear;
 			-o-animation: rotation 1s infinite linear;
@@ -86,15 +86,16 @@
 			<h4 class="card-title">Wi-Fi Access Point Setup</h4>
 			<div class="card card-block">
 				<form id="ap-form">
-					<div class="form-group row">
+					<!-- removed enabled checkbox for now -- cannot disable ap anyway -->
+					<!-- <div class="form-group row"> -->
 						<!-- enabled -->
-						<label for="ap-enabled" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Enable AP Mode</label>
-						<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-							<div class="checkbox">
-								<label><input type="checkbox" id="enableAP" checked="{{enableAP::change}}" autocomplete="off" /></label>
-							</div>
-						</div>
-					</div>
+						<!-- <label for="ap-enabled" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 form-control-label">Enable AP Mode</label> -->
+						<!-- <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8"> -->
+							<!-- <div class="checkbox"> -->
+								<!-- <label><input type="checkbox" id="enableAP" checked="{{enableAP::change}}" autocomplete="off" /></label> -->
+							<!-- </div> -->
+						<!-- </div> -->
+					<!-- </div> -->
 
 					<fieldset disabled="{{!enableAP}}">
 						<div class="form-group row">
@@ -126,7 +127,7 @@
 						<div class="form-group row">
 							<!-- show password -->
 							<div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 col-lg-offset-4 col-md-offset-4 col-sm-offset-4 col-xs-offset-4">
-								<input type="checkbox" id="showPassword" checked="{{showPassword::change}}" autocomplete="off" />&nbsp;<label for="showPassword">Show Password</label>
+								<input type="checkbox" id="showPasswordAp" checked="{{showPassword::change}}" autocomplete="off" />&nbsp;<label for="showPassword">Show Password</label>
 							</div>
 						</div>
 						<div class="form-group row">
@@ -167,8 +168,8 @@
 			var created = function () {
 				// this = this;
 			};
-			
-			var ready = function () {				
+
+			var ready = function () {
 				onionConsole.getService('onion-session-provider', function (err, sessionProvider) {
                     this.sessionProvider = sessionProvider;
 	                // if (this.sessionProvider.isAlive() === true) {
@@ -177,59 +178,56 @@
 						}.bind(this));
 	                // };
                 }.bind(this));
-				
+
      //            if (this.sessionProvider.isAlive() === true) {
      //                onionConsole.getService('onion-wifi-provider', function (err, wifiProvider) {
      //                    this.wifiProvider = wifiProvider;
 					// });
      //            };
 
-                this.uciId 	= -1;
 			};
 
 			var init = function () {
-				// grab the required info
-                var getWifiSetupPromise = this.wifiProvider.getWirelessSetup(null,true);
-                var getApStaticIpAddrPromise 	= this.wifiProvider.getApStaticIpAddr();
+				this.refreshNetworkInfo();
+			};
 
-                getWifiSetupPromise.then(function (result) {
-                	console.log('getWifiSetupPromise', result);
+			var refreshNetworkInfo = function () {
+				var promise = new Promise(function (resolve, reject) {
+					this.setLoading(true);
 
-                	if (result.length > 0) {
-                		var data 	= result[0];
+					var getApNetworkInfoPromise 	= this.wifiProvider.getApNetworkInfo(null);
+					var getApStaticIpAddrPromise 	= this.wifiProvider.getApStaticIpAddr();
 
-                		console.log("AP exists");
-                		if (data.disabled === '0') {
-                			this.set('enableAP', true);
-                		}
-                		else if (data.disabled === '1') {
-                			this.set('enableAP', false);
-                		}
-                		else {
-                			this.set('enableAP', true);
-                		}
+					Promise.all([getApNetworkInfoPromise, getApStaticIpAddrPromise])
+					.then(function(values) {
+						// handle data from get network info promise
+						var data = values[0];
+						console.log('AP settings: ', data);
+						this.set('apSsid', data.ssid);
+						this.set('apAuth', data.encryption);
+						this.set('apPassword', data.password);
+						// handle data from IP addr promise
+						this.set('apIp', values[1]);
+						this.originalIp = values[1];
 
-                		this.set('apSsid', 		data.ssid);
-	                	this.set('apAuth', 		data.encryption);
-	                	if (data.encryption === 'wep') {
-	                		this.set('apPassword', 	data.key1);	
-	                	} else if (data.encryption === 'psk' || data.encryption === 'psk2') {
-	                		this.set('apPassword', 	data.key);
-	                	}
+						// disable the loading
+						this.setLoading(false);
+						// resolve the promise
+						resolve();
+					}.bind(this));
+				}.bind(this));
 
-	                	this.uciId 	= data['.index'] - 1;
-                	}
-                	else {
-                		this.set('enableAP', false);
-                	}
+				return promise;
+			};
 
-                	//console.log('uci index is ', this.uciId);
-                }.bind(this));
-
-                getApStaticIpAddrPromise.then(function (result) {
-                	//console.log('getApStaticIpAddrPromise', result);
-                	this.set('apIp', result);
-                }.bind(this));				
+			var setLoading = function (bLoading) {
+				if (bLoading) {
+					this.$.configureLoading.hidden = false;
+			    	this.$['ap-config-button'].disabled = true;
+				} else {
+					this.$.configureLoading.hidden = true;
+		    		this.$['ap-config-button'].disabled = false;
+				}
 			};
 
 			var onAppIcon = function (e) {
@@ -237,35 +235,40 @@
 			};
 
 			var setupAP = function () {
-				this.$.configureLoading.hidden = false;
-		    	this.$['ap-config-button'].disabled = true;
-
-		    	setTimeout(function () {
-		    		this.$.configureLoading.hidden = true;
-		    		this.$['ap-config-button'].disabled = false;
-		    	}.bind(this), 10000);
-		    	
+				this.setLoading(true);
 			    this.apMessage = '';
 
 			    var verifyResult = this.wifiProvider.verifyKey(this.apPassword, this.apAuth);
-				
-				if (verifyResult === 'OK') {
-			        if (this.sessionProvider.isAlive() === true) {
-			        	// if necessary add a uci wireless section for the AP
-			        	var apPreparePromise	= this.wifiProvider.prepareWifiNetwork(null, this.uciId);
+				if (!this.apSsid || this.apSsid === '') {
+					verifyResult = 'Please enter an SSID';
+				}
 
-			        	apPreparePromise.then(function () {
-			        		// populate the AP uci wireless section
-			        		var apSetupPromise = this.wifiProvider.setupAp(null, this.enableAP, this.apSsid, this.apPassword, this.apAuth, this.apIp, this.uciId);
-
-				        	apSetupPromise.then(function () {
-				        		this.init();
-				        	}.bind(this), 
-				        	function (err) {
-				        		console.error(err);
-				        	});
-			        	}.bind(this));
-				    }
+				if (verifyResult === 'OK' && this.sessionProvider.isAlive() === true) {
+	        		// update the AP settings
+					var newIp = (this.apIp === this.originalIp ? null : this.apIp);
+		        	this.wifiProvider.setupAp(null, this.enableAP, this.apSsid, this.apPassword, this.apAuth)
+					.then(function () {
+						console.log('setupAp called, refreshing network info');
+						return (this.refreshNetworkInfo());
+					}.bind(this))
+					.then(function () {
+						console.log('refresh networks complete: newIp value: ', newIp);
+						if (newIp !== null) {
+							this.setLoading(true);
+							this.set('apIp', newIp);
+							console.log('setting new static IP');
+							return (this.wifiProvider.setWlanStaticIp(null, newIp));
+						} else {
+							return (null);
+						}
+					}.bind(this))
+					.then(function () {
+						console.log('refreshing network info again');
+						this.refreshNetworkInfo();
+					}.bind(this))
+		        	.catch(function (err) {
+		        		console.error(err);
+		        	}.bind(this));
 				} else {
 				    this.apMessage = verifyResult;
 				}
@@ -280,6 +283,8 @@
 				created: created,
 				ready: ready,
 				init: init,
+				setLoading: setLoading,
+				refreshNetworkInfo: refreshNetworkInfo,
 				setupAP: setupAP,
 				_computeShowPassword: _computeShowPassword,
 				properties: {
@@ -287,7 +292,7 @@
 						type: Boolean,
 						notify: true
 					},
-					apkSsid: {
+					apSsid: {
 						type: String,
 						notify: true
 					},
@@ -303,6 +308,11 @@
 					apIp: {
 						type: String,
 						notify: true
+					},
+					originalIp: {
+						type: String,
+						notify: true,
+						value: ''
 					},
 					showPassword: {
 		    			notify: true,

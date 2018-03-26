@@ -107,6 +107,28 @@
 				return promise;
 			};
 
+			// return AP network configuration from wifisetup
+			var getApNetworkInfo = function (devId) {
+				var promise = new Promise(function (resolve, reject) {
+					onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
+						this.deviceProvider = deviceProvider;
+						this.deviceProvider.callService(devId, 'onion', 'wifi-setup', {
+							command: '-ap list',
+							params: {}
+						}, function (err, response) {
+							if (response && response.results && response.results[0]) {
+								resolve( response.results[0] );
+							} else {
+								reject(Error('Unable to read wireless settings.'));
+							}
+						}.bind(this));
+					}.bind(this));
+
+				}.bind(this));
+
+				return promise;
+			};
+
 			// uci get call to find the wlan static ip address
 			var getApStaticIpAddr = function (devId) {
 				var promise = new Promise(function (resolve, reject) {
@@ -165,13 +187,16 @@
 			// }
 
 			// populate a wifi network
-			var setupWifiNetwork = function (devId, ssid, password, auth) {
+			var setupWifiNetwork = function (devId, ssid, password, auth, bAp) {
 				var promise = new Promise(function (resolve, reject) {
 					onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
 						if (!err) {
 							this.deviceProvider = deviceProvider;
+							var cmd = 'add';
+							if (bAp) cmd = '-ap edit';
+
 							this.deviceProvider.callService(devId,'onion', 'wifi-setup', {
-								command: 'add',
+								command: cmd,
 								base64: true,
 								params: {
 									ssid: btoa(ssid),
@@ -218,35 +243,29 @@
 			// it either:
 			//	enable and change settings of the ap network
 			// 	disable the AP
-			// TODO: redo this with wifisetup
-			var setupAp = function (devId, enabledAP, apSsid, apPassword, apAuth, apIp, uciId) {
-				// generate the uci section name
-				var wifiSectionName = '@wifi-iface[' + uciId + ']'
+			var setupAp = function (devId, enabledAP, apSsid, apPassword, apAuth) {
+				// lazar@onion.io: ensuring we only change the AP configuration
+				enabledAP = true;
 
 				if (enabledAP) {
 					// enable the AP
 					console.log('Enable AP');
 
 					var promise = new Promise(function (resolve, reject) {
-						// generate the UCI set params
-						var params 	= this.genUciNetworkParams(apSsid, apAuth, apPassword, true, true);
-						console.log('Params for AP network uci set: ', params);
-
 						// set the wireless info
-						var wirelessPromise	= this.setWirelessNetwork(devId, wifiSectionName, params);
-						// set the static IP
-						var networkPromise = this.setWlanStaticIp(apIp);
-
-						// Once both are finished
-						Promise.all([wirelessPromise, networkPromise]).then(function () {
-							resolve();
-						});
+						this.setupWifiNetwork(devId, apSsid, apPassword, apAuth, true)
+						.then(function(err, result) {
+							console.log('setupAp: ', result);
+							if (err) reject(Error(err));
+							else resolve();
+						}.bind(this))
 					}.bind(this));
 				}
 				else {
+					// lazar@onion.io: no way to disable the AP now, come back to this when the driver is updated
 					// disable the AP
 					console.log('Disable AP');
-					var promise = this.setEnableWirelessNetwork(devId, wifiSectionName, false);
+					// var promise = this.setEnableWirelessNetwork(devId, wifiSectionName, false);
 				}
 
 				return promise;
@@ -893,8 +912,10 @@
 				// getWirelessSetup: getWirelessSetup,
 				// parseWirelessSetup: parseWirelessSetup,
 
-				getApStaticIpAddr: getApStaticIpAddr,
+				getApNetworkInfo: getApNetworkInfo,
 				setupAp: setupAp,
+
+				getApStaticIpAddr: getApStaticIpAddr,
 				setWlanStaticIp: setWlanStaticIp,
 
 				wifiScan: wifiScan,
