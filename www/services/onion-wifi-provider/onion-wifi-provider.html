@@ -38,52 +38,6 @@
 				}.bind(this));
 			};
 
-			// parse uci get wireless and return an array of either 'ap' or 'sta' networks
-			// var parseWirelessSetup = function (data, type) {
-			// 	var result 	= [];
-			// 	for (var key in data.values) {
-			// 		var section 	= data.values[key];
-			// 		if(type === 'ap'){
-			// 			if (section['.type'] === 'wifi-iface' && section.mode === type) {
-			// 				result.push(section);
-			// 			}
-			// 		} else if (section['.type'] === 'wifi-config') {
-			// 			if (data.values.sta.disabled === '0' && data.values.sta.ssid === section.ssid) {
-			// 				section.enabled = true;
-			// 				console.log(section.ssid, ' is set to enabled');
-			// 			}
-			// 			result.push(section);
-			// 		}
-			// 	}
-			//
-			// 	return result;
-			// }
-
-			// get all the current wifi networks that are setup, return based on the type ('ap' or 'sta')
-			// var getWirelessSetup = function (devId, bApNetwork) {
-			// 	var promise = new Promise(function (resolve, reject) {
-			// 		var type 	= 'sta'
-			// 		if (bApNetwork) {
-			// 			type 	= 'ap'
-			// 		}
-			//
-			// 		onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
-			// 			this.deviceProvider = deviceProvider;
-			// 			this.deviceProvider.callService(devId,'uci', 'get', {
-			// 				config: 'wireless'
-			// 			}, function (err, result) {
-			// 				if (result) {
-			// 					resolve( this.parseWirelessSetup(result, type) );
-			// 				} else {
-			// 					reject(Error('Unable to read wireless settings.'));
-			// 				}
-			// 			}.bind(this));
-			// 		}.bind(this));
-			// 	}.bind(this));
-			//
-			// 	return promise;
-			// };
-
 			// return list of configured networks from wifisetup
 			//	returns null if STA intf is disabled
 			var getConfiguredNetworkList = function (devId) {
@@ -171,21 +125,6 @@
 				return promise;
 			};
 
-			// conditionally add a new wifi-iface to the wireless config
-			// var prepareWifiNetwork = function (devId, uciId) {
-			// 	if (uciId < 0 || uciId == null) {
-			// 		console.log("Adding uci section for AP network");
-			// 		var promise = this.addWirelessNetwork(devId);
-			// 	} else {
-			// 		//Dummy Promise
-			// 		var promise = new Promise(function (resolve, reject) {
-			// 			resolve();
-			// 		});
-			// 	}
-			//
-			// 	return promise;
-			// }
-
 			// populate a wifi network
 			var setupWifiNetwork = function (devId, ssid, password, auth, bAp) {
 				var promise = new Promise(function (resolve, reject) {
@@ -222,21 +161,6 @@
 				}.bind(this));
 
 				return promise;
-				// old code
-				// if (uciId == null) {
-				// 	var uciId 			= -1;
-				// }
-				// if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
-				// 	var wifiSectionName = '@wifi-config[' + uciId + ']'
-				// }else{
-				// 	var wifiSectionName = '@wifi-iface[' + uciId + ']'
-				// }
-
-				// setup the wifi-iface
-				// var params 			= this.genUciNetworkParams(ssid, auth, password, false, false);
-				// var wirelessPromise	= this.setWirelessNetwork(devId,wifiSectionName, params);
-
-				// return wirelessPromise;
 			};
 
 			// change settings of AP network
@@ -265,7 +189,6 @@
 					// lazar@onion.io: no way to disable the AP now, come back to this when the driver is updated
 					// disable the AP
 					console.log('Disable AP');
-					// var promise = this.setEnableWirelessNetwork(devId, wifiSectionName, false);
 				}
 
 				return promise;
@@ -314,20 +237,6 @@
 				}.bind(this));
 
 				return promise;
-
-				// old code
-				// var sectionName 	= networkObj['.name'];
-				// var currentIndex	= networkObj['.index'];
-				//
-				// var newIndex 		= currentIndex + 1; 	// default is to move down
-				// if (bMoveUp) {
-				// 	newIndex 		= currentIndex - 1;
-				// }
-				//
-				// console.log ('setting section ' + sectionName + ' (' + networkObj.ssid + ') to index' + newIndex);
-				// var promise 		= this.reorderWirelessNetwork(devId, sectionName, newIndex);
-				//
-				// return promise;
 			};
 
 			// remove a newtork
@@ -395,394 +304,6 @@
 
 				return verfyResult;
 			};
-
-			// generate a parameter object for a wireless section ubus call
-			// var genUciNetworkParams = function (ssid, auth, password, bApNetwork, bEnabled) {
-			// 	var params = {};
-			//
-			// 	// set the basic info
-			// 	if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
-			// 		params.ssid 		= ssid;
-			//
-			// 		// generate the values to set based on the encryption type
-			//
-			// 		if(bApNetwork){
-			// 			if (auth === 'wep') {
-			// 				params.encryption 	= auth;
-			// 				params.key 		= '1';
-			// 				params.key1 	= password;
-			// 			}
-			// 			else if (auth === 'psk') {
-			// 				params.encryption 	= auth;
-			// 				params.key 		= password;
-			// 			}
-			// 			else if (auth === 'psk2') {
-			// 				params.encryption 	= auth;
-			// 				params.key 		= password;
-			// 			}
-			// 			else {
-			// 				params.encryption 	= 'none';
-			// 				params.key 		= '';
-			// 			}
-			// 		}else{
-			// 			if (auth === 'wep') {
-			// 				params.encryption 	= auth;
-			// 				params.key 		= '1';
-			// 				params.key1 	= password;
-			// 			}
-			// 			else if (auth === 'psk') {
-			// 				params.encryption 	= 'WPA1PSK';
-			// 				params.key 		= password;
-			// 			}
-			// 			else if (auth === 'psk2') {
-			// 				params.encryption 	= 'WPA2PSK';
-			// 				params.key 		= password;
-			// 			}
-			// 			else {
-			// 				params.encryption 	= 'NONE';
-			// 				params.key 		= '';
-			// 			}
-			// 		}
-			// 	}else{
-			// 		params.device 		= 'radio0'
-			//
-			// 		params.ssid 		= ssid;
-			// 		params.encryption 	= auth;
-			//
-			// 		// set the network parameters based on if AP or STA type
-			// 		if (bApNetwork) {
-			// 			params.network 	= 'wlan';
-			// 			params.mode 	= 'ap';
-			//
-			// 		} else {
-			// 			params.network 	= 'wwan';
-			// 			params.mode 	= 'sta';
-			// 		}
-			//
-			// 		// generate the values to set based on the encryption type
-			// 		if (auth === 'wep') {
-			// 			params.key 		= '1';
-			// 			params.key1 	= password;
-			// 		}
-			// 		else if (auth === 'psk' || auth === 'psk2') {
-			// 			params.key 		= password;
-			// 		}
-			// 		else {
-			// 			params.key 		= '';
-			// 		}
-			//
-			// 		// enable or disable
-			// 		if (bEnabled) {
-			// 			params.disabled = '0'
-			// 		} else {
-			// 			params.disabled = '1'
-			// 		}
-			// 	}
-			//
-			// 	return params;
-			// };
-
-			// add a placeholder for a wireless network
-			// var addWirelessNetwork = function (devId) {
-			// 	if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
-			// 		var promise = new Promise(function (resolve, reject) {
-			//
-			// 			onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
-			// 				this.deviceProvider = deviceProvider;
-			// 				this.deviceProvider.callService(devId,'uci', 'add', {
-			// 					config: 'wireless',
-			// 					type: 'wifi-config'
-			// 				}, function (err, result) {
-			// 					console.log('uci add wireless result:', result);
-			// 					if (result) {
-			// 						this.deviceProvider.callService(devId,'uci', 'commit', {
-			// 								config: 'wireless'
-			// 						}, function (err, result) {
-			// 							if (!err) {
-			// 								resolve();
-			// 							} else {
-			// 								reject(Error('Unable to add wireless network.'));
-			// 							}
-			// 						});
-			// 					} else {
-			// 						reject(Error('Unable to add wireless network.'));
-			// 					}
-			// 				}.bind(this));
-			// 			}.bind(this));
-			// 		}.bind(this));
-			// 	}else{
-			// 		var promise = new Promise(function (resolve, reject) {
-			// 			onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
-			// 				this.deviceProvider = deviceProvider;
-			// 				this.deviceProvider.callService(devId,'uci', 'add', {
-			// 					config: 'wireless',
-			// 					type: 'wifi-iface'
-			// 				}, function (err, result) {
-			// 					console.log('uci add wireless result:', result);
-			// 					if (result) {
-			// 						this.deviceProvider.callService(devId,'uci', 'commit', {
-			// 								config: 'wireless'
-			// 						}, function (err, result) {
-			// 							if (!err) {
-			// 								resolve();
-			// 							} else {
-			// 								reject(Error('Unable to add wireless network.'));
-			// 							}
-			// 						});
-			// 					} else {
-			// 						reject(Error('Unable to add wireless network.'));
-			// 					}
-			// 				}.bind(this));
-			// 			}.bind(this));
-			// 		}.bind(this));
-			// 	}
-			//
-			//
-			// 	return promise;
-			// };
-
-			// set all of the parameters for a wireless network
-			// old code
-			// var setWirelessNetwork = function (devId, sectionName, params) {
-			// 	if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
-			// 		var promise = new Promise(function (resolve, reject) {
-			// 			onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
-			// 				this.deviceProvider = deviceProvider;
-			// 				this.deviceProvider.callService(devId,'uci', 'set', {
-			// 					config: 'wireless',
-			// 					section: sectionName,
-			// 					values: {
-			// 						ssid: params.ssid,
-			// 						encryption: params.encryption,
-			// 						key: params.key
-			// 					}
-			// 				}, function (err,result) {
-			// 					console.log('uci set wireless result:', result);
-			// 					if (!err) {
-			// 						this.deviceProvider.callService(devId,'uci', 'commit', {
-			// 								config: 'wireless'
-			// 						}, function (err, result) {
-			// 							if (!err) {
-			// 								resolve();
-			// 							} else {
-			// 								reject(Error('Unable to edit wireless network settings.'));
-			// 							}
-			// 						});
-			// 					} else {
-			// 						reject(Error('Unable to edit wireless network settings.'));
-			// 					}
-			// 				}.bind(this));
-			// 			}.bind(this));
-			// 		}.bind(this));
-			// 	} else {
-			// 		var promise = new Promise(function (resolve, reject) {
-			// 			onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
-			// 				this.deviceProvider = deviceProvider;
-			// 				this.deviceProvider.callService(devId,'uci', 'set', {
-			// 					config: 'wireless',
-			// 					section: sectionName,
-			// 					values: params
-			// 				}, function (err,result) {
-			// 					console.log('uci set wireless result:', result);
-			// 					if (!err) {
-			// 						this.deviceProvider.callService(devId,'uci', 'commit', {
-			// 								config: 'wireless'
-			// 						}, function (err, result) {
-			// 							if (!err) {
-			// 								resolve();
-			// 							} else {
-			// 								reject(Error('Unable to edit wireless network settings.'));
-			// 							}
-			// 						});
-			// 					} else {
-			// 						reject(Error('Unable to edit wireless network settings.'));
-			// 					}
-			// 				}.bind(this));
-			// 			}.bind(this));
-			// 		}.bind(this));
-			// 	}
-			//
-			// 	return promise;
-			// };
-
-			// enable/disable a network
-			//	by default will perform a commit as well, will not commit if bNoCommit is set
-			// TODO: redo this to use priority
-			var setEnableWirelessNetwork = function (devId, sectionName, bEnable, bNoCommit) {
-				var optionValue = '1';	// disable
-				if (bEnable) {
-					optionValue = '0';	// enable
-				}
-				if (this.device === 'Onion Omega2' || this.device === 'Onion Omega2+') {
-					if (optionValue === '1') {
-						var promise = new Promise(function (resolve, reject) {
-								onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
-									this.deviceProvider = deviceProvider;
-									this.deviceProvider.callService(devId,'uci', 'set', {
-										config: 'wireless',
-										section: '@wifi-iface[0]',
-										values: {
-											ApCliEnable: '0',
-										}
-									}, function (err,result) {
-										console.log('uci set wireless result:', result);
-										if (!err) {
-											this.deviceProvider.callService(devId,'uci', 'commit', {
-													config: 'wireless'
-											}, function (err, result) {
-												if (!err) {
-													resolve();
-												} else {
-													reject(Error('Unable to edit wireless network settings.'));
-												}
-											});
-										} else {
-											reject(Error('Unable to edit wireless network settings.'));
-										}
-									}.bind(this));
-								}.bind(this));
-							}.bind(this));
-					} else {
-						var promise = new Promise(function (resolve, reject) {
-							onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
-								this.deviceProvider = deviceProvider;
-								this.deviceProvider.callService(devId,'uci', 'set', {
-										config: 'wireless',
-										section: '@wifi-iface[0]',
-										values: {
-											ApCliEnable: '1',
-										}
-									}, function (err,result) {
-									this.deviceProvider.callService(devId, 'uci', 'get', {
-										config: 'wireless',
-										section: sectionName
-									}, function(err, response){
-										this.deviceProvider.callService(devId,'uci', 'set', {
-											config: 'wireless',
-											section: '@wifi-iface[0]',
-											values: {
-												ApCliSsid: response.values.ssid,
-												ApAuthMode: response.values.encryption,
-												ApCliPassWord: response.values.key
-											}
-										}, function (err,result) {
-											console.log('uci set wireless result:', result);
-											if (!err) {
-												this.deviceProvider.callService(devId,'uci', 'commit', {
-														config: 'wireless'
-												}, function (err, result) {
-													if (!err) {
-														resolve();
-													} else {
-														reject(Error('Unable to edit wireless network settings.'));
-													}
-												});
-											} else {
-												reject(Error('Unable to edit wireless network settings.'));
-											}
-											}.bind(this));
-										}.bind(this));
-									}.bind(this));
-								}.bind(this));
-						}.bind(this));
-					}
-				} else {
-					var promise = new Promise(function (resolve, reject) {
-						this.deviceProvider.callService(devId,'uci', 'set', {
-							config: 'wireless',
-							section: sectionName,
-							values: {
-								disabled: optionValue
-							}
-						}, function (err, result) {
-							if (!err) {
-								if (bNoCommit) {
-									// no commit!
-									resolve();
-								}
-								else {
-									// perform commit
-									this.deviceProvider.callService(devId,'uci', 'commit', {
-											config: 'wireless'
-									}, function (err, result) {
-										if (!err) {
-											resolve();
-										} else {
-											reject(Error('Unable to change enabled state of wireless network.'));
-										}
-									});
-								}
-							} else {
-								reject(Error('Unable to change enabled state of wireless network.'));
-							}
-						}.bind(this));
-					}.bind(this));
-				}
-
-				return promise;
-			};
-
-			// move a wireless section up or down
-			// var reorderWirelessNetwork = function (devId, sectionName, newIndex) {
-			// 	var promise = new Promise(function (resolve, reject) {
-			// 		var command 	= 'wireless.' + sectionName + '=' + newIndex;
-			// 		this.deviceProvider.callService(devId,'file', 'exec', {
-			// 			command: 'uci',
-			// 			params: [
-			// 				'reorder',
-			// 				command
-			// 			]
-			// 		}, function (err, data) {
-			// 			if (data) {
-			// 				this.deviceProvider.callService(devId,'file', 'exec', {
-			// 					command: 'uci',
-			// 					params: [
-			// 						'commit',
-			// 						'wireless'
-			// 					]
-			// 				}, function (err, result) {
-			// 					if (!err) {
-			// 						resolve();
-			// 					} else {
-			// 						reject(Error('Failed to change network order.'));
-			// 					}
-			// 				});
-			// 			} else {
-			// 				reject(Error('Failed to change network order.'));
-			// 			}
-			// 		}.bind(this));
-			// 	}.bind(this));
-			//
-			// 	return promise;
-			// };
-
-			// remove a network
-			// var deleteWirelessNetwork = function (devId, sectionName) {
-			// 	var promise = new Promise(function (resolve, reject) {
-			// 		onionConsole.getService('onion-device-provider', function (err, deviceProvider) {
-			// 			this.deviceProvider = deviceProvider;
-			// 			this.deviceProvider.callService(devId,'uci', 'delete', {
-			// 				config: 'wireless',
-			// 				section: sectionName
-			// 			}, function (err, result) {
-			// 				if (!err) {
-			// 					this.deviceProvider.callService(devId,'uci', 'commit', {
-			// 							config: 'wireless'
-			// 					}, function (err, result) {
-			// 						if (!err) {
-			// 							resolve();
-			// 						} else {
-			// 							reject(Error('Unable to remove wireless network.'));
-			// 						}
-			// 					});
-			// 				} else {
-			// 					reject(Error('Unable to remove wireless network.'));
-			// 				}
-			// 			}.bind(this));
-			// 		}.bind(this));
-			// 	}.bind(this));
-			// 	return promise;
-			// };
 
 			// commit wireless changes
 			var commitWirelessChanges = function (devId) {
@@ -909,37 +430,28 @@
 				noop: function () {},
 				ready: ready,
 
-				// getWirelessSetup: getWirelessSetup,
-				// parseWirelessSetup: parseWirelessSetup,
+				//scanning
+				wifiScan: wifiScan,
 
+				// ap related functions
 				getApNetworkInfo: getApNetworkInfo,
 				setupAp: setupAp,
 
 				getApStaticIpAddr: getApStaticIpAddr,
 				setWlanStaticIp: setWlanStaticIp,
 
-				wifiScan: wifiScan,
+				// get network list
 				getConfiguredNetworkList: getConfiguredNetworkList,
 
+				// setup network functions
 				setupWifiNetwork: setupWifiNetwork,
-				// prepareWifiNetwork: prepareWifiNetwork,
-
 
 				changeNetworkOrder: changeNetworkOrder,
 				removeWifiNetwork: removeWifiNetwork,
 
 				verifyKey: verifyKey,
-				// genUciNetworkParams: genUciNetworkParams,
 
-				// addWirelessNetwork: addWirelessNetwork,
-				// setWirelessNetwork: setWirelessNetwork,
-				setEnableWirelessNetwork: setEnableWirelessNetwork,
-				// reorderWirelessNetwork: reorderWirelessNetwork,
-				// deleteWirelessNetwork: deleteWirelessNetwork,
-
-
-				// getCurrentlyConnectedSta: getCurrentlyConnectedSta,
-
+				// uci parameter functions
 				checkStaEnabled: checkStaEnabled,
 				setStaEnable: setStaEnable,
 
