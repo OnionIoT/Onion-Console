@@ -17,7 +17,7 @@
 				// CLOUD VERSION
 				// onionConsole.getService('onion-api-provider', (function (err, api) {
 				// 	this.api = api;
-				// }).bind(this));	
+				// }).bind(this));
 			};
 
 			// implement this:
@@ -37,17 +37,19 @@
 				return new Promise((function (resolve, reject) {
 					this.ubus.request (serviceName, functName, payload, function (result) {
 						// console.log('device provider callService response: ', result);
-						if (result[0] === 0) {
+						if (result.error) {
+							reject(result.error);
+						} else if (result[0] === 0) {
 							resolve(result[1]);
 						} else {
 							reject(result[0]);
 						}
 					});
 				}).bind(this)).nodeify(callback);
-					
+
 				// CLOUD VERSION
 				// var path = '/devices/' + deviceId + '/' + serviceName + '/' + functName;
-				
+
 				// this.api.request ('POST', path, payload, (function (result) {
 				// 	callback(result);
 				// }).bind(this));
